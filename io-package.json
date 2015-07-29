@@ -1,0 +1,46 @@
+{
+    "common": {
+        "name":                     "scenes",
+        "version": "0.0.1",
+        "title":                    "Scenes",
+        "desc":                     {
+			"en": "This adapter allows to create scenes from several datapoints.",
+			"de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
+			"ru": "Позволяет создавать и активировать сцены."
+		},
+        "authors": [
+            "bluefox <bluefox@ccu.io>"
+        ],
+        "license":                  "MIT",
+        "platform":                 "Javascript/Node.js",
+        "mode":                     "daemon",
+        "readme":                   "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
+        "loglevel":                 "info",
+        "icon":                     "scenes.png",
+        "keywords":                 ["Scenes", "Szenen", "Сцены"],
+        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
+        "localLink":                "/adapter/scenes/tab.html",
+		"type":                     "script"
+    },
+    "native": {
+        
+    },
+    "instanceObjects": [
+        {
+            "_id": "scene1",
+            "common": {
+                "name": "Test scene",
+                "type": "boolean",
+                "role": "scene.state"
+            },
+            "native": {
+                "members": {
+                      "hm-rpc.0.alive": true,
+                      "hm-rega.0.alive": true,
+                      "hmm.0.alive": false
+                 }
+            },
+            "type": "state"
+        }
+    ]
+}
