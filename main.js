@@ -31,12 +31,14 @@ var ids    = {};
 
 function checkScene(sceneId, stateId, state) {
 
-    if (stateId) scenes[sceneId][stateId].actual = state.val;
-
     var active = null;
-    for (var id in scenes[sceneId]) {
+    for (var i = 0; i < scenes[sceneId].length; i++) {
         if (active === null) active = true;
-        if (scenes[sceneId][id].must != scenes[sceneId][id].actual) {
+        if (stateId && scenes[sceneId][i].id == stateId) {
+            scenes[sceneId][i].actual = state.val;
+        }
+
+        if (scenes[sceneId][i].must != scenes[sceneId][i].actual) {
             active = false;
             break;
         }
@@ -46,12 +48,15 @@ function checkScene(sceneId, stateId, state) {
     }
 }
 
-function getState(sceneId, stateId) {
+function getState(sceneId, stateNumber) {
+    var stateId = scenes[sceneId][stateNumber].id;
     adapter.getForeignState(stateId, function (err, state) {
-        scenes[sceneId][stateId].actual = state ? state.val : null;
+        scenes[sceneId][stateNumber].actual = state ? state.val : null;
         scenes[sceneId].count--;
-        if (!scenes[sceneId].count) {
-            delete scenes[sceneId].count;
+
+        // If processing finshed
+        if (!scenes[sceneId][scenes[sceneId].length - 1].count) {
+            scenes[sceneId].splice(scenes[sceneId].length - 1, 1);
             checkScene(sceneId);
         }
     });
@@ -59,16 +64,24 @@ function getState(sceneId, stateId) {
 
 function initScenes() {
     var countIds = [];
-    for (var sceneId in scenes) {
-        scenes[sceneId].count = 0;
-        for (var stateId in scenes[sceneId]) {
-            if (sceneId == 'count') continue;
 
-            countIds.push(stateId);
+    // list all scenes in Object
+    for (var sceneId in scenes) {
+        scenes[sceneId].push({count: 0});
+        // Go through all states in Array
+        for (var state = 0; state < scenes[sceneId].length - 1; state++) {
+            var stateId = scenes[sceneId][state].id;
+            // calculate subscribtions
+            if (countIds.indexOf(stateId) == -1) countIds.push(stateId);
+
+            // remember which scenes uses this state
             ids[stateId] = ids[stateId] || [];
-            ids[stateId].push(sceneId);
-            scenes[sceneId].count++;
-            getState(sceneId, stateId);
+            if (ids[stateId].indexOf(sceneId) == -1) {
+                ids[stateId].push(sceneId);
+            }
+            scenes[sceneId][scenes[sceneId].length - 1].count++;
+            // read actual state
+            getState(sceneId, state);
         }
     }
 
@@ -76,7 +89,9 @@ function initScenes() {
     if (countIds.length > 20) {
         adapter.subscribeForeignStates();
     } else {
+        // subscribe for own scenes
         adapter.subscribeStates();
+        // and for all states
         for (var i = 0; i < countIds.length; i++) {
             adapter.subscribeForeignStates(countIds[i]);
         }
@@ -92,8 +107,9 @@ function main() {
 
                 scenes[states[i]._id] = {};
 
-                for (var m in states[i].native.members) {
-                    scenes[states[i]._id][m] = {actual: null, must: states[i].native.members[m]};
+                scenes[states[i]._id] = states[i].native.members;
+                for (var m = 0; m < states[i].native.members.length; m++) {
+                    scenes[states[i]._id][m].actual = null;
                 }
             }
         }

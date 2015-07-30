@@ -3,6 +3,7 @@
 
 systemDictionary = {
     "name":                 {"en": "name",                  "de": "Name",                   "ru": "Имя"},
+    "description":          {"en": "description",           "de": "Beschreibung",           "ru": "Описание"},
     "Ok":                   {"en": "Ok",                    "de": "Ok",                     "ru": "Ok"},
     "Cancel":               {"en": "Cancel",                "de": "Abbrechen",              "ru": "Отмена"},
     "enabled":              {"en": "enabled",               "de": "Aktiviert",              "ru": "активно"},
@@ -10,6 +11,7 @@ systemDictionary = {
     "false":                {"en": "false",                 "de": "nein",                   "ru": "нет"},
     "Insert":               {"en": "Insert",                "de": "Einfügen",               "ru": "Вставить"},
     "copy":                 {"en": "copy",                  "de": "kopieren",               "ru": "копировать"},
+    "scene":                {"en": "scene",                 "de": "szene",                  "ru": "сцена"},
     "ioBroker adapter scenes": {
         "en": "ioBroker adapter scenes",
         "de": "ioBroker adapter scenes",

@@ -20,7 +20,11 @@
         "keywords":                 ["Scenes", "Szenen", "Сцены"],
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
         "localLink":                "/adapter/scenes/tab.html",
-		"type":                     "script"
+		"type":                     "script",
+        "adminTab": {
+            "name":                 {"en": "Scenes", "de": "Szenen", "ru": "Cцeны"},
+            "singleton":            true
+        }
     },
     "native": {
         
@@ -31,14 +35,16 @@
             "common": {
                 "name": "Test scene",
                 "type": "boolean",
-                "role": "scene.state"
+                "role": "scene.state",
+                "enabled": true,
+                "engine": "system.adapter.scenes.0"
             },
             "native": {
-                "members": {
-                      "hm-rpc.0.alive": true,
-                      "hm-rega.0.alive": true,
-                      "hmm.0.alive": false
-                 }
+                "members": [
+                    {"id": "hm-rpc.0.alive",  "must": true},
+                    {"id": "hm-rega.0.alive", "must": true},
+                    {"id": "hmm.0.alive",     "must": true}
+                 ]
             },
             "type": "state"
         }

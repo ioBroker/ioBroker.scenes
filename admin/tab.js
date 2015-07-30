@@ -9,10 +9,8 @@ function Scenes(main) {
     this.main = main;
     this.tree = [];
     this.data = {};
-    this.isList = false;
+    this.engines = [];
     this.filterVals = {length: 0};
-    this.onlyInstalled = false;
-    this.onlyUpdatable = false;
     this.currentFilter = '';
     this.isCollapsed = {};
 
@@ -27,43 +25,19 @@ function Scenes(main) {
             renderColumns: function(event, data) {
                 var node = data.node;
                 var $tdList = $(node.tr).find(">td");
+                var keys = node.key.split('_$$$_');
 
-                if (!that.data[node.key]) {
-                    $tdList.eq(0).css({'font-weight': 'bold'});
-                    //$(node.tr).addClass('ui-state-highlight');
-
-                    // Calculate total count of scene and count of installed scene
-                    for (var c = 0; c < that.tree.length; c++) {
-                        if (that.tree[c].key == node.key) {
-                            var installed = 0;
-                            for (var k = 0; k < that.tree[c].children.length; k++) {
-                                if (that.data[that.tree[c].children[k].key].installed) installed++;
-                            }
-                            var title;
-                            if (!that.onlyInstalled && !that.onlyUpdatable) {
-                                title = '[<span title="' + _('Installed from group') + '">' + installed + '</span> / <span title="' + _('Total count in group') + '">' + that.tree[c].children.length + '</span>]';
-                            } else {
-                                title = '<span title="' + _('Installed from group') + '">' + installed + '</span>';
-                            }
-                            $tdList.eq(4).html(title).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
-                            break;
-                        }
-                    }
-                    return;
-                }
                 $tdList.eq(0).css({'overflow': 'hidden', "white-space": "nowrap"});
                 $tdList.eq(1).html(that.data[node.key].desc).css({'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(2).html(that.data[node.key].keywords).css({'overflow': 'hidden', "white-space": "nowrap"}).attr('title', that.data[node.key].keywords);
+                $tdList.eq(2).html(that.data[node.key].enabled).css({'overflow': 'hidden', "white-space": "nowrap"});
 
-                $tdList.eq(3).html(that.data[node.key].version).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(4).html(that.data[node.key].installed).css({'padding-left': '10px', 'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(5).html(that.data[node.key].platform).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(6).html(that.data[node.key].license).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(7).html(that.data[node.key].install).css({'text-align': 'center'});
-                that.initButtons(node.key);
+                $tdList.eq(3).html(that.data[node.key].must).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(4).html(that.data[node.key].actual).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(5).html(that.data[node.key].buttons).css({'text-align': 'center'});
+                that.initButtons(keys[0], keys[1]);
                 // If we render this element, that means it is expanded
-                if (that.isCollapsed[that.data[node.key].group]) {
-                    that.isCollapsed[that.data[node.key].group] = false;
+                if (keys[1] !== undefined && that.isCollapsed[that.data[node.key].scene]) {
+                    that.isCollapsed[that.data[node.key].scene] = false;
                     that.main.saveConfig('scenesIsCollapsed', JSON.stringify(that.isCollapsed));
                 }
             },
@@ -130,6 +104,10 @@ function Scenes(main) {
         $('#scenes-filter-clear').button({icons: {primary: 'ui-icon-close'}, text: false}).css({width: 16, height: 16}).click(function () {
             $('#scenes-filter').val('').trigger('change');
         });
+
+        $('#btn_new_scene').button({icons: {primary: 'ui-icon-plus'}, text: false}).css({width: 16, height: 16}).click(function () {
+            that.addNewScene();
+        });
     };
 
     function customFilter(node) {
@@ -153,10 +131,36 @@ function Scenes(main) {
 
     this.resize = function (width, height) {
         $('#grid-scenes-div').height($(window).height() - $('#tabs .ui-tabs-nav').height() - 50);
-    }
+    };
 
-    // ----------------------------- Adpaters show and Edit ------------------------------------------------
-    this.init = function (update, updateRepo) {
+    this.addNewScene = function () {
+        // find name
+        var i = 1;
+        while (this.list['scene.scene' + i]) i++;
+        var id = 'scene.scene' + i;
+
+        var scene = {
+            "common": {
+                "name":    _('scene') + ' ' + i,
+                "type":    "boolean",
+                "role":    "scene.state",
+                "desc":    _('scene') + ' ' + i,
+                "enabled": true,
+                "engine":  this.engines[0]
+            },
+            "native": {
+                "members": []
+            },
+            "type": "state"
+        };
+
+        this.main.socket.emit('setObject', id, scene, function (err, res) {
+            if (err) this.main.showError(err);
+        });
+    };
+
+    // ----------------------------- Scenes show and Edit ------------------------------------------------
+    this.init = function (update) {
         if (!this.main.objectsLoaded) {
             setTimeout(function () {
                 that.init();
@@ -171,263 +175,82 @@ function Scenes(main) {
 
             this.$grid.find('tbody').html('');
 
-            this.getScenesInfo(this.main.currentHost, update, updateRepo, function (repository, installedList) {
-                var id = 1;
-                var obj;
-                var version;
-                var tmp;
-                var scene;
+            that.tree = [];
+            that.data = {};
 
-                var listInstalled = [];
-                var listUnsinstalled = [];
+            // list of the installed scenes
+            for (var i = 0; i < this.list.length; i++) {
+                var sceneId = this.list[i];
+                that.data[sceneId] = {
+                    id:       sceneId,
+                    desc:     this.main.objects[sceneId].common.desc,
+                    enabled:  this.main.objects[sceneId].native ? !this.main.objects[sceneId].native.disabled : false,
+                    must:     '',
+                    actual:   main.states[sceneId] ? main.states[sceneId].val : '',
+                    buttons: '<button data-scene-name="' + sceneId + '" class="scene-add-state">'      + _('add states')   + '</button>' +
+                             '<button data-scene-name="' + sceneId + '" class="scene-edit-submit">'    + _('edit scene')   + '</button>' +
+                             '<button data-scene-name="' + sceneId + '" class="scene-delete-submit">'  + _('delete scene') + '</button>'
+                };
 
-                if (installedList) {
-                    for (scene in installedList) {
-                        obj = installedList[scene];
-                        if (!obj || obj.controller || scene == 'hosts') continue;
-                        listInstalled.push(scene);
-                    }
-                    listInstalled.sort();
-                }
+                var scene = {
+                    title:    sceneId,
+                    key:      sceneId,
+                    folder:   true,
+                    expanded: !that.isCollapsed[sceneId],
+                    children: []
+                };
+                that.tree.push(scene);
 
-                // List of scenes for repository
-                for (scene in repository) {
-                    obj = repository[scene];
-                    if (!obj || obj.controller) continue;
-                    version = '';
-                    if (installedList && installedList[scene]) continue;
-                    listUnsinstalled.push(scene);
-                }
-                listUnsinstalled.sort();
-
-                that.tree = [];
-                that.data = {};
-
-                // list of the installed scenes
-                for (var i = 0; i < listInstalled.length; i++) {
-                    scene = listInstalled[i];
-                    obj = installedList ? installedList[scene] : null;
-                    if (!obj || obj.controller || scene == 'hosts') continue;
-                    var installed = '';
-                    var icon = obj.icon;
-                    version = '';
-
-                    if (repository[scene] && repository[scene].version) version = repository[scene].version;
-
-                    if (repository[scene] && repository[scene].extIcon) icon = repository[scene].extIcon;
-
-                    if (obj.version) {
-                        installed = '<table style="border: 0px;border-collapse: collapse;" cellspacing="0" cellpadding="0" class="ui-widget"><tr><td style="border: 0px;padding: 0;width:50px">' + obj.version + '</td>';
-
-                        var _instances = 0;
-                        var _enabled   = 0;
-
-                        // Show information about installed and enabled instances
-                        for (var z = 0; z < that.main.instances.length; z++) {
-                            if (main.objects[that.main.instances[z]].common.name == scene) {
-                                _instances++;
-                                if (main.objects[that.main.instances[z]].common.enabled) _enabled++;
-                            }
-                        }
-                        if (_instances) {
-                            installed += '<td style="border: 0px;padding: 0;width:40px">[<span title="' + _('Installed instances') + '">' + _instances + '</span>';
-                            if (_enabled) installed += '/<span title="' + _('Active instances') + '" style="color: green">' + _enabled + '</span>';
-                            installed += ']</td>';
-                        } else {
-                            installed += '<td style="border: 0px;padding: 0;width:40px"></td>';
-                        }
-
-                        tmp = installed.split('.');
-                        if (!that.main.upToDate(version, obj.version)) {
-                            installed += '<td style="border: 0px;padding: 0;width:30px"><button class="scene-update-submit" data-scene-name="' + scene + '">' + _('update') + '</button></td>';
-                            version = version.replace('class="', 'class="updateReady ');
-                            $('a[href="#tab-scenes"]').addClass('updateReady');
-                        } else if (that.onlyUpdatable) {
-                            continue;
-                        }
-
-                        installed += '</tr></table>';
-                    }
-                    if (version) {
-                        tmp = version.split('.');
-                        if (tmp[0] === '0' && tmp[1] === '0' && tmp[2] === '0') {
-                            version = '<span class="planned" title="' + _("planned") + '">' + version + '</span>';
-                        } else if (tmp[0] === '0' && tmp[1] === '0') {
-                            version = '<span class="alpha" title="' + _("alpha") + '">' + version + '</span>';
-                        } else if (tmp[0] === '0') {
-                            version = '<span class="beta" title="' + _("beta") + '">' + version + '</span>';
-                        } else {
-                            version = '<span class="stable" title="' + _("stable") + '">' + version + '</span>';
-                        }
-                    }
-
-                    that.data[scene] = {
-                        image:      icon ? '<img src="' + icon + '" width="22px" height="22px" />' : '',
-                        name:       scene,
-                        title:      obj.title,
-                        desc:       (typeof obj.desc === 'object') ? (obj.desc[systemLang] || obj.desc.en) : obj.desc,
-                        keywords:   obj.keywords ? obj.keywords.join(' ') : '',
-                        version:    version,
-                        installed:  installed,
-                        install: '<button data-scene-name="' + scene + '" class="scene-install-submit">' + _('add instance') + '</button>' +
-                            '<button ' + (obj.readme ? '' : 'disabled="disabled" ') + 'data-scene-name="' + scene + '" data-scene-url="' + obj.readme + '" class="scene-readme-submit">' + _('readme') + '</button>' +
-                            '<button ' + (installed ? '' : 'disabled="disabled" ') + 'data-scene-name="' + scene + '" class="scene-delete-submit">' + _('delete scene') + '</button>',
-                        platform:   obj.platform,
-                        group:      (obj.type || that.types[scene] || 'common scenes') + '_group',
-                        license:    obj.license || '',
-                        licenseUrl: obj.licenseUrl || ''
-                    };
-
-                    if (!obj.type) console.log('"' + scene + '": "common scenes",');
-                    if (obj.type && that.types[scene]) console.log('Scene "' + scene + '" has own type. Remove from admin.');
-
-                    if (!that.isList) {
-                        var igroup = -1;
-                        for (var j = 0; j < that.tree.length; j++){
-                            if (that.tree[j].key == that.data[scene].group) {
-                                igroup = j;
-                                break;
-                            }
-                        }
-                        if (igroup < 0) {
-                            that.tree.push({
-                                title:    _(that.data[scene].group),
-                                key:      that.data[scene].group,
-                                folder:   true,
-                                expanded: !that.isCollapsed[that.data[scene].group],
-                                children: [],
-                                icon:     that.groupImages[that.data[scene].group]
-                            });
-                            igroup = that.tree.length - 1;
-                        }
-                        that.tree[igroup].children.push({
-                            icon:     icon,
-                            title:    that.data[scene].title || scene,
-                            key:      scene
-                        });
-                    } else {
-                        that.tree.push({
-                            icon:     icon,
-                            title:    that.data[scene].title || scene,
-                            key:      scene
-                        });
-                    }
-                }
-
-                if (!that.onlyInstalled && !that.onlyUpdatable) {
-                    for (i = 0; i < listUnsinstalled.length; i++) {
-                        scene = listUnsinstalled[i];
-
-                        obj = repository[scene];
-                        if (!obj || obj.controller) continue;
-                        version = '';
-                        if (installedList && installedList[scene]) continue;
-
-                        if (repository[scene] && repository[scene].version) {
-                            version = repository[scene].version;
-                            tmp = version.split('.');
-                            if (tmp[0] === '0' && tmp[1] === '0' && tmp[2] === '0') {
-                                version = '<span class="planned" title="' + _("planned") + '">' + version + '</span>';
-                            } else if (tmp[0] === '0' && tmp[1] === '0') {
-                                version = '<span class="alpha" title="' + _("alpha") + '">' + version + '</span>';
-                            } else if (tmp[0] === '0') {
-                                version = '<span class="beta" title="' + _("beta") + '">' + version + '</span>';
-                            } else {
-                                version = '<span class="stable" title="' + _("stable") + '">' + version + '</span>';
-                            }
-                        }
-
-                        that.data[scene] = {
-                            image:      repository[scene].extIcon ? '<img src="' + repository[scene].extIcon + '" width="22px" height="22px" />' : '',
-                            name:       scene,
-                            title:      obj.title,
-                            desc:       (typeof obj.desc === 'object') ? (obj.desc[systemLang] || obj.desc.en) : obj.desc,
-                            keywords:   obj.keywords ? obj.keywords.join(' ') : '',
-                            version:    version,
-                            installed:  '',
-                            install: '<button data-scene-name="' + scene + '" class="scene-install-submit">' + _('add instance') + '</button>' +
-                                '<button ' + (obj.readme ? '' : 'disabled="disabled" ') + ' data-scene-name="' + scene + '" data-scene-url="' + obj.readme + '" class="scene-readme-submit">' + _('readme') + '</button>' +
-                                '<button disabled="disabled" data-scene-name="' + scene + '" class="scene-delete-submit">' + _('delete scene') + '</button>',
-                            platform:   obj.platform,
-                            license:    obj.license || '',
-                            licenseUrl: obj.licenseUrl || '',
-                            group:      (obj.type || that.types[scene] || 'common scenes') + '_group'
+                if (this.main.objects[sceneId].native && this.main.objects[sceneId].native.members) {
+                    var members = this.main.objects[sceneId].native.members;
+                    for (var m = 0; m < members.length; m++) {
+                        that.data[sceneId + '_$$$_' + m] = {
+                            id:       members[m].id,
+                            scene:    sceneId,
+                            index:    m,
+                            enabled:  !members[m].disabled,
+                            must:     members[m].must,
+                            actual:   main.states[members[m].id] ? main.states[members[m].id].val : '',
+                            buttons: '<button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-edit-submit">'   + _('edit state')   + '</button>' +
+                                     '<button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-delete-submit">' + _('delete state') + '</button>'
                         };
-
-                        if (!obj.type) console.log('"' + scene + '": "common scenes",');
-                        if (obj.type && that.types[scene]) console.log('Scene "' + scene + '" has own type. Remove from admin.');
-
-                        if (!that.isList) {
-                            var igroup = -1;
-                            for (var j = 0; j < that.tree.length; j++){
-                                if (that.tree[j].key == that.data[scene].group) {
-                                    igroup = j;
-                                    break;
-                                }
-                            }
-                            if (igroup < 0) {
-                                that.tree.push({
-                                    title:    _(that.data[scene].group),
-                                    key:      that.data[scene].group,
-                                    folder:   true,
-                                    expanded: !that.isCollapsed[that.data[scene].group],
-                                    children: [],
-                                    icon:     that.groupImages[that.data[scene].group]
-                                });
-                                igroup = that.tree.length - 1;
-                            }
-                            that.tree[igroup].children.push({
-                                title:    that.data[scene].title || scene,
-                                icon:     repository[scene].extIcon,
-                                key:      scene
-                            });
-                        } else {
-                            that.tree.push({
-                                icon:     repository[scene].extIcon,
-                                title:    that.data[scene].title || scene,
-                                key:      scene
-                            });
-                        }
+                        scene.children.push({
+                            title:    members[m].id,
+                            key:      sceneId + '_$$$_' + m
+                        });
                     }
                 }
+            }
 
-                that.$grid.fancytree('getTree').reload(that.tree);
-                $('#grid-scenes .fancytree-icon').each(function () {
-                    if ($(this).attr('src')) $(this).css({width: 22, height: 22});
-                });
-                $('#process_running_scenes').hide();
-                if (that.currentFilter) that.$grid.fancytree('getTree').filterNodes(customFilter, false);
+            that.$grid.fancytree('getTree').reload(that.tree);
+            $('#grid-scenes .fancytree-icon').each(function () {
+                if ($(this).attr('src')) $(this).css({width: 22, height: 22});
             });
+            $('#process_running_scenes').hide();
+            if (that.currentFilter) that.$grid.fancytree('getTree').filterNodes(customFilter, false);
+
         }
     };
 
-    this.initButtons = function (scene) {
-        $('.scene-install-submit[data-scene-name="' + scene + '"]').button({
+    this.initButtons = function (scene, m) {
+        $('.scene-add-state[data-scene-name="' + scene + '"]').button({
             text: false,
             icons: {
                 primary: 'ui-icon-plusthick'
             }
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
             var scene = $(this).attr('data-scene-name');
-            that.getScenesInfo(that.main.currentHost, false, false, function (repo, installed) {
-                var obj = repo[scene];
+            var sid = that.main.initSelectId();
+            sid.selectId('show', function (newIds) {
+                if (newIds && newIds.length) {
+                    var obj = that.main.objects[scene];
+                    for (var i = 0; i < newIds.length; i++) {
+                        if (!obj.native.members) obj.native.members = [];
+                        obj.native.members.push({id: newIds[i], must: null});
+                    }
 
-                if (!obj) obj = installed[scene];
-
-                if (!obj) return;
-
-                if (obj.license && obj.license !== 'MIT') {
-                    // Show license dialog!
-                    showLicenseDialog(scene, function (isAgree) {
-                        if (isAgree) {
-                            that.main.cmdExec(null, 'add ' + scene, function (exitCode) {
-                                if (!exitCode) that.init(true);
-                            });
-                        }
-                    });
-                } else {
-                    that.main.cmdExec(null, 'add ' + scene, function (exitCode) {
-                        if (!exitCode) that.init(true);
+                    that.main.socket.emit('setObject', scene, obj, function (err) {
+                        if (err) this.main.showError(err);
                     });
                 }
             });
@@ -437,48 +260,85 @@ function Scenes(main) {
             icons: {primary: 'ui-icon-trash'},
             text:  false
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
-            that.main.cmdExec(null, 'del ' + $(this).attr('data-scene-name'), function (exitCode) {
-                if (!exitCode) that.init(true);
+            var scene = $(this).attr('data-scene-name');
+
+            // TODO: are you sure?
+            that.main.socket.emit('delObject', scene, function (err) {
+                if (err) this.main.showError(err);
             });
         });
 
-        $('.scene-readme-submit[data-scene-name="' + scene + '"]').button({
-            icons: {primary: 'ui-icon-help'},
+        $('.scene-edit-submit[data-scene-name="' + scene + '"]').button({
+            icons: {primary: 'ui-icon-note'},
             text: false
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
-            window.open($(this).attr('data-scene-url'), $(this).attr('data-scene-name') + ' ' + _('readme'));
+            var scene = $(this).attr('data-scene-name');
         });
 
-        $('.scene-update-submit[data-scene-name="' + scene + '"]').button({
-            icons: {primary: 'ui-icon-refresh'},
-            text:  false
-        }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
-            var aName = $(this).attr('data-scene-name');
-            if (aName == 'admin') that.main.waitForRestart = true;
+        if (m !== undefined) {
+            $('.scene-state-edit-submit[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').button({
+                icons: {primary: 'ui-icon-note'},
+                text:  false
+            }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
+                var scene = $(this).attr('data-scene-name');
+                var index = $(this).attr('data-state-index');
 
-            that.main.cmdExec(null, 'upgrade ' + aName, function (exitCode) {
-                if (!exitCode) that.init(true);
             });
-        });
+
+            $('.scene-state-delete-submit[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').button({
+                icons: {primary: 'ui-icon-trash'},
+                text:  false
+            }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
+                var scene = $(this).attr('data-scene-name');
+                var index = $(this).attr('data-state-index');
+
+                var obj = that.main.objects[scene];
+                obj.native.members.splice(index, 1);
+
+                that.main.socket.emit('setObject', scene, obj, function (err) {
+                    if (err) this.main.showError(err);
+                });
+            });
+        }
     };
 
     this.objectChange = function (id, obj) {
+        // update engines
+        if (id.match(/^system\.adapter\.scenes\.\d+$/)) {
+            if (obj) {
+                if (this.engines.indexOf(id) == -1) {
+                    this.engines.push(id);
+                    if (typeof this.$grid != 'undefined' && this.$grid[0]._isInited) {
+                        this.init(true);
+                    }
+                    return;
+                }
+            } else {
+                var pos = this.engines.indexOf(id);
+                if (pos != -1) {
+                    this.engines.splice(pos, 1);
+                    if (typeof this.$grid != 'undefined' && this.$grid[0]._isInited) {
+                        this.init(true);
+                    }
+                    return;
+                }
+            }
+        }
+
         // Update Scene Table
-        if (id.match(/^system\.scene\.[a-zA-Z0-9-_]+$/)) {
+        if (id.match(/^scene\..+$/)) {
             if (obj) {
                 if (this.list.indexOf(id) == -1) this.list.push(id);
             } else {
                 var j = this.list.indexOf(id);
-                if (j != -1) {
-                    this.list.splice(j, 1);
-                }
+                if (j != -1) this.list.splice(j, 1);
             }
 
             if (typeof this.$grid != 'undefined' && this.$grid[0]._isInited) {
                 this.init(true);
             }
         }
-    }
+    };
 }
 
 var main = {
@@ -524,7 +384,7 @@ var main = {
         main.selectId = $('#dialog-select-member').selectId('init',  {
             objects: main.objects,
             states:  main.states,
-            noMultiselect: true,
+            noMultiselect: false,
             imgPath: '../../lib/css/fancytree/',
             filter: {type: 'state'},
             texts: {
@@ -596,13 +456,13 @@ function getObjects(callback) {
             var obj;
             main.objects = res;
             for (var id in main.objects) {
-                if (obj.type !== 'state') continue;
-
                 obj = res[id];
-                if (obj === 'state') {
-                    if (id.match(/^scene\.\d+\.)) {
-                        scenes.list.push(id);
-                    }
+                if (id.match(/^system\.adapter\.scenes\.\d+$/)) {
+                    scenes.engines.push(id);
+                }
+
+                if (obj.type === 'state' && id.match(/^scene\..+/)) {
+                    scenes.list.push(id);
                 }
             }
             main.objectsLoaded = true;
@@ -630,12 +490,12 @@ function getObjects(callback) {
 }
 
 function objectChange(id, obj) {
-    var changed = false;
+    var changed  = false;
+    var oldObj   = null;
+    var isNew    = false;
+    var isUpdate = false;
     var i;
     var j;
-    var oldObj = null;
-    var isNew = false;
-    var isUpdate = false;
 
     // update main.objects cache
     if (obj) {
@@ -655,12 +515,6 @@ function objectChange(id, obj) {
     }
 
     if (main.selectId) main.selectId.selectId('object', id, obj);
-
-    if (id.match(/^system\.scene\.[-\w]+\.[0-9]+$/)) {
-        // Disable scenes tab if no one script engine instance found
-        var engines = scenes.fillEngines();
-        $('#tabs').tabs('option', 'disabled', (engines && engines.length) ? [] : [4]);
-    }
 
     scenes.objectChange(id, obj);
 }
@@ -703,7 +557,6 @@ main.socket.on('connect', function () {
                         systemLang = 'en';
                     }
                 }
-                initGridLanguage(main.systemConfig.common.language);
 
                 translateAll();
 
