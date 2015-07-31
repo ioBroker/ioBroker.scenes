@@ -11,9 +11,13 @@ adapter.on('stateChange', function (id, state) {
             scenes[id].value = state;
         }
         if (!state.ack) {
-            if (scenes[id] && state.val) {
-                // activate scene
-                activateScene(id);
+            if (scenes[id]) {
+                if (state.val) {
+                    // activate scene
+                    activateScene(id, true);
+                } else if (scenes[id].native.setIfFalse) {
+                    activateScene(id, false);
+                }
             }
         }
 
@@ -51,7 +55,9 @@ function restartAdapter() {
             clearTimeout(triggers[t][id]);
         }
     }
-
+    for (var t in checkTimers) {
+        clearTimeout(checkTimers[t]);
+    }
     if (!subscription) {
         adapter.unsubscribeForeignStates();
     } else {
@@ -62,11 +68,12 @@ function restartAdapter() {
         }
     }
     subscription = null;
-    scenes   = {};
-    ids      = {};
-    triggers = {};
-    timers   = {};
-    tIndex   = 1;
+    scenes       = {};
+    ids          = {};
+    triggers     = {};
+    timers        = {};
+    tIndex       = 1;
+    checkTimers  = {};
 
     main();
 }
@@ -77,41 +84,93 @@ adapter.on('ready', function () {
 });
 
 var subscription = null;
-var scenes   = {};
-var ids      = {};
-var triggers = {};
-var timers   = {};
+var scenes       = {};
+var ids          = {};
+var triggers     = {};
+var timers       = {};
+var checkTimers  = {};
 
 // Check if actual states are exactly as desired in the scene
 function checkScene(sceneId, stateId, state) {
+    if (checkTimers[sceneId]) {
+        for (var i = 0; i < scenes[sceneId].native.members.length; i++) {
+            // Do not check states with delay
+            if (scenes[sceneId].native.members[i].delay) continue;
 
-    var active = null;
-    for (var i = 0; i < scenes[sceneId].native.members.length; i++) {
-        // Do not check states with delay
-        if (scenes[sceneId].native.members[i].delay) continue;
-
-        // There are some states
-        if (active === null) active = true;
-
-        // if state must be updated
-        if (stateId && scenes[sceneId].native.members[i].id == stateId) {
-            scenes[sceneId].native.members[i].actual = state.val;
+            // if state must be updated
+            if (stateId && scenes[sceneId].native.members[i].id == stateId) {
+                scenes[sceneId].native.members[i].actual = state.val;
+            }
         }
 
-        if (scenes[sceneId].native.members[i].must != scenes[sceneId].native.members[i].actual) {
-            active = false;
-            break;
-        }
+        return;
     }
-    if (active !== null) {
-        if (!scenes[sceneId].value || (scenes[sceneId].value.val !== active || !scenes[sceneId].value.ack)) {
-            scenes[sceneId].value = scenes[sceneId].value || {};
-            scenes[sceneId].value.val = active;
-            scenes[sceneId].value.ack = true;
+    checkTimers[sceneId] = setTimeout(function () {
+        checkTimers[sceneId] = null;
+        var activeTrue  = null;
+        var activeFalse = null;
+        for (var i = 0; i < scenes[sceneId].native.members.length; i++) {
+            // Do not check states with delay
+            if (scenes[sceneId].native.members[i].delay) continue;
 
-            adapter.setForeignState(sceneId, active, true);
+            // There are some states
+            if (activeTrue === null)  activeTrue  = true;
+            if (activeFalse === null) activeFalse = true;
+
+            // if state must be updated
+            if (stateId && scenes[sceneId].native.members[i].id == stateId) {
+                scenes[sceneId].native.members[i].actual = state.val;
+            }
+
+            if (scenes[sceneId].native.members[i].setIfTrue != scenes[sceneId].native.members[i].actual) {
+                activeTrue = false;
+                break;
+            }
+            if (scenes[sceneId].native.members[i].setIfFalse != scenes[sceneId].native.members[i].actual) {
+                activeFalse = false;
+                break;
+            }
         }
-    }
+
+        if (scenes[sceneId].native.setIfFalse) {
+            if (activeTrue) {
+                if (!scenes[sceneId].value || (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack)) {
+                    scenes[sceneId].value = scenes[sceneId].value || {};
+                    scenes[sceneId].value.val = true;
+                    scenes[sceneId].value.ack = true;
+
+                    adapter.setForeignState(sceneId, true, true);
+                }
+            } else if (activeFalse) {
+                if (!scenes[sceneId].value || (scenes[sceneId].value.val !== false || !scenes[sceneId].value.ack)) {
+                    scenes[sceneId].value = scenes[sceneId].value || {};
+                    scenes[sceneId].value.val = false;
+                    scenes[sceneId].value.ack = true;
+
+                    adapter.setForeignState(sceneId, false, true);
+                }
+            } else {
+                if (!scenes[sceneId].value || (scenes[sceneId].value.val !== 'uncertain' || !scenes[sceneId].value.ack)) {
+                    scenes[sceneId].value = scenes[sceneId].value || {};
+                    scenes[sceneId].value.val = 'uncertain';
+                    scenes[sceneId].value.ack = true;
+
+                    adapter.setForeignState(sceneId, 'uncertain', true);
+                }
+            }
+        } else {
+            if (activeTrue !== null) {
+                if (!scenes[sceneId].value || (scenes[sceneId].value.val !== activeTrue || !scenes[sceneId].value.ack)) {
+                    scenes[sceneId].value = scenes[sceneId].value || {};
+                    scenes[sceneId].value.val = activeTrue;
+                    scenes[sceneId].value.ack = true;
+
+                    adapter.setForeignState(sceneId, activeTrue, true);
+                }
+            }
+        }
+    }, 500);
+
 }
 
 function checkTrigger(sceneId, stateId, state) {
@@ -187,7 +246,7 @@ function checkTrigger(sceneId, stateId, state) {
 
 var tIndex = 1; // never ending counter
 
-function activateScene(sceneId) {
+function activateScene(sceneId, isTrue) {
 
     for (var state = 0; state < scenes[sceneId].native.members.length; state++) {
         var stateObj = scenes[sceneId].native.members[state];
@@ -202,9 +261,9 @@ function activateScene(sceneId) {
             tIndex++;
 
             // Start timeout
-            var timer = setTimeout(function (id, must, _tIndex) {
+            var timer = setTimeout(function (id, setValue, _tIndex) {
                 // execute timeout
-                adapter.setForeignState(id, must);
+                adapter.setForeignState(id, setValue);
 
                 // remove timer from the list
                 for (var r = 0; r < timers[id].length; r++) {
@@ -214,13 +273,21 @@ function activateScene(sceneId) {
                     }
                 }
 
-            }, stateObj.delay, state.id, state.must, tIndex);
+            }, stateObj.delay, state.id, isTrue ? stateObj.setIfTrue : stateObj.setIfFalse, tIndex);
 
             timers[state.id].push({timer: timer, tIndex: tIndex});
         } else {
-            adapter.setForeignState(stateObj.id, stateObj.must);
+            adapter.setForeignState(stateObj.id, isTrue ? stateObj.setIfTrue : stateObj.setIfFalse);
         }
     }
+
+    if (scenes[sceneId].native.setIfFalse) {
+        if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
+            scenes[sceneId].value.val = isTrue;
+            scenes[sceneId].value.ack = true;
+            adapter.setForeignState(sceneId, isTrue, true);
+        }
+    } else
     if (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack) {
         scenes[sceneId].value.val = true;
         scenes[sceneId].value.ack = true;

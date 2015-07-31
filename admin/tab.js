@@ -54,31 +54,61 @@ function Scenes(main) {
 
                     if (state) {
                         if (state.common.type == 'boolean' || state.common.type == 'bool') {
-                            text = '<input class="state-edit-must" data-type="checkbox" type="checkbox" ' + (that.data[node.key].must ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                            text = '<input class="state-edit-setIfTrue" data-type="checkbox" type="checkbox" ' + (that.data[node.key].setIfTrue ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                         } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
                             var select = '';
                             for (var s = 0; s < state.common.states.length; s++) {
-                                select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].must == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
+                                select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].setIfTrue == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
                             }
-                            text = '<select class="state-edit-must" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
+                            text = '<select class="state-edit-setIfTrue" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
                         } else {
-                            text = '<input class="state-edit-must" data-type="text" style="width: 100%" value="' + (that.data[node.key].must || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                            text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                         }
                     } else {
-                        text = '<input class="state-edit-must" data-type="text" style="width: 100%" value="' + (that.data[node.key].must || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                        text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                     }
                 } else {
                     text = '';
                 }
                 $tdList.eq(6).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
 
+                // - set value if false
+                if (keys[1] !== undefined) {
+                    if (that.main.objects[keys[0]].native.setIfFalse) {
+                        var obj = that.main.objects[keys[0]];
+                        var state = that.main.objects[obj.native.members[keys[1]].id];
+
+                        if (state) {
+                            if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                                text = '<input class="state-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + (that.data[node.key].setIfFalse ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                            } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                                var select = '';
+                                for (var s = 0; s < state.common.states.length; s++) {
+                                    select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].setIfFalse == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
+                                }
+                                text = '<select class="state-edit-setIfFalse" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
+                            } else {
+                                text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                            }
+                        } else {
+                            text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                        }
+                    } else {
+                        text = '';
+                    }
+                } else {
+                    text = '<input class="scene-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + (that.main.objects[keys[0]].native.setIfFalse ? 'checked' : '') + ' data-scene-name="' + keys[0] + '"/>';
+                }
+                $tdList.eq(7).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+
+
                 if (keys[1] !== undefined) {
                     text = '<input class="state-edit-delay" style="width: 100%" value="' + (that.data[node.key].delay || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                 } else {
                     text = '';
                 }
-                $tdList.eq(7).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(8).html(that.data[node.key].buttons).css({'text-align': 'center'});
+                $tdList.eq(8).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(9).html(that.data[node.key].buttons).css({'text-align': 'center'});
 
                 that.initButtons(keys[0], keys[1]);
                 // If we render this element, that means it is expanded
@@ -170,22 +200,40 @@ function Scenes(main) {
                         var index = $('#dialog-state-id').data('index');
                         var type  = $('#dialog-state-id').data('type');
                         var obj = that.main.objects[scene];
-                        var val = '';
+                        var valTrue = '';
                         if (type == 'check') {
-                            val = $('#dialog-state-must-check').prop('checked');
+                            valTrue = $('#dialog-state-setIfTrue-check').prop('checked');
                         } else if (type == 'select') {
-                            val = $('#dialog-state-must-select').val();
+                            valTrue = $('#dialog-state-setIfTrue-select').val();
                         } else {
-                            val = $('#dialog-state-must-text').val();
+                            valTrue = $('#dialog-state-setIfTrue-text').val();
                         }
-                        if (typeof val == 'string' && parseFloat(val).toString() == val ) {
-                            val = parseFloat(val);
-                        } else if (val === 'true') {
-                            val = true;
-                        } if (val === 'false') {
-                            val = false;
+                        if (typeof valTrue == 'string' && parseFloat(valTrue).toString() == valTrue) {
+                            valTrue = parseFloat(valTrue);
+                        } else if (valTrue === 'true') {
+                            valTrue = true;
+                        } if (valTrue === 'false') {
+                            valTrue = false;
                         }
-                        obj.native.members[index].must = val;
+                        obj.native.members[index].setIfTrue = valTrue;
+
+                        var valFalse = '';
+                        if (type == 'check') {
+                            valFalse = $('#dialog-state-setIfFalse-check').prop('checked');
+                        } else if (type == 'select') {
+                            valFalse = $('#dialog-state-setIfFalse-select').val();
+                        } else {
+                            valFalse = $('#dialog-state-setIfFalse-text').val();
+                        }
+                        if (typeof valFalse == 'string' && parseFloat(valFalse).toString() == valFalse) {
+                            valFalse = parseFloat(valFalse);
+                        } else if (valFalse === 'true') {
+                            valFalse = true;
+                        } if (valTrue === 'false') {
+                            valFalse = false;
+                        }
+                        obj.native.members[index].setIfFalse = valFalse;
+
                         obj.native.members[index].disabled = !$('#dialog-state-enabled').prop('checked');
                         obj.native.members[index].delay    = parseInt($('#dialog-state-delay').val(), 10) || 0;
 
@@ -285,11 +333,11 @@ function Scenes(main) {
         if (stateObj.delay) return false;
 
         if (!that.main.states[stateObj.id]) {
-            if (stateObj.must === undefined || stateObj.must === null || stateObj.must == '') return true;
+            if (stateObj.setIfTrue === undefined || stateObj.setIfTrue === null || stateObj.setIfTrue == '') return true;
             return false;
         }
 
-        return stateObj.must == that.main.states[stateObj.id].val;
+        return stateObj.setIfTrue == that.main.states[stateObj.id].val;
     }
 
     function customFilter(node) {
@@ -331,7 +379,9 @@ function Scenes(main) {
                 "engine":  this.engines[0]
             },
             "native": {
-                "members": []
+                setIfTrue:  true,
+                setIfFalse: false,
+                "members":  []
             },
             "type": "state"
         };
@@ -388,7 +438,7 @@ function Scenes(main) {
                     desc:     desc,
                     enabled:  this.main.objects[sceneId].common.enabled,
                     cond:     cond,
-                    must:     '',
+                    setIfTrue:     '',
                     actual:   main.states[sceneId] ? main.states[sceneId].val : '',
                     buttons: buttons
                 };
@@ -422,16 +472,17 @@ function Scenes(main) {
 
 
                         that.data[sceneId + '_$$$_' + m] = {
-                            id:       members[m].id,
-                            name:     this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.name || '') : '',
-                            desc:     this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.desc || '') : '',
-                            scene:    sceneId,
-                            index:    m,
-                            delay:    members[m].delay,
-                            enabled:  !members[m].disabled,
-                            must:     members[m].must,
-                            actual:   main.states[members[m].id] ? main.states[members[m].id].val : '',
-                            buttons:  buttons
+                            id:         members[m].id,
+                            name:       this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.name || '') : '',
+                            desc:       this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.desc || '') : '',
+                            scene:      sceneId,
+                            index:      m,
+                            delay:      members[m].delay,
+                            enabled:    !members[m].disabled,
+                            setIfTrue:  members[m].setIfTrue,
+                            setIfFalse: members[m].setIfFalse,
+                            actual:     main.states[members[m].id] ? main.states[members[m].id].val : '',
+                            buttons:    buttons
                         };
                         scene.children.push({
                             title:    members[m].id,
@@ -458,32 +509,56 @@ function Scenes(main) {
         $('#dialog-state-id').data('index', index);
         var state = that.main.objects[obj.native.members[index].id];
 
-        $('#tr-dialog-state-must-select').hide();
-        $('#tr-dialog-state-must-check').hide();
-        $('#tr-dialog-state-must-text').hide();
+        $('#tr-dialog-state-setIfTrue-select').hide();
+        $('#tr-dialog-state-setIfTrue-check').hide();
+        $('#tr-dialog-state-setIfTrue-text').hide();
+
+        $('#tr-dialog-state-setIfFalse-select').hide();
+        $('#tr-dialog-state-setIfFalse-check').hide();
+        $('#tr-dialog-state-setIfFalse-text').hide();
 
         if (state) {
             if (state.common.type == 'boolean' || state.common.type == 'bool') {
-                $('#dialog-state-must-check').prop('checked', obj.native.members[index].must);
-                $('#tr-dialog-state-must-check').show();
+                $('#dialog-state-setIfTrue-check').prop('checked', obj.native.members[index].setIfTrue);
+                $('#tr-dialog-state-setIfTrue-check').show();
                 $('#dialog-state-id').data('type', 'check');
             } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
                 var select = '';
                 for (var s = 0; s < state.common.states.length; s++) {
-                    select += '<option value="s" ' + ((obj.native.members[index].must == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
+                    select += '<option value="' + s + '" ' + ((obj.native.members[index].setIfTrue == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
                 }
-                $('#dialog-state-must-select').html(select);
-                $('#tr-dialog-state-must-select').show();
+                $('#dialog-state-setIfTrue-select').html(select);
+                $('#tr-dialog-state-setIfTrue-select').show();
                 $('#dialog-state-id').data('type', 'select');
             } else {
-                $('#tr-dialog-state-must-text').show();
-                $('#dialog-state-must-text').val(obj.native.members[index].must);
+                $('#tr-dialog-state-setIfTrue-text').show();
+                $('#dialog-state-setIfTrue-text').val(obj.native.members[index].setIfTrue);
                 $('#dialog-state-id').data('type', 'text');
             }
         } else {
-            $('#tr-dialog-state-must-text').show();
-            $('#dialog-state-must-text').val(obj.native.members[index].must);
+            $('#tr-dialog-state-setIfTrue-text').show();
+            $('#dialog-state-setIfTrue-text').val(obj.native.members[index].setIfTrue);
             $('#dialog-state-id').data('type', 'text');
+        }
+
+        if (state) {
+            if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                $('#dialog-state-setIfFalse-check').prop('checked', obj.native.members[index].setIfFalse);
+                $('#tr-dialog-state-setIfFalse-check').show();
+            } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                var select = '';
+                for (var s = 0; s < state.common.states.length; s++) {
+                    select += '<option value="' + s + '" ' + ((obj.native.members[index].setIfFalse == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
+                }
+                $('#dialog-state-setIfFalse-select').html(select);
+                $('#tr-dialog-state-setIfFalse-select').show();
+            } else {
+                $('#tr-dialog-state-setIfFalse-text').show();
+                $('#dialog-state-setIfFalse-text').val(obj.native.members[index].setIfFalse);
+            }
+        } else {
+            $('#tr-dialog-state-setIfFalse-text').show();
+            $('#dialog-state-setIfFalse-text').val(obj.native.members[index].setIfFalse);
         }
 
         $('#dialog-state-actual').val(main.states[obj.native.members[index].id] ? main.states[obj.native.members[index].id].val : '');
@@ -525,9 +600,19 @@ function Scenes(main) {
         if (obj.common) {
             that.timers[scene].obj.common.enabled = obj.common.enabled;
         } else {
-            for (var i = 0; i < obj.native.members.length; i++) {
-                if (obj.native.members[i]) {
-                    $.extend(that.timers[scene].obj.native.members[i], obj.native.members[i]);
+            if (obj.native) {
+                if (obj.native.setIfTrue !== undefined) {
+                    that.timers[scene].obj.native.setIfTrue = obj.native.setIfTrue;
+                }
+                if (obj.native.setIfFalse !== undefined) {
+                    that.timers[scene].obj.native.setIfFalse = obj.native.setIfFalse;
+                }
+            }
+            if (obj.native.members) {
+                for (var i = 0; i < obj.native.members.length; i++) {
+                    if (obj.native.members[i]) {
+                        $.extend(that.timers[scene].obj.native.members[i], obj.native.members[i]);
+                    }
                 }
             }
         }
@@ -556,7 +641,7 @@ function Scenes(main) {
                     var obj = that.main.objects[scene];
                     for (var i = 0; i < newIds.length; i++) {
                         if (!obj.native.members) obj.native.members = [];
-                        obj.native.members.push({id: newIds[i], must: null});
+                        obj.native.members.push({id: newIds[i], setIfTrue: null, setIfFalse: null});
                     }
 
                     that.main.socket.emit('setObject', scene, obj, function (err) {
@@ -636,7 +721,7 @@ function Scenes(main) {
                 $(this).trigger('change');
             });
 
-            $('.state-edit-must[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+            $('.state-edit-setIfTrue[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
                 var timer = $(this).data('timer');
                 var $self = $(this).css({outline: '1px solid red'});
                 if (timer) clearTimeout(timer);
@@ -656,10 +741,42 @@ function Scenes(main) {
 
                     var obj = {native: {members: []}};
                     obj.native.members[index] = {};
-                    obj.native.members[index].must = value;
+                    obj.native.members[index].setIfTrue = value;
                     setObject(scene, obj, function (err) {
                         if (err) {
-                            $(this).css({outline: ''}).val(that.main.objects[scene].native.members[index].must);
+                            $(this).css({outline: ''}).val(that.main.objects[scene].native.members[index].setIfTrue);
+                            this.main.showError(err);
+                        }
+                    });
+                }, 500));
+            }).keydown(function () {
+                $(this).trigger('change');
+            });
+
+            $('.state-edit-setIfFalse[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+                var timer = $(this).data('timer');
+                var $self = $(this).css({outline: '1px solid red'});
+                if (timer) clearTimeout(timer);
+
+                $(this).data('timer', setTimeout(function () {
+                    var scene = $self.attr('data-scene-name');
+                    var index = parseInt($self.attr('data-state-index'), 10);
+                    var value;
+                    if ($self.data('type') == 'checkbox') {
+                        value = $self.prop('checked');
+                    } else {
+                        value = $self.val();
+                        if (parseFloat(value).toString() == value) value = parseFloat(value);
+                        if (value === 'true')  value = true;
+                        if (value === 'false') value = false;
+                    }
+
+                    var obj = {native: {members: []}};
+                    obj.native.members[index] = {};
+                    obj.native.members[index].setIfFalse = value;
+                    setObject(scene, obj, function (err) {
+                        if (err) {
+                            $(this).css({outline: ''}).val(that.main.objects[scene].native.members[index].setIfFalse);
                             this.main.showError(err);
                         }
                     });
@@ -735,6 +852,18 @@ function Scenes(main) {
                 setObject(scene, obj, function (err) {
                     if (err) {
                         $(this).css({outline: ''}).prop('checked', that.main.objects[scene].common.enabled);
+                        this.main.showError(err);
+                    }
+                });
+            });
+            $('.scene-edit-setIfFalse[data-scene-name="' + scene + '"]').change(function () {
+                var scene = $(this).attr('data-scene-name');
+                $(this).css({outline: '1px solid red'});
+                var obj = {native: {}};
+                obj.native.setIfFalse = $(this).prop('checked');
+                setObject(scene, obj, function (err) {
+                    if (err) {
+                        $(this).css({outline: ''}).prop('checked', that.main.objects[scene].native.setIfFalse);
                         this.main.showError(err);
                     }
                 });

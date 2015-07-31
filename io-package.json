@@ -27,26 +27,7 @@
         }
     },
     "native": {
-        
     },
     "instanceObjects": [
-        {
-            "_id": "scene1",
-            "common": {
-                "name": "Test scene",
-                "type": "boolean",
-                "role": "scene.state",
-                "enabled": true,
-                "engine": "system.adapter.scenes.0"
-            },
-            "native": {
-                "members": [
-                    {"id": "hm-rpc.0.alive",  "must": true},
-                    {"id": "hm-rega.0.alive", "must": true},
-                    {"id": "hmm.0.alive",     "must": true}
-                 ]
-            },
-            "type": "state"
-        }
     ]
 }
