@@ -19,13 +19,21 @@
     <script src="lib/js/jquery.fancytree.edit.js" type="text/javascript"></scene-->
     <script type="text/javascript" src="../../js/selectID.js"></script>
 
-    <style>
+    <style scoped>
         body {
             font-size: 11px;
             margin: 0;
             padding: 0;
             height: 100%;
-        }       
+            font-family: tahoma, arial, helvetica;
+        }
+        .no-space {
+            border: 0px !important;
+            margin: 0px;
+            padding: 0px;
+            border-spacing: 0px;
+            border-image-width: 0px;
+        }
     </style>
 
 </header>
@@ -38,25 +46,31 @@
             <td><button id="btn_refresh_scenes" class="translateT" title="update scene information"></button></td>
             <td><button id="btn_collapse_scenes" class="translateT" title="collapse all"></button></td>
             <td><button id="btn_expand_scenes" class="translateT" title="expand all"></button></td>
-            <td><div style="padding-left: 100px"><span class="translate">Filter:</span> <input id="scenes-filter" style="width:100px;margin-right:3px"/><button id="scenes-filter-clear"></button></div></td>
+            <td><div style="padding-left: 100px"><label class="translate" for="scenes-filter">Filter:</label> <input id="scenes-filter" style="width:100px;margin-right:3px"/><button id="scenes-filter-clear"></button></div></td>
         </tr></table>
         <div id="process_running_scenes" class="translate" style="position:absolute; top:50%; left:50%; width: 150; height: 25; padding: 12; background: rgba(30, 30, 30, 0.5); display: none; text-align:center; font-size: 1.2em; color: white; font-weight: bold; border-radius: 5px">Processing...</div>
         <div style="width:100%; height:400px; overflow-y: auto" id="grid-scenes-div"><table id="grid-scenes" style="width:100%;table-layout:fixed;">
             <colgroup>
-                <col width="320px"></col>
-                <col width="*"></col>
-                <col width="70px"></col>
-                <col width="100px"></col>
-                <col width="100px"></col>
-                <col width="140px"></col>
+                <col width="320px"/>
+                <col width="60px"/>
+                <col width="150px"/>
+                <col width="*"/>
+                <col width="320px"/>
+                <col width="100px"/>
+                <col width="100px"/>
+                <col width="100px"/>
+                <col width="100px"/>
             </colgroup>
             <thead>
             <tr>
+                <th class="translate ui-widget-header">id</th>
+                <th class="translate ui-widget-header">enabled</th>
                 <th class="translate ui-widget-header">name</th>
                 <th class="translate ui-widget-header">description</th>
-                <th class="translate ui-widget-header">enabled</th>
-                <th class="translate ui-widget-header">must</th>
+                <th class="translate ui-widget-header">condition</th>
                 <th class="translate ui-widget-header">actual</th>
+                <th class="translate ui-widget-header">set</th>
+                <th class="translate ui-widget-header">delay</th>
                 <th class="translate ui-widget-header"></th>
             </tr>
             </thead>
@@ -76,6 +90,43 @@
             <span id="dialog-confirm-text"></span>
         </p>
     </div>
+    <div id="dialog-state" title="State configuration" class="translateT" style="display: none">
+        <p>
+            <h3><span class="translate">State</span> <span id="dialog-state-id"></span></h3>
+            <table>
+                <tr><td><label class="translate">Enabled:</label></td><td><input type="checkbox" id="dialog-state-enabled"/></td></tr>
+                <tr id="tr-dialog-state-must-text"  ><td><label class="translate">Set value:</label></td><td><input type="text" id="dialog-state-must-text"/></td></tr>
+                <tr id="tr-dialog-state-must-check" ><td><label class="translate">Set value:</label></td><td><input type="checkbox" id="dialog-state-must-check"/></td></tr>
+                <tr id="tr-dialog-state-must-select"><td><label class="translate">Set value:</label></td><td><select id="dialog-state-must-select"></select></td></tr>
+                <tr><td><label class="translate">Actual:</label></td><td><input style="opacity: 0.8" type="text" id="dialog-state-actual" readonly/></td></tr>
+                <tr><td><label class="translate">Delay(ms):</label></td><td><input type="text" id="dialog-state-delay"/></td></tr>
+            </table>
+        </p>
+    </div>
+    <div id="dialog-scene" title="Scene configuration" class="translateT" style="display: none">
+        <p>
+        <h3><span class="translate">Scene</span> <span id="dialog-scene-id"></span></h3>
+        <table style="width:100%">
+            <tr><td><label class="translate">Enabled:</label></td>      <td><input type="checkbox" id="dialog-scene-enabled"/></td></tr>
+            <tr><td><label class="translate">Engine:</label></td>       <td><select type="checkbox" id="dialog-scene-engine"></select></td></tr>
+            <tr><td><label class="translate">Name:</label></td>         <td><input type="text" id="dialog-scene-name"         style="width:100%"/></td></tr>
+            <tr><td><label class="translate">Description:</label></td>  <td><input type="text" id="dialog-scene-description"  style="width:100%"/></td></tr>
+            <tr><td><label class="translate">Cron:</label></td>         <td><input type="text" id="dialog-scene-cron"/></td></tr>
+            <tr><td><label class="translate">Trigger ID:</label></td>   <td><input type="text" id="dialog-scene-trigger-id"/></td></tr>
+            <tr><td><label class="translate">Trigger condition:</label></td><td><select type="text" id="dialog-scene-trigger-cond">
+                <option value="==">==</option>
+                <option value="!=">!=</option>
+                <option value=">">&gt;</option>
+                <option value="<">&lt;</option>
+                <option value=">=">&gt;=</option>
+                <option value="<=">&lt;=</option>
+            </select></td></tr>
+            <tr><td><label class="translate">Trigger value:</label></td><td><input type="text" id="dialog-scene-trigger-value"/></td></tr>
+        </table>
+        </p>
+    </div>
+
+
     <div id="dialog-select-member" style="display:none"></div>
 
     <script type="text/javascript" src="tab.js"></script>

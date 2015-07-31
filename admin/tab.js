@@ -1,9 +1,6 @@
 function Scenes(main) {
     var that = this;
 
-    this.curRepository =         null;
-    this.curRepoLastUpdate =     null;
-    this.curInstalled =          null;
     this.list = [];
     this.$grid =  $('#grid-scenes');
     this.main = main;
@@ -13,6 +10,9 @@ function Scenes(main) {
     this.filterVals = {length: 0};
     this.currentFilter = '';
     this.isCollapsed = {};
+    this.$dialogState = $('#dialog-state');
+    this.$dialogScene = $('#dialog-scene');
+    this.timers = {};
 
     this.prepare = function () {
         that.$grid.fancytree({
@@ -27,13 +27,59 @@ function Scenes(main) {
                 var $tdList = $(node.tr).find(">td");
                 var keys = node.key.split('_$$$_');
 
-                $tdList.eq(0).css({'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(1).html(that.data[node.key].desc).css({'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(2).html(that.data[node.key].enabled).css({'overflow': 'hidden', "white-space": "nowrap"});
+                if (!that.data[keys[0]].enabled) $(node.tr).css('opacity', 0.5);
 
-                $tdList.eq(3).html(that.data[node.key].must).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(4).html(that.data[node.key].actual).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
-                $tdList.eq(5).html(that.data[node.key].buttons).css({'text-align': 'center'});
+                $tdList.eq(0).css({'overflow': 'hidden', "white-space": "nowrap"});
+                var text = '<input ' + (that.data[node.key].enabled ? 'checked' : '') + ' type="checkbox" data-scene-name="' + keys[0] + '" ' + (keys[1] !== undefined ? ('data-state-index="' + keys[1]) + '" class="state-edit-enabled"': ' class="scene-edit-enabled"') + '>';
+                $tdList.eq(1).html(text).css({'text-align': 'center', "white-space": "nowrap"});
+                $tdList.eq(2).html(that.data[node.key].name).css({'overflow': 'hidden', "white-space": "nowrap", 'font-weight': (keys[1] === undefined) ? 'bold' : '', 'padding-left': (keys[1] === undefined) ? '0' : '10'});
+                $tdList.eq(3).html(that.data[node.key].desc).css({'overflow': 'hidden', "white-space": "nowrap"});
+
+                $tdList.eq(4).html(that.data[node.key].cond || '').css({'overflow': 'hidden', "white-space": "nowrap"});
+
+                text = getActualText(node.key);
+
+                if (keys[1] !== undefined) {
+                    text = '<span class="state-value" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '" data-state="' + that.data[node.key].id + '">' + text + '</span>';
+                    $tdList.eq(5).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap", background: checkIsEqual(keys[0], keys[1]) ? 'lightgreen': null});
+                } else {
+                    text = '<span class="scene-value" data-scene-name="' + keys[0] + '" data-state="' + data.id + '">' + text + '</span>';
+                    $tdList.eq(5).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                }
+
+                // - set value
+                if (keys[1] !== undefined) {
+                    var obj = that.main.objects[keys[0]];
+                    var state = that.main.objects[obj.native.members[keys[1]].id];
+
+                    if (state) {
+                        if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                            text = '<input class="state-edit-must" data-type="checkbox" type="checkbox" ' + (that.data[node.key].must ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                        } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                            var select = '';
+                            for (var s = 0; s < state.common.states.length; s++) {
+                                select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].must == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
+                            }
+                            text = '<select class="state-edit-must" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
+                        } else {
+                            text = '<input class="state-edit-must" data-type="text" style="width: 100%" value="' + (that.data[node.key].must || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                        }
+                    } else {
+                        text = '<input class="state-edit-must" data-type="text" style="width: 100%" value="' + (that.data[node.key].must || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                    }
+                } else {
+                    text = '';
+                }
+                $tdList.eq(6).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+
+                if (keys[1] !== undefined) {
+                    text = '<input class="state-edit-delay" style="width: 100%" value="' + (that.data[node.key].delay || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                } else {
+                    text = '';
+                }
+                $tdList.eq(7).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(8).html(that.data[node.key].buttons).css({'text-align': 'center'});
+
                 that.initButtons(keys[0], keys[1]);
                 // If we render this element, that means it is expanded
                 if (keys[1] !== undefined && that.isCollapsed[that.data[node.key].scene]) {
@@ -86,6 +132,7 @@ function Scenes(main) {
             that.init(true, true);
         });
 
+
         // add filter processing
         $('#scenes-filter').keyup(function () {
             $(this).trigger('change');
@@ -108,7 +155,142 @@ function Scenes(main) {
         $('#btn_new_scene').button({icons: {primary: 'ui-icon-plus'}, text: false}).css({width: 16, height: 16}).click(function () {
             that.addNewScene();
         });
+
+        that.$dialogState.dialog({
+            autoOpen: false,
+            modal:    true,
+            width:    500,
+            height:   300,
+            buttons: [
+                {
+                    text: _('Ok'),
+                    click: function () {
+                        $(this).dialog('close');
+                        var scene = $('#dialog-state-id').data('scene');
+                        var index = $('#dialog-state-id').data('index');
+                        var type  = $('#dialog-state-id').data('type');
+                        var obj = that.main.objects[scene];
+                        var val = '';
+                        if (type == 'check') {
+                            val = $('#dialog-state-must-check').prop('checked');
+                        } else if (type == 'select') {
+                            val = $('#dialog-state-must-select').val();
+                        } else {
+                            val = $('#dialog-state-must-text').val();
+                        }
+                        if (typeof val == 'string' && parseFloat(val).toString() == val ) {
+                            val = parseFloat(val);
+                        } else if (val === 'true') {
+                            val = true;
+                        } if (val === 'false') {
+                            val = false;
+                        }
+                        obj.native.members[index].must = val;
+                        obj.native.members[index].disabled = !$('#dialog-state-enabled').prop('checked');
+                        obj.native.members[index].delay    = parseInt($('#dialog-state-delay').val(), 10) || 0;
+
+                        that.main.socket.emit('setObject', scene, obj, function (err) {
+                            if (err) this.main.showError(err);
+                        });
+                    }
+                },
+                {
+                    text: _('Cancel'),
+                    click: function () {
+                        $(this).dialog('close');
+                    }
+                }
+            ]
+        });
+
+        that.$dialogScene.dialog({
+            autoOpen: false,
+            modal:    true,
+            width:    500,
+            height:   400,
+            buttons: [
+                {
+                    text: _('Ok'),
+                    click: function () {
+                        $(this).dialog('close');
+                        var scene = $('#dialog-scene-id').data('scene');
+                        var obj = that.main.objects[scene];
+                        var newId = null;
+                        obj.common.enabled = $('#dialog-scene-enabled').prop('checked');
+
+                        if (obj.common.name != $('#dialog-scene-name').val()) {
+                            obj.common.name = $('#dialog-scene-name').val();
+                            newId = 'scene.' + obj.common.name.replace(/\s+/g, '_');
+                        }
+                        obj.common.desc   = $('#dialog-scene-description').val();
+                        obj.native.cron   = $('#dialog-scene-cron').val();
+                        obj.common.engine = $('#dialog-scene-engine').val();
+
+                        obj.native.triggerId    = $('#dialog-scene-trigger-id').val();
+                        obj.native.triggerCond  = $('#dialog-scene-trigger-cond').val();
+                        obj.native.triggerValue = $('#dialog-scene-trigger-value').val();
+
+                        if (newId) {
+                            obj._id = newId;
+                            that.main.socket.emit('delObject', scene, function (err) {
+                                if (err) {
+                                    this.main.showError(err);
+                                } else {
+                                    that.main.socket.emit('delState', scene, function (err) {
+                                        that.main.socket.emit('setObject', newId, obj, function (err) {
+                                            if (err) this.main.showError(err);
+                                        });
+                                    });
+                                }
+                            });
+                        } else {
+                            that.main.socket.emit('setObject', scene, obj, function (err) {
+                                if (err) this.main.showError(err);
+                            });
+                        }
+                    }
+                },
+                {
+                    text: _('Cancel'),
+                    click: function () {
+                        $(this).dialog('close');
+                    }
+                }
+            ]
+        });
     };
+
+    function getActualText(key) {
+        var text = '';
+        var keys = key.split('_$$$_');
+        if (that.data[key].actual !== undefined && that.data[key].actual !== null) {
+            if (keys[1] === undefined) {
+                if (that.data[key].actual === 'true' || that.data[key].actual === true) {
+                    text = '<span style="font-weight: bold; color: green">true</span>';
+                } else if (that.data[key].actual === 'false' || that.data[key].actual === false) {
+                    text = '<span style="font-weight: bold; color: darkred">false</span>';
+                } else {
+                    text = that.data[key].actual.toString();
+                }
+            } else {
+                text = that.data[key].actual.toString();
+            }
+        }
+        return text;
+    }
+
+    function checkIsEqual(sceneId, state) {
+        var obj = this.main.objects[sceneId];
+        var stateObj = obj.native.members[state];
+        if (stateObj.delay) return false;
+
+        if (!that.main.states[stateObj.id]) {
+            if (stateObj.must === undefined || stateObj.must === null || stateObj.must == '') return true;
+            return false;
+        }
+
+        return stateObj.must == that.main.states[stateObj.id].val;
+    }
 
     function customFilter(node) {
         //if (node.parent && node.parent.match) return true;
@@ -136,7 +318,7 @@ function Scenes(main) {
     this.addNewScene = function () {
         // find name
         var i = 1;
-        while (this.list['scene.scene' + i]) i++;
+        while (this.list.indexOf('scene.scene' + i) != -1) i++;
         var id = 'scene.scene' + i;
 
         var scene = {
@@ -181,15 +363,34 @@ function Scenes(main) {
             // list of the installed scenes
             for (var i = 0; i < this.list.length; i++) {
                 var sceneId = this.list[i];
+                var buttons = '<table class="no-space"><tr class="no-space">';
+                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-edit-submit">'    + _('edit scene')   + '</button></td>';
+                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-delete-submit">'  + _('delete scene') + '</button></td>';
+                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-add-state">'      + _('add states')   + '</button></td>';
+                buttons += '</tr></table>';
+
+                var cond = '';
+                if (this.main.objects[sceneId].native.cron) {
+                    cond = 'CRON: "' + this.main.objects[sceneId].native.cron + '"';
+                }
+                if (this.main.objects[sceneId].native.triggerId) {
+                    cond = _('Trigger:') + this.main.objects[sceneId].native.triggerId + ' ' + this.main.objects[sceneId].native.triggerCond + ' ' + this.main.objects[sceneId].native.triggerValue;
+                }
+
+                var desc = this.main.objects[sceneId].common.desc || '';
+                if (this.main.objects[sceneId].native && this.main.objects[sceneId].native.members && this.main.objects[sceneId].native.members.length) {
+                    desc += ' [' + _('Items %s', this.main.objects[sceneId].native.members.length) + ']';
+                }
+
                 that.data[sceneId] = {
                     id:       sceneId,
-                    desc:     this.main.objects[sceneId].common.desc,
-                    enabled:  this.main.objects[sceneId].native ? !this.main.objects[sceneId].native.disabled : false,
+                    name:     this.main.objects[sceneId].common.name || '',
+                    desc:     desc,
+                    enabled:  this.main.objects[sceneId].common.enabled,
+                    cond:     cond,
                     must:     '',
                     actual:   main.states[sceneId] ? main.states[sceneId].val : '',
-                    buttons: '<button data-scene-name="' + sceneId + '" class="scene-add-state">'      + _('add states')   + '</button>' +
-                             '<button data-scene-name="' + sceneId + '" class="scene-edit-submit">'    + _('edit scene')   + '</button>' +
-                             '<button data-scene-name="' + sceneId + '" class="scene-delete-submit">'  + _('delete scene') + '</button>'
+                    buttons: buttons
                 };
 
                 var scene = {
@@ -204,15 +405,33 @@ function Scenes(main) {
                 if (this.main.objects[sceneId].native && this.main.objects[sceneId].native.members) {
                     var members = this.main.objects[sceneId].native.members;
                     for (var m = 0; m < members.length; m++) {
+                        buttons = '<table class="no-space"><tr class="no-space">';
+                        buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-edit-submit">'   + _('edit state')   + '</button></td>';
+                        buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-delete-submit">' + _('delete state') + '</button></td>';
+                        if (m != 0) {
+                            buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-up-submit">'   + _('move up')   + '</button></td>';
+                        } else {
+                            buttons += '<td class="no-space"><div style="width:24px"></div></td>';
+                        }
+                        if (m != members.length - 1) {
+                            buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-down-submit">' + _('move down') + '</button></td>';
+                        } else {
+                            buttons += '<td class="no-space"><div style="width:24px"> </div></td>';
+                        }
+                        buttons += '</tr></table>';
+
+
                         that.data[sceneId + '_$$$_' + m] = {
                             id:       members[m].id,
+                            name:     this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.name || '') : '',
+                            desc:     this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.desc || '') : '',
                             scene:    sceneId,
                             index:    m,
+                            delay:    members[m].delay,
                             enabled:  !members[m].disabled,
                             must:     members[m].must,
                             actual:   main.states[members[m].id] ? main.states[members[m].id].val : '',
-                            buttons: '<button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-edit-submit">'   + _('edit state')   + '</button>' +
-                                     '<button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-delete-submit">' + _('delete state') + '</button>'
+                            buttons:  buttons
                         };
                         scene.children.push({
                             title:    members[m].id,
@@ -231,6 +450,97 @@ function Scenes(main) {
 
         }
     };
+
+    function editState(scene, index) {
+        var obj = that.main.objects[scene];
+        $('#dialog-state-id').html(obj.native.members[index].id);
+        $('#dialog-state-id').data('scene', scene);
+        $('#dialog-state-id').data('index', index);
+        var state = that.main.objects[obj.native.members[index].id];
+
+        $('#tr-dialog-state-must-select').hide();
+        $('#tr-dialog-state-must-check').hide();
+        $('#tr-dialog-state-must-text').hide();
+
+        if (state) {
+            if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                $('#dialog-state-must-check').prop('checked', obj.native.members[index].must);
+                $('#tr-dialog-state-must-check').show();
+                $('#dialog-state-id').data('type', 'check');
+            } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                var select = '';
+                for (var s = 0; s < state.common.states.length; s++) {
+                    select += '<option value="s" ' + ((obj.native.members[index].must == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
+                }
+                $('#dialog-state-must-select').html(select);
+                $('#tr-dialog-state-must-select').show();
+                $('#dialog-state-id').data('type', 'select');
+            } else {
+                $('#tr-dialog-state-must-text').show();
+                $('#dialog-state-must-text').val(obj.native.members[index].must);
+                $('#dialog-state-id').data('type', 'text');
+            }
+        } else {
+            $('#tr-dialog-state-must-text').show();
+            $('#dialog-state-must-text').val(obj.native.members[index].must);
+            $('#dialog-state-id').data('type', 'text');
+        }
+
+        $('#dialog-state-actual').val(main.states[obj.native.members[index].id] ? main.states[obj.native.members[index].id].val : '');
+        $('#dialog-state-delay').val(obj.native.members[index].delay || '');
+        $('#dialog-state-enabled').prop('checked', !obj.native.members[index].disabled);
+        that.$dialogState.dialog('open');
+    }
+
+    function editScene(scene) {
+        var obj = that.main.objects[scene];
+        $('#dialog-scene-id').html(scene);
+        $('#dialog-scene-id').data('scene', scene);
+
+        $('#dialog-scene-name').val(obj.common.name);
+        $('#dialog-scene-description').val(obj.common.desc);
+        $('#dialog-scene-cron').val(obj.native.cron);
+        $('#dialog-scene-trigger-id').val(obj.native.triggerId);
+        $('#dialog-scene-trigger-cond').val(obj.native.triggerCond);
+        $('#dialog-scene-trigger-value').val(obj.native.triggerValue);
+
+        var engines = '';
+        for (var e = 0; e < that.engines.length; e++) {
+            engines += '<option ' + ((obj.common.engine == that.engines[e]) ? 'selected' : '') + ' value="' + that.engines[e] + '">' + that.engines[e].substring(15) + '</option>';
+        }
+        $('#dialog-scene-engine').html(engines);
+
+        $('#dialog-scene-enabled').prop('checked', obj.common.enabled);
+        that.$dialogScene.dialog('open');
+    }
+
+    function setObject(scene, obj, callback) {
+        if (that.timers[scene]) {
+            that.timers[scene].callbacks.push(callback);
+            clearTimeout(that.timers[scene].timer);
+        } else {
+            that.timers[scene] = {callbacks: [callback], timer: null, obj: JSON.parse(JSON.stringify(that.main.objects[scene]))};
+        }
+        // merge values
+        if (obj.common) {
+            that.timers[scene].obj.common.enabled = obj.common.enabled;
+        } else {
+            for (var i = 0; i < obj.native.members.length; i++) {
+                if (obj.native.members[i]) {
+                    $.extend(that.timers[scene].obj.native.members[i], obj.native.members[i]);
+                }
+            }
+        }
+
+        that.timers[scene].timer = setTimeout(function () {
+            that.main.socket.emit('setObject', scene, that.timers[scene].obj, function (err) {
+                for (var c = 0; c < that.timers[scene].callbacks.length; c++) {
+                    that.timers[scene].callbacks[c](err);
+                }
+                delete that.timers[scene];
+            });
+        }, 500);
+    }
 
     this.initButtons = function (scene, m) {
         $('.scene-add-state[data-scene-name="' + scene + '"]').button({
@@ -262,9 +572,12 @@ function Scenes(main) {
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
             var scene = $(this).attr('data-scene-name');
 
-            // TODO: are you sure?
-            that.main.socket.emit('delObject', scene, function (err) {
-                if (err) this.main.showError(err);
+            that.main.confirmMessage(_('Are you sure to delete %s?', scene), _('Conform'), 'help', function (isYes) {
+                if (isYes) {
+                    that.main.socket.emit('delObject', scene, function (err) {
+                        if (err) this.main.showError(err);
+                    });
+                }
             });
         });
 
@@ -273,16 +586,96 @@ function Scenes(main) {
             text: false
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
             var scene = $(this).attr('data-scene-name');
+            editScene(scene);
         });
 
         if (m !== undefined) {
+            $('.state-edit-enabled[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+                var scene = $(this).attr('data-scene-name');
+                $(this).css({outline: '1px solid red'});
+                var index = parseInt($(this).attr('data-state-index'), 10);
+
+                var obj = {native: {members: []}};
+                obj.native.members[index] = {};
+                obj.native.members[index].disabled = !$(this).prop('checked');
+
+                setObject(scene, obj, function (err) {
+                    if (err) {
+                        $(this).css({outline: ''}).prop('checked', !that.main.objects[scene].native.members[index].disabled);
+                        this.main.showError(err);
+                    }
+                });
+            });
+
+            $('.state-edit-delay[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+                var timer = $(this).data('timer');
+                var $self = $(this).css({outline: '1px solid red'});
+
+                if (timer) clearTimeout(timer);
+
+                $(this).data('timer', setTimeout(function () {
+                    var scene = $self.attr('data-scene-name');
+                    var index = parseInt($self.attr('data-state-index'), 10);
+                    var delay = $self.val();
+
+                    var obj = {native: {members: []}};
+                    obj.native.members[index] = {};
+                    delay = parseInt(delay, 10) || 0;
+                    if (!delay) delay = '';
+
+                    obj.native.members[index].delay = delay;
+
+                    setObject(scene, obj, function (err) {
+                        if (err) {
+                            $(this).css({outline: ''}).val(that.main.objects[scene].native.members[index].delay);
+                            this.main.showError(err);
+                        }
+                    });
+                }, 500));
+            }).keydown(function () {
+                $(this).trigger('change');
+            });
+
+            $('.state-edit-must[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+                var timer = $(this).data('timer');
+                var $self = $(this).css({outline: '1px solid red'});
+                if (timer) clearTimeout(timer);
+
+                $(this).data('timer', setTimeout(function () {
+                    var scene = $self.attr('data-scene-name');
+                    var index = parseInt($self.attr('data-state-index'), 10);
+                    var value;
+                    if ($self.data('type') == 'checkbox') {
+                        value = $self.prop('checked');
+                    } else {
+                        value = $self.val();
+                        if (parseFloat(value).toString() == value) value = parseFloat(value);
+                        if (value === 'true')  value = true;
+                        if (value === 'false') value = false;
+                    }
+
+                    var obj = {native: {members: []}};
+                    obj.native.members[index] = {};
+                    obj.native.members[index].must = value;
+                    setObject(scene, obj, function (err) {
+                        if (err) {
+                            $(this).css({outline: ''}).val(that.main.objects[scene].native.members[index].must);
+                            this.main.showError(err);
+                        }
+                    });
+                }, 500));
+            }).keydown(function () {
+                $(this).trigger('change');
+            });
+
             $('.scene-state-edit-submit[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').button({
                 icons: {primary: 'ui-icon-note'},
                 text:  false
             }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
                 var scene = $(this).attr('data-scene-name');
-                var index = $(this).attr('data-state-index');
+                var index = parseInt($(this).attr('data-state-index'), 10);
 
+                editState(scene, index);
             });
 
             $('.scene-state-delete-submit[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').button({
@@ -290,13 +683,60 @@ function Scenes(main) {
                 text:  false
             }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
                 var scene = $(this).attr('data-scene-name');
-                var index = $(this).attr('data-state-index');
-
+                var index = parseInt($(this).attr('data-state-index'), 10);
                 var obj = that.main.objects[scene];
-                obj.native.members.splice(index, 1);
+
+                that.main.confirmMessage(_('Are you sure to delete %s from %s?', obj.native.members[index], scene), _('Conform'), 'help', function (isYes) {
+                    if (isYes) {
+                        obj.native.members.splice(index, 1);
+
+                        that.main.socket.emit('setObject', scene, obj, function (err) {
+                            if (err) this.main.showError(err);
+                        });
+                    }
+                });
+            });
+            $('.scene-state-up-submit[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').button({
+                icons: {primary: 'ui-icon-circle-arrow-n'},
+                text:  false
+            }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
+                var scene = $(this).attr('data-scene-name');
+                var index = parseInt($(this).attr('data-state-index'), 10);
+                var obj = that.main.objects[scene];
+                var m = obj.native.members[index - 1];
+                obj.native.members[index - 1] = obj.native.members[index];
+                obj.native.members[index] = m;
 
                 that.main.socket.emit('setObject', scene, obj, function (err) {
                     if (err) this.main.showError(err);
+                });
+            });
+            $('.scene-state-down-submit[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').button({
+                icons: {primary: 'ui-icon-circle-arrow-s'},
+                text:  false
+            }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
+                var scene = $(this).attr('data-scene-name');
+                var index = parseInt($(this).attr('data-state-index'), 10);
+                var obj = that.main.objects[scene];
+                var m = obj.native.members[index + 1];
+                obj.native.members[index + 1] = obj.native.members[index];
+                obj.native.members[index] = m;
+
+                that.main.socket.emit('setObject', scene, obj, function (err) {
+                    if (err) this.main.showError(err);
+                });
+            });
+        } else {
+            $('.scene-edit-enabled[data-scene-name="' + scene + '"]').change(function () {
+                var scene = $(this).attr('data-scene-name');
+                $(this).css({outline: '1px solid red'});
+                var obj = {common: {}};
+                obj.common.enabled = $(this).prop('checked');
+                setObject(scene, obj, function (err) {
+                    if (err) {
+                        $(this).css({outline: ''}).prop('checked', that.main.objects[scene].common.enabled);
+                        this.main.showError(err);
+                    }
                 });
             });
         }
@@ -338,6 +778,26 @@ function Scenes(main) {
                 this.init(true);
             }
         }
+    };
+
+    this.stateChange = function (id, state) {
+        if (id.match(/^scene\./)) {
+            $('.scene-value[data-state="' +id + '"').each(function () {
+                var scene = $(this).attr('data-scene-name');
+                var index = parseInt($(this).attr('data-state-index'), 10);
+                that.data[scene].actual = state ? state.val : null;
+                $(this).html(getActualText(scene));
+            });
+        }
+        $('.state-value[data-state="' +id + '"').each(function () {
+            var scene = $(this).attr('data-scene-name');
+            var index = parseInt($(this).attr('data-state-index'), 10);
+            var key = scene + '_$$$_' + index;
+            that.data[key].actual = state ? state.val : null;
+
+            $(this).html(getActualText(key));
+            $(this).parent().css({background: checkIsEqual(scene, index) ? 'lightgreen': null});
+        });
     };
 }
 
@@ -382,26 +842,31 @@ var main = {
     initSelectId:   function () {
         if (main.selectId) return main.selectId;
         main.selectId = $('#dialog-select-member').selectId('init',  {
-            objects: main.objects,
-            states:  main.states,
+            objects:       main.objects,
+            states:        main.states,
             noMultiselect: false,
-            imgPath: '../../lib/css/fancytree/',
-            filter: {type: 'state'},
+            onlyStates:    true,
+            imgPath:       '../../lib/css/fancytree/',
+            filter:        {type: 'state'},
+            name:          'scenes-add-states',
             texts: {
-                select:   _('Select'),
-                cancel:   _('Cancel'),
-                all:      _('All'),
-                id:       _('ID'),
-                name:     _('Name'),
-                role:     _('Role'),
-                room:     _('Room'),
-                value:    _('Value'),
-                selectid: _('Select ID'),
-                from:     _('From'),
-                lc:       _('Last changed'),
-                ts:       _('Time stamp'),
-                wait:     _('Processing...'),
-                ack:      _('Acknowledged')
+                select:          _('Select'),
+                cancel:          _('Cancel'),
+                all:             _('All'),
+                id:              _('ID'),
+                name:            _('Name'),
+                role:            _('Role'),
+                room:            _('Room'),
+                value:           _('Value'),
+                selectid:        _('Select ID'),
+                from:            _('From'),
+                lc:              _('Last changed'),
+                ts:              _('Time stamp'),
+                wait:            _('Processing...'),
+                ack:             _('Acknowledged'),
+                selectAll:       _('Select all'),
+                unselectAll:     _('Deselect all'),
+                invertSelection: _('Invert selection')
             },
             columns: ['image', 'name', 'role', 'room', 'value']
         });
@@ -520,11 +985,18 @@ function objectChange(id, obj) {
 }
 
 function stateChange(id, state) {
-    var rowData;
     id = id ? id.replace(/ /g, '_') : '';
 
     if (!id || !id.match(/\.messagebox$/)) {
         if (main.selectId) main.selectId.selectId('state', id, state);
+
+        if (!state) {
+            delete main.states[id];
+        } else {
+            main.states[id] = state;
+        }
+
+        scenes.stateChange(id, state);
     }
 }
 
