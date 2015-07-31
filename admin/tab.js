@@ -41,9 +41,9 @@ function Scenes(main) {
 
                 if (keys[1] !== undefined) {
                     text = '<span class="state-value" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '" data-state="' + that.data[node.key].id + '">' + text + '</span>';
-                    $tdList.eq(5).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap", background: checkIsEqual(keys[0], keys[1]) ? 'lightgreen': null});
+                    $tdList.eq(5).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap", background: checkIsEqual(keys[0], keys[1]) ? 'lightgreen': ''});
                 } else {
-                    text = '<span class="scene-value" data-scene-name="' + keys[0] + '" data-state="' + data.id + '">' + text + '</span>';
+                    text = '<span class="scene-value" data-scene-name="' + keys[0] + '" data-state="' + that.data[node.key].id + '">' + text + '</span>';
                     $tdList.eq(5).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
                 }
 
@@ -796,7 +796,7 @@ function Scenes(main) {
             that.data[key].actual = state ? state.val : null;
 
             $(this).html(getActualText(key));
-            $(this).parent().css({background: checkIsEqual(scene, index) ? 'lightgreen': null});
+            $(this).parent().css({background: checkIsEqual(scene, index) ? 'lightgreen': ''});
         });
     };
 }

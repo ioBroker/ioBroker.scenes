@@ -44,7 +44,7 @@ adapter.on('objectChange', function (id, obj) {
     }
 });
 
-function restartAdapter () {
+function restartAdapter() {
     // stop all timers
     for (var t in triggers) {
         for (var id = 0; id < triggers[t].length; id++) {
@@ -104,7 +104,11 @@ function checkScene(sceneId, stateId, state) {
         }
     }
     if (active !== null) {
-        if (!scenes[sceneId].value || (scenes[sceneId].value.val !== active || !scenes[sceneId].value.ack)){
+        if (!scenes[sceneId].value || (scenes[sceneId].value.val !== active || !scenes[sceneId].value.ack)) {
+            scenes[sceneId].value = scenes[sceneId].value || {};
+            scenes[sceneId].value.val = active;
+            scenes[sceneId].value.ack = true;
+
             adapter.setForeignState(sceneId, active, true);
         }
     }
@@ -217,7 +221,9 @@ function activateScene(sceneId) {
             adapter.setForeignState(stateObj.id, stateObj.must);
         }
     }
-    if (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack){
+    if (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack) {
+        scenes[sceneId].value.val = true;
+        scenes[sceneId].value.ack = true;
         adapter.setForeignState(sceneId, true, true);
     }
 }
@@ -241,7 +247,7 @@ function initScenes() {
     for (var sceneId in scenes) {
         scenes[sceneId].count = 0;
         // Go through all states in Array
-        for (var state = 0; state < scenes[sceneId].native.members.length - 1; state++) {
+        for (var state = 0; state < scenes[sceneId].native.members.length; state++) {
             var stateId = scenes[sceneId].native.members[state].id;
             // calculate subscriptions
             if (countIds.indexOf(stateId) == -1) countIds.push(stateId);
