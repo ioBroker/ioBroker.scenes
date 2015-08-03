@@ -38,7 +38,7 @@
 
 </header>
 <body>
-    <div id="tab-scenes">
+    <div id="tab-scenes" style="display: none">
         <table><tr>
             <td></td>
             <td><button id="btn_new_scene" class="translateT" title="new scene"></button></td>
@@ -105,6 +105,7 @@
                 <tr id="tr-dialog-state-setIfFalse-select"><td><label class="translate">Set value on false:</label></td><td><select id="dialog-state-setIfFalse-select"></select></td></tr>
                 <tr><td><label class="translate">Actual:</label></td><td><input style="opacity: 0.8" type="text" id="dialog-state-actual" readonly/></td></tr>
                 <tr><td><label class="translate">Delay(ms):</label></td><td><input type="text" id="dialog-state-delay"/></td></tr>
+                <tr><td><label class="translate">Stop other delays:</label></td><td><input type="checkbox" id="dialog-state-stop-all-delays"/></td></tr>
             </table>
         </p>
     </div>
@@ -112,21 +113,29 @@
         <p>
         <h3><span class="translate">Scene</span> <span id="dialog-scene-id"></span></h3>
         <table style="width:100%">
-            <tr><td><label class="translate">Enabled:</label></td>      <td><input type="checkbox" id="dialog-scene-enabled"/></td></tr>
-            <tr><td><label class="translate">Engine:</label></td>       <td><select type="checkbox" id="dialog-scene-engine"></select></td></tr>
-            <tr><td><label class="translate">Name:</label></td>         <td><input type="text" id="dialog-scene-name"         style="width:100%"/></td></tr>
-            <tr><td><label class="translate">Description:</label></td>  <td><input type="text" id="dialog-scene-description"  style="width:100%"/></td></tr>
-            <tr><td><label class="translate">Cron:</label></td>         <td><input type="text" id="dialog-scene-cron"/></td></tr>
-            <tr><td><label class="translate">Trigger ID:</label></td>   <td><input type="text" id="dialog-scene-trigger-id" style="width:100%"/></td></tr>
-            <tr><td><label class="translate">Trigger condition:</label></td><td><select type="text" id="dialog-scene-trigger-cond">
-                <option value="==">==</option>
-                <option value="!=">!=</option>
-                <option value=">">&gt;</option>
-                <option value="<">&lt;</option>
-                <option value=">=">&gt;=</option>
-                <option value="<=">&lt;=</option>
-            </select></td></tr>
-            <tr><td><label class="translate">Trigger value:</label></td><td><input type="text" id="dialog-scene-trigger-value" style="width:100%"/></td></tr>
+            <thead>
+            <col width="200px"/>
+            <col width="*"/>
+            </thead>
+            <tbody>
+                <tr><td><label class="translate">Enabled:</label></td>      <td><input type="checkbox"  id="dialog-scene-enabled"/></td></tr>
+                <tr><td><label class="translate">Engine:</label></td>       <td><select type="checkbox" id="dialog-scene-engine"></select></td></tr>
+                <tr><td><label class="translate">Name:</label></td>         <td><input type="text"      id="dialog-scene-name"          style="width:100%"/></td></tr>
+                <tr><td><label class="translate">Description:</label></td>  <td><input type="text"      id="dialog-scene-description"   style="width:100%"/></td></tr>
+                <tr><td><label class="translate">Set on false:</label></td> <td><input type="checkbox"  id="dialog-scene-use-false" /></td></td></tr>
+                <tr><td><label class="translate">Use trigger:</label></td>  <td><input type="checkbox"  id="dialog-scene-trigger"/></td></td></tr>
+                <!--tr><td><label class="translate">Cron:</label></td>         <td><input type="text" id="dialog-scene-cron"/></td></tr-->
+                <tr id="tr-dialog-scene-trigger-id"><td><label class="translate">Trigger ID:</label></td>   <td><input type="text"      id="dialog-scene-trigger-id"    style="width:100%"/></td></tr>
+                <tr id="tr-dialog-scene-trigger-cond"><td><label class="translate">Trigger condition:</label></td><td><select type="text" id="dialog-scene-trigger-cond">
+                    <option value="==">==</option>
+                    <option value="!=">!=</option>
+                    <option value=">">&gt;</option>
+                    <option value="<">&lt;</option>
+                    <option value=">=">&gt;=</option>
+                    <option value="<=">&lt;=</option>
+                </select></td></tr>
+                <tr id="tr-dialog-scene-trigger-value"><td><label class="translate">Trigger value:</label></td><td><input type="text"      id="dialog-scene-trigger-value" style="width:100%"/></td></tr>
+            </tbody>
         </table>
         </p>
     </div>

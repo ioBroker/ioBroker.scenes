@@ -9,6 +9,7 @@ systemDictionary = {
     "enabled":              {"en": "enabled",               "de": "Aktiviert",              "ru": "активно"},
     "true":                 {"en": "true",                  "de": "ja",                     "ru": "да"},
     "false":                {"en": "false",                 "de": "nein",                   "ru": "нет"},
+    "uncertain":            {"en": "uncertain",             "de": "ungewiss",               "ru": "неопределённо"},
     "Insert":               {"en": "Insert",                "de": "Einfügen",               "ru": "Вставить"},
     "copy":                 {"en": "copy",                  "de": "kopieren",               "ru": "копировать"},
     "scene":                {"en": "scene",                 "de": "szene",                  "ru": "сцена"},
@@ -17,9 +18,32 @@ systemDictionary = {
         "de": "ioBroker adapter scenes",
         "ru": "ioBroker adapter scenes"
     },
-    "delete scene":        {"en": "delete scene",         "de": "Szene löschen",            "ru": "Удалить сцену"},
-    "edit scene":          {"en": "edit scene",           "de": "Szene bearbeiten",         "ru": "Редактироветь сцену"},
-    "new scene":           {"en": "new scene",            "de": "Neue Szene",               "ru": "Новая сцена"},
+    "is equal": {
+        "en": "Actual value is equal with set value",
+        "de": "Ist-Wert ist gleich mit Soll-Wert",
+        "ru": "Текущее значение совпадает с желаемым"
+    },
+    "non equal": {
+        "en": "Actual value does not equal with set value",
+        "de": "Ist-Wert ist ungleich mit Soll-Wert",
+        "ru": "Текущее значение не совпадает с желаемым"
+    },
+    "is equal with false": {
+        "en": "Actual value is equal with set value by false",
+        "de": "Ist-Wert ist gleich mit Soll-Wert bei False",
+        "ru": "Текущее значение совпадает с желаемым при false"
+    },
+    "width delay": {
+        "en": "State has delay and does not participate in status calculation",
+        "de": "Zustand hat Verzögerung und wird bei der Statuskalkulation nicht berücksichtigt",
+        "ru": "Состояние устанавливается с задержкой и не участвует в вычислении значения"
+    },
+    "Test scene with true": {"en": "Test scene with true",  "de": "Teste Szene mit True",   "ru": "Тест значения true"},
+    "Test scene with false": {"en": "Test scene with false", "de": "Teste Szene mit False", "ru": "Тест значения false"},
+    "Stop other delays:":   {"en": "Stop other delays:",    "de": "Stoppe andere Verzögerungen:", "ru": "Отменить уже запущенные задержки:"},
+    "delete scene":         {"en": "delete scene",          "de": "Szene löschen",          "ru": "Удалить сцену"},
+    "edit scene":           {"en": "edit scene",            "de": "Szene bearbeiten",       "ru": "Редактироветь сцену"},
+    "new scene":            {"en": "new scene",             "de": "Neue Szene",             "ru": "Новая сцена"},
     "edit file":            {"en": "edit file",             "de": "Datei editieren",        "ru": "Редактировать"},
     "Save":                 {"en": "Save",                  "de": "Speichern",              "ru": "Сохранить"},
     "edit":                 {"en": "edit",                  "de": "ändern",                 "ru": "редактировать"},
@@ -67,9 +91,14 @@ systemDictionary = {
     "Select all":           {"en": "Select all",            "de": "Alle auswählen",         "ru": "Выбрать все видимые"},
     "Deselect all":         {"en": "Deselect all",          "de": "Alle unsekeltiern",      "ru": "Убрать выделение"},
     "Invert selection":     {"en": "Invert selection",      "de": "Selektierung invertieren", "ru": "Инвертировать выделение"},
-    "Items %s":             {"en": "Items %s",              "de": "Anzahl: %s",             "ru": "%s элементов"},
+    "Items %s":             {"en": "Items: %s",             "de": "Anzahl: %s",             "ru": "элементов: %s"},
     "edit state":           {"en": "edit state",            "de": "Zustand editieren",      "ru": "Редактировать состояние"},
     "delete state":         {"en": "delete state",          "de": "Zustand löschen",        "ru": "Удалить состояние"},
     "move down":            {"en": "move down",             "de": "Nach unten schieben",    "ru": "Передвинуть на 1 вниз"},
-    "move up":              {"en": "move up",               "de": "Nach oben schieben",     "ru": "Передвинуть на 1 вверх"}
+    "move up":              {"en": "move up",               "de": "Nach oben schieben",     "ru": "Передвинуть на 1 вверх"},
+    "set on false":         {"en": "set on false",          "de": "Setzen bei False",       "ru": "При false"},
+    "Set value on true:":   {"en": "Set value on true:",    "de": "Setze Werte bei True:",  "ru": "Установить значениe при true:"},
+    "Set value on false:":  {"en": "Set value on false:",   "de": "Setze Werte bei False:", "ru": "Установить значениe при false:"},
+    "Set on false:":        {"en": "Set on false:",         "de": "Setze Werte bei False:", "ru": "Установить значениe при false:"},
+    "Use trigger:":         {"en": "Use trigger:",          "de": "Trigger mit Zustand ID:", "ru": "Использовать триггер:"}
 };

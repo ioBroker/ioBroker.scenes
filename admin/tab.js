@@ -39,17 +39,40 @@ function Scenes(main) {
 
                 text = getActualText(node.key);
 
+                var $eq5 = $tdList.eq(5);
                 if (keys[1] !== undefined) {
                     text = '<span class="state-value" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '" data-state="' + that.data[node.key].id + '">' + text + '</span>';
-                    $tdList.eq(5).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap", background: checkIsEqual(keys[0], keys[1]) ? 'lightgreen': ''});
+                    $eq5.html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                    if (!that.data[node.key].delay) {
+                        var background = getActualBackground(keys[0], keys[1]);
+                        if (background == 'lightgreen') {
+
+                            $eq5.css('background', 'lightgreen');
+                            $eq5.attr('title', _('is equal'));
+
+                        } else if (background == 'lightpink ') {
+
+                            $eq5.css('background', 'lightpink ');
+                            $eq5.attr('title', _('is equal with false'));
+
+                        } else {
+
+                            $eq5.css('background', '');
+                            $eq5.attr('title', _('non equal'));
+
+                        }
+                    } else {
+                        $eq5.css('background', '');
+                        $eq5.attr('title', _('width delay'));
+                    }
                 } else {
                     text = '<span class="scene-value" data-scene-name="' + keys[0] + '" data-state="' + that.data[node.key].id + '">' + text + '</span>';
-                    $tdList.eq(5).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                    $eq5.html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
                 }
 
                 // - set value
                 if (keys[1] !== undefined) {
-                    var obj = that.main.objects[keys[0]];
+                    var obj   = that.main.objects[keys[0]];
                     var state = that.main.objects[obj.native.members[keys[1]].id];
 
                     if (state) {
@@ -68,7 +91,7 @@ function Scenes(main) {
                         text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                     }
                 } else {
-                    text = '';
+                    text = '<button class="state-set-true" data-scene-name="' + keys[0] + '" style="float: right"></button>';
                 }
                 $tdList.eq(6).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
 
@@ -98,6 +121,11 @@ function Scenes(main) {
                     }
                 } else {
                     text = '<input class="scene-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + (that.main.objects[keys[0]].native.setIfFalse ? 'checked' : '') + ' data-scene-name="' + keys[0] + '"/>';
+                    if (that.main.objects[keys[0]].native.setIfFalse) {
+                        text += '<button class="state-set-false" data-scene-name="' + keys[0] + '" style="float: right"></button>';
+                    } else {
+                        text += '<div style="width: 16px; float: right; height: 16px"></div>';
+                    }
                 }
                 $tdList.eq(7).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
 
@@ -124,6 +152,17 @@ function Scenes(main) {
             filter: {
                 mode: "hide",
                 autoApply: true
+            },
+            dblclick: function(event, data) {
+                console.log('dblclick');
+                if (data && data.node && data.node.key) {
+                    var keys = data.node.key.split('_$$$_');
+                    if (keys[1] !== undefined) {
+                        editState(keys[0], keys[1]);
+                    } else {
+                        data.node.toggleExpanded();
+                    }
+                }
             },
             collapse: function(event, data) {
                 if (that.isCollapsed[data.node.key]) return;
@@ -190,7 +229,7 @@ function Scenes(main) {
             autoOpen: false,
             modal:    true,
             width:    500,
-            height:   300,
+            height:   350,
             buttons: [
                 {
                     text: _('Ok'),
@@ -217,23 +256,27 @@ function Scenes(main) {
                         }
                         obj.native.members[index].setIfTrue = valTrue;
 
-                        var valFalse = '';
-                        if (type == 'check') {
-                            valFalse = $('#dialog-state-setIfFalse-check').prop('checked');
-                        } else if (type == 'select') {
-                            valFalse = $('#dialog-state-setIfFalse-select').val();
+                        if (obj.native.setIfFalse) {
+                            var valFalse = '';
+                            if (type == 'check') {
+                                valFalse = $('#dialog-state-setIfFalse-check').prop('checked');
+                            } else if (type == 'select') {
+                                valFalse = $('#dialog-state-setIfFalse-select').val();
+                            } else {
+                                valFalse = $('#dialog-state-setIfFalse-text').val();
+                            }
+                            if (typeof valFalse == 'string' && parseFloat(valFalse).toString() == valFalse) {
+                                valFalse = parseFloat(valFalse);
+                            } else if (valFalse === 'true') {
+                                valFalse = true;
+                            } if (valTrue === 'false') {
+                                valFalse = false;
+                            }
+                            obj.native.members[index].setIfFalse = valFalse;
                         } else {
-                            valFalse = $('#dialog-state-setIfFalse-text').val();
+                            obj.native.members[index].setIfFalse = null;
                         }
-                        if (typeof valFalse == 'string' && parseFloat(valFalse).toString() == valFalse) {
-                            valFalse = parseFloat(valFalse);
-                        } else if (valFalse === 'true') {
-                            valFalse = true;
-                        } if (valTrue === 'false') {
-                            valFalse = false;
-                        }
-                        obj.native.members[index].setIfFalse = valFalse;
-
+                        obj.native.members[index].stopAllDelays = $('#dialog-state-stop-all-delays').prop('checked');
                         obj.native.members[index].disabled = !$('#dialog-state-enabled').prop('checked');
                         obj.native.members[index].delay    = parseInt($('#dialog-state-delay').val(), 10) || 0;
 
@@ -270,13 +313,20 @@ function Scenes(main) {
                             obj.common.name = $('#dialog-scene-name').val();
                             newId = 'scene.' + obj.common.name.replace(/\s+/g, '_');
                         }
-                        obj.common.desc   = $('#dialog-scene-description').val();
-                        obj.native.cron   = $('#dialog-scene-cron').val();
-                        obj.common.engine = $('#dialog-scene-engine').val();
+                        obj.common.desc       = $('#dialog-scene-description').val();
+                        obj.native.cron       = $('#dialog-scene-cron').val();
+                        obj.common.engine     = $('#dialog-scene-engine').val();
+                        obj.native.setIfFalse = $('#dialog-scene-use-false').val();
 
-                        obj.native.triggerId    = $('#dialog-scene-trigger-id').val();
-                        obj.native.triggerCond  = $('#dialog-scene-trigger-cond').val();
-                        obj.native.triggerValue = $('#dialog-scene-trigger-value').val();
+                        if ($('#dialog-scene-trigger').prop('checked')) {
+                            obj.native.triggerId    = $('#dialog-scene-trigger-id').val();
+                            obj.native.triggerCond  = $('#dialog-scene-trigger-cond').val();
+                            obj.native.triggerValue = $('#dialog-scene-trigger-value').val();
+                        } else {
+                            obj.native.triggerId    = null;
+                            obj.native.triggerCond  = null;
+                            obj.native.triggerValue = null;
+                        }
 
                         if (newId) {
                             obj._id = newId;
@@ -306,38 +356,65 @@ function Scenes(main) {
                 }
             ]
         });
+
+        $('#dialog-scene-trigger').change(function () {
+            if ($(this).prop('checked')) {
+                $('#tr-dialog-scene-trigger-id').show();
+                $('#tr-dialog-scene-trigger-cond').show();
+                $('#tr-dialog-scene-trigger-value').show();
+            } else {
+                $('#tr-dialog-scene-trigger-id').hide();
+                $('#tr-dialog-scene-trigger-cond').hide();
+                $('#tr-dialog-scene-trigger-value').hide();
+            }
+        });
+
     };
 
     function getActualText(key) {
         var text = '';
         var keys = key.split('_$$$_');
+
         if (that.data[key].actual !== undefined && that.data[key].actual !== null) {
             if (keys[1] === undefined) {
                 if (that.data[key].actual === 'true' || that.data[key].actual === true) {
-                    text = '<span style="font-weight: bold; color: green">true</span>';
+                    text = '<span style="font-weight: bold; color: green">' + _('true') + '</span>';
                 } else if (that.data[key].actual === 'false' || that.data[key].actual === false) {
-                    text = '<span style="font-weight: bold; color: darkred">false</span>';
+                    text = '<span style="font-weight: bold; color: darkred">' + _('false') + '</span>';
+                } else if (that.data[key].actual === 'uncertain') {
+                    text = _('uncertain');
                 } else {
                     text = that.data[key].actual.toString();
                 }
             } else {
-                text = that.data[key].actual.toString();
+                if (that.data[key].actual === 'true' || that.data[key].actual === true) {
+                    text = _('true');
+                } else if (that.data[key].actual === 'false' || that.data[key].actual === false) {
+                    text = _('false');
+                } else {
+                    text = that.data[key].actual.toString();
+                }
             }
         }
         return text;
     }
 
-    function checkIsEqual(sceneId, state) {
+    function getActualBackground(sceneId, state) {
         var obj = this.main.objects[sceneId];
         var stateObj = obj.native.members[state];
         if (stateObj.delay) return false;
 
         if (!that.main.states[stateObj.id]) {
-            if (stateObj.setIfTrue === undefined || stateObj.setIfTrue === null || stateObj.setIfTrue == '') return true;
-            return false;
+            return (stateObj.setIfTrue  === undefined || stateObj.setIfTrue  === null || stateObj.setIfTrue  === '') ? 'lightgreen' : '';
         }
 
-        return stateObj.setIfTrue == that.main.states[stateObj.id].val;
+        if (stateObj.setIfTrue  == that.main.states[stateObj.id].val) {
+            return 'lightgreen';
+        } else if (stateObj.setIfFalse == that.main.states[stateObj.id].val) {
+            return 'lightpink ';
+        } else {
+            return '';
+        }
     }
 
     function customFilter(node) {
@@ -347,8 +424,7 @@ function Scenes(main) {
             if (!that.data[node.key]) return false;
 
             if ((that.data[node.key].name     && that.data[node.key].name.toLowerCase().indexOf(that.currentFilter) != -1) ||
-                (that.data[node.key].title    && that.data[node.key].title.toLowerCase().indexOf(that.currentFilter) != -1) ||
-                (that.data[node.key].keywords && that.data[node.key].keywords.toLowerCase().indexOf(that.currentFilter) != -1) ||
+                (that.data[node.key].id       && that.data[node.key].id.toLowerCase().indexOf(that.currentFilter) != -1) ||
                 (that.data[node.key].desc     && that.data[node.key].desc.toLowerCase().indexOf(that.currentFilter) != -1)){
                 return true;
             } else {
@@ -399,6 +475,7 @@ function Scenes(main) {
             }, 250);
             return;
         }
+        $('#tab-scenes').show();
 
         if (typeof this.$grid !== 'undefined' && (!this.$grid[0]._isInited || update)) {
             this.$grid[0]._isInited = true;
@@ -409,6 +486,7 @@ function Scenes(main) {
 
             that.tree = [];
             that.data = {};
+            this.list.sort();
 
             // list of the installed scenes
             for (var i = 0; i < this.list.length; i++) {
@@ -518,6 +596,8 @@ function Scenes(main) {
         $('#tr-dialog-state-setIfFalse-text').hide();
 
         if (state) {
+            $('#dialog-state-stop-all-delays').prop('checked', state.stopAllDelays);
+
             if (state.common.type == 'boolean' || state.common.type == 'bool') {
                 $('#dialog-state-setIfTrue-check').prop('checked', obj.native.members[index].setIfTrue);
                 $('#tr-dialog-state-setIfTrue-check').show();
@@ -541,24 +621,30 @@ function Scenes(main) {
             $('#dialog-state-id').data('type', 'text');
         }
 
-        if (state) {
-            if (state.common.type == 'boolean' || state.common.type == 'bool') {
-                $('#dialog-state-setIfFalse-check').prop('checked', obj.native.members[index].setIfFalse);
-                $('#tr-dialog-state-setIfFalse-check').show();
-            } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
-                var select = '';
-                for (var s = 0; s < state.common.states.length; s++) {
-                    select += '<option value="' + s + '" ' + ((obj.native.members[index].setIfFalse == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
+        if (obj.native.setIfFalse) {
+            if (state) {
+                if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                    $('#dialog-state-setIfFalse-check').prop('checked', obj.native.members[index].setIfFalse);
+                    $('#tr-dialog-state-setIfFalse-check').show();
+                } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                    var select = '';
+                    for (var s = 0; s < state.common.states.length; s++) {
+                        select += '<option value="' + s + '" ' + ((obj.native.members[index].setIfFalse == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
+                    }
+                    $('#dialog-state-setIfFalse-select').html(select);
+                    $('#tr-dialog-state-setIfFalse-select').show();
+                } else {
+                    $('#tr-dialog-state-setIfFalse-text').show();
+                    $('#dialog-state-setIfFalse-text').val(obj.native.members[index].setIfFalse);
                 }
-                $('#dialog-state-setIfFalse-select').html(select);
-                $('#tr-dialog-state-setIfFalse-select').show();
             } else {
                 $('#tr-dialog-state-setIfFalse-text').show();
                 $('#dialog-state-setIfFalse-text').val(obj.native.members[index].setIfFalse);
             }
         } else {
-            $('#tr-dialog-state-setIfFalse-text').show();
-            $('#dialog-state-setIfFalse-text').val(obj.native.members[index].setIfFalse);
+            $('#tr-dialog-state-setIfFalse-text').val('');
+            $('#tr-dialog-state-setIfFalse-check').prop('checked', false);
+            $('#tr-dialog-state-setIfFalse-select').val('');
         }
 
         $('#dialog-state-actual').val(main.states[obj.native.members[index].id] ? main.states[obj.native.members[index].id].val : '');
@@ -578,6 +664,8 @@ function Scenes(main) {
         $('#dialog-scene-trigger-id').val(obj.native.triggerId);
         $('#dialog-scene-trigger-cond').val(obj.native.triggerCond);
         $('#dialog-scene-trigger-value').val(obj.native.triggerValue);
+
+        $('#dialog-scene-trigger').prop('checked', !!obj.native.triggerId).trigger('change');
 
         var engines = '';
         for (var e = 0; e < that.engines.length; e++) {
@@ -641,7 +729,12 @@ function Scenes(main) {
                     var obj = that.main.objects[scene];
                     for (var i = 0; i < newIds.length; i++) {
                         if (!obj.native.members) obj.native.members = [];
-                        obj.native.members.push({id: newIds[i], setIfTrue: null, setIfFalse: null});
+                        obj.native.members.push({
+                            id:             newIds[i],
+                            setIfTrue:      null,
+                            setIfFalse:     null,
+                            stopAllDelays:  true
+                        });
                     }
 
                     that.main.socket.emit('setObject', scene, obj, function (err) {
@@ -868,6 +961,25 @@ function Scenes(main) {
                     }
                 });
             });
+            $('.state-set-true[data-scene-name="' + scene + '"]').button({
+                icons: {primary: 'ui-icon-play'},
+                text: false
+            }).css('width', '16px').css('height', '16px').click(function () {
+                var scene = $(this).attr('data-scene-name');
+                that.main.socket.emit('setState', scene, true, function (err) {
+                    if (err) this.main.showError(err);
+                });
+            }).attr('title', _('Test scene with true'));
+
+            $('.state-set-false[data-scene-name="' + scene + '"]').button({
+                icons: {primary: 'ui-icon-play'},
+                text: false
+            }).css('width', '16px').css('height', '16px').click(function () {
+                var scene = $(this).attr('data-scene-name');
+                that.main.socket.emit('setState', scene, false, function (err) {
+                    if (err) this.main.showError(err);
+                });
+            }).attr('title', _('Test scene with false'));
         }
     };
 
@@ -925,7 +1037,19 @@ function Scenes(main) {
             that.data[key].actual = state ? state.val : null;
 
             $(this).html(getActualText(key));
-            $(this).parent().css({background: checkIsEqual(scene, index) ? 'lightgreen': ''});
+            
+            if (!that.data[key].delay) {
+                var background = getActualBackground(scene, index);
+                if (background == 'lightgreen') {
+                    $(this).parent().css('background', 'lightgreen').attr('title', _('is equal'));
+                } else if (background == 'lightpink ') {
+                    $(this).parent().css('background', 'lightpink ').attr('title', _('is equal with false'));
+                } else {
+                    $(this).parent().css('background', '').attr('title', _('non equal'));
+                }
+            } else {
+                $(this).parent().css('background', '').attr('title', _('width delay'));
+            }
         });
     };
 }
