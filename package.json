@@ -33,8 +33,7 @@
   },
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "node main.js --install"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "MIT",
   "readmeFilename": "README.md"
