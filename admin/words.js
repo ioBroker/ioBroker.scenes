@@ -100,5 +100,9 @@ systemDictionary = {
     "Set value on true:":   {"en": "Set value on true:",    "de": "Setze Werte bei True:",  "ru": "Установить значениe при true:"},
     "Set value on false:":  {"en": "Set value on false:",   "de": "Setze Werte bei False:", "ru": "Установить значениe при false:"},
     "Set on false:":        {"en": "Set on false:",         "de": "Setze Werte bei False:", "ru": "Установить значениe при false:"},
-    "Use trigger:":         {"en": "Use trigger:",          "de": "Trigger mit Zustand ID:", "ru": "Использовать триггер:"}
+    "Use trigger:":         {"en": "Use trigger:",          "de": "Trigger mit Zustand ID:", "ru": "Использовать триггер:"},
+    "Use trigger for true:": {"en": "Use trigger for true:", "de": "Use trigger for true:", "ru": "Использовать триггер для true:"},
+    "on update":            {"en": "on update",             "de": "auf Update ",            "ru": "on update"},
+    "Use trigger for false:": {"en": "Use trigger for false:", "de": "Use trigger for false:", "ru": "Use trigger for false:"},
+    "Trigger:":             {"en": "Trigger:",              "de": "Trigger:",               "ru": "Триггер:"},
 };
