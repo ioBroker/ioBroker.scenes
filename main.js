@@ -49,6 +49,7 @@ adapter.on('objectChange', function (id, obj) {
 });
 
 function restartAdapter() {
+    adapter.log.info('restartAdapter');
     // stop all timers
     for (var t in triggers) {
         for (var id = 0; id < triggers[t].length; id++) {
@@ -168,8 +169,7 @@ function checkScene(sceneId, stateId, state) {
                 }
             }
         }
-    }, 500);
-
+    }, 200);
 }
 
 function checkTrigger(sceneId, stateId, state, isTrue) {
@@ -184,6 +184,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
     var triggerValue = isTrue ? scenes[sceneId].native.triggerTrueValue : scenes[sceneId].native.triggerFalseValue;
 
     if (triggerId == stateId) {
+        adapter.log.debug('checkTrigger: ' + triggerId + '(' + state.val.toString() + ') ' + triggerCond + ' ' + val.toString());
         val = triggerValue;
 
         switch (triggerCond) {
@@ -302,12 +303,14 @@ function activateScene(sceneId, isTrue) {
 
     if (scenes[sceneId].native.setIfFalse) {
         if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
+            adapter.log.debug('activateScene: ' + sceneId + ' on ' + isTrue);
             scenes[sceneId].value.val = isTrue;
             scenes[sceneId].value.ack = true;
             adapter.setForeignState(sceneId, isTrue, true);
         }
     } else
     if (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack) {
+        adapter.log.debug('activateScene: ' + sceneId + ' on true.');
         scenes[sceneId].value.val = true;
         scenes[sceneId].value.ack = true;
         adapter.setForeignState(sceneId, true, true);
@@ -366,6 +369,8 @@ function initScenes() {
 
     // If requested more than 20 ids => get all of them
     if (countIds.length > 20) {
+        adapter.log.debug('initScenes: subscribe on all');
+
         adapter.subscribeForeignStates();
     } else {
         // subscribe for own scenes
@@ -373,6 +378,7 @@ function initScenes() {
         subscription = countIds;
         // and for all states
         for (var i = 0; i < countIds.length; i++) {
+            adapter.log.debug('initScenes: subscribe on ' + countIds[i]);
             adapter.subscribeForeignStates(countIds[i]);
         }
     }
