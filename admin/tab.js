@@ -773,7 +773,7 @@ function Scenes(main) {
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
             var scene = $(this).attr('data-scene-name');
             var sid = that.main.initSelectIds();
-            sid.selectId('show', function (newIds) {
+            sid.selectId('show', null, function (newIds) {
                 if (newIds && newIds.length) {
                     var obj = that.main.objects[scene];
                     for (var i = 0; i < newIds.length; i++) {
