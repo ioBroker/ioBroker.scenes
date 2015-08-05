@@ -83,6 +83,11 @@ Delays can be used in the **group** too, but the states with delay are not parti
 
 ## Changelog
 
+### 0.0.2 (2015-08-05)
+* (bluefox) change configuration schema
+* (bluefox) add cron
+* (bluefox) add burst interval
+
 ### 0.0.1 (2015-07-29)
 * (bluefox) initial commit
 
