@@ -78,7 +78,8 @@ systemDictionary = {
     "Engine:":              {"en": "Engine:",               "de": "Engine:",                "ru": "Engine:"},
     "Name:":                {"en": "Name:",                 "de": "Name:",                  "ru": "Имя:"},
     "Description:":         {"en": "Description:",          "de": "Beschreibung:",          "ru": "Описание:"},
-    "Cron:":                {"en": "Cron:",                 "de": "Cron:",                  "ru": "Cron:"},
+    "Cron for true:":       {"en": "Cron for true:",        "de": "Cron für true:",         "ru": "Cron для true:"},
+    "Cron for false:":      {"en": "Cron for false:",       "de": "Cron für false:",        "ru": "Cron для false:"},
     "Trigger ID:":          {"en": "Trigger ID:",           "de": "Trigger ID:",            "ru": "ID Тринггера:"},
     "Trigger condition:":   {"en": "Trigger condition:",    "de": "Trigger-Bedienung:",     "ru": "Условие триггера:"},
     "Trigger value:":       {"en": "Trigger value:",        "de": "Trigger-Wert:",          "ru": "Значение триггера:"},
@@ -103,6 +104,16 @@ systemDictionary = {
     "Use trigger:":         {"en": "Use trigger:",          "de": "Trigger mit Zustand ID:", "ru": "Использовать триггер:"},
     "Use trigger for true:": {"en": "Use trigger for true:", "de": "Use trigger for true:", "ru": "Использовать триггер для true:"},
     "on update":            {"en": "on update",             "de": "auf Update ",            "ru": "on update"},
-    "Use trigger for false:": {"en": "Use trigger for false:", "de": "Use trigger for false:", "ru": "Use trigger for false:"},
+    "Use trigger for false:": {"en": "Use trigger for false:", "de": "Use trigger for false:", "ru": "Использовать триггер для false:"},
     "Trigger:":             {"en": "Trigger:",              "de": "Trigger:",               "ru": "Триггер:"},
+    "Interval between commands(ms):": {
+        "en": "Interval between commands(ms):",
+        "de": "Intervall zwischen Befehlen(ms):",
+        "ru": "Интервал между командами(мс):"
+    },
+    "Are you sure to delete %s?": {
+        "en": "Are you sure to delete \"%s\"?",
+        "de": "Wollen Sie wirklich \"%s\" löschen?",
+        "ru": "Вы действительно хотите удалить \"%s\"?"
+    },
 };

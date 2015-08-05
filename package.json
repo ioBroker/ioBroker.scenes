@@ -1,6 +1,6 @@
 {
   "name": "iobroker.scenes",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Scenes for ioBroker.",
   "author": {
     "name": "bluefox",
@@ -16,6 +16,8 @@
     "url": "https://github.com/ioBroker/ioBroker.scenes"
   },
   "dependencies": {
+      "node-schedule": "^0.2.9",
+      "suncalc": "^1.6.0"
   },
   "devDependencies": {
     "grunt": "~0.4.4",

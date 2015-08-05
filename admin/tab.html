@@ -117,7 +117,7 @@
         <h3><span class="translate">Scene</span> <span id="dialog-scene-id"></span></h3>
         <table style="width:100%">
             <thead>
-            <col width="200px"/>
+            <col width="250px"/>
             <col width="*"/>
             <col width="30px"/>
             </thead>
@@ -126,9 +126,9 @@
                 <tr><td><label class="translate">Engine:</label></td>       <td><select type="checkbox" id="dialog-scene-engine"></select></td></tr>
                 <tr><td><label class="translate">Name:</label></td>         <td><input type="text"      id="dialog-scene-name"          style="width:100%"/></td><td></td></tr>
                 <tr><td><label class="translate">Description:</label></td>  <td><input type="text"      id="dialog-scene-description"   style="width:100%"/></td><td></td></tr>
+                <tr><td><label class="translate">Interval between commands(ms):</label></td>  <td><input type="text"      id="dialog-scene-interval"   style="width:100%"/></td><td></td></tr>
                 <tr><td><label class="translate">Set on false:</label></td> <td><input type="checkbox"  id="dialog-scene-use-false" /></td></td><td></td></tr>
                 <tr class="scene-true"><td><label class="translate">Use trigger for true:</label></td>  <td><input type="checkbox"  id="dialog-scene-trigger-true"/></td></td><td></td></tr>
-                <!--tr><td><label class="translate">Cron:</label></td>         <td><input type="text" id="dialog-scene-cron"/></td></tr-->
                 <tr id="tr-dialog-scene-trigger-true-id"><td><label class="translate">Trigger ID:</label></td>   <td><input type="text"      id="dialog-scene-trigger-true-id"    style="width:100%"/></td>
                     <td><button data-input="dialog-scene-trigger-true-id" class="dialog-scene-id-selector">...</button></td></tr>
                 <tr id="tr-dialog-scene-trigger-true-cond"><td><label class="translate">Trigger condition:</label></td><td><select type="text" id="dialog-scene-trigger-true-cond">
@@ -141,9 +141,9 @@
                 <option value="update" class="translate">on update</option>
                 </select></td><td></td></tr>
                 <tr id="tr-dialog-scene-trigger-true-value"><td><label class="translate">Trigger value:</label></td><td><input type="text"      id="dialog-scene-trigger-true-value" style="width:100%"/></td><td></td></tr>
+                <tr id="tr-dialog-scene-trigger-true-cron"><td><label class="translate">Cron for true:</label></td>         <td><input type="text" id="dialog-scene-true-cron"/></td></tr>
 
                 <tr id="tr-dialog-scene-trigger-false"  class="scene-false"><td><label class="translate">Use trigger for false:</label></td>  <td><input type="checkbox"  id="dialog-scene-trigger-false"/></td></td><td></td></tr>
-                <!--tr><td><label class="translate">Cron:</label></td>         <td><input type="text" id="dialog-scene-cron"/></td><td></td></tr-->
                 <tr id="tr-dialog-scene-trigger-false-id"><td><label class="translate">Trigger ID:</label></td>   <td><input type="text"      id="dialog-scene-trigger-false-id"    style="width:100%"/></td>
                     <td><button data-input="dialog-scene-trigger-false-id" class="dialog-scene-id-selector">...</button></td></tr>
                 <tr id="tr-dialog-scene-trigger-false-cond"><td><label class="translate">Trigger condition:</label></td><td><select type="text" id="dialog-scene-trigger-false-cond">
@@ -155,8 +155,8 @@
                     <option value="<=">&lt;=</option>
                     <option value="update" class="translate">on update</option>
                 </select></td><td></td></tr>
-                <tr id="tr-dialog-scene-trigger-false-value"><td><label class="translate">Trigger value:</label></td><td><input type="text"      id="dialog-scene-trigger-false-value" style="width:100%"/></td>
-                    <td></td></tr>
+                <tr id="tr-dialog-scene-trigger-false-value"><td><label class="translate">Trigger value:</label></td><td><input type="text"      id="dialog-scene-trigger-false-value" style="width:100%"/></td><td></td></tr>
+                <tr id="tr-dialog-scene-trigger-false-cron"><td><label class="translate">Cron for false:</label></td>         <td><input type="text" id="dialog-scene-false-cron"/></td><td></td></tr>
             </tbody>
         </table>
         </p>

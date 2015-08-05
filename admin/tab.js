@@ -97,7 +97,7 @@ function Scenes(main) {
 
                 // - set value if false
                 if (keys[1] !== undefined) {
-                    if (that.main.objects[keys[0]].native.setIfFalse) {
+                    if (that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) {
                         var obj = that.main.objects[keys[0]];
                         var state = that.main.objects[obj.native.members[keys[1]].id];
 
@@ -120,8 +120,8 @@ function Scenes(main) {
                         text = '';
                     }
                 } else {
-                    text = '<input class="scene-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + (that.main.objects[keys[0]].native.setIfFalse ? 'checked' : '') + ' data-scene-name="' + keys[0] + '"/>';
-                    if (that.main.objects[keys[0]].native.setIfFalse) {
+                    text = '<input class="scene-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + ((that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) ? 'checked' : '') + ' data-scene-name="' + keys[0] + '"/>';
+                    if (that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) {
                         text += '<button class="state-set-false" data-scene-name="' + keys[0] + '" style="float: right"></button>';
                     } else {
                         text += '<div style="width: 16px; float: right; height: 16px"></div>';
@@ -256,7 +256,7 @@ function Scenes(main) {
                         }
                         obj.native.members[index].setIfTrue = valTrue;
 
-                        if (obj.native.setIfFalse) {
+                        if (obj.native.onFalse && obj.native.onFalse.enabled) {
                             var valFalse = '';
                             if (type == 'check') {
                                 valFalse = $('#dialog-state-setIfFalse-check').prop('checked');
@@ -297,8 +297,8 @@ function Scenes(main) {
         that.$dialogScene.dialog({
             autoOpen: false,
             modal:    true,
-            width:    500,
-            height:   550,
+            width:    600,
+            height:   610,
             buttons: [
                 {
                     text: _('Ok'),
@@ -314,28 +314,37 @@ function Scenes(main) {
                             newId = 'scene.' + obj.common.name.replace(/\s+/g, '_');
                         }
                         obj.common.desc       = $('#dialog-scene-description').val();
-                        obj.native.cron       = $('#dialog-scene-cron').val();
                         obj.common.engine     = $('#dialog-scene-engine').val();
-                        obj.native.setIfFalse = $('#dialog-scene-use-false').prop('checked');
+
+                        if (!obj.native.onTrue)  obj.native.onTrue = {};
+                        if (!obj.native.onFalse) obj.native.onFalse = {};
+
+                        if (!obj.native.onTrue.trigger)  obj.native.onTrue.trigger  = {};
+                        if (!obj.native.onFalse.trigger) obj.native.onFalse.trigger = {};
+
+                        obj.native.burstIntervall  = parseInt($('#dialog-scene-interval').val(), 10) || 0;
+                        obj.native.onFalse.enabled = $('#dialog-scene-use-false').prop('checked');
+                        obj.native.onTrue.cron     = $('#dialog-scene-true-cron').val();
+                        obj.native.onFalse.cron    = $('#dialog-scene-false-cron').val();
 
                         if ($('#dialog-scene-trigger-true').prop('checked')) {
-                            obj.native.triggerTrueId    = $('#dialog-scene-trigger-true-id').val();
-                            obj.native.triggerTrueCond  = $('#dialog-scene-trigger-true-cond').val();
-                            obj.native.triggerTrueValue = $('#dialog-scene-trigger-true-value').val();
+                            obj.native.onTrue.trigger.id        = $('#dialog-scene-trigger-true-id').val();
+                            obj.native.onTrue.trigger.condition = $('#dialog-scene-trigger-true-cond').val();
+                            obj.native.onTrue.trigger.value     = $('#dialog-scene-trigger-true-value').val();
                         } else {
-                            obj.native.triggerTrueId    = null;
-                            obj.native.triggerTrueCond  = null;
-                            obj.native.triggerTrueValue = null;
+                            obj.native.onTrue.trigger.id        = null;
+                            obj.native.onTrue.trigger.condition = null;
+                            obj.native.onTrue.trigger.value     = null;
                         }
 
-                        if ($('#dialog-scene-trigger-false').prop('checked') && obj.native.setIfFalse) {
-                            obj.native.triggerFalseId    = $('#dialog-scene-trigger-false-id').val();
-                            obj.native.triggerFalseCond  = $('#dialog-scene-trigger-false-cond').val();
-                            obj.native.triggerFalseValue = $('#dialog-scene-trigger-false-value').val();
+                        if ($('#dialog-scene-trigger-false').prop('checked') && obj.native.onFalse.enabled) {
+                            obj.native.onFalse.trigger.id        = $('#dialog-scene-trigger-false-id').val();
+                            obj.native.onFalse.trigger.condition = $('#dialog-scene-trigger-false-cond').val();
+                            obj.native.onFalse.trigger.value     = $('#dialog-scene-trigger-false-value').val();
                         } else {
-                            obj.native.triggerFalseId    = null;
-                            obj.native.triggerFalseCond  = null;
-                            obj.native.triggerFalseValue = null;
+                            obj.native.onFalse.trigger.id        = null;
+                            obj.native.onFalse.trigger.condition = null;
+                            obj.native.onFalse.trigger.value     = null;
                         }
 
                         if (newId) {
@@ -394,8 +403,10 @@ function Scenes(main) {
         $('#dialog-scene-use-false').change(function () {
             if ($(this).prop('checked')) {
                 $('#tr-dialog-scene-trigger-false').show();
+                $('#tr-dialog-scene-trigger-false-cron').show();
             } else {
                 $('#tr-dialog-scene-trigger-false').hide();
+                $('#tr-dialog-scene-trigger-false-cron').hide();
             }
 
             $('#dialog-scene-trigger-false').trigger('change');
@@ -450,7 +461,7 @@ function Scenes(main) {
 
         if (stateObj.setIfTrue  == that.main.states[stateObj.id].val) {
             return 'lightgreen';
-        } else if (this.main.objects[sceneId].native.setIfFalse && stateObj.setIfFalse == that.main.states[stateObj.id].val) {
+        } else if (that.main.objects[sceneId].native.onFalse && that.main.objects[sceneId].native.onFalse.enabled && stateObj.setIfFalse == that.main.states[stateObj.id].val) {
             return 'lightpink ';
         } else {
             return '';
@@ -482,12 +493,12 @@ function Scenes(main) {
     this.addNewScene = function () {
         // find name
         var i = 1;
-        while (this.list.indexOf('scene.scene' + i) != -1) i++;
-        var id = 'scene.scene' + i;
+        while (this.list.indexOf('scene.0.' + _('scene') + '_' + i) != -1) i++;
+        var id = 'scene.0.scene' + i;
 
         var scene = {
             "common": {
-                "name":    _('scene') + ' ' + i,
+                "name":    '0.' + _('scene') + ' ' + i,
                 "type":    "boolean",
                 "role":    "scene.state",
                 "desc":    _('scene') + ' ' + i,
@@ -495,8 +506,21 @@ function Scenes(main) {
                 "engine":  this.engines[0]
             },
             "native": {
-                setIfTrue:  true,
-                setIfFalse: false,
+                "onTrue": {
+                    "trigger": {
+
+                    },
+                    "cron":    null,
+                    "astro":   null
+                },
+                "onFalse": {
+                    "enabled": false,
+                    "trigger": {
+
+                    },
+                    "cron":    null,
+                    "astro":   null
+                },
                 "members":  []
             },
             "type": "state"
@@ -661,7 +685,7 @@ function Scenes(main) {
             $('#dialog-state-id').data('type', 'text');
         }
 
-        if (obj.native.setIfFalse) {
+        if (obj.native.onFalse && obj.native.onFalse.enabled) {
             if (state) {
                 if (state.common.type == 'boolean' || state.common.type == 'bool') {
                     $('#dialog-state-setIfFalse-check').prop('checked', obj.native.members[index].setIfFalse);
@@ -700,21 +724,44 @@ function Scenes(main) {
 
         $('#dialog-scene-name').val(obj.common.name);
         $('#dialog-scene-description').val(obj.common.desc);
-        $('#dialog-scene-cron').val(obj.native.cron);
+        $('#dialog-scene-true-cron').val(obj.native.onTrue ? obj.native.onTrue.cron : '');
+        $('#dialog-scene-interval').val(obj.native.burstIntervall || '');
 
-        $('#dialog-scene-trigger-true-id').val(obj.native.triggerTrueId);
-        $('#dialog-scene-trigger-true-cond').val(obj.native.triggerTrueCond);
-        $('#dialog-scene-trigger-true-value').val(obj.native.triggerTrueValue);
+        if (obj.native.onTrue && obj.native.onTrue.trigger) {
+            $('#dialog-scene-trigger-true-id').val(obj.native.onTrue.trigger.id);
+            $('#dialog-scene-trigger-true-cond').val(obj.native.onTrue.trigger.condition);
+            $('#dialog-scene-trigger-true-value').val(obj.native.onTrue.trigger.value);
 
-        $('#dialog-scene-trigger-true').prop('checked', !!obj.native.triggerTrueId).trigger('change');
+            $('#dialog-scene-trigger-true').prop('checked', !!obj.native.onTrue.trigger.id).trigger('change');
+        } else {
+            $('#dialog-scene-trigger-true-id').val('');
+            $('#dialog-scene-trigger-true-cond').val('==');
+            $('#dialog-scene-trigger-true-value').val('');
 
-        $('#dialog-scene-trigger-false-id').val(obj.native.triggerFalseId);
-        $('#dialog-scene-trigger-false-cond').val(obj.native.triggerFalseCond);
-        $('#dialog-scene-trigger-false-value').val(obj.native.triggerFalseValue);
+            $('#dialog-scene-trigger-true').prop('checked', false).trigger('change');
+        }
 
-        $('#dialog-scene-trigger-false').prop('checked', !!obj.native.triggerFalseId).trigger('change');
+        if (obj.native.onFalse) {
+            if (obj.native.onFalse.trigger) {
+                $('#dialog-scene-trigger-false-id').val(obj.native.onFalse.trigger.id);
+                $('#dialog-scene-trigger-false-cond').val(obj.native.onFalse.trigger.condition);
+                $('#dialog-scene-trigger-false-value').val(obj.native.onFalse.trigger.value);
 
-        $('#dialog-scene-use-false').prop('checked', !!obj.native.setIfFalse).trigger('change');
+                $('#dialog-scene-trigger-false').prop('checked', !!obj.native.onFalse.trigger.id).trigger('change');
+            } else {
+                $('#dialog-scene-trigger-false-id').val('');
+                $('#dialog-scene-trigger-false-cond').val('==');
+                $('#dialog-scene-trigger-false-value').val('');
+
+                $('#dialog-scene-trigger-false').prop('checked', false).trigger('change');
+            }
+
+            $('#dialog-scene-use-false').prop('checked', obj.native.onFalse.enabled).trigger('change');
+            $('#dialog-scene-false-cron').val(obj.native.onFalse.cron);
+        } else {
+            $('#dialog-scene-use-false').prop('checked', false).trigger('change');
+            $('#dialog-scene-false-cron').val('');
+        }
 
         var engines = '';
         for (var e = 0; e < that.engines.length; e++) {
@@ -737,12 +784,10 @@ function Scenes(main) {
         if (obj.common) {
             that.timers[scene].obj.common.enabled = obj.common.enabled;
         } else {
-            if (obj.native) {
-                if (obj.native.setIfTrue !== undefined) {
-                    that.timers[scene].obj.native.setIfTrue = obj.native.setIfTrue;
-                }
-                if (obj.native.setIfFalse !== undefined) {
-                    that.timers[scene].obj.native.setIfFalse = obj.native.setIfFalse;
+            if (obj.native.onFalse) {
+                if (obj.native.onFalse.enabled !== undefined) {
+                    that.timers[scene].obj.native.onFalse = that.timers[scene].obj.native.onFalse || {};
+                    that.timers[scene].obj.native.onFalse.enabled = obj.native.onFalse.enabled;
                 }
             }
             if (obj.native.members) {
@@ -1001,11 +1046,11 @@ function Scenes(main) {
             $('.scene-edit-setIfFalse[data-scene-name="' + scene + '"]').change(function () {
                 var scene = $(this).attr('data-scene-name');
                 $(this).css({outline: '1px solid red'});
-                var obj = {native: {}};
-                obj.native.setIfFalse = $(this).prop('checked');
+                var obj = {native: {onFalse:{}}};
+                obj.native.onFalse.enabled = $(this).prop('checked');
                 setObject(scene, obj, function (err) {
                     if (err) {
-                        $(this).css({outline: ''}).prop('checked', that.main.objects[scene].native.setIfFalse);
+                        $(this).css({outline: ''}).prop('checked', that.main.objects[scene].native.onFalse && that.main.objects[scene].native.onFalse.enabled);
                         this.main.showError(err);
                     }
                 });
