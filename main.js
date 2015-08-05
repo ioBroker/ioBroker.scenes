@@ -177,26 +177,29 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
     var fVal;
     var aVal;
 
-    if (!isTrue && !scenes[sceneId].native.setIfFalse) return;
+    if (!state || (!isTrue && !scenes[sceneId].native.setIfFalse)) return;
 
     var triggerId    = isTrue ? scenes[sceneId].native.triggerTrueId    : scenes[sceneId].native.triggerFalseId;
     var triggerCond  = isTrue ? scenes[sceneId].native.triggerTrueCond  : scenes[sceneId].native.triggerFalseCond;
     var triggerValue = isTrue ? scenes[sceneId].native.triggerTrueValue : scenes[sceneId].native.triggerFalseValue;
 
     if (triggerId == stateId) {
-        adapter.log.debug('checkTrigger: ' + triggerId + '(' + state.val.toString() + ') ' + triggerCond + ' ' + val.toString());
+        var stateVal = (state && state.val !== undefined && state.val != null) ? state.val.toString() : '';
+
         val = triggerValue;
+        
+        adapter.log.debug('checkTrigger: ' + triggerId + '(' + state.val + ') ' + triggerCond + ' ' + val.toString());
 
         switch (triggerCond) {
             case '==':
-                if (val.toString() == state.val.toString()) {
+                if (val.toString() == stateVal) {
                     activateScene(sceneId, isTrue);
                 }
 
                 break;
 
             case '!=':
-                if (val.toString() != state.val.toString()) {
+                if (val.toString() != stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -204,7 +207,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '>':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val.toString() && state.val.toString() == aVal.toString()) {
+                if (fVal.toString() == val.toString() && stateVal == aVal.toString()) {
                     if (aVal > fVal) activateScene(sceneId, isTrue);
                 } else
                 if (val.toString() > state.val.toString()) {
@@ -215,7 +218,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '<':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val.toString() && state.val.toString() == aVal.toString()) {
+                if (fVal.toString() == val.toString() && stateVal == aVal.toString()) {
                     if (aVal < fVal) activateScene(sceneId, isTrue);
                 } else
                 if (val.toString() < state.val.toString()) {
@@ -226,7 +229,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '>=':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val.toString() && state.val.toString() == aVal.toString()) {
+                if (fVal.toString() == val.toString() && stateVal == aVal.toString()) {
                     if (aVal >= fVal) activateScene(sceneId, isTrue);
                 } else
                 if (val.toString() >= state.val.toString()) {
@@ -237,7 +240,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '<=':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val.toString() && state.val.toString() == aVal.toString()) {
+                if (fVal.toString() == val.toString() && stateVal == aVal.toString()) {
                     if (aVal <= fVal) activateScene(sceneId, isTrue);
                 } else
                 if (val.toString() <= state.val.toString()) {
