@@ -115,6 +115,9 @@ function restartAdapter() {
     for (t in astroTimers) {
         clearTimeout(astroTimers[t]);
     }
+    for (t in timers) {
+        clearTimeout(timers[t]);
+    }
     if (schedule) {
         for (t in cronTasks) {
             if (cronTasks[t]) cronTasks[t].cancel();
@@ -341,14 +344,15 @@ function activateSceneState(sceneId, state, isTrue) {
             // execute timeout
             adapter.setForeignState(id, setValue);
 
-            // remove timer from the list
-            for (var r = 0; r < timers[id].length; r++) {
-                if (timers[id][r] == _tIndex) {
-                    timers[id].splice(r, 1);
-                    break;
+            if (timers[id]) {
+                // remove timer from the list
+                for (var r = 0; r < timers[id].length; r++) {
+                    if (timers[id][r] == _tIndex) {
+                        timers[id].splice(r, 1);
+                        break;
+                    }
                 }
             }
-
         }, stateObj.delay, state.id, isTrue ? stateObj.setIfTrue : stateObj.setIfFalse, tIndex);
 
         timers[state.id].push({timer: timer, tIndex: tIndex});

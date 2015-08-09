@@ -50,6 +50,8 @@
             <td><button id="btn_collapse_scenes" class="translateT" title="collapse all"></button></td>
             <td><button id="btn_expand_scenes" class="translateT" title="expand all"></button></td>
             <td><div style="padding-left: 100px"><label class="translate" for="scenes-filter">Filter:</label> <input id="scenes-filter" style="width:100px;margin-right:3px"/><button id="scenes-filter-clear"></button></div></td>
+            <td style="width:30px"></td>
+            <td><button id="btn_replace_ids" class="translateT" title="Replace IDs"></button></td>
         </tr></table>
         <div id="process_running_scenes" class="translate" style="position:absolute; top:50%; left:50%; width: 150; height: 25; padding: 12; background: rgba(30, 30, 30, 0.5); display: none; text-align:center; font-size: 1.2em; color: white; font-weight: bold; border-radius: 5px">Processing...</div>
         <div style="width:100%; height:400px; overflow-y: auto" id="grid-scenes-div"><table id="grid-scenes" style="width:100%;table-layout:fixed;">
@@ -161,7 +163,19 @@
         </table>
         </p>
     </div>
-
+    <div id="dialog-replace" title="Replace IDs" class="translateT" style="display: none">
+        <p>
+            <span class="translate">replace_text</span>
+            <br/>
+            <br/>
+            <table style="width: 100%">
+                <tr><td><label class="translate">Old ID:</label></td><td><input type="text"      id="dialog-replace-old-id" style="width:100%"/></td>
+                    <td><button data-input="dialog-replace-old-id" class="dialog-scene-id-selector">...</button></td></tr>
+                <tr><td><label class="translate">New ID:</label></td><td><input type="text"      id="dialog-replace-new-id" style="width:100%"/></td>
+                    <td><button data-input="dialog-replace-new-id" class="dialog-scene-id-selector">...</button></td></tr>
+            </table>
+        </p>
+    </div>
 
     <div id="dialog-select-members" style="display:none"></div>
     <div id="dialog-select-member" style="display:none"></div>

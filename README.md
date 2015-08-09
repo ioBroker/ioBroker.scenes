@@ -83,6 +83,10 @@ Delays can be used in the **group** too, but the states with delay are not parti
 
 ## Changelog
 
+### 0.1.0 (2015-08-09)
+* (bluefox) fix error with delays and config change
+* (bluefox) implement replace 
+
 ### 0.0.2 (2015-08-05)
 * (bluefox) change configuration schema
 * (bluefox) add cron

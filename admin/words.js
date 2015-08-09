@@ -116,4 +116,29 @@ systemDictionary = {
         "de": "Wollen Sie wirklich \"%s\" löschen?",
         "ru": "Вы действительно хотите удалить \"%s\"?"
     },
+    "replace_text": {
+        "en": "Old ID will be replaced in all scenes with new ID.",
+        "de": "Alter ID wird mit neuem ID in allen Szenen erezt.",
+        "ru": "Старый ID будет заменён во всей сценах новым ID."
+    },
+    "Are you sure to replace \"%s\" with \"%s\" in all scenes?": {
+        "en": "Are you sure to replace \"%s\" with \"%s\" in all scenes? You cannot undo.",
+        "de": "Wollen Sie wirklich \"%s\" mit \"%s\" in allen Szenen ersetzen? Man kann es nicht rückgängig machen.",
+        "ru": "Вы уверенны, что хотите заменить \"%s\" с \"%s\" во всех скриптах? Текущее состояние нельзя будет восстановить."
+    },
+    "IDs was not found in any scene": {
+        "en": "ID was not found in any scene",
+        "de": "ID wurde in keine Szene gefunden",
+        "ru": "ID не найдено ни в одной сцене"
+    },
+    "IDs in following scenes were replaced: %s": {
+        "en": "ID were replaced in following scenes: %s",
+        "de": "ID wurde in folgenden Szenen ersetzt: %s",
+        "ru": "В следующих сценах было заменено ID: %s"
+    },
+    "Result":               {"en": "Result",                "de": "Ergebnis",               "ru": "Результат"},
+    "Confirm":              {"en": "Confirm",               "de": "Bestätigen",             "ru": "Подтвердите"},
+    "Replace IDs":          {"en": "Replace IDs",           "de": "ID austauschen",         "ru": "Замена ID"},
+    "Old ID:":              {"en": "Old ID:",               "de": "Alter ID:",              "ru": "Старый ID:"},
+    "New ID:":              {"en": "New ID:",               "de": "neuer ID:",              "ru": "Новый ID:"}
 };

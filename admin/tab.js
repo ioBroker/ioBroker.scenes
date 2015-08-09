@@ -10,8 +10,9 @@ function Scenes(main) {
     this.filterVals = {length: 0};
     this.currentFilter = '';
     this.isCollapsed = {};
-    this.$dialogState = $('#dialog-state');
-    this.$dialogScene = $('#dialog-scene');
+    this.$dialogState   = $('#dialog-state');
+    this.$dialogScene   = $('#dialog-scene');
+    this.$dialogReplace = $('#dialog-replace');
     this.timers = {};
 
     this.prepare = function () {
@@ -201,7 +202,6 @@ function Scenes(main) {
             that.init(true, true);
         });
 
-
         // add filter processing
         $('#scenes-filter').keyup(function () {
             $(this).trigger('change');
@@ -223,6 +223,38 @@ function Scenes(main) {
 
         $('#btn_new_scene').button({icons: {primary: 'ui-icon-plus'}, text: false}).css({width: 16, height: 16}).click(function () {
             that.addNewScene();
+        });
+        that.$dialogReplace.dialog({
+            autoOpen: false,
+            modal:    true,
+            width:    510,
+            height:   215,
+            buttons: [
+                {
+                    text: _('Ok'),
+                    click: function () {
+                        $(this).dialog('close');
+                        var oldId = $('#dialog-replace-old-id').val();
+                        var newId = $('#dialog-replace-new-id').val();
+                        if (oldId == newId) {
+                            console.warn('IDs re equal');
+                            return;
+                        }
+
+                        that.main.confirmMessage(_('Are you sure to replace \"%s\" with \"%s\" in all scenes?', oldId, newId), _('Confirm'), 'help', function (isYes) {
+                            if (isYes) {
+                                replaceId(oldId, newId);
+                            }
+                        });
+                    }
+                },
+                {
+                    text: _('Cancel'),
+                    click: function () {
+                        $(this).dialog('close');
+                    }
+                }
+            ]
         });
 
         that.$dialogState.dialog({
@@ -281,7 +313,7 @@ function Scenes(main) {
                         obj.native.members[index].delay    = parseInt($('#dialog-state-delay').val(), 10) || 0;
 
                         that.main.socket.emit('setObject', scene, obj, function (err) {
-                            if (err) this.main.showError(err);
+                            if (err) that.main.showError(err);
                         });
                     }
                 },
@@ -351,18 +383,18 @@ function Scenes(main) {
                             obj._id = newId;
                             that.main.socket.emit('delObject', scene, function (err) {
                                 if (err) {
-                                    this.main.showError(err);
+                                    that.main.showError(err);
                                 } else {
                                     that.main.socket.emit('delState', scene, function (err) {
                                         that.main.socket.emit('setObject', newId, obj, function (err) {
-                                            if (err) this.main.showError(err);
+                                            if (err) that.main.showError(err);
                                         });
                                     });
                                 }
                             });
                         } else {
                             that.main.socket.emit('setObject', scene, obj, function (err) {
-                                if (err) this.main.showError(err);
+                                if (err) that.main.showError(err);
                             });
                         }
                     }
@@ -374,6 +406,10 @@ function Scenes(main) {
                     }
                 }
             ]
+        });
+
+        $('#btn_replace_ids').button({icons: {primary: 'ui-icon ui-icon-transferthick-e-w'}, text: false}).css({width: 16, height: 16}).click(function () {
+            that.$dialogReplace.dialog('open');
         });
 
         $('#dialog-scene-trigger-true').change(function () {
@@ -527,7 +563,7 @@ function Scenes(main) {
         };
 
         this.main.socket.emit('setObject', id, scene, function (err, res) {
-            if (err) this.main.showError(err);
+            if (err) that.main.showError(err);
         });
     };
 
@@ -773,6 +809,53 @@ function Scenes(main) {
         that.$dialogScene.dialog('open');
     }
 
+    function replaceIdInScene(scene, oldId, newId) {
+        var obj = that.main.objects[scene];
+        if (!obj || !obj.native) return;
+        var isChanged = false;
+
+        // Check triggerId
+        if (obj.native.onTrue && obj.native.onTrue.trigger && obj.native.onTrue.trigger.id == oldId) {
+            obj.native.onTrue.trigger.id = newId;
+            isChanged = true;
+        }
+        if (obj.native.onFalse && obj.native.onFalse.trigger && obj.native.onFalse.trigger.id == oldId) {
+            obj.native.onFalse.trigger.id = newId;
+            isChanged = true;
+        }
+
+        var members = obj.native.members;
+        if (members && members.length) {
+            for (var m = 0; m < members.length; m++) {
+                if (members[m].id == oldId) {
+                    members[m].id = newId;
+                    isChanged = true;
+                }
+            }
+        }
+
+        if (isChanged) {
+            that.main.socket.emit('setObject', scene, obj, function (err) {
+                if (err) that.main.showError(err);
+            });
+        }
+        return isChanged;
+    }
+
+    function replaceId(oldId, newId) {
+        var scenes = [];
+        for (var i = 0; i < that.list.length; i++) {
+            if (replaceIdInScene(that.list[i], oldId, newId)) {
+                scenes.push(that.list[i]);
+            }
+        }
+        if (scenes.length) {
+            that.main.showMessage(_('IDs in following scenes were replaced: %s', scenes.join('<br>')), _('Result'));
+        } else {
+            that.main.showMessage(_('IDs was not found in any scene'), _('Result'));
+        }
+    }
+
     function setObject(scene, obj, callback) {
         if (that.timers[scene]) {
             that.timers[scene].callbacks.push(callback);
@@ -832,7 +915,7 @@ function Scenes(main) {
                     }
 
                     that.main.socket.emit('setObject', scene, obj, function (err) {
-                        if (err) this.main.showError(err);
+                        if (err) that.main.showError(err);
                     });
                 }
             });
@@ -847,7 +930,7 @@ function Scenes(main) {
             that.main.confirmMessage(_('Are you sure to delete %s?', scene), _('Conform'), 'help', function (isYes) {
                 if (isYes) {
                     that.main.socket.emit('delObject', scene, function (err) {
-                        if (err) this.main.showError(err);
+                        if (err) that.main.showError(err);
                     });
                 }
             });
@@ -874,7 +957,7 @@ function Scenes(main) {
                 setObject(scene, obj, function (err) {
                     if (err) {
                         $(this).css({outline: ''}).prop('checked', !that.main.objects[scene].native.members[index].disabled);
-                        this.main.showError(err);
+                        that.main.showError(err);
                     }
                 });
             });
@@ -900,7 +983,7 @@ function Scenes(main) {
                     setObject(scene, obj, function (err) {
                         if (err) {
                             $(this).css({outline: ''}).val(that.main.objects[scene].native.members[index].delay);
-                            this.main.showError(err);
+                            that.main.showError(err);
                         }
                     });
                 }, 500));
@@ -932,7 +1015,7 @@ function Scenes(main) {
                     setObject(scene, obj, function (err) {
                         if (err) {
                             $(this).css({outline: ''}).val(that.main.objects[scene].native.members[index].setIfTrue);
-                            this.main.showError(err);
+                            that.main.showError(err);
                         }
                     });
                 }, 500));
@@ -964,7 +1047,7 @@ function Scenes(main) {
                     setObject(scene, obj, function (err) {
                         if (err) {
                             $(this).css({outline: ''}).val(that.main.objects[scene].native.members[index].setIfFalse);
-                            this.main.showError(err);
+                            that.main.showError(err);
                         }
                     });
                 }, 500));
@@ -995,7 +1078,7 @@ function Scenes(main) {
                         obj.native.members.splice(index, 1);
 
                         that.main.socket.emit('setObject', scene, obj, function (err) {
-                            if (err) this.main.showError(err);
+                            if (err) that.main.showError(err);
                         });
                     }
                 });
@@ -1012,7 +1095,7 @@ function Scenes(main) {
                 obj.native.members[index] = m;
 
                 that.main.socket.emit('setObject', scene, obj, function (err) {
-                    if (err) this.main.showError(err);
+                    if (err) that.main.showError(err);
                 });
             });
             $('.scene-state-down-submit[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').button({
@@ -1027,7 +1110,7 @@ function Scenes(main) {
                 obj.native.members[index] = m;
 
                 that.main.socket.emit('setObject', scene, obj, function (err) {
-                    if (err) this.main.showError(err);
+                    if (err) that.main.showError(err);
                 });
             });
         } else {
@@ -1039,7 +1122,7 @@ function Scenes(main) {
                 setObject(scene, obj, function (err) {
                     if (err) {
                         $(this).css({outline: ''}).prop('checked', that.main.objects[scene].common.enabled);
-                        this.main.showError(err);
+                        that.main.showError(err);
                     }
                 });
             });
@@ -1051,7 +1134,7 @@ function Scenes(main) {
                 setObject(scene, obj, function (err) {
                     if (err) {
                         $(this).css({outline: ''}).prop('checked', that.main.objects[scene].native.onFalse && that.main.objects[scene].native.onFalse.enabled);
-                        this.main.showError(err);
+                        that.main.showError(err);
                     }
                 });
             });
@@ -1061,7 +1144,7 @@ function Scenes(main) {
             }).css('width', '16px').css('height', '16px').click(function () {
                 var scene = $(this).attr('data-scene-name');
                 that.main.socket.emit('setState', scene, true, function (err) {
-                    if (err) this.main.showError(err);
+                    if (err) that.main.showError(err);
                 });
             }).attr('title', _('Test scene with true'));
 
@@ -1071,7 +1154,7 @@ function Scenes(main) {
             }).css('width', '16px').css('height', '16px').click(function () {
                 var scene = $(this).attr('data-scene-name');
                 that.main.socket.emit('setState', scene, false, function (err) {
-                    if (err) this.main.showError(err);
+                    if (err) that.main.showError(err);
                 });
             }).attr('title', _('Test scene with false'));
         }
