@@ -100,15 +100,16 @@
     <div id="dialog-state" title="State configuration" class="translateT" style="display: none">
         <p>
             <h3><span class="translate">State</span> <span id="dialog-state-id"></span></h3>
-            <table>
-                <tr><td><label class="translate">Enabled:</label></td><td><input type="checkbox" id="dialog-state-enabled"/></td></tr>
-                <tr id="tr-dialog-state-setIfTrue-text"  ><td><label class="translate">Set value on true:</label></td><td><input type="text" id="dialog-state-setIfTrue-text"/></td></tr>
+            <table style="width: 100%">
+                <tr><td style="width: 300px"><label class="translate">Enabled:</label></td><td><input type="checkbox" id="dialog-state-enabled"/></td></tr>
+                <tr><td><label class="translate">Description:</label></td><td><input type="text" id="dialog-state-description" style="width: 100%"/></td></tr>
+                <tr id="tr-dialog-state-setIfTrue-text"  ><td><label class="translate">Set value on true:</label></td><td><input type="text" id="dialog-state-setIfTrue-text" style="width: 100%"/></td></tr>
                 <tr id="tr-dialog-state-setIfTrue-check" ><td><label class="translate">Set value on true:</label></td><td><input type="checkbox" id="dialog-state-setIfTrue-check"/></td></tr>
                 <tr id="tr-dialog-state-setIfTrue-select"><td><label class="translate">Set value on true:</label></td><td><select id="dialog-state-setIfTrue-select"></select></td></tr>
-                <tr id="tr-dialog-state-setIfFalse-text"  ><td><label class="translate">Set value on false:</label></td><td><input type="text" id="dialog-state-setIfFalse-text"/></td></tr>
+                <tr id="tr-dialog-state-setIfFalse-text"  ><td><label class="translate">Set value on false:</label></td><td><input type="text" id="dialog-state-setIfFalse-text" style="width: 100%"/></td></tr>
                 <tr id="tr-dialog-state-setIfFalse-check" ><td><label class="translate">Set value on false:</label></td><td><input type="checkbox" id="dialog-state-setIfFalse-check"/></td></tr>
                 <tr id="tr-dialog-state-setIfFalse-select"><td><label class="translate">Set value on false:</label></td><td><select id="dialog-state-setIfFalse-select"></select></td></tr>
-                <tr><td><label class="translate">Actual:</label></td><td><input style="opacity: 0.8" type="text" id="dialog-state-actual" readonly/></td></tr>
+                <tr><td><label class="translate">Actual:</label></td><td><input style="opacity: 0.8" type="text" id="dialog-state-actual" readonly style="width: 100%"/></td></tr>
                 <tr><td><label class="translate">Delay(ms):</label></td><td><input type="text" id="dialog-state-delay"/></td></tr>
                 <tr><td><label class="translate">Stop other delays:</label></td><td><input type="checkbox" id="dialog-state-stop-all-delays"/></td></tr>
             </table>

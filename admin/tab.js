@@ -34,7 +34,7 @@ function Scenes(main) {
                 var text = '<input ' + (that.data[node.key].enabled ? 'checked' : '') + ' type="checkbox" data-scene-name="' + keys[0] + '" ' + (keys[1] !== undefined ? ('data-state-index="' + keys[1]) + '" class="state-edit-enabled"': ' class="scene-edit-enabled"') + '>';
                 $tdList.eq(1).html(text).css({'text-align': 'center', "white-space": "nowrap"});
                 $tdList.eq(2).html(that.data[node.key].name).css({'overflow': 'hidden', "white-space": "nowrap", 'font-weight': (keys[1] === undefined) ? 'bold' : '', 'padding-left': (keys[1] === undefined) ? '0' : '10'});
-                $tdList.eq(3).html(that.data[node.key].desc).css({'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(3).html(that.data[node.key].desc).css({'overflow': 'hidden', "white-space": "nowrap", 'font-weight': (keys[1] === undefined) ? 'bold' : '', 'padding-left': (keys[1] === undefined) ? '0' : '10'});
 
                 $tdList.eq(4).html(that.data[node.key].cond || '').css({'overflow': 'hidden', "white-space": "nowrap"});
 
@@ -309,8 +309,9 @@ function Scenes(main) {
                             obj.native.members[index].setIfFalse = null;
                         }
                         obj.native.members[index].stopAllDelays = $('#dialog-state-stop-all-delays').prop('checked');
-                        obj.native.members[index].disabled = !$('#dialog-state-enabled').prop('checked');
-                        obj.native.members[index].delay    = parseInt($('#dialog-state-delay').val(), 10) || 0;
+                        obj.native.members[index].disabled      = !$('#dialog-state-enabled').prop('checked');
+                        obj.native.members[index].delay         = parseInt($('#dialog-state-delay').val(), 10) || 0;
+                        obj.native.members[index].desc          = $('#dialog-state-description').val() || null;
 
                         that.main.socket.emit('setObject', scene, obj, function (err) {
                             if (err) that.main.showError(err);
@@ -335,18 +336,27 @@ function Scenes(main) {
                 {
                     text: _('Ok'),
                     click: function () {
-                        $(this).dialog('close');
                         var scene = $('#dialog-scene-id').data('scene');
                         var obj = that.main.objects[scene];
                         var newId = null;
-                        obj.common.enabled = $('#dialog-scene-enabled').prop('checked');
 
                         if (obj.common.name != $('#dialog-scene-name').val()) {
                             obj.common.name = $('#dialog-scene-name').val();
                             newId = 'scene.' + obj.common.name.replace(/\s+/g, '_');
+                            if (newId != obj._id) {
+                                if (that.list.indexOf(newId) != -1) {
+                                    that.main.showMessage(_('Name "%s" yet exists!', newId), _('Error'), 'alert');
+                                }
+                            } else {
+                                newId = null;
+                            }
+
                         }
-                        obj.common.desc       = $('#dialog-scene-description').val();
-                        obj.common.engine     = $('#dialog-scene-engine').val();
+                        $(this).dialog('close');
+
+                        obj.common.enabled = $('#dialog-scene-enabled').prop('checked');
+                        obj.common.desc    = $('#dialog-scene-description').val();
+                        obj.common.engine  = $('#dialog-scene-engine').val();
 
                         if (!obj.native.onTrue)  obj.native.onTrue = {};
                         if (!obj.native.onFalse) obj.native.onFalse = {};
@@ -595,6 +605,7 @@ function Scenes(main) {
                 buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-edit-submit">'    + _('edit scene')   + '</button></td>';
                 buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-delete-submit">'  + _('delete scene') + '</button></td>';
                 buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-add-state">'      + _('add states')   + '</button></td>';
+                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-copy-scene">'     + _('copy scene')   + '</button></td>';
                 buttons += '</tr></table>';
 
                 var cond = '';
@@ -652,7 +663,7 @@ function Scenes(main) {
                         that.data[sceneId + '_$$$_' + m] = {
                             id:         members[m].id,
                             name:       this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.name || '') : '',
-                            desc:       this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.desc || '') : '',
+                            desc:       members[m].desc ? members[m].desc : (this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.desc || '') : ''),
                             scene:      sceneId,
                             index:      m,
                             delay:      members[m].delay,
@@ -681,11 +692,12 @@ function Scenes(main) {
     };
 
     function editState(scene, index) {
-        var obj = that.main.objects[scene];
-        $('#dialog-state-id').html(obj.native.members[index].id);
+        var obj      = that.main.objects[scene];
+        var stateObj = obj.native.members[index];
+        $('#dialog-state-id').html(stateObj.id);
         $('#dialog-state-id').data('scene', scene);
         $('#dialog-state-id').data('index', index);
-        var state = that.main.objects[obj.native.members[index].id];
+        var state    = that.main.objects[stateObj.id];
 
         $('#tr-dialog-state-setIfTrue-select').hide();
         $('#tr-dialog-state-setIfTrue-check').hide();
@@ -695,51 +707,52 @@ function Scenes(main) {
         $('#tr-dialog-state-setIfFalse-check').hide();
         $('#tr-dialog-state-setIfFalse-text').hide();
 
-        if (state) {
-            $('#dialog-state-stop-all-delays').prop('checked', state.stopAllDelays);
+        $('#dialog-state-stop-all-delays').prop('checked', stateObj.stopAllDelays);
+        $('#dialog-state-description').val(stateObj.desc || '');
 
+        if (state) {
             if (state.common.type == 'boolean' || state.common.type == 'bool') {
-                $('#dialog-state-setIfTrue-check').prop('checked', obj.native.members[index].setIfTrue);
+                $('#dialog-state-setIfTrue-check').prop('checked', stateObj.setIfTrue);
                 $('#tr-dialog-state-setIfTrue-check').show();
                 $('#dialog-state-id').data('type', 'check');
             } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
                 var select = '';
                 for (var s = 0; s < state.common.states.length; s++) {
-                    select += '<option value="' + s + '" ' + ((obj.native.members[index].setIfTrue == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
+                    select += '<option value="' + s + '" ' + ((stateObj.setIfTrue == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
                 }
                 $('#dialog-state-setIfTrue-select').html(select);
                 $('#tr-dialog-state-setIfTrue-select').show();
                 $('#dialog-state-id').data('type', 'select');
             } else {
                 $('#tr-dialog-state-setIfTrue-text').show();
-                $('#dialog-state-setIfTrue-text').val(obj.native.members[index].setIfTrue);
+                $('#dialog-state-setIfTrue-text').val(stateObj.setIfTrue);
                 $('#dialog-state-id').data('type', 'text');
             }
         } else {
             $('#tr-dialog-state-setIfTrue-text').show();
-            $('#dialog-state-setIfTrue-text').val(obj.native.members[index].setIfTrue);
+            $('#dialog-state-setIfTrue-text').val(stateObj.setIfTrue);
             $('#dialog-state-id').data('type', 'text');
         }
 
         if (obj.native.onFalse && obj.native.onFalse.enabled) {
             if (state) {
                 if (state.common.type == 'boolean' || state.common.type == 'bool') {
-                    $('#dialog-state-setIfFalse-check').prop('checked', obj.native.members[index].setIfFalse);
+                    $('#dialog-state-setIfFalse-check').prop('checked', stateObj.setIfFalse);
                     $('#tr-dialog-state-setIfFalse-check').show();
                 } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
                     var select = '';
                     for (var s = 0; s < state.common.states.length; s++) {
-                        select += '<option value="' + s + '" ' + ((obj.native.members[index].setIfFalse == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
+                        select += '<option value="' + s + '" ' + ((stateObj.setIfFalse == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
                     }
                     $('#dialog-state-setIfFalse-select').html(select);
                     $('#tr-dialog-state-setIfFalse-select').show();
                 } else {
                     $('#tr-dialog-state-setIfFalse-text').show();
-                    $('#dialog-state-setIfFalse-text').val(obj.native.members[index].setIfFalse);
+                    $('#dialog-state-setIfFalse-text').val(stateObj.setIfFalse);
                 }
             } else {
                 $('#tr-dialog-state-setIfFalse-text').show();
-                $('#dialog-state-setIfFalse-text').val(obj.native.members[index].setIfFalse);
+                $('#dialog-state-setIfFalse-text').val(stateObj.setIfFalse);
             }
         } else {
             $('#tr-dialog-state-setIfFalse-text').val('');
@@ -747,9 +760,9 @@ function Scenes(main) {
             $('#tr-dialog-state-setIfFalse-select').val('');
         }
 
-        $('#dialog-state-actual').val(main.states[obj.native.members[index].id] ? main.states[obj.native.members[index].id].val : '');
-        $('#dialog-state-delay').val(obj.native.members[index].delay || '');
-        $('#dialog-state-enabled').prop('checked', !obj.native.members[index].disabled);
+        $('#dialog-state-actual').val(main.states[stateObj.id] ? main.states[stateObj.id].val : '');
+        $('#dialog-state-delay').val(stateObj.delay || '');
+        $('#dialog-state-enabled').prop('checked', !stateObj.disabled);
         that.$dialogState.dialog('open');
     }
 
@@ -906,11 +919,18 @@ function Scenes(main) {
                     var obj = that.main.objects[scene];
                     for (var i = 0; i < newIds.length; i++) {
                         if (!obj.native.members) obj.native.members = [];
+
+                        var desc = null;
+                        if (that.main.states && that.main.states[newIds[i]] && that.main.states[newIds[i]].common) {
+                            desc = that.main.states[newIds[i]].common.desc || null;
+                        }
+
                         obj.native.members.push({
                             id:             newIds[i],
                             setIfTrue:      null,
                             setIfFalse:     null,
-                            stopAllDelays:  true
+                            stopAllDelays:  true,
+                            desc:           desc
                         });
                     }
 
@@ -918,6 +938,26 @@ function Scenes(main) {
                         if (err) that.main.showError(err);
                     });
                 }
+            });
+        });
+
+        $('.scene-copy-scene[data-scene-name="' + scene + '"]').button({
+            text: false,
+            icons: {
+                primary: 'ui-icon-copy'
+            }
+        }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
+            var scene = $(this).attr('data-scene-name');
+            var i = 1;
+            scene = scene.replace(/_\d+$/, '');
+            while (that.list.indexOf(scene + '_' + i) != -1) i++;
+
+            var obj = that.main.objects[scene];
+            obj._id = scene + '_' + i;
+            obj.common.name = obj.common.name.replace(/\s\d+$/, '') + ' ' + i;
+
+            that.main.socket.emit('setObject', scene + '_' + i, obj, function (err) {
+                if (err) that.main.showError(err);
             });
         });
 

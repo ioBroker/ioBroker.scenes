@@ -106,6 +106,7 @@ systemDictionary = {
     "on update":            {"en": "on update",             "de": "auf Update ",            "ru": "on update"},
     "Use trigger for false:": {"en": "Use trigger for false:", "de": "Use trigger for false:", "ru": "Использовать триггер для false:"},
     "Trigger:":             {"en": "Trigger:",              "de": "Trigger:",               "ru": "Триггер:"},
+    "copy scene":           {"en": "copy scene",            "de": "Szene kopieren",         "ru": "копировать сцену"},
     "Interval between commands(ms):": {
         "en": "Interval between commands(ms):",
         "de": "Intervall zwischen Befehlen(ms):",
