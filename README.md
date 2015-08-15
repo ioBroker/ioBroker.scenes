@@ -83,6 +83,10 @@ Delays can be used in the **group** too, but the states with delay are not parti
 
 ## Changelog
 
+### 0.1.2 (2015-08-15)
+* (bluefox) add translations
+* (bluefox) try to fix error by renaming
+
 ### 0.1.1 (2015-08-10)
 * (bluefox) allow description for states in scene
 * (bluefox) check by rename if the scene with the same name yet exists

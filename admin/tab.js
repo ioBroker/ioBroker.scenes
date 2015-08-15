@@ -1113,7 +1113,7 @@ function Scenes(main) {
                 var index = parseInt($(this).attr('data-state-index'), 10);
                 var obj = that.main.objects[scene];
 
-                that.main.confirmMessage(_('Are you sure to delete %s from %s?', obj.native.members[index], scene), _('Conform'), 'help', function (isYes) {
+                that.main.confirmMessage(_('Are you sure to delete %s from %s?', obj.native.members[index].id, scene), _('Conform'), 'help', function (isYes) {
                     if (isYes) {
                         obj.native.members.splice(index, 1);
 

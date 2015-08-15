@@ -433,6 +433,9 @@ function activateScene(sceneId, isTrue) {
 function getState(sceneId, stateNumber, callback) {
     var stateId = scenes[sceneId].native.members[stateNumber].id;
     adapter.getForeignState(stateId, function (err, state) {
+        // possible scene was renamed
+        if (!scenes[sceneId]) return;
+
         scenes[sceneId].native.members[stateNumber].actual = state ? state.val : null;
         // If processing finshed
         if (!--scenes[sceneId].count) {

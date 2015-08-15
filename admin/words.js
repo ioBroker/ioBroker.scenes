@@ -117,6 +117,11 @@ systemDictionary = {
         "de": "Wollen Sie wirklich \"%s\" löschen?",
         "ru": "Вы действительно хотите удалить \"%s\"?"
     },
+    "Are you sure to delete %s from %s?": {
+        "en": "Are you sure to delete \"%s\" from \"%s\"?",
+        "de": "Wollen Sie wirklich \"%s\" aus \"%s\" löschen?",
+        "ru": "Вы действительно хотите удалить \"%s\" из \"%s\"?"
+    },
     "replace_text": {
         "en": "Old ID will be replaced in all scenes with new ID.",
         "de": "Alter ID wird mit neuem ID in allen Szenen erezt.",
