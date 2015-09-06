@@ -10,9 +10,9 @@ systemDictionary = {
     "true":                 {"en": "true",                  "de": "ja",                     "ru": "да"},
     "false":                {"en": "false",                 "de": "nein",                   "ru": "нет"},
     "uncertain":            {"en": "uncertain",             "de": "ungewiss",               "ru": "неопределённо"},
-    "Insert":               {"en": "Insert",                "de": "Einfügen",               "ru": "Вставить"},
+    "Insert":               {"en": "Insert",                "de": "einfügen",               "ru": "Вставить"},
     "copy":                 {"en": "copy",                  "de": "kopieren",               "ru": "копировать"},
-    "scene":                {"en": "scene",                 "de": "szene",                  "ru": "сцена"},
+    "scene":                {"en": "scene",                 "de": "Szene",                  "ru": "сцена"},
     "ioBroker adapter scenes": {
         "en": "ioBroker adapter scenes",
         "de": "ioBroker adapter scenes",
@@ -59,7 +59,7 @@ systemDictionary = {
     "Room":                 {"en": "Room",                  "de": "Raum",                   "ru": "Комната"},
     "Value":                {"en": "Value",                 "de": "Wert",                   "ru": "Значение"},
     "From":                 {"en": "From: ",                "de": "Von",                    "ru": "От"},
-    "Last changed":         {"en": "Last changed",          "de": "Lätze Änderung",         "ru": "Изменён"},
+    "Last changed":         {"en": "Last changed",          "de": "Letzte Änderung",         "ru": "Изменён"},
     "Time stamp":           {"en": "Time stamp",            "de": "Zeitstempel",            "ru": "Время"},
     "Acknowledged":         {"en": "Acknowledged",          "de": "Bestätigt",              "ru": "Подтверждён"},
     "Processing...":        {"en": "Processing...",         "de": "Bearbeite...",           "ru": "Обработка..."},
@@ -84,13 +84,13 @@ systemDictionary = {
     "Trigger condition:":   {"en": "Trigger condition:",    "de": "Trigger-Bedienung:",     "ru": "Условие триггера:"},
     "Trigger value:":       {"en": "Trigger value:",        "de": "Trigger-Wert:",          "ru": "Значение триггера:"},
     "update scene information": {"en": "update scene information", "de": "Update",          "ru": "Обновить"},
-    "collapse all":         {"en": "collapse all",          "de": "Zumachen alle",          "ru": "Свернуть все сцены"},
-    "expand all":           {"en": "expand all",            "de": "Aufmachen alle",         "ru": "Развернуть все сцены"},
+    "collapse all":         {"en": "collapse all",          "de": "alle einklappen",          "ru": "Свернуть все сцены"},
+    "expand all":           {"en": "expand all",            "de": "alle aufklappen",         "ru": "Развернуть все сцены"},
     "State configuration":  {"en": "State configuration",   "de": "Zustandskonfiguration",  "ru": "Настройки значения для сцены"},
-    "Scene configuration":  {"en": "Scene configuration",   "de": "Szenekonfiguration",     "ru": "Настройки сцены"},
+    "Scene configuration":  {"en": "Scene configuration",   "de": "Szenenkonfiguration",     "ru": "Настройки сцены"},
     "add states":           {"en": "add states",            "de": "Zustände hinzufügen",    "ru": "Добавить состояния"},
     "Select all":           {"en": "Select all",            "de": "Alle auswählen",         "ru": "Выбрать все видимые"},
-    "Deselect all":         {"en": "Deselect all",          "de": "Alle unsekeltiern",      "ru": "Убрать выделение"},
+    "Deselect all":         {"en": "Deselect all",          "de": "Auswahl aufheben",      "ru": "Убрать выделение"},
     "Invert selection":     {"en": "Invert selection",      "de": "Selektierung invertieren", "ru": "Инвертировать выделение"},
     "Items %s":             {"en": "Items: %s",             "de": "Anzahl: %s",             "ru": "элементов: %s"},
     "edit state":           {"en": "edit state",            "de": "Zustand editieren",      "ru": "Редактировать состояние"},
@@ -124,7 +124,7 @@ systemDictionary = {
     },
     "replace_text": {
         "en": "Old ID will be replaced in all scenes with new ID.",
-        "de": "Alter ID wird mit neuem ID in allen Szenen erezt.",
+        "de": "Alte ID wird mit neuer ID in allen Szenen ersezt.",
         "ru": "Старый ID будет заменён во всей сценах новым ID."
     },
     "Are you sure to replace \"%s\" with \"%s\" in all scenes?": {
@@ -134,7 +134,7 @@ systemDictionary = {
     },
     "IDs was not found in any scene": {
         "en": "ID was not found in any scene",
-        "de": "ID wurde in keine Szene gefunden",
+        "de": "ID wurde in keiner Szene gefunden",
         "ru": "ID не найдено ни в одной сцене"
     },
     "IDs in following scenes were replaced: %s": {
@@ -145,6 +145,6 @@ systemDictionary = {
     "Result":               {"en": "Result",                "de": "Ergebnis",               "ru": "Результат"},
     "Confirm":              {"en": "Confirm",               "de": "Bestätigen",             "ru": "Подтвердите"},
     "Replace IDs":          {"en": "Replace IDs",           "de": "ID austauschen",         "ru": "Замена ID"},
-    "Old ID:":              {"en": "Old ID:",               "de": "Alter ID:",              "ru": "Старый ID:"},
-    "New ID:":              {"en": "New ID:",               "de": "neuer ID:",              "ru": "Новый ID:"}
+    "Old ID:":              {"en": "Old ID:",               "de": "alte ID:",              "ru": "Старый ID:"},
+    "New ID:":              {"en": "New ID:",               "de": "neue ID:",              "ru": "Новый ID:"}
 };
