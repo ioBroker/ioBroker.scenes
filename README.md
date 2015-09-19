@@ -83,6 +83,9 @@ Delays can be used in the **group** too, but the states with delay are not parti
 
 ## Changelog
 
+### 0.1.3 (2015-09-19)
+* (bluefox) show set value if 0 or false in settings
+
 ### 0.1.2 (2015-08-15)
 * (bluefox) add translations
 * (bluefox) try to fix error by renaming

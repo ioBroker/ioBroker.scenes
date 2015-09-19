@@ -86,10 +86,10 @@ function Scenes(main) {
                             }
                             text = '<select class="state-edit-setIfTrue" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
                         } else {
-                            text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                            text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue === undefined ? '' : that.data[node.key].setIfTrue) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                         }
                     } else {
-                        text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                        text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue === undefined ? '' : that.data[node.key].setIfTrue) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                     }
                 } else {
                     text = '<button class="state-set-true" data-scene-name="' + keys[0] + '" style="float: right"></button>';
@@ -112,10 +112,10 @@ function Scenes(main) {
                                 }
                                 text = '<select class="state-edit-setIfFalse" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
                             } else {
-                                text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                                text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                             }
                         } else {
-                            text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                            text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                         }
                     } else {
                         text = '';
