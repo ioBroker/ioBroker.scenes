@@ -15,6 +15,20 @@ function Scenes(main) {
     this.$dialogReplace = $('#dialog-replace');
     this.timers = {};
 
+    function installColResize() {
+        if (!$.fn.colResizable) return;
+
+        if ($('#grid-scenes').is(':visible')) {
+            $('#grid-scenes').colResizable({
+                liveDrag: true
+            });
+        } else {
+            setTimeout(function () {
+                installColResize();
+            }, 400)
+        }
+    }
+
     this.prepare = function () {
         that.$grid.fancytree({
             extensions: ["table", "gridnav", "filter", "themeroller"],
@@ -73,28 +87,28 @@ function Scenes(main) {
 
                 // - set value
                 if (!that.main.objects[keys[0]].native.virtualGroup) {
-                    if (keys[1] !== undefined) {
-                        var obj   = that.main.objects[keys[0]];
-                        var state = that.main.objects[obj.native.members[keys[1]].id];
+                if (keys[1] !== undefined) {
+                    var obj   = that.main.objects[keys[0]];
+                    var state = that.main.objects[obj.native.members[keys[1]].id];
 
-                        if (state) {
-                            if (state.common.type == 'boolean' || state.common.type == 'bool') {
-                                text = '<input class="state-edit-setIfTrue" data-type="checkbox" type="checkbox" ' + (that.data[node.key].setIfTrue ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
-                            } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
-                                var select = '';
-                                for (var s = 0; s < state.common.states.length; s++) {
-                                    select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].setIfTrue == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
-                                }
-                                text = '<select class="state-edit-setIfTrue" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
-                            } else {
-                                text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue === undefined ? '' : that.data[node.key].setIfTrue) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                    if (state) {
+                        if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                            text = '<input class="state-edit-setIfTrue" data-type="checkbox" type="checkbox" ' + (that.data[node.key].setIfTrue ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                        } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                            var select = '';
+                            for (var s = 0; s < state.common.states.length; s++) {
+                                select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].setIfTrue == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
                             }
+                            text = '<select class="state-edit-setIfTrue" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
                         } else {
                             text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue === undefined ? '' : that.data[node.key].setIfTrue) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                         }
                     } else {
-                        text = '<button class="state-set-true" data-scene-name="' + keys[0] + '" style="float: right"></button>';
+                        text = '<input class="state-edit-setIfTrue" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfTrue === undefined ? '' : that.data[node.key].setIfTrue) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                     }
+                } else {
+                    text = '<button class="state-set-true" data-scene-name="' + keys[0] + '" style="float: right"></button>';
+                }
                 } else {
                     if (keys[1] === undefined) {
                         text = '<input class="state-set-group" data-type="text" style="width: 100%" value="" data-scene-name="' + keys[0] + '"/>';
@@ -106,41 +120,42 @@ function Scenes(main) {
 
                 // - set value if false
                 if (!that.main.objects[keys[0]].native.virtualGroup) {
-                    if (keys[1] !== undefined) {
-                        if (that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) {
-                            var obj = that.main.objects[keys[0]];
-                            var state = that.main.objects[obj.native.members[keys[1]].id];
+                if (keys[1] !== undefined) {
+                    if (that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) {
+                        var obj = that.main.objects[keys[0]];
+                        var state = that.main.objects[obj.native.members[keys[1]].id];
 
-                            if (state) {
-                                if (state.common.type == 'boolean' || state.common.type == 'bool') {
-                                    text = '<input class="state-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + (that.data[node.key].setIfFalse ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
-                                } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
-                                    var select = '';
-                                    for (var s = 0; s < state.common.states.length; s++) {
-                                        select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].setIfFalse == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
-                                    }
-                                    text = '<select class="state-edit-setIfFalse" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
-                                } else {
-                                    text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                        if (state) {
+                            if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                                text = '<input class="state-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + (that.data[node.key].setIfFalse ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                            } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                                var select = '';
+                                for (var s = 0; s < state.common.states.length; s++) {
+                                    select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].setIfFalse == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
                                 }
+                                text = '<select class="state-edit-setIfFalse" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
                             } else {
                                 text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                             }
                         } else {
-                            text = '';
+                            text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                         }
                     } else {
-                        text = '<input class="scene-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + ((that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) ? 'checked' : '') + ' data-scene-name="' + keys[0] + '"/>';
-                        if (that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) {
-                            text += '<button class="state-set-false" data-scene-name="' + keys[0] + '" style="float: right"></button>';
-                        } else {
-                            text += '<div style="width: 16px; float: right; height: 16px"></div>';
-                        }
+                        text = '';
                     }
+                } else {
+                    text = '<input class="scene-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + ((that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) ? 'checked' : '') + ' data-scene-name="' + keys[0] + '"/>';
+                    if (that.main.objects[keys[0]].native.onFalse && that.main.objects[keys[0]].native.onFalse.enabled) {
+                        text += '<button class="state-set-false" data-scene-name="' + keys[0] + '" style="float: right"></button>';
+                    } else {
+                        text += '<div style="width: 16px; float: right; height: 16px"></div>';
+                    }
+                }
                 } else {
                     text = '';
                 }
                 $tdList.eq(7).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+
 
                 if (keys[1] !== undefined) {
                     text = '<input class="state-edit-delay" style="width: 100%" value="' + (that.data[node.key].delay || '') + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
@@ -182,6 +197,8 @@ function Scenes(main) {
                 that.main.saveConfig('scenesIsCollapsed', JSON.stringify(that.isCollapsed));
             }
         });
+
+        installColResize();
 
         $('#btn_collapse_scenes').button({icons: {primary: 'ui-icon-folder-collapsed'}, text: false}).css({width: 18, height: 18}).unbind('click').click(function () {
             $('#process_running_scenes').show();
@@ -382,13 +399,13 @@ function Scenes(main) {
                         obj.native.virtualGroup    = $('#dialog-scene-virtual-group').prop('checked');
 
                         if ($('#dialog-scene-trigger-true').prop('checked')) {
-                            obj.native.onTrue.trigger.id        = $('#dialog-scene-trigger-true-id').val();
-                            obj.native.onTrue.trigger.condition = $('#dialog-scene-trigger-true-cond').val();
-                            obj.native.onTrue.trigger.value     = $('#dialog-scene-trigger-true-value').val();
+                            obj.native.onTrue.trigger.id         = $('#dialog-scene-trigger-true-id').val();
+                            obj.native.onTrue.trigger.condition  = $('#dialog-scene-trigger-true-cond').val();
+                            obj.native.onTrue.trigger.value      = $('#dialog-scene-trigger-true-value').val();
                         } else {
-                            obj.native.onTrue.trigger.id        = null;
-                            obj.native.onTrue.trigger.condition = null;
-                            obj.native.onTrue.trigger.value     = null;
+                            obj.native.onTrue.trigger.id         = null;
+                            obj.native.onTrue.trigger.condition  = null;
+                            obj.native.onTrue.trigger.value      = null;
                         }
 
                         if ($('#dialog-scene-trigger-false').prop('checked') && obj.native.onFalse.enabled) {
@@ -400,6 +417,14 @@ function Scenes(main) {
                             obj.native.onFalse.trigger.condition = null;
                             obj.native.onFalse.trigger.value     = null;
                         }
+                        if (obj.native.virtualGroup) {
+                            obj.native.onTrue.trigger.id         = null;
+                            obj.native.onTrue.trigger.condition  = null;
+                            obj.native.onTrue.trigger.value      = null;
+                            obj.native.onFalse.trigger.id        = null;
+                            obj.native.onFalse.trigger.condition = null;
+                            obj.native.onFalse.trigger.value     = null;
+                          }
 
                         if (newId) {
                             obj._id = newId;
@@ -1347,7 +1372,7 @@ var main = {
         $dialogConfirm.data('callback', callback);
         $dialogConfirm.dialog('open');
     },
-    initSelectIds:  function () {
+    initSelectIds:   function () {
         if (main.selectIds) return main.selectIds;
         main.selectIds = $('#dialog-select-members').selectId('init',  {
             objects:       main.objects,
