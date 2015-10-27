@@ -3,9 +3,10 @@ ioBroker scenes adapter
 =================
 _scenes Adapter_ can create scenes and execute them in ioBroker environment.
 
-This adapter can create two types of scenes: 
+This adapter can create three types of scenes: 
 - **scenes**
 - **groups**
+- **virtual groups**
 
 ## Scenes
 **Scenes** will be created if setting "set on false" are not used. 
@@ -81,7 +82,14 @@ If you will manually switch on one light, the value of the _scene.allLightInBath
 
 Delays can be used in the **group** too, but the states with delay are not participate in calculations of the current value of **group**.
 
+## Virtual groups
+**Virtual groups** are like virtual channels and like groups, but can have any kind of values: numbers, strings and so on. 
+You can create virtual group to control all shutters in living room. By writing 40% into virtual group all shutters will be set to 40%. 
+
 ## Changelog
+
+### 0.2.0 (2015-10-27)
+* (bluefox) support of virtual groups
 
 ### 0.1.3 (2015-09-19)
 * (bluefox) show set value if 0 or false in settings
