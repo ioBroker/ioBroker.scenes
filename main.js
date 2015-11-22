@@ -108,11 +108,7 @@ adapter.on('objectChange', function (id, obj) {
 function restartAdapter() {
     adapter.log.info('restartAdapter');
     // stop all timers
-    for (var t in triggers) {
-        for (var id = 0; id < triggers[t].length; id++) {
-            clearTimeout(triggers[t][id]);
-        }
-    }
+    var t;
     for (t in checkTimers) {
         clearTimeout(checkTimers[t]);
     }
