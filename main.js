@@ -68,7 +68,12 @@ adapter.on('stateChange', function (id, state) {
                 if (scenes[id].native.virtualGroup) {
                     activateScene(id, state.val);
                 } else {
-                    if (state.val) {
+                    var val = state.val;
+                    if (val === 'true')  val = true;
+                    if (val === 'false') val = false;
+                    if (val === '0')     val = 0;
+
+                    if (val) {
                         // activate scene
                         activateScene(id, true);
                     } else if (scenes[id].native.onFalse && scenes[id].native.onFalse.enabled) {
@@ -281,20 +286,20 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
 
         switch (trigger.condition) {
             case '==':
-                if (val.toString() == stateVal) activateScene(sceneId, isTrue);
+                if (val == stateVal) activateScene(sceneId, isTrue);
                 break;
 
             case '!=':
-                if (val.toString() != stateVal) activateScene(sceneId, isTrue);
+                if (val != stateVal) activateScene(sceneId, isTrue);
                 break;
 
             case '>':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val.toString() && stateVal == aVal.toString()) {
+                if (fVal.toString() == val && stateVal == aVal.toString()) {
                     if (aVal > fVal) activateScene(sceneId, isTrue);
                 } else
-                if (val.toString() > state.val.toString()) {
+                if (val > state.val.toString()) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -302,10 +307,10 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '<':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val.toString() && stateVal == aVal.toString()) {
+                if (fVal.toString() == val && stateVal == aVal.toString()) {
                     if (aVal < fVal) activateScene(sceneId, isTrue);
                 } else
-                if (val.toString() < state.val.toString()) {
+                if (val < state.val.toString()) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -313,10 +318,10 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '>=':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val.toString() && stateVal == aVal.toString()) {
+                if (fVal.toString() == val && stateVal == aVal.toString()) {
                     if (aVal >= fVal) activateScene(sceneId, isTrue);
                 } else
-                if (val.toString() >= state.val.toString()) {
+                if (val >= state.val.toString()) {
                     activateScene(sceneId, isTrue);
                 }                    
                 break;
@@ -324,10 +329,10 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '<=':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val.toString() && stateVal == aVal.toString()) {
+                if (fVal.toString() == val && stateVal == aVal.toString()) {
                     if (aVal <= fVal) activateScene(sceneId, isTrue);
                 } else
-                if (val.toString() <= state.val.toString()) {
+                if (val <= state.val.toString()) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -480,7 +485,9 @@ function initTrueFalse(sceneId, isTrue) {
     if (sStruct.trigger && sStruct.trigger.id) {
         usedIds.push(sStruct.trigger.id);
         triggers[sStruct.trigger.id] = triggers[sStruct.trigger.id] || [];
-        triggers[sStruct.trigger.id].push(sceneId);
+        if (triggers[sStruct.trigger.id].indexOf(sceneId) == -1) {
+            triggers[sStruct.trigger.id].push(sceneId);
+        }
     }
     // initiate cron tasks
     if (sStruct.cron) {
@@ -525,6 +532,21 @@ function initScenes() {
                 }
             } else {
                 scenes[sceneId].native.members[state].delay = 0;
+            }
+
+            if (scenes[sceneId].native.onTrue  && scenes[sceneId].native.onTrue.trigger)  {
+                if (scenes[sceneId].native.onTrue.trigger.value === null || scenes[sceneId].native.onTrue.trigger.value === undefined) {
+                    scenes[sceneId].native.onTrue.trigger.value  = '';
+                } else {
+                    scenes[sceneId].native.onTrue.trigger.value  = scenes[sceneId].native.onTrue.trigger.value.toString();
+                }
+            }
+            if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.trigger) {
+                if (scenes[sceneId].native.onFalse.trigger.value === null || scenes[sceneId].native.onFalse.trigger.value === undefined) {
+                    scenes[sceneId].native.onFalse.trigger.value  = '';
+                } else {
+                    scenes[sceneId].native.onFalse.trigger.value  = scenes[sceneId].native.onFalse.trigger.value.toString();
+                }
             }
 
             scenes[sceneId].count++;

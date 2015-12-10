@@ -1,7 +1,7 @@
 {
     "common": {
         "name":                     "scenes",
-        "version": "0.2.2",
+        "version": "0.2.3",
         "title":                    "Scenes",
         "desc":                     {
 			"en": "This adapter allows to create scenes from several datapoints.",
@@ -9,7 +9,7 @@
 			"ru": "Позволяет создавать и активировать сцены."
 		},
         "authors": [
-            "bluefox <bluefox@ccu.io>"
+            "bluefox <dogafox@gmail.com>"
         ],
         "license":                  "MIT",
         "platform":                 "Javascript/Node.js",
