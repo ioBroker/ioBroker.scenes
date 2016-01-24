@@ -88,6 +88,9 @@ You can create virtual group to control all shutters in living room. By writing 
 
 ## Changelog
 
+### 0.2.4 (2016-01-24)
+* (bluefox) fix error disabled states in scene
+
 ### 0.2.3 (2015-12-10)
 * (bluefox) fix error with trigger on false
 

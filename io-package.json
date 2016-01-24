@@ -1,7 +1,7 @@
 {
     "common": {
         "name":                     "scenes",
-        "version": "0.2.3",
+        "version": "0.2.4",
         "title":                    "Scenes",
         "desc":                     {
 			"en": "This adapter allows to create scenes from several datapoints.",

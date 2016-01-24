@@ -593,15 +593,20 @@ function main() {
     adapter.getForeignObjects('scene.*', 'state', function (err, states) {
         if (states) {
             for (var id in states) {
+                // ignore if no states involved
                 if (!states[id].native || !states[id].native.members || !states[id].native.members.length) continue;
+                //ignore if scene is disabled
                 if (!states[id].common.enabled) continue;
+                // ignore if another instance
                 if (states[id].common.engine != 'system.adapter.' + adapter.namespace) continue;
 
                 scenes[id] = states[id];
 
+                // Remove all disabled scenes
                 for (var m = states[id].native.members.length - 1; m >= 0; m--) {
-                    if (states[id].native.members[m].disabled) scenes[id].native.members.splice(m, 1);
+                    // Reset actual state
                     scenes[id].native.members[m].actual = null;
+                    if (states[id].native.members[m].disabled) scenes[id].native.members.splice(m, 1);
                 }
             }
         }
