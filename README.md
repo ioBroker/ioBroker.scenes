@@ -1,6 +1,12 @@
 ![Logo](admin/scenes.png)
 ioBroker scenes adapter
 =================
+
+[![NPM version](http://img.shields.io/npm/v/iobroker.scenes.svg)](https://www.npmjs.com/package/iobroker.scenes)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.scenes.svg)](https://www.npmjs.com/package/iobroker.scenes)
+
+[![NPM](https://nodei.co/npm/iobroker.scenes.png?downloads=true)](https://nodei.co/npm/iobroker.scenes/)
+
 _scenes Adapter_ can create scenes and execute them in ioBroker environment.
 
 This adapter can create three types of scenes: 
@@ -87,6 +93,9 @@ Delays can be used in the **group** too, but the states with delay are not parti
 You can create virtual group to control all shutters in living room. By writing 40% into virtual group all shutters will be set to 40%. 
 
 ## Changelog
+
+### 0.2.5 (2016-02-03)
+* (bluefox) update node-schedule
 
 ### 0.2.4 (2016-01-24)
 * (bluefox) fix error disabled states in scene

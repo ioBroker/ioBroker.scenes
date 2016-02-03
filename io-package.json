@@ -1,7 +1,7 @@
 {
     "common": {
         "name":                     "scenes",
-        "version": "0.2.4",
+        "version": "0.2.5",
         "title":                    "Scenes",
         "desc":                     {
 			"en": "This adapter allows to create scenes from several datapoints.",
@@ -20,6 +20,7 @@
         "keywords":                 ["Scenes", "Szenen", "Сцены"],
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
         "localLink":                "/adapter/scenes/tab.html",
+        "noConfig":                 true,
 		"type":                     "script",
         "adminTab": {
             "name":                 {"en": "Scenes", "de": "Szenen", "ru": "Cцeны"},
