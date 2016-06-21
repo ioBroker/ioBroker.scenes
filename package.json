@@ -1,10 +1,10 @@
 {
   "name": "iobroker.scenes",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Scenes for ioBroker.",
   "author": {
     "name": "bluefox",
-    "email": "bluefox@ccu.io"
+    "email": "bluefox@gmail.com"
   },
   "homepage": "https://github.com/ioBroker/ioBroker.scenes",
   "keywords": [
@@ -16,7 +16,7 @@
     "url": "https://github.com/ioBroker/ioBroker.scenes"
   },
   "dependencies": {
-      "node-schedule": "^1.0.0",
+      "node-schedule": "^1.1.1",
       "suncalc": "^1.7.0"
   },
   "devDependencies": {

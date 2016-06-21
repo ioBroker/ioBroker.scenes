@@ -592,33 +592,36 @@ function Scenes(main) {
         var id = 'scene.0.scene' + i;
 
         var scene = {
-            "common": {
-                "name":    '0.' + _('scene') + ' ' + i,
-                "type":    "boolean",
-                "role":    "scene.state",
-                "desc":    _('scene') + ' ' + i,
-                "enabled": true,
-                "engine":  this.engines[0]
+            common: {
+                name:       '0.' + _('scene') + ' ' + i,
+                type:       'boolean',
+                role:       'scene.state',
+                desc:       _('scene') + ' ' + i,
+                enabled:    true,
+                read:       true,
+                write:      true,
+                def:        false,
+                engine:     this.engines[0]
             },
-            "native": {
-                "onTrue": {
-                    "trigger": {
+            native: {
+                onTrue: {
+                    trigger: {
 
                     },
-                    "cron":    null,
-                    "astro":   null
+                    cron:    null,
+                    astro:   null
                 },
-                "onFalse": {
-                    "enabled": false,
-                    "trigger": {
+                onFalse: {
+                    enabled: false,
+                    trigger: {
 
                     },
-                    "cron":    null,
-                    "astro":   null
+                    cron:    null,
+                    astro:   null
                 },
-                "members":  []
+                members:  []
             },
-            "type": "state"
+            type: 'state'
         };
 
         this.main.socket.emit('setObject', id, scene, function (err, res) {

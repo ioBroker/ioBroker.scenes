@@ -1,7 +1,14 @@
 {
     "common": {
         "name":                     "scenes",
-        "version": "0.2.5",
+        "version": "0.2.6",
+        "news": {
+            "0.2.6": {
+                "en": "add read/write settings to scene object",
+                "de": "add read/write settings to scene object",
+                "ru": "add read/write settings to scene object"
+            }
+        },
         "title":                    "Scenes",
         "desc":                     {
 			"en": "This adapter allows to create scenes from several datapoints.",
