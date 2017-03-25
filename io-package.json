@@ -31,7 +31,8 @@
 		"type":                     "script",
         "adminTab": {
             "name":                 {"en": "Scenes", "de": "Szenen", "ru": "Cцeны"},
-            "singleton":            true
+            "singleton":            true,	
+			"fa-icon":				"fa-film"
         }
     },
     "native": {
