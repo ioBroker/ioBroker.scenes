@@ -65,7 +65,7 @@ systemDictionary = {
     "Processing...":        {"en": "Processing...",         "de": "Bearbeite...",           "ru": "Обработка..."},
     "Filter:":              {"en": "Filter:",               "de": "Filter:",                "ru": "Фильтр:"},
     "id":                   {"en": "ID",                    "de": "ID",                     "ru": "ID"},
-    "condition":            {"en": "condition",             "de": "Bedienung",              "ru": "Условие"},
+    "condition":            {"en": "condition",             "de": "Bedingung",              "ru": "Условие"},
     "actual":               {"en": "actual",                "de": "Aktuell",                "ru": "Текущее"},
     "set":                  {"en": "set",                   "de": "Setzen",                 "ru": "Установить"},
     "delay":                {"en": "delay",                 "de": "Verzögerung",            "ru": "Задержка"},
