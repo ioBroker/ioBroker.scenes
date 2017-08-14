@@ -1,5 +1,5 @@
 <html>
-<header>
+<head>
     <!-- these 4 files always have to be included -->
     <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
     <link rel="stylesheet" type="text/css" href="../../lib/css/fancytree/ui.fancytree.min.css"/>
@@ -8,7 +8,7 @@
     <script type="text/javascript" src="../../lib/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
     <script type="text/javascript" src="../../lib/js/loStorage.js"></script>
-    <script type="text/javascript" src="../../js/translate.js"></script>
+    <script type="text/javascript" src="../../lib/js/translate.js"></script>
     <script type="text/javascript" src="words.js"></script>
     <script type="text/javascript" src="../../lib/js/colResizable-1.5.min.js"></script>
 
@@ -18,9 +18,9 @@
     <script src="lib/js/jquery.fancytree.gridnav.js" type="text/javascript"></script>
     <script src="lib/js/jquery.fancytree.filter.js" type="text/javascript"></script>
     <script src="lib/js/jquery.fancytree.edit.js" type="text/javascript"></scene-->
-    <script type="text/javascript" src="../../js/selectID.js"></script>
+    <script type="text/javascript" src="../../lib/js/selectID.js"></script>
 
-    <style scoped>
+    <style>
         body {
             font-size: 11px;
             margin: 0;
@@ -29,18 +29,17 @@
             font-family: tahoma, arial, helvetica;
         }
         .no-space {
-            border: 0px !important;
-            margin: 0px;
-            padding: 0px;
-            border-spacing: 0px;
-            border-image-width: 0px;
+            border: 0 !important;
+            margin: 0;
+            padding: 0;
+            border-spacing: 0;
+            border-image-width: 0;
         }
         .scene-line-true, .scene-line-false {
             background: lightgrey;
         }
     </style>
-
-</header>
+</head>
 <body>
     <div id="tab-scenes" style="display: none">
         <table><tr>
@@ -102,74 +101,74 @@
         <p>
             <h3><span class="translate">State</span> <span id="dialog-state-id"></span></h3>
             <table style="width: 100%">
-                <tr><td style="width: 300px"><label class="translate">Enabled:</label></td><td><input type="checkbox" id="dialog-state-enabled"/></td></tr>
-                <tr><td><label class="translate">Description:</label></td><td><input type="text" id="dialog-state-description" style="width: 100%"/></td></tr>
-                <tr id="tr-dialog-state-setIfTrue-text"  ><td><label class="translate">Set value on true:</label></td><td><input type="text" id="dialog-state-setIfTrue-text" style="width: 100%"/></td></tr>
-                <tr id="tr-dialog-state-setIfTrue-check" ><td><label class="translate">Set value on true:</label></td><td><input type="checkbox" id="dialog-state-setIfTrue-check"/></td></tr>
-                <tr id="tr-dialog-state-setIfTrue-select"><td><label class="translate">Set value on true:</label></td><td><select id="dialog-state-setIfTrue-select"></select></td></tr>
-                <tr id="tr-dialog-state-setIfFalse-text"  ><td><label class="translate">Set value on false:</label></td><td><input type="text" id="dialog-state-setIfFalse-text" style="width: 100%"/></td></tr>
-                <tr id="tr-dialog-state-setIfFalse-check" ><td><label class="translate">Set value on false:</label></td><td><input type="checkbox" id="dialog-state-setIfFalse-check"/></td></tr>
-                <tr id="tr-dialog-state-setIfFalse-select"><td><label class="translate">Set value on false:</label></td><td><select id="dialog-state-setIfFalse-select"></select></td></tr>
-                <tr><td><label class="translate">Actual:</label></td><td><input style="opacity: 0.8" type="text" id="dialog-state-actual" readonly style="width: 100%"/></td></tr>
-                <tr><td><label class="translate">Delay(ms):</label></td><td><input type="text" id="dialog-state-delay"/></td></tr>
-                <tr><td><label class="translate">Stop other delays:</label></td><td><input type="checkbox" id="dialog-state-stop-all-delays"/></td></tr>
+                <tr><td style="width: 300px"><label class="translate" for="dialog-state-enabled">Enabled:</label></td><td><input type="checkbox" id="dialog-state-enabled"/></td></tr>
+                <tr><td><label class="translate" for="dialog-state-description">Description:</label></td><td><input id="dialog-state-description" style="width: 100%"/></td></tr>
+                <tr id="tr-dialog-state-setIfTrue-text"  ><td><label class="translate" for="dialog-state-setIfTrue-text">Set value on true:</label></td><td><input id="dialog-state-setIfTrue-text" style="width: 100%"/></td></tr>
+                <tr id="tr-dialog-state-setIfTrue-check" ><td><label class="translate" for="dialog-state-setIfTrue-check">Set value on true:</label></td><td><input type="checkbox" id="dialog-state-setIfTrue-check"/></td></tr>
+                <tr id="tr-dialog-state-setIfTrue-select"><td><label class="translate" for="dialog-state-setIfTrue-select">Set value on true:</label></td><td><select id="dialog-state-setIfTrue-select"></select></td></tr>
+                <tr id="tr-dialog-state-setIfFalse-text"  ><td><label class="translate" for="dialog-state-setIfFalse-text">Set value on false:</label></td><td><input id="dialog-state-setIfFalse-text" style="width: 100%"/></td></tr>
+                <tr id="tr-dialog-state-setIfFalse-check" ><td><label class="translate" for="dialog-state-setIfFalse-check">Set value on false:</label></td><td><input type="checkbox" id="dialog-state-setIfFalse-check"/></td></tr>
+                <tr id="tr-dialog-state-setIfFalse-select"><td><label class="translate" for="dialog-state-setIfFalse-select">Set value on false:</label></td><td><select id="dialog-state-setIfFalse-select"></select></td></tr>
+                <tr><td><label class="translate" for="dialog-state-actual">Actual:</label></td><td><input style="opacity: 0.8; width: 100%" id="dialog-state-actual" readonly /></td></tr>
+                <tr><td><label class="translate" for="dialog-state-delay">Delay(ms):</label></td><td><input id="dialog-state-delay"/></td></tr>
+                <tr><td><label class="translate" for="dialog-state-stop-all-delays">Stop other delays:</label></td><td><input type="checkbox" id="dialog-state-stop-all-delays"/></td></tr>
             </table>
         </p>
     </div>
     <div id="dialog-scene" title="Scene configuration" class="translateT" style="display: none">
         <p>
-        <h3><span class="translate">Scene</span> <span id="dialog-scene-id"></span></h3>
-        <table style="width:100%">
-            <thead>
-            <col width="250px"/>
-            <col width="*"/>
-            <col width="30px"/>
-            </thead>
-            <tbody>
-                <tr><td><label class="translate">Enabled:</label></td>      <td><input type="checkbox"  id="dialog-scene-enabled"/></td><td></td></tr>
-                <tr><td><label class="translate">Engine:</label></td>       <td><select type="checkbox" id="dialog-scene-engine"></select></td></tr>
-                <tr><td><label class="translate">Name:</label></td>         <td><input type="text"      id="dialog-scene-name"          style="width:100%"/></td><td></td></tr>
-                <tr><td><label class="translate">Description:</label></td>  <td><input type="text"      id="dialog-scene-description"   style="width:100%"/></td><td></td></tr>
-                <tr><td><label class="translate">Interval between commands(ms):</label></td>  <td><input type="text"      id="dialog-scene-interval"   style="width:100%"/></td><td></td></tr>
-                <tr><td><label class="translate">Virtual group:</label></td><td><input type="checkbox"  id="dialog-scene-virtual-group" /></td></td><td></td></tr>
-                <tr class="scene-false"><td><label class="translate">Set on false:</label></td> <td><input type="checkbox"  id="dialog-scene-use-false" /></td></td><td></td></tr>
-                <tr class="scene-true scene-line-true"><td><label class="translate">Use trigger for true:</label></td>  <td><input type="checkbox"  id="dialog-scene-trigger-true"/></td></td><td></td></tr>
-                <tr class="scene-true" id="tr-dialog-scene-trigger-true-id">
-                    <td><label class="translate">Trigger ID:</label></td>
-                    <td><input type="text"      id="dialog-scene-trigger-true-id"    style="width:100%"/></td>
-                    <td><button data-input="dialog-scene-trigger-true-id" class="dialog-scene-id-selector">...</button></td></tr>
-                <tr class="scene-true" id="tr-dialog-scene-trigger-true-cond">
-                    <td><label class="translate">Trigger condition:</label></td>
-                    <td>
-                        <select type="text" id="dialog-scene-trigger-true-cond">
-                            <option value="==">==</option>
-                            <option value="!=">!=</option>
-                            <option value=">">&gt;</option>
-                            <option value="<">&lt;</option>
-                            <option value=">=">&gt;=</option>
-                            <option value="<=">&lt;=</option>
-                        <option value="update" class="translate">on update</option>
-                        </select>
-                    </td><td></td></tr>
-                <tr class="scene-true" id="tr-dialog-scene-trigger-true-value"><td><label class="translate">Trigger value:</label></td><td><input type="text"      id="dialog-scene-trigger-true-value" style="width:100%"/></td><td></td></tr>
-                <tr class="scene-true" id="tr-dialog-scene-trigger-true-cron"><td><label class="translate">Cron for true:</label></td>         <td><input type="text" id="dialog-scene-true-cron"/></td><td></td></tr>
+            <h3><span class="translate">Scene</span> <span id="dialog-scene-id"></span></h3>
+            <table style="width:100%">
+                <thead>
+                    <col width="250px"/>
+                    <col width="*"/>
+                    <col width="30px"/>
+                </thead>
+                <tbody>
+                    <tr><td><label class="translate" for="dialog-scene-enabled">Enabled:</label></td>      <td><input type="checkbox"  id="dialog-scene-enabled"/></td><td></td></tr>
+                    <tr><td><label class="translate" for="dialog-scene-engine">Engine:</label></td>       <td><select id="dialog-scene-engine"></select></td></tr>
+                    <tr><td><label class="translate" for="dialog-scene-name">Name:</label></td>         <td><input type="text"      id="dialog-scene-name"          style="width:100%"/></td><td></td></tr>
+                    <tr><td><label class="translate" for="dialog-scene-description">Description:</label></td>  <td><input type="text"      id="dialog-scene-description"   style="width:100%"/></td><td></td></tr>
+                    <tr><td><label class="translate" for="dialog-scene-interval">Interval between commands(ms):</label></td>  <td><input type="text"      id="dialog-scene-interval"   style="width:100%"/></td><td></td></tr>
+                    <tr><td><label class="translate" for="dialog-scene-virtual-group">Virtual group:</label></td><td><input type="checkbox"  id="dialog-scene-virtual-group" /></td><td></td></tr>
+                    <tr class="scene-false"><td><label class="translate" for="dialog-scene-use-false">Set on false:</label></td> <td><input type="checkbox"  id="dialog-scene-use-false" /></td><td></td></tr>
+                    <tr class="scene-true scene-line-true"><td><label class="translate" for="dialog-scene-trigger-true">Use trigger for true:</label></td>  <td><input type="checkbox"  id="dialog-scene-trigger-true"/></td><td></td></tr>
+                    <tr class="scene-true" id="tr-dialog-scene-trigger-true-id">
+                        <td><label class="translate" for="dialog-scene-trigger-true-id">Trigger ID:</label></td>
+                        <td><input type="text"      id="dialog-scene-trigger-true-id"    style="width:100%"/></td>
+                        <td><button data-input="dialog-scene-trigger-true-id" class="dialog-scene-id-selector">...</button></td></tr>
+                    <tr class="scene-true" id="tr-dialog-scene-trigger-true-cond">
+                        <td><label class="translate" for="dialog-scene-trigger-true-cond">Trigger condition:</label></td>
+                        <td>
+                            <select id="dialog-scene-trigger-true-cond">
+                                <option value="==">==</option>
+                                <option value="!=">!=</option>
+                                <option value=">">&gt;</option>
+                                <option value="<">&lt;</option>
+                                <option value=">=">&gt;=</option>
+                                <option value="<=">&lt;=</option>
+                            <option value="update" class="translate">on update</option>
+                            </select>
+                        </td><td></td></tr>
+                    <tr class="scene-true" id="tr-dialog-scene-trigger-true-value"><td><label class="translate" for="dialog-scene-trigger-true-value">Trigger value:</label></td><td><input type="text"      id="dialog-scene-trigger-true-value" style="width:100%"/></td><td></td></tr>
+                    <tr class="scene-true" id="tr-dialog-scene-trigger-true-cron"><td><label class="translate" for="dialog-scene-true-cron">Cron for true:</label></td>         <td><input id="dialog-scene-true-cron"/></td><td></td></tr>
 
-                <tr id="tr-dialog-scene-trigger-false" class="scene-false scene-line-true"><td><label class="translate">Use trigger for false:</label></td>  <td><input type="checkbox"  id="dialog-scene-trigger-false"/></td></td><td></td></tr>
-                <tr id="tr-dialog-scene-trigger-false-id" class="scene-false"><td><label class="translate">Trigger ID:</label></td>   <td><input type="text"      id="dialog-scene-trigger-false-id"    style="width:100%"/></td>
-                    <td><button data-input="dialog-scene-trigger-false-id" class="dialog-scene-id-selector">...</button></td></tr>
-                <tr id="tr-dialog-scene-trigger-false-cond" class="scene-false"><td><label class="translate">Trigger condition:</label></td><td><select type="text" id="dialog-scene-trigger-false-cond">
-                    <option value="==">==</option>
-                    <option value="!=">!=</option>
-                    <option value=">">&gt;</option>
-                    <option value="<">&lt;</option>
-                    <option value=">=">&gt;=</option>
-                    <option value="<=">&lt;=</option>
-                    <option value="update" class="translate">on update</option>
-                </select></td><td></td></tr>
-                <tr id="tr-dialog-scene-trigger-false-value" class="scene-false"><td><label class="translate">Trigger value:</label></td><td><input type="text"      id="dialog-scene-trigger-false-value" style="width:100%"/></td><td></td></tr>
-                <tr id="tr-dialog-scene-trigger-false-cron"  class="scene-false"><td><label class="translate">Cron for false:</label></td>         <td><input type="text" id="dialog-scene-false-cron"/></td><td></td></tr>
-            </tbody>
-        </table>
+                    <tr id="tr-dialog-scene-trigger-false" class="scene-false scene-line-true"><td><label class="translate" for="dialog-scene-trigger-false">Use trigger for false:</label></td>  <td><input type="checkbox"  id="dialog-scene-trigger-false"/></td><td></td></tr>
+                    <tr id="tr-dialog-scene-trigger-false-id" class="scene-false"><td><label class="translate" for="dialog-scene-trigger-false-id">Trigger ID:</label></td>   <td><input type="text"      id="dialog-scene-trigger-false-id"    style="width:100%"/></td>
+                        <td><button data-input="dialog-scene-trigger-false-id" class="dialog-scene-id-selector">...</button></td></tr>
+                    <tr id="tr-dialog-scene-trigger-false-cond" class="scene-false"><td><label class="translate" for="dialog-scene-trigger-false-cond">Trigger condition:</label></td><td><select id="dialog-scene-trigger-false-cond">
+                        <option value="==">==</option>
+                        <option value="!=">!=</option>
+                        <option value=">">&gt;</option>
+                        <option value="<">&lt;</option>
+                        <option value=">=">&gt;=</option>
+                        <option value="<=">&lt;=</option>
+                        <option value="update" class="translate">on update</option>
+                    </select></td><td></td></tr>
+                    <tr id="tr-dialog-scene-trigger-false-value" class="scene-false"><td><label class="translate" for="dialog-scene-trigger-false-value">Trigger value:</label></td><td><input type="text"      id="dialog-scene-trigger-false-value" style="width:100%"/></td><td></td></tr>
+                    <tr id="tr-dialog-scene-trigger-false-cron"  class="scene-false"><td><label class="translate" for="dialog-scene-false-cron">Cron for false:</label></td>         <td><input id="dialog-scene-false-cron"/></td><td></td></tr>
+                </tbody>
+            </table>
         </p>
     </div>
     <div id="dialog-replace" title="Replace IDs" class="translateT" style="display: none">
@@ -178,9 +177,9 @@
             <br/>
             <br/>
             <table style="width: 100%">
-                <tr><td><label class="translate">Old ID:</label></td><td><input type="text"      id="dialog-replace-old-id" style="width:100%"/></td>
+                <tr><td><label class="translate" for="dialog-replace-old-id">Old ID:</label></td><td><input type="text"      id="dialog-replace-old-id" style="width:100%"/></td>
                     <td><button data-input="dialog-replace-old-id" class="dialog-scene-id-selector">...</button></td></tr>
-                <tr><td><label class="translate">New ID:</label></td><td><input type="text"      id="dialog-replace-new-id" style="width:100%"/></td>
+                <tr><td><label class="translate" for="dialog-replace-new-id">New ID:</label></td><td><input type="text"      id="dialog-replace-new-id" style="width:100%"/></td>
                     <td><button data-input="dialog-replace-new-id" class="dialog-scene-id-selector">...</button></td></tr>
             </table>
         </p>

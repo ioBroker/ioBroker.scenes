@@ -1,8 +1,13 @@
 {
     "common": {
         "name":                     "scenes",
-        "version": "0.2.6",
+        "version": "0.2.7",
         "news": {
+            "0.2.7": {
+                "en": "Support of iobroker.pro",
+                "de": "Unterstützung von iobroker.pro",
+                "ru": "Поддержка iobroker.pro"
+            },
             "0.2.6": {
                 "en": "add read/write settings to scene object",
                 "de": "add read/write settings to scene object",
