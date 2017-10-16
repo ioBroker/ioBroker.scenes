@@ -1,6 +1,6 @@
 {
     "common": {
-        "name":                     "scenes",
+        "name": "scenes",
         "version": "0.2.7",
         "news": {
             "0.2.7": {
@@ -14,34 +14,40 @@
                 "ru": "add read/write settings to scene object"
             }
         },
-        "title":                    "Scenes",
-        "desc":                     {
-			"en": "This adapter allows to create scenes from several datapoints.",
-			"de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
-			"ru": "Позволяет создавать и активировать сцены."
-		},
+        "title": "Scenes",
+        "desc": {
+            "en": "This adapter allows to create scenes from several datapoints.",
+            "de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
+            "ru": "Позволяет создавать и активировать сцены."
+        },
         "authors": [
             "bluefox <dogafox@gmail.com>"
         ],
-        "license":                  "MIT",
-        "platform":                 "Javascript/Node.js",
-        "mode":                     "daemon",
-        "readme":                   "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
-        "loglevel":                 "info",
-        "icon":                     "scenes.png",
-        "keywords":                 ["Scenes", "Szenen", "Сцены"],
-        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
-        "localLink":                "/adapter/scenes/tab.html",
-        "noConfig":                 true,
-		"type":                     "script",
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "mode": "daemon",
+        "readme": "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
+        "loglevel": "info",
+        "icon": "scenes.png",
+        "keywords": [
+            "Scenes",
+            "Szenen",
+            "Сцены"
+        ],
+        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
+        "localLink": "/adapter/scenes/tab.html",
+        "noConfig": true,
+        "type": "logic",
         "adminTab": {
-            "name":                 {"en": "Scenes", "de": "Szenen", "ru": "Cцeны"},
-            "singleton":            true,	
-			"fa-icon":				"fa-film"
+            "name": {
+                "en": "Scenes",
+                "de": "Szenen",
+                "ru": "Cцeны"
+            },
+            "singleton": true,
+            "fa-icon": "fa-film"
         }
     },
-    "native": {
-    },
-    "instanceObjects": [
-    ]
+    "native": {},
+    "instanceObjects": []
 }
