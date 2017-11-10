@@ -103,7 +103,7 @@ adapter.on('objectChange', function (id, obj) {
         if (scenes[id]) {
             restartAdapter();
         } else if (obj) {
-            if (obj.common.engine == 'system.adapter.' + adapter.namespace) {
+            if (obj.common.engine === 'system.adapter.' + adapter.namespace) {
                 restartAdapter();
             }
         }
@@ -172,7 +172,7 @@ function checkScene(sceneId, stateId, state) {
             if (scenes[sceneId].native.members[i].delay) continue;
 
             // if state must be updated
-            if (stateId && scenes[sceneId].native.members[i].id == stateId) {
+            if (stateId && scenes[sceneId].native.members[i].id === stateId) {
                 scenes[sceneId].native.members[i].actual = state.val;
             }
         }
@@ -196,7 +196,7 @@ function checkScene(sceneId, stateId, state) {
             if (activeFalse === null) activeFalse = true;
 
             // if state must be updated
-            if (stateId && scenes[sceneId].native.members[i].id == stateId) {
+            if (stateId && scenes[sceneId].native.members[i].id === stateId) {
                 scenes[sceneId].native.members[i].actual = state.val;
             }
 
@@ -277,8 +277,8 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
     if (!trigger || trigger.enabled === false || !trigger.trigger) return;
     trigger = trigger.trigger;
 
-    if (trigger.id == stateId) {
-        var stateVal = (state && state.val !== undefined && state.val != null) ? state.val.toString() : '';
+    if (trigger.id === stateId) {
+        var stateVal = (state && state.val !== undefined && state.val !== null) ? state.val.toString() : '';
 
         val = trigger.value;
         
@@ -296,7 +296,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '>':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val && stateVal == aVal.toString()) {
+                if (fVal.toString() == val && stateVal === aVal.toString()) {
                     if (aVal > fVal) activateScene(sceneId, isTrue);
                 } else
                 if (val > state.val.toString()) {
@@ -307,7 +307,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '<':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val && stateVal == aVal.toString()) {
+                if (fVal.toString() == val && stateVal === aVal.toString()) {
                     if (aVal < fVal) activateScene(sceneId, isTrue);
                 } else
                 if (val < state.val.toString()) {
@@ -318,7 +318,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '>=':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val && stateVal == aVal.toString()) {
+                if (fVal.toString() == val && stateVal === aVal.toString()) {
                     if (aVal >= fVal) activateScene(sceneId, isTrue);
                 } else
                 if (val >= state.val.toString()) {
@@ -329,7 +329,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
             case '<=':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
-                if (fVal.toString() == val && stateVal == aVal.toString()) {
+                if (fVal.toString() == val && stateVal === aVal.toString()) {
                     if (aVal <= fVal) activateScene(sceneId, isTrue);
                 } else
                 if (val <= state.val.toString()) {
@@ -362,8 +362,8 @@ function activateSceneState(sceneId, state, isTrue) {
         timers[stateObj.id] = timers[stateObj.id] || [];
         if (stateObj.stopAllDelays && timers[stateObj.id].length) {
             adapter.log.debug('Cancel running timers (' + timers[stateObj.id].length + ' for ' + stateObj.id);
-            for (var t = 0; t < timers[stateObj.id].length; t++) {
-                clearTimeout(timers[stateObj.id][t].timer);
+            for (var tt = 0; tt < timers[stateObj.id].length; tt++) {
+                clearTimeout(timers[stateObj.id][tt].timer);
             }
             timers[stateObj.id] = [];
         }
@@ -378,7 +378,7 @@ function activateSceneState(sceneId, state, isTrue) {
             if (timers[id]) {
                 // remove timer from the list
                 for (var r = 0; r < timers[id].length; r++) {
-                    if (timers[id][r].tIndex == _tIndex) {
+                    if (timers[id][r].tIndex === _tIndex) {
                         timers[id].splice(r, 1);
                         break;
                     }
@@ -485,7 +485,7 @@ function initTrueFalse(sceneId, isTrue) {
     if (sStruct.trigger && sStruct.trigger.id) {
         usedIds.push(sStruct.trigger.id);
         triggers[sStruct.trigger.id] = triggers[sStruct.trigger.id] || [];
-        if (triggers[sStruct.trigger.id].indexOf(sceneId) == -1) {
+        if (triggers[sStruct.trigger.id].indexOf(sceneId) === -1) {
             triggers[sStruct.trigger.id].push(sceneId);
         }
     }
@@ -534,8 +534,12 @@ function initScenes() {
                 scenes[sceneId].native.members[state].delay = 0;
             }
 
-            scenes[sceneId].native.members[state].setIfTrue  = !!scenes[sceneId].native.members[state].setIfTrue;
-            scenes[sceneId].native.members[state].setIfFalse = !!scenes[sceneId].native.members[state].setIfFalse;
+            if (scenes[sceneId].native.members[state].setIfTrue === undefined || scenes[sceneId].native.members[state].setIfTrue === null) {
+                scenes[sceneId].native.members[state].setIfTrue = false;
+            }
+            if (scenes[sceneId].native.members[state].setIfFalse === undefined || scenes[sceneId].native.members[state].setIfFalse === null) {
+                scenes[sceneId].native.members[state].setIfFalse = false;
+            }
 
             scenes[sceneId].count++;
             // read actual state
@@ -595,11 +599,11 @@ function main() {
         if (states) {
             for (var id in states) {
                 // ignore if no states involved
-                if (!states[id].native || !states[id].native.members || !states[id].native.members.length) continue;
+                if (!states.hasOwnProperty(id) || !states[id].native || !states[id].native.members || !states[id].native.members.length) continue;
                 //ignore if scene is disabled
                 if (!states[id].common.enabled) continue;
                 // ignore if another instance
-                if (states[id].common.engine != 'system.adapter.' + adapter.namespace) continue;
+                if (states[id].common.engine !== 'system.adapter.' + adapter.namespace) continue;
 
                 scenes[id] = states[id];
 

@@ -17,9 +17,9 @@ function Scenes(main) {
 
     function installColResize() {
         if (!$.fn.colResizable) return;
-
-        if ($('#grid-scenes').is(':visible')) {
-            $('#grid-scenes').colResizable({
+        var $gridScenes = $('#grid-scenes');
+        if ($gridScenes.is(':visible')) {
+            $gridScenes.colResizable({
                 liveDrag: true
             });
         } else {
@@ -60,12 +60,12 @@ function Scenes(main) {
                     $eq5.html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
                     if (!that.data[node.key].delay) {
                         var background = getActualBackground(keys[0], keys[1]);
-                        if (background == 'lightgreen') {
+                        if (background === 'lightgreen') {
 
                             $eq5.css('background', 'lightgreen');
                             $eq5.attr('title', _('is equal'));
 
-                        } else if (background == 'lightpink ') {
+                        } else if (background === 'lightpink ') {
 
                             $eq5.css('background', 'lightpink ');
                             $eq5.attr('title', _('is equal with false'));
@@ -92,9 +92,9 @@ function Scenes(main) {
                     var state = that.main.objects[obj.native.members[keys[1]].id];
 
                     if (state) {
-                        if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                        if (state.common.type === 'boolean' || state.common.type === 'bool') {
                             text = '<input class="state-edit-setIfTrue" data-type="checkbox" type="checkbox" ' + (that.data[node.key].setIfTrue ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
-                        } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                        } else if (state.common.states && typeof state.common.states === 'object' && state.common.states.length) {
                             var select = '';
                             for (var s = 0; s < state.common.states.length; s++) {
                                 select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].setIfTrue == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
@@ -126,19 +126,19 @@ function Scenes(main) {
                         var state = that.main.objects[obj.native.members[keys[1]].id];
 
                         if (state) {
-                            if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                            if (state.common.type === 'boolean' || state.common.type === 'bool') {
                                 text = '<input class="state-edit-setIfFalse" data-type="checkbox" type="checkbox" ' + (that.data[node.key].setIfFalse ? 'checked' : '') + ' data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
-                            } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                            } else if (state.common.states && typeof state.common.states === 'object' && state.common.states.length) {
                                 var select = '';
                                 for (var s = 0; s < state.common.states.length; s++) {
                                     select += '<option value="' + s + '" ' + ((obj.native.members[keys[1]].setIfFalse == s) ? 'selected' : '') + '>' + state.common.states[s] + '</option>';
                                 }
                                 text = '<select class="state-edit-setIfFalse" data-type="select" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '">' + select + '</select>';
                             } else {
-                                text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                                text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined || that.data[node.key].setIfFalse === null ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                             }
                         } else {
-                            text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
+                            text = '<input class="state-edit-setIfFalse" data-type="text" style="width: 100%" value="' + (that.data[node.key].setIfFalse === undefined || that.data[node.key].setIfFalse === null ? '' : that.data[node.key].setIfFalse) + '" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '"/>';
                         }
                     } else {
                         text = '';
@@ -264,7 +264,7 @@ function Scenes(main) {
                         $(this).dialog('close');
                         var oldId = $('#dialog-replace-old-id').val();
                         var newId = $('#dialog-replace-new-id').val();
-                        if (oldId == newId) {
+                        if (oldId === newId) {
                             console.warn('IDs re equal');
                             return;
                         }
@@ -295,19 +295,20 @@ function Scenes(main) {
                     text: _('Ok'),
                     click: function () {
                         $(this).dialog('close');
-                        var scene = $('#dialog-state-id').data('scene');
-                        var index = $('#dialog-state-id').data('index');
-                        var type  = $('#dialog-state-id').data('type');
+                        var $dlgStateId = $('#dialog-state-id');
+                        var scene = $dlgStateId.data('scene');
+                        var index = $dlgStateId.data('index');
+                        var type  = $dlgStateId.data('type');
                         var obj = that.main.objects[scene];
                         var valTrue = '';
-                        if (type == 'check') {
+                        if (type === 'check') {
                             valTrue = $('#dialog-state-setIfTrue-check').prop('checked');
-                        } else if (type == 'select') {
+                        } else if (type === 'select') {
                             valTrue = $('#dialog-state-setIfTrue-select').val();
                         } else {
                             valTrue = $('#dialog-state-setIfTrue-text').val();
                         }
-                        if (typeof valTrue == 'string' && parseFloat(valTrue).toString() == valTrue) {
+                        if (typeof valTrue === 'string' && parseFloat(valTrue).toString() === valTrue) {
                             valTrue = parseFloat(valTrue);
                         } else if (valTrue === 'true') {
                             valTrue = true;
@@ -318,14 +319,14 @@ function Scenes(main) {
 
                         if (obj.native.onFalse && obj.native.onFalse.enabled) {
                             var valFalse = '';
-                            if (type == 'check') {
+                            if (type === 'check') {
                                 valFalse = $('#dialog-state-setIfFalse-check').prop('checked');
-                            } else if (type == 'select') {
+                            } else if (type === 'select') {
                                 valFalse = $('#dialog-state-setIfFalse-select').val();
                             } else {
                                 valFalse = $('#dialog-state-setIfFalse-text').val();
                             }
-                            if (typeof valFalse == 'string' && parseFloat(valFalse).toString() == valFalse) {
+                            if (typeof valFalse === 'string' && parseFloat(valFalse).toString() === valFalse) {
                                 valFalse = parseFloat(valFalse);
                             } else if (valFalse === 'true') {
                                 valFalse = true;
@@ -367,12 +368,13 @@ function Scenes(main) {
                         var scene = $('#dialog-scene-id').data('scene');
                         var obj = that.main.objects[scene];
                         var newId = null;
+                        var newName = $('#dialog-scene-name').val();
 
-                        if (obj.common.name != $('#dialog-scene-name').val()) {
-                            obj.common.name = $('#dialog-scene-name').val();
+                        if (obj.common.name !== newName) {
+                            obj.common.name = newName;
                             newId = 'scene.' + obj.common.name.replace(/\s+/g, '_');
-                            if (newId != obj._id) {
-                                if (that.list.indexOf(newId) != -1) {
+                            if (newId !== obj._id) {
+                                if (that.list.indexOf(newId) !== -1) {
                                     that.main.showMessage(_('Name "%s" yet exists!', newId), _('Error'), 'alert');
                                 }
                             } else {
@@ -546,7 +548,7 @@ function Scenes(main) {
     }
 
     function getActualBackground(sceneId, state) {
-        var obj = this.main.objects[sceneId];
+        var obj = that.main.objects[sceneId];
         var stateObj = obj.native.members[state];
         if (stateObj.delay) return false;
 
@@ -554,7 +556,7 @@ function Scenes(main) {
             return (stateObj.setIfTrue  === undefined || stateObj.setIfTrue  === null || stateObj.setIfTrue  === '') ? 'lightgreen' : '';
         }
 
-        if (stateObj.setIfTrue  == that.main.states[stateObj.id].val) {
+        if (stateObj.setIfTrue == that.main.states[stateObj.id].val) {
             return 'lightgreen';
         } else if (that.main.objects[sceneId].native.onFalse && that.main.objects[sceneId].native.onFalse.enabled && stateObj.setIfFalse == that.main.states[stateObj.id].val) {
             return 'lightpink ';
@@ -569,9 +571,9 @@ function Scenes(main) {
         if (that.currentFilter) {
             if (!that.data[node.key]) return false;
 
-            if ((that.data[node.key].name     && that.data[node.key].name.toLowerCase().indexOf(that.currentFilter) != -1) ||
-                (that.data[node.key].id       && that.data[node.key].id.toLowerCase().indexOf(that.currentFilter) != -1) ||
-                (that.data[node.key].desc     && that.data[node.key].desc.toLowerCase().indexOf(that.currentFilter) != -1)){
+            if ((that.data[node.key].name     && that.data[node.key].name.toLowerCase().indexOf(that.currentFilter) !== -1) ||
+                (that.data[node.key].id       && that.data[node.key].id.toLowerCase().indexOf(that.currentFilter)   !== -1) ||
+                (that.data[node.key].desc     && that.data[node.key].desc.toLowerCase().indexOf(that.currentFilter) !== -1)){
                 return true;
             } else {
                 return false;
@@ -588,7 +590,7 @@ function Scenes(main) {
     this.addNewScene = function () {
         // find name
         var i = 1;
-        while (this.list.indexOf('scene.0.' + _('scene') + '_' + i) != -1) i++;
+        while (this.list.indexOf('scene.0.' + _('scene') + '_' + i) !== -1) i++;
         var id = 'scene.0.scene' + i;
 
         var scene = {
@@ -699,12 +701,12 @@ function Scenes(main) {
                         buttons = '<table class="no-space"><tr class="no-space">';
                         buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-edit-submit">'   + _('edit state')   + '</button></td>';
                         buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-delete-submit">' + _('delete state') + '</button></td>';
-                        if (m != 0) {
+                        if (m !== 0) {
                             buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-up-submit">'   + _('move up')   + '</button></td>';
                         } else {
                             buttons += '<td class="no-space"><div style="width:24px"></div></td>';
                         }
-                        if (m != members.length - 1) {
+                        if (m !== members.length - 1) {
                             buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-down-submit">' + _('move down') + '</button></td>';
                         } else {
                             buttons += '<td class="no-space"><div style="width:24px"> </div></td>';
@@ -734,7 +736,7 @@ function Scenes(main) {
             }
 
             that.$grid.fancytree('getTree').reload(that.tree);
-            $('#grid-scenes .fancytree-icon').each(function () {
+            $('#grid-scenes').find('.fancytree-icon').each(function () {
                 if ($(this).attr('src')) $(this).css({width: 22, height: 22});
             });
             $('#process_running_scenes').hide();
@@ -746,9 +748,10 @@ function Scenes(main) {
     function editState(scene, index) {
         var obj      = that.main.objects[scene];
         var stateObj = obj.native.members[index];
-        $('#dialog-state-id').html(stateObj.id);
-        $('#dialog-state-id').data('scene', scene);
-        $('#dialog-state-id').data('index', index);
+        var $dlgStateId = $('#dialog-state-id');
+        $dlgStateId.html(stateObj.id);
+        $dlgStateId.data('scene', scene);
+        $dlgStateId.data('index', index);
         var state    = that.main.objects[stateObj.id];
 
         $('#tr-dialog-state-setIfTrue-select').hide();
@@ -763,35 +766,35 @@ function Scenes(main) {
         $('#dialog-state-description').val(stateObj.desc || '');
 
         if (state) {
-            if (state.common.type == 'boolean' || state.common.type == 'bool') {
+            if (state.common.type === 'boolean' || state.common.type === 'bool') {
                 $('#dialog-state-setIfTrue-check').prop('checked', stateObj.setIfTrue);
                 $('#tr-dialog-state-setIfTrue-check').show();
-                $('#dialog-state-id').data('type', 'check');
-            } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                $dlgStateId.data('type', 'check');
+            } else if (state.common.states && typeof state.common.states === 'object' && state.common.states.length) {
                 var select = '';
                 for (var s = 0; s < state.common.states.length; s++) {
                     select += '<option value="' + s + '" ' + ((stateObj.setIfTrue == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
                 }
                 $('#dialog-state-setIfTrue-select').html(select);
                 $('#tr-dialog-state-setIfTrue-select').show();
-                $('#dialog-state-id').data('type', 'select');
+                $dlgStateId.data('type', 'select');
             } else {
                 $('#tr-dialog-state-setIfTrue-text').show();
                 $('#dialog-state-setIfTrue-text').val(stateObj.setIfTrue);
-                $('#dialog-state-id').data('type', 'text');
+                $dlgStateId.data('type', 'text');
             }
         } else {
             $('#tr-dialog-state-setIfTrue-text').show();
             $('#dialog-state-setIfTrue-text').val(stateObj.setIfTrue);
-            $('#dialog-state-id').data('type', 'text');
+            $dlgStateId.data('type', 'text');
         }
 
         if (obj.native.onFalse && obj.native.onFalse.enabled) {
             if (state) {
-                if (state.common.type == 'boolean' || state.common.type == 'bool') {
+                if (state.common.type === 'boolean' || state.common.type === 'bool') {
                     $('#dialog-state-setIfFalse-check').prop('checked', stateObj.setIfFalse);
                     $('#tr-dialog-state-setIfFalse-check').show();
-                } else if (state.common.states && typeof state.common.states == 'object' && state.common.states.length) {
+                } else if (state.common.states && typeof state.common.states === 'object' && state.common.states.length) {
                     var select = '';
                     for (var s = 0; s < state.common.states.length; s++) {
                         select += '<option value="' + s + '" ' + ((stateObj.setIfFalse == s) ? 'selected' : '') + ' >' + state.common.states[s] + '</option>';
@@ -800,11 +803,11 @@ function Scenes(main) {
                     $('#tr-dialog-state-setIfFalse-select').show();
                 } else {
                     $('#tr-dialog-state-setIfFalse-text').show();
-                    $('#dialog-state-setIfFalse-text').val(stateObj.setIfFalse);
+                    $('#dialog-state-setIfFalse-text').val(stateObj.setIfFalse === null ? 0 : stateObj.setIfFalse);
                 }
             } else {
                 $('#tr-dialog-state-setIfFalse-text').show();
-                $('#dialog-state-setIfFalse-text').val(stateObj.setIfFalse);
+                $('#dialog-state-setIfFalse-text').val(stateObj.setIfFalse === null ? 0 : stateObj.setIfFalse);
             }
         } else {
             $('#tr-dialog-state-setIfFalse-text').val('');
@@ -820,8 +823,9 @@ function Scenes(main) {
 
     function editScene(scene) {
         var obj = that.main.objects[scene];
-        $('#dialog-scene-id').html(scene);
-        $('#dialog-scene-id').data('scene', scene);
+        $('#dialog-scene-id')
+            .html(scene)
+            .data('scene', scene);
 
         $('#dialog-scene-name').val(obj.common.name);
         $('#dialog-scene-description').val(obj.common.desc);
@@ -866,7 +870,7 @@ function Scenes(main) {
 
         var engines = '';
         for (var e = 0; e < that.engines.length; e++) {
-            engines += '<option ' + ((obj.common.engine == that.engines[e]) ? 'selected' : '') + ' value="' + that.engines[e] + '">' + that.engines[e].substring(15) + '</option>';
+            engines += '<option ' + ((obj.common.engine === that.engines[e]) ? 'selected' : '') + ' value="' + that.engines[e] + '">' + that.engines[e].substring(15) + '</option>';
         }
         $('#dialog-scene-engine').html(engines);
 
@@ -882,11 +886,11 @@ function Scenes(main) {
         var isChanged = false;
 
         // Check triggerId
-        if (obj.native.onTrue && obj.native.onTrue.trigger && obj.native.onTrue.trigger.id == oldId) {
+        if (obj.native.onTrue && obj.native.onTrue.trigger && obj.native.onTrue.trigger.id === oldId) {
             obj.native.onTrue.trigger.id = newId;
             isChanged = true;
         }
-        if (obj.native.onFalse && obj.native.onFalse.trigger && obj.native.onFalse.trigger.id == oldId) {
+        if (obj.native.onFalse && obj.native.onFalse.trigger && obj.native.onFalse.trigger.id === oldId) {
             obj.native.onFalse.trigger.id = newId;
             isChanged = true;
         }
@@ -894,7 +898,7 @@ function Scenes(main) {
         var members = obj.native.members;
         if (members && members.length) {
             for (var m = 0; m < members.length; m++) {
-                if (members[m].id == oldId) {
+                if (members[m].id === oldId) {
                     members[m].id = newId;
                     isChanged = true;
                 }
@@ -1004,7 +1008,7 @@ function Scenes(main) {
             var scene = $(this).attr('data-scene-name');
             var i = 1;
             scene = scene.replace(/_\d+$/, '');
-            while (that.list.indexOf(scene + '_' + i) != -1) i++;
+            while (that.list.indexOf(scene + '_' + i) !== -1) i++;
 
             var obj = that.main.objects[scene];
             obj._id = scene + '_' + i;
@@ -1094,11 +1098,11 @@ function Scenes(main) {
                     var scene = $self.attr('data-scene-name');
                     var index = parseInt($self.attr('data-state-index'), 10);
                     var value;
-                    if ($self.data('type') == 'checkbox') {
+                    if ($self.data('type') === 'checkbox') {
                         value = $self.prop('checked');
                     } else {
                         value = $self.val();
-                        if (parseFloat(value).toString() == value) value = parseFloat(value);
+                        if (parseFloat(value).toString() === value) value = parseFloat(value);
                         if (value === 'true')  value = true;
                         if (value === 'false') value = false;
                     }
@@ -1126,11 +1130,11 @@ function Scenes(main) {
                     var scene = $self.attr('data-scene-name');
                     var index = parseInt($self.attr('data-state-index'), 10);
                     var value;
-                    if ($self.data('type') == 'checkbox') {
+                    if ($self.data('type') === 'checkbox') {
                         value = $self.prop('checked');
                     } else {
                         value = $self.val();
-                        if (parseFloat(value).toString() == value) value = parseFloat(value);
+                        if (parseFloat(value).toString() === value) value = parseFloat(value);
                         if (value === 'true')  value = true;
                         if (value === 'false') value = false;
                     }
@@ -1270,9 +1274,9 @@ function Scenes(main) {
         // update engines
         if (id.match(/^system\.adapter\.scenes\.\d+$/)) {
             if (obj) {
-                if (this.engines.indexOf(id) == -1) {
+                if (this.engines.indexOf(id) === -1) {
                     this.engines.push(id);
-                    if (typeof this.$grid != 'undefined' && this.$grid[0]._isInited) {
+                    if (typeof this.$grid !== 'undefined' && this.$grid[0]._isInited) {
                         this.init(true);
                     }
                     return;
@@ -1281,7 +1285,7 @@ function Scenes(main) {
                 var pos = this.engines.indexOf(id);
                 if (pos != -1) {
                     this.engines.splice(pos, 1);
-                    if (typeof this.$grid != 'undefined' && this.$grid[0]._isInited) {
+                    if (typeof this.$grid !== 'undefined' && this.$grid[0]._isInited) {
                         this.init(true);
                     }
                     return;
@@ -1292,13 +1296,13 @@ function Scenes(main) {
         // Update Scene Table
         if (id.match(/^scene\..+$/)) {
             if (obj) {
-                if (this.list.indexOf(id) == -1) this.list.push(id);
+                if (this.list.indexOf(id) === -1) this.list.push(id);
             } else {
                 var j = this.list.indexOf(id);
-                if (j != -1) this.list.splice(j, 1);
+                if (j !== -1) this.list.splice(j, 1);
             }
 
-            if (typeof this.$grid != 'undefined' && this.$grid[0]._isInited) {
+            if (typeof this.$grid !== 'undefined' && this.$grid[0]._isInited) {
                 this.init(true);
             }
         }
@@ -1323,9 +1327,9 @@ function Scenes(main) {
             
             if (!that.data[key].delay) {
                 var background = getActualBackground(scene, index);
-                if (background == 'lightgreen') {
+                if (background === 'lightgreen') {
                     $(this).parent().css('background', 'lightgreen').attr('title', _('is equal'));
-                } else if (background == 'lightpink ') {
+                } else if (background === 'lightpink ') {
                     $(this).parent().css('background', 'lightpink ').attr('title', _('is equal with false'));
                 } else {
                     $(this).parent().css('background', '').attr('title', _('non equal'));
@@ -1343,7 +1347,7 @@ var main = {
         if (!main.config) return;
         if (attr) main.config[attr] = value;
 
-        if (typeof storage != 'undefined') {
+        if (typeof storage !== 'undefined') {
             storage.set('adminConfig', JSON.stringify(main.config));
         }
     },
@@ -1354,9 +1358,10 @@ var main = {
         $dialogMessage.dialog('option', 'title', title || _('Message'));
         $('#dialog-message-text').html(message);
         if (icon) {
-            $('#dialog-message-icon').show();
-            $('#dialog-message-icon').attr('class', '');
-            $('#dialog-message-icon').addClass('ui-icon ui-icon-' + icon);
+            $('#dialog-message-icon')
+                .show()
+                .attr('class', '')
+                .addClass('ui-icon ui-icon-' + icon);
         } else {
             $('#dialog-message-icon').hide();
         }
@@ -1366,9 +1371,10 @@ var main = {
         $dialogConfirm.dialog('option', 'title', title || _('Message'));
         $('#dialog-confirm-text').html(message);
         if (icon) {
-            $('#dialog-confirm-icon').show();
-            $('#dialog-confirm-icon').attr('class', '');
-            $('#dialog-confirm-icon').addClass('ui-icon ui-icon-' + icon);
+            $('#dialog-confirm-icon')
+                .show()
+                .attr('class', '')
+                .addClass('ui-icon ui-icon-' + icon);
         } else {
             $('#dialog-confirm-icon').hide();
         }
@@ -1456,7 +1462,7 @@ var $dialogConfirm =        $('#dialog-confirm');
 // Selected view, selected menu page,
 // Selected widget or view page
 // Selected filter
-if (typeof storage != 'undefined') {
+if (typeof storage !== 'undefined') {
     try {
         main.config = storage.get('adminConfig');
         if (main.config) {
@@ -1489,6 +1495,7 @@ function getObjects(callback) {
             var obj;
             main.objects = res;
             for (var id in main.objects) {
+                if (!main.objects.hasOwnProperty(id)) continue;
                 obj = res[id];
                 if (id.match(/^system\.adapter\.scenes\.\d+$/)) {
                     scenes.engines.push(id);
@@ -1537,7 +1544,7 @@ function objectChange(id, obj) {
             isNew = true;
             //treeInsert(id);
         }
-        if (isNew || JSON.stringify(main.objects[id]) != JSON.stringify(obj)) {
+        if (isNew || JSON.stringify(main.objects[id]) !== JSON.stringify(obj)) {
             main.objects[id] = obj;
             changed = true;
         }
