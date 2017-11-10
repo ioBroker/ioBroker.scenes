@@ -515,11 +515,11 @@ function initScenes() {
         for (var state = 0; state < scenes[sceneId].native.members.length; state++) {
             var stateId = scenes[sceneId].native.members[state].id;
             // calculate subscriptions
-            if (countIds.indexOf(stateId) == -1) countIds.push(stateId);
+            if (countIds.indexOf(stateId) === -1) countIds.push(stateId);
 
             // remember which scenes uses this state
             ids[stateId] = ids[stateId] || [];
-            if (ids[stateId].indexOf(sceneId) == -1) ids[stateId].push(sceneId);
+            if (ids[stateId].indexOf(sceneId) === -1) ids[stateId].push(sceneId);
 
             // Convert delay
             if (scenes[sceneId].native.members[state].delay) {
@@ -534,31 +534,32 @@ function initScenes() {
                 scenes[sceneId].native.members[state].delay = 0;
             }
 
-            if (scenes[sceneId].native.onTrue  && scenes[sceneId].native.onTrue.trigger)  {
-                if (scenes[sceneId].native.onTrue.trigger.value === null || scenes[sceneId].native.onTrue.trigger.value === undefined) {
-                    scenes[sceneId].native.onTrue.trigger.value  = '';
-                } else {
-                    scenes[sceneId].native.onTrue.trigger.value  = scenes[sceneId].native.onTrue.trigger.value.toString();
-                }
-            }
-            if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.trigger) {
-                if (scenes[sceneId].native.onFalse.trigger.value === null || scenes[sceneId].native.onFalse.trigger.value === undefined) {
-                    scenes[sceneId].native.onFalse.trigger.value  = '';
-                } else {
-                    scenes[sceneId].native.onFalse.trigger.value  = scenes[sceneId].native.onFalse.trigger.value.toString();
-                }
-            }
+            scenes[sceneId].native.members[state].setIfTrue  = !!scenes[sceneId].native.members[state].setIfTrue;
+            scenes[sceneId].native.members[state].setIfFalse = !!scenes[sceneId].native.members[state].setIfFalse;
 
             scenes[sceneId].count++;
             // read actual state
             getState(sceneId, state);
         }
-
+        if (scenes[sceneId].native.onTrue  && scenes[sceneId].native.onTrue.trigger)  {
+            if (scenes[sceneId].native.onTrue.trigger.value === null || scenes[sceneId].native.onTrue.trigger.value === undefined) {
+                scenes[sceneId].native.onTrue.trigger.value  = '';
+            } else {
+                scenes[sceneId].native.onTrue.trigger.value  = scenes[sceneId].native.onTrue.trigger.value.toString();
+            }
+        }
+        if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.trigger) {
+            if (scenes[sceneId].native.onFalse.trigger.value === null || scenes[sceneId].native.onFalse.trigger.value === undefined) {
+                scenes[sceneId].native.onFalse.trigger.value  = '';
+            } else {
+                scenes[sceneId].native.onFalse.trigger.value  = scenes[sceneId].native.onFalse.trigger.value.toString();
+            }
+        }
         // Init trigger, cron and astro for onTrue
         var usedIds = initTrueFalse(sceneId, true);
         if (usedIds) {
             for (var k = 0; k < usedIds.length; k++) {
-                if (countIds.indexOf(usedIds[k]) == -1) countIds.push(usedIds[k]);
+                if (countIds.indexOf(usedIds[k]) === -1) countIds.push(usedIds[k]);
             }
         }
 
@@ -566,7 +567,7 @@ function initScenes() {
         usedIds = initTrueFalse(sceneId, false);
         if (usedIds) {
             for (k = 0; k < usedIds.length; k++) {
-                if (countIds.indexOf(usedIds[k]) == -1) countIds.push(usedIds[k]);
+                if (countIds.indexOf(usedIds[k]) === -1) countIds.push(usedIds[k]);
             }
         }
     }
