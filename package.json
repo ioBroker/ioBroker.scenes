@@ -1,6 +1,6 @@
 {
   "name": "iobroker.scenes",
-  "version": "0.2.7",
+  "version": "1.0.0",
   "description": "Scenes for ioBroker.",
   "author": {
     "name": "bluefox",

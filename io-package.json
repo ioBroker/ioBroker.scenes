@@ -1,8 +1,13 @@
 {
     "common": {
         "name": "scenes",
-        "version": "0.2.7",
+        "version": "1.0.0",
         "news": {
+            "1.0.0": {
+                "en": "fix false scenes",
+                "de": "Korrigiere false Szenen",
+                "ru": "Исправлены false сцены"
+            },
             "0.2.7": {
                 "en": "Support of iobroker.pro",
                 "de": "Unterstützung von iobroker.pro",
