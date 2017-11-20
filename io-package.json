@@ -1,8 +1,13 @@
 {
     "common": {
         "name": "scenes",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "news": {
+            "1.0.1": {
+                "en": "use new select ID dialog",
+                "de": "Benutze neues Select ID Dialog",
+                "ru": "Используется новый диалог выбора объектов"
+            },
             "1.0.0": {
                 "en": "fix false scenes",
                 "de": "Korrigiere false Szenen",
