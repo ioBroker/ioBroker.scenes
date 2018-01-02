@@ -53,7 +53,7 @@
 "use strict";
 
 var utils   = require(__dirname + '/lib/utils'); // Get common adapter utils
-var adapter = utils.adapter('scenes');
+var adapter = utils.Adapter('scenes');
 
 var schedule;
 var suncalc;
