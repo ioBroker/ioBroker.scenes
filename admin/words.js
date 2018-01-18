@@ -81,7 +81,7 @@ systemDictionary = {
     "Cron for true:":       {"en": "Cron for true:",        "de": "Cron für true:",         "ru": "Cron для true:"},
     "Cron for false:":      {"en": "Cron for false:",       "de": "Cron für false:",        "ru": "Cron для false:"},
     "Trigger ID:":          {"en": "Trigger ID:",           "de": "Trigger ID:",            "ru": "ID Триггера:"},
-    "Trigger condition:":   {"en": "Trigger condition:",    "de": "Trigger-Bedienung:",     "ru": "Условие триггера:"},
+    "Trigger condition:":   {"en": "Trigger condition:",    "de": "Trigger-Bedingung:",     "ru": "Условие триггера:"},
     "Trigger value:":       {"en": "Trigger value:",        "de": "Trigger-Wert:",          "ru": "Значение триггера:"},
     "update scene information": {"en": "update scene information", "de": "Update",          "ru": "Обновить"},
     "collapse all":         {"en": "collapse all",          "de": "alle einklappen",        "ru": "Свернуть все сцены"},
