@@ -1,5 +1,5 @@
 ![Logo](admin/scenes.png)
-ioBroker scenes adapter
+# ioBroker scenes adapter
 =================
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.scenes.svg)](https://www.npmjs.com/package/iobroker.scenes)

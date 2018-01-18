@@ -25,10 +25,27 @@
             }
         },
         "title": "Scenes",
+        "titleLang": {
+            "en": "Scenes",
+            "de": "Szenarien",
+            "ru": "Сценарии",
+            "pt": "Cenários",
+            "nl": "scenario's",
+            "fr": "Scénarios",
+            "it": "scenari",
+            "es": "Escenarios",
+            "pl": "Scenariusze"
+        },
         "desc": {
             "en": "This adapter allows to create scenes from several datapoints.",
             "de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
-            "ru": "Позволяет создавать и активировать сцены."
+            "ru": "Позволяет создавать и активировать сценарии.",
+            "pt": "Este adaptador permite criar cenas de vários pontos de dados",
+            "nl": "Met deze adapter kunnen scènes van verschillende datapunten worden gemaakt",
+            "fr": "Cet adaptateur permet de créer des scènes à partir de plusieurs points de données",
+            "it": "Questo adattatore consente di creare scene da diversi datapoint",
+            "es": "Este adaptador permite crear escenas desde varios puntos de datos",
+            "pl": "Ten adapter umożliwia tworzenie scen z kilku punktów danych"
         },
         "authors": [
             "bluefox <dogafox@gmail.com>"
