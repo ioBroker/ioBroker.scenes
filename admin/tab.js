@@ -1025,7 +1025,7 @@ function Scenes(main) {
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
             var scene = $(this).attr('data-scene-name');
 
-            that.main.confirmMessage(_('Are you sure to delete %s?', scene), _('Conform'), 'help', function (isYes) {
+            that.main.confirmMessage(_('Are you sure to delete %s?', scene), _('Confirm'), 'help', function (isYes) {
                 if (isYes) {
                     that.main.socket.emit('delObject', scene, function (err) {
                         if (err) that.main.showError(err);
@@ -1171,7 +1171,7 @@ function Scenes(main) {
                 var index = parseInt($(this).attr('data-state-index'), 10);
                 var obj = that.main.objects[scene];
 
-                that.main.confirmMessage(_('Are you sure to delete %s from %s?', obj.native.members[index].id, scene), _('Conform'), 'help', function (isYes) {
+                that.main.confirmMessage(_('Are you sure to delete %s from %s?', obj.native.members[index].id, scene), _('Confirm'), 'help', function (isYes) {
                     if (isYes) {
                         obj.native.members.splice(index, 1);
 
