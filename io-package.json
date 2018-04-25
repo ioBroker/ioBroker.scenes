@@ -1,8 +1,19 @@
 {
     "common": {
         "name": "scenes",
-        "version": "1.0.2",
+        "version": "1.1.0",
         "news": {
+            "1.1.0": {
+                "en": "Works now with Admin3",
+                "de": "Funktioniert jetzt mit Admin3",
+                "ru": "Работает теперь с Admin3",
+                "pt": "Funciona agora com o Admin3",
+                "nl": "Werkt nu met Admin3",
+                "fr": "Fonctionne maintenant avec Admin3",
+                "it": "Funziona ora con Admin3",
+                "es": "Funciona ahora con Admin3",
+                "pl": "Działa teraz z Admin3"
+            },
             "1.0.2": {
                 "en": "use new select ID dialog",
                 "de": "Benutze neues Select ID Dialog",
@@ -27,8 +38,8 @@
         "title": "Scenes",
         "titleLang": {
             "en": "Scenes",
-            "de": "Szenarien",
-            "ru": "Сценарии",
+            "de": "Szenen",
+            "ru": "Сцены",
             "pt": "Cenários",
             "nl": "scenario's",
             "fr": "Scénarios",
@@ -39,7 +50,7 @@
         "desc": {
             "en": "This adapter allows to create scenes from several datapoints.",
             "de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
-            "ru": "Позволяет создавать и активировать сценарии.",
+            "ru": "Позволяет создавать и активировать cцены.",
             "pt": "Este adaptador permite criar cenas de vários pontos de dados",
             "nl": "Met deze adapter kunnen scènes van verschillende datapunten worden gemaakt",
             "fr": "Cet adaptateur permet de créer des scènes à partir de plusieurs points de données",
@@ -56,6 +67,7 @@
         "readme": "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
         "loglevel": "info",
         "icon": "scenes.png",
+        "enabled": true,
         "keywords": [
             "Scenes",
             "Szenen",

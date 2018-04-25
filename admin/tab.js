@@ -14,8 +14,13 @@ function Scenes(main) {
     this.$dialogScene   = $('#dialog-scene');
     this.$dialogReplace = $('#dialog-replace');
     this.timers = {};
+    this.subscribes = {};
+    this.subscribeIds = {};
+    this.listOfUnsubscribes = [];
+    this.timerOfUnsubscribes = null;
 
     function installColResize() {
+        return;
         if (!$.fn.colResizable) return;
         var $gridScenes = $('#grid-scenes');
         if ($gridScenes.is(':visible')) {
@@ -29,35 +34,142 @@ function Scenes(main) {
         }
     }
 
+    var tasks = [];
+
+    function processTasks() {
+        if (!tasks.length) return;
+        var task = tasks[0];
+        console.log(task.name + ': ' + task.id);
+        that.main.socket.emit(task.name, task.id, function (err) {
+            if (task.name === 'subscribe') {
+                that.main.socket.emit('getState', task.id, function (err, state) {
+                    tasks.shift();
+                    if (state) {
+                        stateChange(task.id, state);
+                    }
+                    setTimeout(processTasks, 50);
+                });
+            } else {
+                tasks.shift();
+                setTimeout(processTasks, 50);
+            }
+        });
+    }
+
+    function subscribeId(id) {
+        that.subscribeIds[id] = that.subscribeIds[id] || 0;
+        that.subscribeIds[id]++;
+        if (that.subscribeIds[id] === 1) {
+            var pos = that.listOfUnsubscribes.indexOf(id);
+
+            if (pos !== -1) {
+                that.listOfUnsubscribes.splice(pos, 1);
+                return;
+            }
+
+            if (tasks.indexOf(id) === -1) {
+                tasks.push({name: 'subscribe', id: id});
+                if (tasks.length === 1) {
+                    processTasks();
+                }
+            }
+        }
+    }
+
+    function doUnsubscribe() {
+        that.timerOfUnsubscribes = null;
+        var startProcess = !tasks.length;
+        for (var i = 0; i < that.listOfUnsubscribes.length; i++) {
+            tasks.push({name: 'unsubscribe', id: that.listOfUnsubscribes[i]});
+        }
+        that.listOfUnsubscribes = [];
+        if (startProcess) {
+            processTasks();
+        }
+    }
+
+    function unsubscribeId(id) {
+        if (that.subscribeIds[id]) {
+            that.subscribeIds[id]--;
+            if (!that.subscribeIds[id]) {
+                if (that.listOfUnsubscribes.indexOf(id) === -1) {
+                    that.listOfUnsubscribes.push(id);
+                    if (that.timerOfUnsubscribes) {
+                        clearTimeout(that.timerOfUnsubscribes);
+                    }
+                    that.timerOfUnsubscribes = setTimeout(doUnsubscribe, 1000);
+                }
+            }
+        }
+    }
+
+    function subscribeScene(sceneId) {
+        if (that.subscribes[sceneId]) {
+            unsubscribeScene(sceneId);
+        }
+        that.subscribes[sceneId] = [];
+        var scene = that.main.objects[sceneId];
+        if (!scene || !scene.native || !scene.native.members) return;
+
+        var members = scene.native.members;
+        for (var m = 0; m < members.length; m++) {
+            if (!members[m] && !members[m].id) continue;
+            if (that.subscribes[sceneId].indexOf(members[m].id) === -1) {
+                subscribeId(members[m].id);
+                that.subscribes[sceneId].push(members[m].id);
+            }
+        }
+    }
+
+    function unsubscribeScene(sceneId) {
+        if (!that.subscribes[sceneId]) return;
+        for (var i = 0; i < that.subscribes[sceneId].length; i++) {
+            unsubscribeId(that.subscribes[sceneId][i]);
+        }
+        that.subscribes[sceneId] = null;
+    }
+
     this.prepare = function () {
         that.$grid.fancytree({
-            extensions: ["table", "gridnav", "filter", "themeroller"],
+            extensions: ['table', 'gridnav', 'filter', 'themeroller'],
             checkbox: false,
             table: {
                 indentation: 20      // indent 20px per node level
             },
+            beforeExpand: function (event, _data) {
+                if (_data && _data.node) {
+                    // if will be expanded
+                    if (!_data.node.expanded) {
+                        console.log('expanded! ' + _data.node.key);
+                        subscribeScene(_data.node.key);
+                    } else {
+                        console.log('collapsed! ' + _data.node.key);
+                        unsubscribeScene(_data.node.key);
+                    }
+                }
+            },
             source: that.tree,
-            renderColumns: function(event, data) {
+            renderColumns: function (event, data) {
                 var node = data.node;
-                var $tdList = $(node.tr).find(">td");
+                var $tdList = $(node.tr).find('>td');
                 var keys = node.key.split('_$$$_');
 
                 if (!that.data[keys[0]].enabled) $(node.tr).css('opacity', 0.5);
 
-                $tdList.eq(0).css({'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(0).css({'overflow': 'hidden', 'white-space': 'nowrap'});
                 var text = '<input ' + (that.data[node.key].enabled ? 'checked' : '') + ' type="checkbox" data-scene-name="' + keys[0] + '" ' + (keys[1] !== undefined ? ('data-state-index="' + keys[1]) + '" class="state-edit-enabled"': ' class="scene-edit-enabled"') + '>';
-                $tdList.eq(1).html(text).css({'text-align': 'center', "white-space": "nowrap"});
-                $tdList.eq(2).html(that.data[node.key].name).css({'overflow': 'hidden', "white-space": "nowrap", 'font-weight': (keys[1] === undefined) ? 'bold' : '', 'padding-left': (keys[1] === undefined) ? '0' : '10'});
-                $tdList.eq(3).html(that.data[node.key].desc).css({'overflow': 'hidden', "white-space": "nowrap", 'font-weight': (keys[1] === undefined) ? 'bold' : '', 'padding-left': (keys[1] === undefined) ? '0' : '10'});
+                $tdList.eq(1).html(text).css({'text-align': 'center', 'white-space': 'nowrap'});
+                $tdList.eq(2).html(that.data[node.key].name).css({'overflow': 'hidden', 'white-space': 'nowrap', 'font-weight': (keys[1] === undefined) ? 'bold' : '', 'padding-left': (keys[1] === undefined) ? '0' : '10'});
+                $tdList.eq(3).html(that.data[node.key].desc).css({'overflow': 'hidden', 'white-space': 'nowrap', 'font-weight': (keys[1] === undefined) ? 'bold' : '', 'padding-left': (keys[1] === undefined) ? '0' : '10'});
 
-                $tdList.eq(4).html(that.data[node.key].cond || '').css({'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(4).html(that.data[node.key].cond || '').css({'overflow': 'hidden', 'white-space': 'nowrap'});
 
                 text = getActualText(node.key);
 
                 var $eq5 = $tdList.eq(5);
                 if (keys[1] !== undefined) {
                     text = '<span class="state-value" data-scene-name="' + keys[0] + '" data-state-index="' + keys[1] + '" data-state="' + that.data[node.key].id + '">' + text + '</span>';
-                    $eq5.html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                    $eq5.html(text).css({'text-align': 'center', 'overflow': 'hidden', 'white-space': 'nowrap'});
                     if (!that.data[node.key].delay) {
                         var background = getActualBackground(keys[0], keys[1]);
                         if (background === 'lightgreen') {
@@ -82,7 +194,7 @@ function Scenes(main) {
                     }
                 } else {
                     text = '<span class="scene-value" data-scene-name="' + keys[0] + '" data-state="' + that.data[node.key].id + '">' + text + '</span>';
-                    $eq5.html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                    $eq5.html(text).css({'text-align': 'center', 'overflow': 'hidden', 'white-space': 'nowrap'});
                 }
 
                 // - set value
@@ -116,7 +228,7 @@ function Scenes(main) {
                         text = '';
                     }
                 }
-                $tdList.eq(6).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(6).html(text).css({'text-align': 'center', 'overflow': 'hidden', 'white-space': 'nowrap'});
 
                 // - set value if false
                 if (!that.main.objects[keys[0]].native.virtualGroup) {
@@ -154,7 +266,7 @@ function Scenes(main) {
                 } else {
                     text = '';
                 }
-                $tdList.eq(7).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(7).html(text).css({'text-align': 'center', 'overflow': 'hidden', 'white-space': 'nowrap'});
 
 
                 if (keys[1] !== undefined) {
@@ -162,7 +274,7 @@ function Scenes(main) {
                 } else {
                     text = '';
                 }
-                $tdList.eq(8).html(text).css({'text-align': 'center', 'overflow': 'hidden', "white-space": "nowrap"});
+                $tdList.eq(8).html(text).css({'text-align': 'center', 'overflow': 'hidden', 'white-space': 'nowrap'});
                 $tdList.eq(9).html(that.data[node.key].buttons).css({'text-align': 'center'});
 
                 that.initButtons(keys[0], keys[1]);
@@ -177,7 +289,7 @@ function Scenes(main) {
                 handleCursorKeys: true
             },
             filter: {
-                mode: "hide",
+                mode: 'hide',
                 autoApply: true
             },
             dblclick: function(event, data) {
@@ -204,7 +316,9 @@ function Scenes(main) {
             $('#process_running_scenes').show();
             setTimeout(function () {
                 that.$grid.fancytree('getRootNode').visit(function (node) {
-                    if (!that.filterVals.length || node.match || node.subMatch) node.setExpanded(false);
+                    if (!that.filterVals.length || node.match || node.subMatch) {
+                        node.setExpanded(false);
+                    }
                 });
                 $('#process_running_scenes').hide();
             }, 100);
@@ -214,8 +328,9 @@ function Scenes(main) {
             $('#process_running_scenes').show();
             setTimeout(function () {
                 that.$grid.fancytree('getRootNode').visit(function (node) {
-                    if (!that.filterVals.length || node.match || node.subMatch)
+                    if (!that.filterVals.length || node.match || node.subMatch) {
                         node.setExpanded(true);
+                    }
                 });
                 $('#process_running_scenes').hide();
             }, 100);
@@ -224,26 +339,27 @@ function Scenes(main) {
         // Load settings
         that.currentFilter = that.main.config.scenesCurrentFilter || '';
         that.isCollapsed = that.main.config.scenesIsCollapsed ? JSON.parse(that.main.config.scenesIsCollapsed) : {};
-        $('#scenes-filter').val(that.currentFilter)
 
         $('#btn_refresh_scenes').button({icons: {primary: 'ui-icon-refresh'}, text: false}).css({width: 18, height: 18}).click(function () {
             that.init(true, true);
         });
 
         // add filter processing
-        $('#scenes-filter').keyup(function () {
-            $(this).trigger('change');
-        }).on('change', function () {
-            if (that.filterTimer) {
-                clearTimeout(that.filterTimer);
-            }
-            that.filterTimer = setTimeout(function () {
-                that.filterTimer = null;
-                that.currentFilter = $('#scenes-filter').val();
-                that.main.saveConfig('scenesCurrentFilter', that.currentFilter);
-                that.$grid.fancytree('getTree').filterNodes(customFilter, false);
-            }, 400);
-        });
+        $('#scenes-filter')
+            .val(that.currentFilter)
+            .on('keyup', function () {
+                $(this).trigger('change');
+            }).on('change', function () {
+                if (that.filterTimer) {
+                    clearTimeout(that.filterTimer);
+                }
+                that.filterTimer = setTimeout(function () {
+                    that.filterTimer = null;
+                    that.currentFilter = $('#scenes-filter').val();
+                    that.main.saveConfig('scenesCurrentFilter', that.currentFilter);
+                    that.$grid.fancytree('getTree').filterNodes(customFilter, false);
+                }, 400);
+            });
 
         $('#scenes-filter-clear').button({icons: {primary: 'ui-icon-close'}, text: false}).css({width: 16, height: 16}).click(function () {
             $('#scenes-filter').val('').trigger('change');
@@ -252,6 +368,7 @@ function Scenes(main) {
         $('#btn_new_scene').button({icons: {primary: 'ui-icon-plus'}, text: false}).css({width: 16, height: 16}).click(function () {
             that.addNewScene();
         });
+
         that.$dialogReplace.dialog({
             autoOpen: false,
             modal:    true,
@@ -461,7 +578,7 @@ function Scenes(main) {
             that.$dialogReplace.dialog('open');
         });
 
-        $('#dialog-scene-trigger-true').change(function () {
+        $('#dialog-scene-trigger-true').on('change', function () {
             if ($(this).prop('checked')) {
                 $('#tr-dialog-scene-trigger-true-id').show();
                 $('#tr-dialog-scene-trigger-true-cond').show();
@@ -473,7 +590,7 @@ function Scenes(main) {
             }
         });
 
-        $('#dialog-scene-trigger-false').change(function () {
+        $('#dialog-scene-trigger-false').on('change', function () {
             if ($(this).prop('checked') && $('#dialog-scene-use-false').prop('checked')) {
                 $('#tr-dialog-scene-trigger-false-id').show();
                 $('#tr-dialog-scene-trigger-false-cond').show();
@@ -485,7 +602,7 @@ function Scenes(main) {
             }
         });
 
-        $('#dialog-scene-use-false').change(function () {
+        $('#dialog-scene-use-false').on('change', function () {
             if ($(this).prop('checked')) {
                 $('#tr-dialog-scene-trigger-false').show();
                 $('#tr-dialog-scene-trigger-false-cron').show();
@@ -497,7 +614,7 @@ function Scenes(main) {
             $('#dialog-scene-trigger-false').trigger('change');
         });
 
-        $('#dialog-scene-virtual-group').change(function () {
+        $('#dialog-scene-virtual-group').on('change', function () {
             if ($(this).prop('checked')) {
                 $('.scene-true').hide();
                 $('.scene-false').hide();
@@ -583,22 +700,26 @@ function Scenes(main) {
         }
     }
 
-    this.resize = function (width, height) {
-        $('#grid-scenes-div').height($(window).height() - $('#tabs .ui-tabs-nav').height() - 50);
-    };
+    function padding0(num) {
+        if (num < 10) {
+            return '0' + num;
+        } else {
+            return num;
+        }
+    }
 
     this.addNewScene = function () {
         // find name
         var i = 1;
-        while (this.list.indexOf('scene.0.' + _('scene') + '_' + i) !== -1) i++;
-        var id = 'scene.0.scene' + i;
+        while (this.list.indexOf('scene.0.' + _('scene') + '_' + padding0(i)) !== -1) i++;
+        var id = 'scene.0.' + _('scene') + '_' + padding0(i);
 
         var scene = {
             common: {
-                name:       '0.' + _('scene') + ' ' + i,
+                name:       '0.' + _('scene') + ' ' + padding0(i),
                 type:       'boolean',
                 role:       'scene.state',
-                desc:       _('scene') + ' ' + i,
+                desc:       _('scene') + ' ' + padding0(i),
                 enabled:    true,
                 read:       true,
                 write:      true,
@@ -631,6 +752,14 @@ function Scenes(main) {
         });
     };
 
+    function getName(name) {
+        if (name && typeof name === 'object') {
+            return name[systemLang] || name.en;
+        } else {
+            return name || '';
+        }
+    }
+
     // ----------------------------- Scenes show and Edit ------------------------------------------------
     this.init = function (update) {
         if (!this.main.objectsLoaded) {
@@ -645,103 +774,109 @@ function Scenes(main) {
             this.$grid[0]._isInited = true;
 
             $('#process_running_scenes').show();
+            var that = this;
+            setTimeout(function () {
+                that.$grid.find('tbody').html('');
 
-            this.$grid.find('tbody').html('');
+                that.tree = [];
+                that.data = {};
+                that.list.sort();
 
-            that.tree = [];
-            that.data = {};
-            this.list.sort();
+                // list of the installed scenes
+                for (var i = 0; i < that.list.length; i++) {
+                    var sceneId = that.list[i];
+                    var buttons = '<table class="no-space"><tr class="no-space">';
+                    buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-edit-submit">'    + _('edit scene')   + '</button></td>';
+                    buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-delete-submit">'  + _('delete scene') + '</button></td>';
+                    buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-add-state">'      + _('add states')   + '</button></td>';
+                    buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-copy-scene">'     + _('copy scene')   + '</button></td>';
+                    buttons += '</tr></table>';
 
-            // list of the installed scenes
-            for (var i = 0; i < this.list.length; i++) {
-                var sceneId = this.list[i];
-                var buttons = '<table class="no-space"><tr class="no-space">';
-                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-edit-submit">'    + _('edit scene')   + '</button></td>';
-                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-delete-submit">'  + _('delete scene') + '</button></td>';
-                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-add-state">'      + _('add states')   + '</button></td>';
-                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" class="scene-copy-scene">'     + _('copy scene')   + '</button></td>';
-                buttons += '</tr></table>';
+                    var cond = '';
+                    if (that.main.objects[sceneId].native.cron) {
+                        cond = 'CRON: "' + that.main.objects[sceneId].native.cron + '"';
+                    }
+                    if (that.main.objects[sceneId].native.triggerTrueId) {
+                        cond = _('Trigger:') + that.main.objects[sceneId].native.triggerTrueId + ' ' + that.main.objects[sceneId].native.triggerTrueCond + ' ' + that.main.objects[sceneId].native.triggerTrueValue;
+                    }
 
-                var cond = '';
-                if (this.main.objects[sceneId].native.cron) {
-                    cond = 'CRON: "' + this.main.objects[sceneId].native.cron + '"';
-                }
-                if (this.main.objects[sceneId].native.triggerTrueId) {
-                    cond = _('Trigger:') + this.main.objects[sceneId].native.triggerTrueId + ' ' + this.main.objects[sceneId].native.triggerTrueCond + ' ' + this.main.objects[sceneId].native.triggerTrueValue;
-                }
+                    var desc = that.main.objects[sceneId].common.desc || '';
+                    if (that.main.objects[sceneId].native && that.main.objects[sceneId].native.members && that.main.objects[sceneId].native.members.length) {
+                        desc += ' [' + _('Items %s', that.main.objects[sceneId].native.members.length) + ']';
+                    }
 
-                var desc = this.main.objects[sceneId].common.desc || '';
-                if (this.main.objects[sceneId].native && this.main.objects[sceneId].native.members && this.main.objects[sceneId].native.members.length) {
-                    desc += ' [' + _('Items %s', this.main.objects[sceneId].native.members.length) + ']';
-                }
+                    that.data[sceneId] = {
+                        id:       sceneId,
+                        name:     getName(that.main.objects[sceneId].common.name),
+                        desc:     desc,
+                        enabled:  that.main.objects[sceneId].common.enabled,
+                        cond:     cond,
+                        setIfTrue:     '',
+                        actual:   main.states[sceneId] ? main.states[sceneId].val : '',
+                        buttons: buttons
+                    };
 
-                that.data[sceneId] = {
-                    id:       sceneId,
-                    name:     this.main.objects[sceneId].common.name || '',
-                    desc:     desc,
-                    enabled:  this.main.objects[sceneId].common.enabled,
-                    cond:     cond,
-                    setIfTrue:     '',
-                    actual:   main.states[sceneId] ? main.states[sceneId].val : '',
-                    buttons: buttons
-                };
+                    var scene = {
+                        title:    sceneId,
+                        key:      sceneId,
+                        folder:   true,
+                        expanded: !that.isCollapsed[sceneId],
+                        children: []
+                    };
+                    that.tree.push(scene);
 
-                var scene = {
-                    title:    sceneId,
-                    key:      sceneId,
-                    folder:   true,
-                    expanded: !that.isCollapsed[sceneId],
-                    children: []
-                };
-                that.tree.push(scene);
+                    if (scene.expanded) {
+                        subscribeScene(sceneId);
+                    } else {
+                        unsubscribeScene(sceneId);
+                    }
 
-                if (this.main.objects[sceneId].native && this.main.objects[sceneId].native.members) {
-                    var members = this.main.objects[sceneId].native.members;
-                    for (var m = 0; m < members.length; m++) {
-                        buttons = '<table class="no-space"><tr class="no-space">';
-                        buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-edit-submit">'   + _('edit state')   + '</button></td>';
-                        buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-delete-submit">' + _('delete state') + '</button></td>';
-                        if (m !== 0) {
-                            buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-up-submit">'   + _('move up')   + '</button></td>';
-                        } else {
-                            buttons += '<td class="no-space"><div style="width:24px"></div></td>';
+                    if (that.main.objects[sceneId].native && that.main.objects[sceneId].native.members) {
+                        var members = that.main.objects[sceneId].native.members;
+                        for (var m = 0; m < members.length; m++) {
+                            buttons = '<table class="no-space"><tr class="no-space">';
+                            buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-edit-submit">'   + _('edit state')   + '</button></td>';
+                            buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-delete-submit">' + _('delete state') + '</button></td>';
+                            if (m !== 0) {
+                                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-up-submit">'   + _('move up')   + '</button></td>';
+                            } else {
+                                buttons += '<td class="no-space"><div style="width:24px"></div></td>';
+                            }
+                            if (m !== members.length - 1) {
+                                buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-down-submit">' + _('move down') + '</button></td>';
+                            } else {
+                                buttons += '<td class="no-space"><div style="width:24px"> </div></td>';
+                            }
+                            buttons += '</tr></table>';
+
+                            that.data[sceneId + '_$$$_' + m] = {
+                                id:         members[m].id,
+                                name:       that.main.objects[members[m].id] ? getName(that.main.objects[members[m].id].common.name) : '',
+                                desc:       members[m].desc ? members[m].desc : (that.main.objects[members[m].id] ? getName(that.main.objects[members[m].id].common.desc) : ''),
+                                scene:      sceneId,
+                                index:      m,
+                                delay:      members[m].delay,
+                                enabled:    !members[m].disabled,
+                                setIfTrue:  members[m].setIfTrue,
+                                setIfFalse: members[m].setIfFalse,
+                                actual:     main.states[members[m].id] ? main.states[members[m].id].val : '',
+                                buttons:    buttons
+                            };
+                            scene.children.push({
+                                title:    members[m].id,
+                                key:      sceneId + '_$$$_' + m
+                            });
                         }
-                        if (m !== members.length - 1) {
-                            buttons += '<td class="no-space"><button data-scene-name="' + sceneId + '" data-state-index="' + m + '" class="scene-state-down-submit">' + _('move down') + '</button></td>';
-                        } else {
-                            buttons += '<td class="no-space"><div style="width:24px"> </div></td>';
-                        }
-                        buttons += '</tr></table>';
-
-
-                        that.data[sceneId + '_$$$_' + m] = {
-                            id:         members[m].id,
-                            name:       this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.name || '') : '',
-                            desc:       members[m].desc ? members[m].desc : (this.main.objects[members[m].id] ? (this.main.objects[members[m].id].common.desc || '') : ''),
-                            scene:      sceneId,
-                            index:      m,
-                            delay:      members[m].delay,
-                            enabled:    !members[m].disabled,
-                            setIfTrue:  members[m].setIfTrue,
-                            setIfFalse: members[m].setIfFalse,
-                            actual:     main.states[members[m].id] ? main.states[members[m].id].val : '',
-                            buttons:    buttons
-                        };
-                        scene.children.push({
-                            title:    members[m].id,
-                            key:      sceneId + '_$$$_' + m
-                        });
                     }
                 }
-            }
 
-            that.$grid.fancytree('getTree').reload(that.tree);
-            $('#grid-scenes').find('.fancytree-icon').each(function () {
-                if ($(this).attr('src')) $(this).css({width: 22, height: 22});
-            });
-            $('#process_running_scenes').hide();
-            if (that.currentFilter) that.$grid.fancytree('getTree').filterNodes(customFilter, false);
-
+                that.$grid.fancytree('getTree').reload(that.tree);
+                $('#grid-scenes').find('.fancytree-icon').each(function () {
+                    if ($(this).attr('src')) $(this).css({width: 22, height: 22});
+                });
+                $('#process_running_scenes').hide();
+                if (that.currentFilter) that.$grid.fancytree('getTree').filterNodes(customFilter, false);
+            }, 0);
         }
     };
 
@@ -757,10 +892,6 @@ function Scenes(main) {
         $('#tr-dialog-state-setIfTrue-select').hide();
         $('#tr-dialog-state-setIfTrue-check').hide();
         $('#tr-dialog-state-setIfTrue-text').hide();
-
-        $('#tr-dialog-state-setIfFalse-select').hide();
-        $('#tr-dialog-state-setIfFalse-check').hide();
-        $('#tr-dialog-state-setIfFalse-text').hide();
 
         $('#dialog-state-stop-all-delays').prop('checked', stateObj.stopAllDelays);
         $('#dialog-state-description').val(stateObj.desc || '');
@@ -975,6 +1106,7 @@ function Scenes(main) {
             sid.selectId('show', null, function (newIds) {
                 if (newIds && newIds.length) {
                     var obj = that.main.objects[scene];
+                    unsubscribeScene(scene);
                     for (var i = 0; i < newIds.length; i++) {
                         if (!obj.native.members) obj.native.members = [];
 
@@ -1006,15 +1138,15 @@ function Scenes(main) {
             }
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
             var scene = $(this).attr('data-scene-name');
+            var obj = JSON.parse(JSON.stringify(that.main.objects[scene]));
             var i = 1;
             scene = scene.replace(/_\d+$/, '');
-            while (that.list.indexOf(scene + '_' + i) !== -1) i++;
+            while (that.list.indexOf(scene + '_' + padding0(i)) !== -1) i++;
 
-            var obj = that.main.objects[scene];
-            obj._id = scene + '_' + i;
-            obj.common.name = obj.common.name.replace(/\s\d+$/, '') + ' ' + i;
+            obj._id = scene + '_' + padding0(i);
+            obj.common.name = getName(obj.common.name).replace(/\s\d+$/, '') + ' ' + padding0(i);
 
-            that.main.socket.emit('setObject', scene + '_' + i, obj, function (err) {
+            that.main.socket.emit('setObject', obj._id, obj, function (err) {
                 if (err) that.main.showError(err);
             });
         });
@@ -1024,9 +1156,9 @@ function Scenes(main) {
             text:  false
         }).css('width', '22px').css('height', '18px').unbind('click').on('click', function () {
             var scene = $(this).attr('data-scene-name');
-
             that.main.confirmMessage(_('Are you sure to delete %s?', scene), _('Confirm'), 'help', function (isYes) {
                 if (isYes) {
+                    unsubscribeScene(scene);
                     that.main.socket.emit('delObject', scene, function (err) {
                         if (err) that.main.showError(err);
                     });
@@ -1043,7 +1175,7 @@ function Scenes(main) {
         });
 
         if (m !== undefined) {
-            $('.state-edit-enabled[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+            $('.state-edit-enabled[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').on('change', function () {
                 var scene = $(this).attr('data-scene-name');
                 $(this).css({outline: '1px solid red'});
                 var index = parseInt($(this).attr('data-state-index'), 10);
@@ -1060,7 +1192,7 @@ function Scenes(main) {
                 });
             });
 
-            $('.state-edit-delay[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+            $('.state-edit-delay[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').on('change', function () {
                 var timer = $(this).data('timer');
                 var $self = $(this).css({outline: '1px solid red'});
 
@@ -1085,11 +1217,11 @@ function Scenes(main) {
                         }
                     });
                 }, 500));
-            }).keydown(function () {
+            }).on('keydown', function () {
                 $(this).trigger('change');
             });
 
-            $('.state-edit-setIfTrue[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+            $('.state-edit-setIfTrue[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').on('change', function () {
                 var timer = $(this).data('timer');
                 var $self = $(this).css({outline: '1px solid red'});
                 if (timer) clearTimeout(timer);
@@ -1117,11 +1249,11 @@ function Scenes(main) {
                         }
                     });
                 }, 500));
-            }).keydown(function () {
+            }).on('keydown', function () {
                 $(this).trigger('change');
             });
 
-            $('.state-edit-setIfFalse[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').change(function () {
+            $('.state-edit-setIfFalse[data-scene-name="' + scene + '"][data-state-index="' + m + '"]').on('change', function () {
                 var timer = $(this).data('timer');
                 var $self = $(this).css({outline: '1px solid red'});
                 if (timer) clearTimeout(timer);
@@ -1149,7 +1281,7 @@ function Scenes(main) {
                         }
                     });
                 }, 500));
-            }).keydown(function () {
+            }).on('keydown', function () {
                 $(this).trigger('change');
             });
 
@@ -1173,6 +1305,7 @@ function Scenes(main) {
 
                 that.main.confirmMessage(_('Are you sure to delete %s from %s?', obj.native.members[index].id, scene), _('Confirm'), 'help', function (isYes) {
                     if (isYes) {
+                        unsubscribeScene(scene);
                         obj.native.members.splice(index, 1);
 
                         that.main.socket.emit('setObject', scene, obj, function (err) {
@@ -1212,7 +1345,7 @@ function Scenes(main) {
                 });
             });
         } else {
-            $('.scene-edit-enabled[data-scene-name="' + scene + '"]').change(function () {
+            $('.scene-edit-enabled[data-scene-name="' + scene + '"]').on('change', function () {
                 var scene = $(this).attr('data-scene-name');
                 $(this).css({outline: '1px solid red'});
                 var obj = {common: {}};
@@ -1224,7 +1357,7 @@ function Scenes(main) {
                     }
                 });
             });
-            $('.scene-edit-setIfFalse[data-scene-name="' + scene + '"]').change(function () {
+            $('.scene-edit-setIfFalse[data-scene-name="' + scene + '"]').on('change', function () {
                 var scene = $(this).attr('data-scene-name');
                 $(this).css({outline: '1px solid red'});
                 var obj = {native: {onFalse:{}}};
@@ -1246,7 +1379,7 @@ function Scenes(main) {
                 });
             }).attr('title', _('Test scene with true'));
 
-            $('.state-set-group[data-scene-name="' + scene + '"]').change(function () {
+            $('.state-set-group[data-scene-name="' + scene + '"]').on('change', function () {
                 var scene = $(this).attr('data-scene-name');
                 var val = $(this).val();
                 if (val === 'true') val = true;
@@ -1283,7 +1416,7 @@ function Scenes(main) {
                 }
             } else {
                 var pos = this.engines.indexOf(id);
-                if (pos != -1) {
+                if (pos !== -1) {
                     this.engines.splice(pos, 1);
                     if (typeof this.$grid !== 'undefined' && this.$grid[0]._isInited) {
                         this.init(true);
@@ -1317,7 +1450,8 @@ function Scenes(main) {
                 $(this).html(getActualText(scene));
             });
         }
-        $('.state-value[data-state="' +id + '"').each(function () {
+
+        $('.state-value[data-state="' + id + '"').each(function () {
             var scene = $(this).attr('data-scene-name');
             var index = parseInt($(this).attr('data-state-index'), 10);
             var key = scene + '_$$$_' + index;
@@ -1510,32 +1644,13 @@ function getObjects(callback) {
             scenes.prepare();
             scenes.init();
 
-            $(window).resize(function () {
-                var x = $(window).width();
-                var y = $(window).height();
-                if (x < 720) {
-                    x = 720;
-                }
-                if (y < 480) {
-                    y = 480;
-                }
-
-                scenes.resize(x, y);
-            });
-            $(window).trigger('resize');
-
             if (typeof callback === 'function') callback();
         }, 0);
     });
 }
 
 function objectChange(id, obj) {
-    var changed  = false;
-    var oldObj   = null;
     var isNew    = false;
-    var isUpdate = false;
-    var i;
-    var j;
 
     // update main.objects cache
     if (obj) {
@@ -1546,11 +1661,8 @@ function objectChange(id, obj) {
         }
         if (isNew || JSON.stringify(main.objects[id]) !== JSON.stringify(obj)) {
             main.objects[id] = obj;
-            changed = true;
         }
     } else if (main.objects[id]) {
-        changed = true;
-        oldObj = {_id: id, type: main.objects[id].type};
         delete main.objects[id];
     }
 
@@ -1586,6 +1698,7 @@ main.socket.on('objectChange', function (id, obj) {
 main.socket.on('stateChange', function (id, obj) {
     setTimeout(stateChange, 0, id, obj);
 });
+
 main.socket.on('connect', function () {
     $('#connecting').hide();
     if (firstConnect) {
@@ -1647,9 +1760,19 @@ main.socket.on('connect', function () {
                 });
 
                 getStates(getObjects);
+                main.socket.emit('subscribe', 'scene.*');
+                main.socket.emit('subscribeObjects', '*');
+                // main.socket.emit('subscribeObjects', 'scene.*');
+                // main.socket.emit('subscribeObjects', 'system.adapter.scenes.*');
             });
         });
+    } else {
+        main.socket.emit('subscribe', 'scene.*');
+        main.socket.emit('subscribeObjects', '*');
+        // main.socket.emit('subscribeObjects', 'scene.*');
+        // main.socket.emit('subscribeObjects', 'system.adapter.scenes.*');
     }
+
     if (main.waitForRestart) {
         location.reload();
     }

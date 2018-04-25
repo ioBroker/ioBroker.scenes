@@ -93,6 +93,9 @@ Delays can be used in the **group** too, but the states with delay are not parti
 You can create virtual group to control all shutters in living room. By writing 40% into virtual group all shutters will be set to 40%. 
 
 ## Changelog
+### 1.1.0 (2018-04-24)
+* (bluefox) Works now with Admin3
+
 ### 1.0.2 (2018-01-21)
 * (bluefox) use new select ID dialog
 * (DeepCoreSystem) translations
