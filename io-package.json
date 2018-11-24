@@ -84,7 +84,7 @@
                 "ru": "Cцeны"
             },
             "singleton": true,
-            "fa-icon": "fa-film"
+            "fa-icon": "theaters"
         }
     },
     "native": {},
