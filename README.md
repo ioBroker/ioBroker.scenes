@@ -2,7 +2,7 @@
 # ioBroker scenes adapter
 =================
 
-[![NPM version](http://img.shields.io/npm/v/iobroker.scenes.svg)](https://www.npmjs.com/package/iobroker.scenes)
+![Number of Installations](http://iobroker.live/badges/scenes-installed.svg) ![Number of Installations](http://iobroker.live/badges/scenes-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.scenes.svg)](https://www.npmjs.com/package/iobroker.scenes)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.scenes.svg)](https://www.npmjs.com/package/iobroker.scenes)
 
 [![NPM](https://nodei.co/npm/iobroker.scenes.png?downloads=true)](https://nodei.co/npm/iobroker.scenes/)
