@@ -1,4 +1,4 @@
-// Copyright Bluefox <dogafox@gmail.com> 2015
+// Copyright Bluefox <dogafox@gmail.com> 2015-2019
 //
 
 // Structure of one scene
@@ -48,84 +48,172 @@
 //     }
 
 
-/* jshint -W097 */// jshint strict:false
-/*jslint node: true */
-"use strict";
+/* jshint -W097 */
+/* jshint strict: false */
+/* jslint node: true */
+'use strict';
 
-var utils = require('@iobroker/adapter-core'); // Get common adapter utils
-var adapter = utils.Adapter('scenes');
+const utils = require('@iobroker/adapter-core'); // Get common adapter utils
+const adapterName = require('./package.json').name.split('.').pop();
 
-var schedule;
-var suncalc;
+let schedule;
+let adapter;
+function startAdapter(options) {
+    options = options || {};
+    Object.assign(options, {
+        name:           adapterName, // adapter name
+        dirname:        __dirname,   // say own position
+        install:        callback => typeof callback === 'function' && callback()
+    });
 
-adapter.on('stateChange', function (id, state) {
-    if (state) {
-        if (scenes[id] && state) {
-            scenes[id].value = state;
-        }
-        if (!state.ack) {
-            if (scenes[id]) {
-                if (scenes[id].native.virtualGroup) {
-                    activateScene(id, state.val);
-                } else {
-                    var val = state.val;
-                    if (val === 'true')  val = true;
-                    if (val === 'false') val = false;
-                    if (val === '0')     val = 0;
+    adapter = new utils.Adapter(options);
 
-                    if (val) {
-                        // activate scene
-                        activateScene(id, true);
-                    } else if (scenes[id].native.onFalse && scenes[id].native.onFalse.enabled) {
-                        activateScene(id, false);
+    adapter.on('stateChange', (id, state) => {
+        if (state) {
+            if (scenes[id] && state) {
+                scenes[id].value = state;
+            }
+            if (!state.ack) {
+                if (scenes[id]) {
+                    if (scenes[id].native.virtualGroup) {
+                        activateScene(id, state.val);
+                    } else {
+                        let val = state.val;
+                        if (val === 'true')  val = true;
+                        if (val === 'false') val = false;
+                        if (val === '0')     val = 0;
+
+                        if (val) {
+                            // activate scene
+                            activateScene(id, true);
+                        } else if (scenes[id].native.onFalse && scenes[id].native.onFalse.enabled) {
+                            activateScene(id, false);
+                        }
                     }
                 }
             }
-        }
 
-        if (ids[id]) {
-            for (var s = 0; s < ids[id].length; s++) {
-                checkScene(ids[id][s], id, state);
+            if (ids[id]) {
+                for (let s = 0; s < ids[id].length; s++) {
+                    checkScene(ids[id][s], id, state);
+                }
+            }
+
+            if (triggers[id]) {
+                for (let t = 0; t < triggers[id].length; t++) {
+                    checkTrigger(triggers[id][t], id, state, true);
+                    checkTrigger(triggers[id][t], id, state, false);
+                }
             }
         }
+    });
 
-        if (triggers[id]) {
-            for (var t = 0; t < triggers[id].length; t++) {
-                checkTrigger(triggers[id][t], id, state, true);
-                checkTrigger(triggers[id][t], id, state, false);
-            }
-        }
-    }
-});
-
-adapter.on('objectChange', function (id, obj) {
-    if (id.match(/^scene\./)) {
-        if (scenes[id]) {
-            restartAdapter();
-        } else if (obj) {
-            if (obj.common.engine === 'system.adapter.' + adapter.namespace) {
+    adapter.on('objectChange', (id, obj) => {
+        if (id.match(/^scene\./)) {
+            if (scenes[id]) {
                 restartAdapter();
+            } else if (obj) {
+                if (obj.common.engine === 'system.adapter.' + adapter.namespace) {
+                    restartAdapter();
+                }
             }
         }
+    });
+
+    adapter.on('ready', () => {
+        main();
+        adapter.subscribeForeignObjects('scene.*');
+    });
+
+    adapter.on('message', obj => {
+        if (!obj || !obj.message) {
+            return false;
+        }
+
+        if (obj && obj.command === 'save') {
+            if (typeof obj.message !== 'object') {
+                try {
+                    obj.message = JSON.parse(obj.message)
+                } catch (e) {
+                    adapter.log.error('Cannot parse message: ' + obj.message);
+                    adapter.sendTo(obj.from, obj.command, {error: 'Cannot parse message'}, obj.callback);
+                    return true;
+                }
+            }
+
+            saveScene(obj.message.sceneId, obj.message.isForTrue, err => {
+                adapter.sendTo(obj.from, obj.command, {error: err}, obj.callback);
+            });
+        }
+
+        return true;
+    });
+
+    return adapter;
+}
+
+// expects like: scene.0.blabla
+function saveScene(sceneID, isForTrue, cb) {
+    if (isForTrue === undefined) {
+        isForTrue = true;
     }
-});
+
+    adapter.log.debug('Saving ' + sceneID + '...');
+
+    adapter.getForeignObject(sceneID, (err, obj) => {
+        if (obj && obj.native && obj.native.members) {
+            let count = 0;
+            obj.native.members.forEach((member, i) => {
+                count++;
+                adapter.getForeignState(member.id, (err, state) => {
+                    console.log('ID ' + member.id + '=' + state.val);
+                    count--;
+                    if (isForTrue) {
+                        obj.native.members[i].setIfTrue = state.val;
+                    } else {
+                        obj.native.members[i].setIfFalse = state.val;
+                    }
+                    if (!count) {
+                        adapter.setForeignObject(sceneID, obj, err => {
+                            if (err) {
+                                adapter.log.error('Cannot save scene: ' + err);
+                            } else {
+                                adapter.log.info('Scene ' + obj.common.name + ' saved');
+                            }
+                            cb(err);
+                        });
+                    }
+                });
+            });
+        } else {
+            cb('Scene not found');
+        }
+    });
+}
 
 function restartAdapter() {
     adapter.log.info('restartAdapter');
     // stop all timers
-    var t;
-    for (t in checkTimers) {
-        clearTimeout(checkTimers[t]);
+    for (const t in checkTimers) {
+        if (checkTimers.hasOwnProperty(t)) {
+            clearTimeout(checkTimers[t]);
+        }
     }
-    for (t in astroTimers) {
-        clearTimeout(astroTimers[t]);
+    for (const t in astroTimers) {
+        if (astroTimers.hasOwnProperty(t)) {
+            clearTimeout(astroTimers[t]);
+        }
     }
-    for (t in timers) {
-        clearTimeout(timers[t]);
+    for (const t in timers) {
+        if (timers.hasOwnProperty(t)) {
+            clearTimeout(timers[t]);
+        }
     }
     if (schedule) {
-        for (t in cronTasks) {
-            if (cronTasks[t]) cronTasks[t].cancel();
+        for (const t in cronTasks) {
+            if (cronTasks.hasOwnProperty(t)) {
+                if (cronTasks[t]) cronTasks[t].cancel();
+            }
         }
     }
     if (!subscription) {
@@ -133,7 +221,7 @@ function restartAdapter() {
     } else {
         adapter.unsubscribeForeignStates('scene.*');
         // and for all states
-        for (var i = 0; i < subscription.length; i++) {
+        for (let i = 0; i < subscription.length; i++) {
             adapter.unsubscribeForeignStates(subscription[i]);
         }
     }
@@ -150,24 +238,19 @@ function restartAdapter() {
     main();
 }
 
-adapter.on('ready', function () {
-    main();
-    adapter.subscribeForeignObjects('scene.*');
-});
-
-var subscription = null;
-var scenes       = {};
-var ids          = {};
-var triggers     = {};
-var timers       = {};
-var checkTimers  = {};
-var astroTimers  = {};
-var cronTasks    = {};
+let subscription = null;
+let scenes       = {};
+let ids          = {};
+let triggers     = {};
+let timers       = {};
+let checkTimers  = {};
+let astroTimers  = {};
+let cronTasks    = {};
 
 // Check if actual states are exactly as desired in the scene
 function checkScene(sceneId, stateId, state) {
     if (checkTimers[sceneId]) {
-        for (var i = 0; i < scenes[sceneId].native.members.length; i++) {
+        for (let i = 0; i < scenes[sceneId].native.members.length; i++) {
             // Do not check states with delay
             if (scenes[sceneId].native.members[i].delay) continue;
 
@@ -180,14 +263,14 @@ function checkScene(sceneId, stateId, state) {
         return;
     }
 
-    checkTimers[sceneId] = setTimeout(function () {
+    checkTimers[sceneId] = setTimeout(() => {
         checkTimers[sceneId] = null;
-        var activeTrue  = null;
-        var activeFalse = null;
-        var activeValue = null;
-        var isWithFalse = (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled);
+        let activeTrue  = null;
+        let activeFalse = null;
+        let activeValue = null;
+        const isWithFalse = (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled);
 
-        for (var i = 0; i < scenes[sceneId].native.members.length; i++) {
+        for (let i = 0; i < scenes[sceneId].native.members.length; i++) {
             // Do not check states with delay
             if (scenes[sceneId].native.members[i].delay) continue;
 
@@ -267,18 +350,18 @@ function checkScene(sceneId, stateId, state) {
 }
 
 function checkTrigger(sceneId, stateId, state, isTrue) {
-    var val;
-    var fVal;
-    var aVal;
+    let val;
+    let fVal;
+    let aVal;
 
     if (!state) return;
 
-    var trigger = isTrue ? scenes[sceneId].native.onTrue : scenes[sceneId].native.onFalse;
+    let trigger = isTrue ? scenes[sceneId].native.onTrue : scenes[sceneId].native.onFalse;
     if (!trigger || trigger.enabled === false || !trigger.trigger) return;
     trigger = trigger.trigger;
 
     if (trigger.id === stateId) {
-        var stateVal = (state && state.val !== undefined && state.val !== null) ? state.val.toString() : '';
+        const stateVal = (state && state.val !== undefined && state.val !== null) ? state.val.toString() : '';
 
         val = trigger.value;
         
@@ -348,11 +431,11 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
     }
 }
 
-var tIndex = 1; // never ending counter
+let tIndex = 1; // never ending counter
 
 // Set one state of the scene
 function activateSceneState(sceneId, state, isTrue) {
-    var stateObj = scenes[sceneId].native.members[state];
+    const stateObj = scenes[sceneId].native.members[state];
 
     if (!scenes[sceneId].native.virtualGroup) {
         isTrue = isTrue ? stateObj.setIfTrue : stateObj.setIfFalse;
@@ -362,7 +445,7 @@ function activateSceneState(sceneId, state, isTrue) {
         timers[stateObj.id] = timers[stateObj.id] || [];
         if (stateObj.stopAllDelays && timers[stateObj.id].length) {
             adapter.log.debug('Cancel running timers (' + timers[stateObj.id].length + ' for ' + stateObj.id);
-            for (var tt = 0; tt < timers[stateObj.id].length; tt++) {
+            for (let tt = 0; tt < timers[stateObj.id].length; tt++) {
                 clearTimeout(timers[stateObj.id][tt].timer);
             }
             timers[stateObj.id] = [];
@@ -370,14 +453,14 @@ function activateSceneState(sceneId, state, isTrue) {
         tIndex++;
 
         // Start timeout
-        var timer = setTimeout(function (id, setValue, _tIndex) {
+        const timer = setTimeout((id, setValue, _tIndex) => {
             adapter.log.debug('Set delayed state for "' + sceneId + '": ' + id + ' = ' + setValue);
             // execute timeout
             adapter.setForeignState(id, setValue);
 
             if (timers[id]) {
                 // remove timer from the list
-                for (var r = 0; r < timers[id].length; r++) {
+                for (let r = 0; r < timers[id].length; r++) {
                     if (timers[id][r].tIndex === _tIndex) {
                         timers[id].splice(r, 1);
                         break;
@@ -390,7 +473,7 @@ function activateSceneState(sceneId, state, isTrue) {
     } else {
         if (stateObj.stopAllDelays && timers[stateObj.id] && timers[stateObj.id].length) {
             adapter.log.debug('Cancel running timers for "' + stateObj.id + '" (' + timers[stateObj.id].length + ')');
-            for (var t = 0; t < timers[stateObj.id].length; t++) {
+            for (let t = 0; t < timers[stateObj.id].length; t++) {
                 clearTimeout(timers[stateObj.id][t].timer);
             }
             timers[stateObj.id] = [];
@@ -412,7 +495,7 @@ function activateSceneStates(sceneId, state, isTrue, interval, callback) {
         }
     }
 
-    setTimeout(function () {
+    setTimeout(() => {
         activateSceneState(sceneId, state, isTrue);
         activateSceneStates(sceneId, state + 1, isTrue, interval, callback);
     }, interval);
@@ -423,7 +506,7 @@ function activateScene(sceneId, isTrue) {
 
     // all commands must be executed without interval
     if (!scenes[sceneId].native.burstIntervall) {
-        for (var state = 0; state < scenes[sceneId].native.members.length; state++) {
+        for (let state = 0; state < scenes[sceneId].native.members.length; state++) {
             activateSceneState(sceneId, state, isTrue);
         }
 
@@ -442,7 +525,7 @@ function activateScene(sceneId, isTrue) {
         }
     } else {
         // make some interval between commands
-        activateSceneStates(sceneId, 0, isTrue, scenes[sceneId].native.burstIntervall, function () {
+        activateSceneStates(sceneId, 0, isTrue, scenes[sceneId].native.burstIntervall, () => {
             if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled) {
                 if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
                     adapter.log.debug('activateScene: new state for "' + sceneId + '" is "' + isTrue + '"');
@@ -461,8 +544,8 @@ function activateScene(sceneId, isTrue) {
 }
 
 function getState(sceneId, stateNumber, callback) {
-    var stateId = scenes[sceneId].native.members[stateNumber].id;
-    adapter.getForeignState(stateId, function (err, state) {
+    const stateId = scenes[sceneId].native.members[stateNumber].id;
+    adapter.getForeignState(stateId, (err, state) => {
         // possible scene was renamed
         if (!scenes[sceneId]) return;
 
@@ -476,8 +559,8 @@ function getState(sceneId, stateNumber, callback) {
 }
 
 function initTrueFalse(sceneId, isTrue) {
-    var usedIds = [];
-    var sStruct = isTrue ? scenes[sceneId].native.onTrue : scenes[sceneId].native.onFalse;
+    const usedIds = [];
+    const sStruct = isTrue ? scenes[sceneId].native.onTrue : scenes[sceneId].native.onFalse;
     if (!sStruct) return;
     if (sStruct.enabled === false) return;
 
@@ -494,7 +577,7 @@ function initTrueFalse(sceneId, isTrue) {
         if (!schedule) schedule = require('node-schedule');
 
         adapter.log.debug('Initiate cron task for ' + sceneId + '(' + isTrue + ') : ' + sStruct.cron);
-        cronTasks[sceneId] = schedule.scheduleJob(sStruct.cron, function () {
+        cronTasks[sceneId] = schedule.scheduleJob(sStruct.cron, () => {
             adapter.log.debug('cron for ' + sceneId + '(' + isTrue + ') : ' + sStruct.cron);
             activateScene(sceneId, isTrue);
         });
@@ -504,16 +587,18 @@ function initTrueFalse(sceneId, isTrue) {
 }
 
 function initScenes() {
-    var countIds = [];
+    const countIds = [];
 
     // list all scenes in Object
-    for (var sceneId in scenes) {
+    for (const sceneId in scenes) {
+        if (!scenes.hasOwnProperty(sceneId)) continue;
+
         scenes[sceneId].count = 0;
         scenes[sceneId].value = {val: null, ack: true}; // default state
 
         // Go through all states in Array
-        for (var state = 0; state < scenes[sceneId].native.members.length; state++) {
-            var stateId = scenes[sceneId].native.members[state].id;
+        for (let state = 0; state < scenes[sceneId].native.members.length; state++) {
+            const stateId = scenes[sceneId].native.members[state].id;
             // calculate subscriptions
             if (countIds.indexOf(stateId) === -1) countIds.push(stateId);
 
@@ -523,7 +608,7 @@ function initScenes() {
 
             // Convert delay
             if (scenes[sceneId].native.members[state].delay) {
-                var delay =  parseInt(scenes[sceneId].native.members[state].delay, 10);
+                const delay =  parseInt(scenes[sceneId].native.members[state].delay, 10);
                 if (scenes[sceneId].native.members[state].delay != delay.toString()) {
                     adapter.log.error('Invalid delay for scene "' + sceneId + '": ' + scenes[sceneId].native.members[state].delay);
                     scenes[sceneId].native.members[state].delay = 0;
@@ -560,9 +645,9 @@ function initScenes() {
             }
         }
         // Init trigger, cron and astro for onTrue
-        var usedIds = initTrueFalse(sceneId, true);
+        let usedIds = initTrueFalse(sceneId, true);
         if (usedIds) {
-            for (var k = 0; k < usedIds.length; k++) {
+            for (let k = 0; k < usedIds.length; k++) {
                 if (countIds.indexOf(usedIds[k]) === -1) countIds.push(usedIds[k]);
             }
         }
@@ -570,7 +655,7 @@ function initScenes() {
         // Init trigger, cron and astro for onFalse
         usedIds = initTrueFalse(sceneId, false);
         if (usedIds) {
-            for (k = 0; k < usedIds.length; k++) {
+            for (let k = 0; k < usedIds.length; k++) {
                 if (countIds.indexOf(usedIds[k]) === -1) countIds.push(usedIds[k]);
             }
         }
@@ -586,7 +671,7 @@ function initScenes() {
         adapter.subscribeForeignStates('scene.*');
         subscription = countIds;
         // and for all states
-        for (var i = 0; i < countIds.length; i++) {
+        for (let i = 0; i < countIds.length; i++) {
             adapter.log.debug('initScenes: subscribe on ' + countIds[i]);
             adapter.subscribeForeignStates(countIds[i]);
         }
@@ -595,9 +680,9 @@ function initScenes() {
 
 function main() {
     // Read all scenes
-    adapter.getForeignObjects('scene.*', 'state', function (err, states) {
+    adapter.getForeignObjects('scene.*', 'state', (err, states) => {
         if (states) {
-            for (var id in states) {
+            for (const id in states) {
                 // ignore if no states involved
                 if (!states.hasOwnProperty(id) || !states[id].native || !states[id].native.members || !states[id].native.members.length) continue;
                 //ignore if scene is disabled
@@ -608,7 +693,7 @@ function main() {
                 scenes[id] = states[id];
 
                 // Remove all disabled scenes
-                for (var m = states[id].native.members.length - 1; m >= 0; m--) {
+                for (let m = states[id].native.members.length - 1; m >= 0; m--) {
                     // Reset actual state
                     scenes[id].native.members[m].actual = null;
                     if (states[id].native.members[m].disabled) scenes[id].native.members.splice(m, 1);
@@ -617,5 +702,13 @@ function main() {
         }
         initScenes();
     });
+}
+
+// If started as allInOne mode => return function to create instance
+if (module && module.parent) {
+    module.exports = startAdapter;
+} else {
+    // or start the instance directly
+    startAdapter();
 }
 
