@@ -84,13 +84,18 @@ class Connection {
         );
 
         this._socket.on('connect', () => {
-            this._authTimer = setTimeout(() => {
-                this._authTimer = null;
-                // possible this is old version of admin
-                this.onPreConnect(false, false);
-            }, 1000);
-
-            this._socket.emit('authenticate', (isOk, isSecure) => this.onPreConnect(isOk, isSecure));
+            this.getAdminVersion()
+                .then(version => {
+                    const [major, minor, patch] = version.split('.');
+                    const v = parseInt(major, 10) * 10000 + parseInt(minor, 10) * 100 + parseInt(patch, 10);
+                    if (v < 40100) {
+                        this._authTimer = null;
+                        // possible this is old version of admin
+                        this.onPreConnect(false, false);
+                    } else {
+                        this._socket.emit('authenticate', (isOk, isSecure) => this.onPreConnect(isOk, isSecure));
+                    }
+                });
         });
 
         this._socket.on('reconnect', () => {
@@ -161,7 +166,7 @@ class Connection {
             this.onCmdExitHandler && this.onCmdExitHandler(id, exitCode));
     }
 
-    onPreConnect(isSecure) {
+    onPreConnect(isOk, isSecure) {
         if (this._authTimer) {
             clearTimeout(this._authTimer);
             this._authTimer = null;
@@ -1238,6 +1243,14 @@ class Connection {
         return new Promise((resolve, reject) =>
             this._socket.emit('decrypt', encryptedText, (err, text) =>
                 err ? reject(err) : resolve(text)));
+    }
+
+    getAdminVersion() {
+        this._promises.version = this._promises.version || new Promise((resolve, reject) =>
+            this._socket.emit('getVersion', (err, version) =>
+                err ? reject(err) : resolve(version)));
+
+        return this._promises.version;
     }
 }
 
