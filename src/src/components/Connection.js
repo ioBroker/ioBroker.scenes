@@ -84,34 +84,13 @@ class Connection {
         );
 
         this._socket.on('connect', () => {
-            this._socket.emit('authenticate', (isOk, isSecure) => {
-                this.connected = true;
-                this.isSecure = isSecure;
+            this._authTimer = setTimeout(() => {
+                this._authTimer = null;
+                // possible this is old version of admin
+                this.onPreConnect(false, false);
+            }, 1000);
 
-                if (this.waitForRestart) {
-                    window.location.reload();
-                } else {
-                    if (this.firstConnect) {
-                        // retry strategy
-                        this.loadTimer = setTimeout(() => {
-                            this.loadTimer = null;
-                            this.loadCounter++;
-                            if (this.loadCounter < 10) {
-                                this.onConnect();
-                            }
-                        }, 1000);
-
-                        if (!this.loaded) {
-                            this.onConnect();
-                        }
-                    } else {
-                        this.onProgress(PROGRESS.READY);
-                    }
-
-                    this._subscribe(true);
-                    this.onConnectionHandlers.forEach(cb => cb(true));
-                }
-            });
+            this._socket.emit('authenticate', (isOk, isSecure) => this.onPreConnect(isOk, isSecure));
         });
 
         this._socket.on('reconnect', () => {
@@ -181,7 +160,41 @@ class Connection {
         this._socket.on('cmdExit', (id, exitCode) =>
             this.onCmdExitHandler && this.onCmdExitHandler(id, exitCode));
     }
-    
+
+    onPreConnect(isSecure) {
+        if (this._authTimer) {
+            clearTimeout(this._authTimer);
+            this._authTimer = null;
+        }
+
+        this.connected = true;
+        this.isSecure = isSecure;
+
+        if (this.waitForRestart) {
+            window.location.reload();
+        } else {
+            if (this.firstConnect) {
+                // retry strategy
+                this.loadTimer = setTimeout(() => {
+                    this.loadTimer = null;
+                    this.loadCounter++;
+                    if (this.loadCounter < 10) {
+                        this.onConnect();
+                    }
+                }, 1000);
+
+                if (!this.loaded) {
+                    this.onConnect();
+                }
+            } else {
+                this.onProgress(PROGRESS.READY);
+            }
+
+            this._subscribe(true);
+            this.onConnectionHandlers.forEach(cb => cb(true));
+        }
+    }
+
     isConnected() {
         return this.connected;
     }
@@ -662,6 +675,26 @@ class Connection {
         });
 
         return this._promises['enums_' + (_enum || 'all')];
+    }
+
+    getObjectView(start, end, type) {
+        if (!this.connected) {
+            return Promise.reject(NOT_CONNECTED);
+        }
+
+        return new Promise((resolve, reject) => {
+            this._socket.emit('getObjectView', 'system', type, {startkey: start, endkey: end}, (err, res) => {
+                if (!err && res) {
+                    const _res   = {};
+                    for (let i = 0; i < res.rows.length; i++) {
+                        _res[res.rows[i].id] = res.rows[i].value;
+                    }
+                    resolve(_res);
+                } else {
+                    reject(err);
+                }
+            });
+        });
     }
 
     getCertificates(update) {

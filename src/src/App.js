@@ -17,6 +17,16 @@ const styles = theme => ({
     },
 });
 
+function getUrlQuery() {
+    const parts = (window.location.search || '').replace(/^\?/, '').split('&');
+    const query = {};
+    parts.map(item => {
+        const [name, val] = item.split('=');
+        query[decodeURIComponent(name)] = val !== undefined ? decodeURIComponent(val) : true;
+    });
+    return query;
+}
+
 class App extends GenericApp {
     constructor(props) {
         super(props);
@@ -38,8 +48,12 @@ class App extends GenericApp {
         I18n.setLanguage((navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase());
         this.adapterName = 'scenes';
 
-        this.port = 8081;
-        this.host = 'localhost';
+        const query = getUrlQuery();
+
+        this.port = query.port || (window.location.port === '3000' ? 8081 : window.location.port);
+        this.host = query.host || window.location.hostname;
+
+        window.iobForceHost = this.host;
     }
 
     componentDidMount() {
@@ -93,10 +107,7 @@ class App extends GenericApp {
     }
 
     getScenes() {
-        return this.socket.getForeignObjects('scene.' + this.instance + '.*', 'state')
-            .then(scenes => {
-                return scenes;
-            });
+        return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state');
     }
 
     render() {
