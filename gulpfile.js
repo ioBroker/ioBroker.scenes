@@ -209,23 +209,15 @@ gulp.task('5-copy-dep', gulp.series('3-build-dep', '5-copy'));
 gulp.task('6-patch', () => new Promise(resolve => {
     if (fs.existsSync(__dirname + '/admin/tab.html')) {
         let code = fs.readFileSync(__dirname + '/admin/tab.html').toString('utf8');
-        code = code.replace(/<script>var head=document\.getElementsByTagName\("head"\)\[0\][^<]+<\/script>/,
+        code = code.replace(/<script>var script=document\.createElement\("script"\)[^<]+<\/script>/,
             `<script type="text/javascript" src="./../../lib/js/socket.io.js"></script>`);
-        // add monaco script at the end
-        if (!code.includes(`<script type="text/javascript" src="vs/loader.js"></script><script type="text/javascript" src="vs/configure.js"></script>`)) {
-            code = code.replace('</body></html>', `<script type="text/javascript" src="vs/loader.js"></script><script type="text/javascript" src="vs/configure.js"></script></body></html>`);
-        }
 
         fs.writeFileSync(__dirname + '/admin/tab.html', code);
     }
     if (fs.existsSync(__dirname + '/src/build/index.html')) {
         let code = fs.readFileSync(__dirname + '/src/build/index.html').toString('utf8');
-        code = code.replace(/<script>var head=document\.getElementsByTagName\("head"\)\[0\][^<]+<\/script>/,
+        code = code.replace(/<script>var script=document\.createElement\("script"\)[^<]+<\/script>/,
             `<script type="text/javascript" src="./../../lib/js/socket.io.js"></script>`);
-        // add monaco script at the end
-        if (!code.includes(`<script type="text/javascript" src="vs/loader.js"></script><script type="text/javascript" src="vs/configure.js"></script>`)) {
-            code = code.replace('</body></html>', `<script type="text/javascript" src="vs/loader.js"></script><script type="text/javascript" src="vs/configure.js"></script></body></html>`);
-        }
 
         fs.writeFileSync(__dirname + '/src/build/index.html', code);
     }
@@ -233,8 +225,6 @@ gulp.task('6-patch', () => new Promise(resolve => {
 }));
 
 gulp.task('6-patch-dep',  gulp.series('5-copy-dep', '6-patch'));
-
-gulp.task('default', gulp.series('6-patch-dep'));
 
 gulp.task('updatePackages', done => {
     iopackage.common.version = pkg.version;
@@ -278,4 +268,4 @@ gulp.task('updateReadme', done => {
     done();
 });
 
-gulp.task('default', gulp.series('6-patch-dep'));
+gulp.task('default', gulp.series('updateReadme')); //gulp.series('6-patch-dep')

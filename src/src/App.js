@@ -1,8 +1,10 @@
 import React from 'react';
 import {withStyles} from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
-import GenericApp from '@iobroker/adapter-react/GenericApp';
+import GenericApp from "@iobroker/adapter-react/GenericApp";
+import Connection from "./components/Connection";
 import Loader from '@iobroker/adapter-react/Components/Loader'
+import { PROGRESS } from './components/Connection';
 
 import I18n from '@iobroker/adapter-react/i18n';
 
@@ -17,8 +19,8 @@ const styles = theme => ({
 
 class App extends GenericApp {
     constructor(props) {
-        const extendedProps = {};
-        extendedProps.translations = {
+        super(props);
+        this.translations = {
             'en': require('./i18n/en'),
             'de': require('./i18n/de'),
             'ru': require('./i18n/ru'),
@@ -30,17 +32,75 @@ class App extends GenericApp {
             'pl': require('./i18n/pl'),
             'zh-cn': require('./i18n/zh-cn'),
         };
-        extendedProps.doNotLoadAllObjects = true;
-        extendedProps.adapterName = 'consumption';
 
-        extendedProps.port = 8081;
-        extendedProps.host = 'localhost';
+        // init translations
+        I18n.setTranslations(this.translations);
+        I18n.setLanguage((navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase());
+        this.adapterName = 'scenes';
 
-        super(props, extendedProps);
+        this.port = 8081;
+        this.host = 'localhost';
+    }
+
+    componentDidMount() {
+        this.socket = new Connection({
+            name: this.adapterName,
+            host: this.host,
+            port: this.port || this.getPort(),
+            onProgress: progress => {
+                if (progress === PROGRESS.CONNECTING) {
+                    this.setState({
+                        connected: false
+                    });
+                } else if (progress === PROGRESS.READY) {
+                    this.setState({
+                        connected: true,
+                        progress: 100
+                    });
+                } else {
+                    this.setState({
+                        connected: true,
+                        progress: Math.round(PROGRESS.READY / progress * 100)
+                    });
+                }
+            },
+            onReady: async (objects, scripts) => {
+                I18n.setLanguage(this.socket.systemLang);
+
+                const newState = {
+                    lang: this.socket.systemLang,
+                    ready: true,
+                };
+
+                try {
+                    newState.systemConfig = await this.socket.getSystemConfig();
+                } catch (error) {
+                    console.log(error);
+                }
+
+                this.getScenes()
+                    .then(scenes => {
+                        newState.scenes = scenes;
+                        this.setState(newState);
+                    });
+            },
+            //onObjectChange: (objects, scripts) => this.onObjectChange(objects, scripts),
+            onError: error => {
+                console.error(error);
+                this.showAlert(error, 'error');
+            }
+        });
+    }
+
+    getScenes() {
+        return this.socket.getForeignObjects('scene.' + this.instance + '.*', 'state')
+            .then(scenes => {
+                return scenes;
+            });
     }
 
     render() {
-        if (!this.state.loaded) {
+        if (!this.state.ready) {
             return (<Loader theme={this.state.themeType}/>);
         }
 
@@ -50,7 +110,7 @@ class App extends GenericApp {
 
                 </AppBar>
                 <div>
-                    { I18n.t('Here is the main program! Just add the code.') }
+                    { Object.keys(this.state.scenes).map(id => <div>{ id }</div>) }
                 </div>
 
                 {this.renderError()}
