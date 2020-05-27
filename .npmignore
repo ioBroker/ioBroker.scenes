@@ -1,8 +1,11 @@
+/**/*
+/gulpfile.js
 gulpfile.js
-tasks
-test
-.travis.yml
-appveyor.yml
-iob_npm.done
-package-lock.json
+!/admin/**/*
+!/admin/*
+!/io-package.json
+!/package.json
+!/LICENSE
+!/main.js
+!/README.md
 admin/i18n
