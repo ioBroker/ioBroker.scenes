@@ -1,4 +1,4 @@
-// Copyright Bluefox <dogafox@gmail.com> 2015-2019
+// Copyright Bluefox <dogafox@gmail.com> 2015-2020
 //
 
 // Structure of one scene
@@ -193,37 +193,28 @@ function saveScene(sceneID, isForTrue, cb) {
 
 function restartAdapter() {
     adapter.log.info('restartAdapter');
+
     // stop all timers
-    for (const t in checkTimers) {
-        if (checkTimers.hasOwnProperty(t)) {
-            clearTimeout(checkTimers[t]);
-        }
-    }
-    for (const t in astroTimers) {
-        if (astroTimers.hasOwnProperty(t)) {
-            clearTimeout(astroTimers[t]);
-        }
-    }
-    for (const t in timers) {
-        if (timers.hasOwnProperty(t)) {
-            clearTimeout(timers[t]);
-        }
-    }
-    if (schedule) {
-        for (const t in cronTasks) {
-            if (cronTasks.hasOwnProperty(t)) {
-                if (cronTasks[t]) cronTasks[t].cancel();
-            }
-        }
-    }
+    Object.keys(checkTimers).forEach(id =>
+        checkTimers[id] && clearTimeout(checkTimers[id]));
+    checkTimers = {};
+
+    Object.keys(timers).forEach(id =>
+        timers[id].forEach(tt =>
+            timers[id][tt] && timers[id][tt].timer && clearTimeout(timers[id][tt].timer)));
+    timers = {};
+
+    schedule && Object.keys(cronTasks).forEach(id =>
+        cronTasks[id] && cronTasks[id].cancel());
+    cronTasks = {};
+
     if (!subscription) {
         adapter.unsubscribeForeignStates();
     } else {
         adapter.unsubscribeForeignStates('scene.*');
         // and for all states
-        for (let i = 0; i < subscription.length; i++) {
-            adapter.unsubscribeForeignStates(subscription[i]);
-        }
+        subscription.forEach(pattern =>
+            adapter.unsubscribeForeignStates(pattern));
     }
     subscription = null;
     scenes       = {};
@@ -232,7 +223,6 @@ function restartAdapter() {
     timers       = {};
     tIndex       = 1;
     checkTimers  = {};
-    astroTimers  = {};
     cronTasks    = {};
 
     main();
@@ -244,7 +234,6 @@ let ids          = {};
 let triggers     = {};
 let timers       = {};
 let checkTimers  = {};
-let astroTimers  = {};
 let cronTasks    = {};
 
 // Check if actual states are exactly as desired in the scene
@@ -443,6 +432,7 @@ function activateSceneState(sceneId, state, isTrue) {
 
     if (stateObj.delay) {
         timers[stateObj.id] = timers[stateObj.id] || [];
+
         if (stateObj.stopAllDelays && timers[stateObj.id].length) {
             adapter.log.debug('Cancel running timers (' + timers[stateObj.id].length + ' for ' + stateObj.id);
             for (let tt = 0; tt < timers[stateObj.id].length; tt++) {
@@ -469,7 +459,7 @@ function activateSceneState(sceneId, state, isTrue) {
             }
         }, stateObj.delay, stateObj.id, isTrue, tIndex);
 
-        timers[stateObj.id].push({timer: timer, tIndex: tIndex});
+        timers[stateObj.id].push({timer, tIndex});
     } else {
         if (stateObj.stopAllDelays && timers[stateObj.id] && timers[stateObj.id].length) {
             adapter.log.debug('Cancel running timers for "' + stateObj.id + '" (' + timers[stateObj.id].length + ')');
@@ -495,7 +485,7 @@ function activateSceneStates(sceneId, state, isTrue, interval, callback) {
         }
     }
 
-    setTimeout(() => {
+    scenesTimeout[sceneId + '_' + state] = setTimeout(() => {
         activateSceneState(sceneId, state, isTrue);
         activateSceneStates(sceneId, state + 1, isTrue, interval, callback);
     }, interval);
