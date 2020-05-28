@@ -3,8 +3,14 @@ import {withStyles} from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import GenericApp from "@iobroker/adapter-react/GenericApp";
 import Connection from "./components/Connection";
+import SceneForm from "./components/SceneForm";
 import Loader from '@iobroker/adapter-react/Components/Loader'
 import { PROGRESS } from './components/Connection';
+import Paper from '@material-ui/core/Paper';
+import Grid from '@material-ui/core/Grid';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Switch from '@material-ui/core/Switch';
 
 import I18n from '@iobroker/adapter-react/i18n';
 
@@ -81,6 +87,8 @@ class App extends GenericApp {
             onReady: async (objects, scripts) => {
                 I18n.setLanguage(this.socket.systemLang);
 
+                console.log(objects);
+                console.log(scripts);
                 const newState = {
                     lang: this.socket.systemLang,
                     ready: true,
@@ -95,10 +103,12 @@ class App extends GenericApp {
                 this.getScenes()
                     .then(scenes => {
                         newState.scenes = scenes;
+                        console.log(scenes);
                         this.setState(newState);
                     });
             },
             //onObjectChange: (objects, scripts) => this.onObjectChange(objects, scripts),
+            onObjectChange: (attr, value) => ()=>{console.log(attr); console.log(value);},
             onError: error => {
                 console.error(error);
                 this.showAlert(error, 'error');
@@ -110,20 +120,59 @@ class App extends GenericApp {
         return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state');
     }
 
+    sceneSwitch = (event) => {
+        this.state.scenes[event.target.name].common.enabled = event.target.checked;
+        this.socket.setObject(event.target.name, this.state.scenes[event.target.name]);
+        this.setState(this.state);
+      };
+
     render() {
         if (!this.state.ready) {
             return (<Loader theme={this.state.themeType}/>);
         }
 
+        let component = this;
+
+
         return (
             <div className="App">
                 <AppBar position="static">
-
+                    <Tabs value={0}
+                          onChange={(e, index) => this.selectTab(e.target.parentNode.dataset.name, index)}>
+                        <Tab label={I18n.t('Scenes')} data-name="list"/>
+                    </Tabs>
                 </AppBar>
-                <div>
-                    { Object.keys(this.state.scenes).map(id => <div>{ id }</div>) }
-                </div>
-
+                <Grid container spacing={3}>
+                    <Grid item xs={4}>
+                    <Paper>
+                    <div>
+                        { Object.values(this.state.scenes).map((scene) => {
+                            return <div key={scene._id} onClick={()=>{
+                                component.setState({selected_scene : scene});
+                            }}>
+                                <h2>{ scene._id} 
+                                    <Switch
+                                        checked={scene.common.enabled}
+                                        onChange={component.sceneSwitch}
+                                        name={scene._id}
+                                    />
+                                </h2>
+                                <div>{ scene.common.desc }</div>
+                                {scene.native.members.map(e=><div key={e.id}>{e.id}</div>)}
+                            </div>
+                        }) }
+                    </div>
+                    </Paper>
+                    </Grid>
+                    <Grid item xs={4}>
+                    <Paper>{component.state.selected_scene ?
+                        <SceneForm scene={component.state.selected_scene}/>
+                    : ""}</Paper>
+                    </Grid>
+                    <Grid item xs={4}>
+                    <Paper>xs=3</Paper>
+                    </Grid>
+                </Grid>
                 {this.renderError()}
             </div>
         );
