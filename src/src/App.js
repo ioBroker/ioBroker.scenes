@@ -251,7 +251,7 @@ class App extends GenericApp {
         const scene = this.state.scenes[item.id];
         let component = this;
 
-        return <div style={{paddingLeft: level * LEVEL_PADDING}} key={scene._id} onClick={()=>{
+        return <div className={this.state.selectedScene == scene ? "selectedScene" : ""} style={{paddingLeft: level * LEVEL_PADDING}} key={scene._id} onClick={()=>{
             component.setState({selectedScene: scene});
         }}>
             <h2>{ scene._id }
@@ -307,8 +307,8 @@ class App extends GenericApp {
                     <Paper>
                     <div>
                         { null && Object.values(this.state.scenes).map((scene) => {
-                            return <div key={scene._id} className={this.state.selected_scene == scene ? "selectedScene" : ""} onClick={()=>{
-                                component.setState({selected_scene : scene});
+                            return <div key={scene._id} className={this.state.selectedScene == scene ? "selectedScene" : ""} onClick={()=>{
+                                component.setState({selectedScene : scene});
                             }}>
                                 <h2>{ scene._id} 
                                     <Switch
@@ -325,13 +325,13 @@ class App extends GenericApp {
                     </Paper>
                     </Grid>
                     <Grid item xs={4}>
-                    <Paper>{component.state.selected_scene ?
-                        <SceneForm updateScene={this.updateScene} scene={component.state.selected_scene}/>
+                    <Paper>{component.state.selectedScene ?
+                        <SceneForm updateScene={this.updateScene} scene={component.state.selectedScene}/>
                     : ""}</Paper>
                     </Grid>
                     <Grid item xs={4}>
-                    <Paper>{component.state.selected_scene ?
-                        <SceneMembersForm updateScene={this.updateScene} scene={component.state.selected_scene}/>
+                    <Paper>{component.state.selectedScene ?
+                        <SceneMembersForm updateScene={this.updateScene} scene={component.state.selectedScene}/>
                     : ""}</Paper>
                     </Grid>
                 </Grid>
