@@ -4,6 +4,7 @@ import AppBar from '@material-ui/core/AppBar';
 import GenericApp from "@iobroker/adapter-react/GenericApp";
 import Connection from "./components/Connection";
 import SceneForm from "./components/SceneForm";
+import SceneMembersForm from "./components/SceneMembersForm";
 import Loader from '@iobroker/adapter-react/Components/Loader'
 import { PROGRESS } from './components/Connection';
 import Paper from '@material-ui/core/Paper';
@@ -20,7 +21,7 @@ const styles = theme => ({
         padding: 10,
         height: 'calc(100% - 64px - 48px - 20px)',
         overflow: 'auto'
-    },
+    }
 });
 
 function getUrlQuery() {
@@ -126,6 +127,12 @@ class App extends GenericApp {
         this.setState(this.state);
       };
 
+    updateScene = (id, data) => {
+        this.state.scenes[id] = data;
+        this.socket.setObject(id, this.state.scenes[id]);
+        this.setState(this.state);
+      };
+
     render() {
         if (!this.state.ready) {
             return (<Loader theme={this.state.themeType}/>);
@@ -147,7 +154,7 @@ class App extends GenericApp {
                     <Paper>
                     <div>
                         { Object.values(this.state.scenes).map((scene) => {
-                            return <div key={scene._id} onClick={()=>{
+                            return <div key={scene._id} className={this.state.selected_scene == scene ? "selectedScene" : ""} onClick={()=>{
                                 component.setState({selected_scene : scene});
                             }}>
                                 <h2>{ scene._id} 
@@ -158,7 +165,6 @@ class App extends GenericApp {
                                     />
                                 </h2>
                                 <div>{ scene.common.desc }</div>
-                                {scene.native.members.map(e=><div key={e.id}>{e.id}</div>)}
                             </div>
                         }) }
                     </div>
@@ -166,11 +172,13 @@ class App extends GenericApp {
                     </Grid>
                     <Grid item xs={4}>
                     <Paper>{component.state.selected_scene ?
-                        <SceneForm scene={component.state.selected_scene}/>
+                        <SceneForm updateScene={this.updateScene} scene={component.state.selected_scene}/>
                     : ""}</Paper>
                     </Grid>
                     <Grid item xs={4}>
-                    <Paper>xs=3</Paper>
+                    <Paper>{component.state.selected_scene ?
+                        <SceneMembersForm updateScene={this.updateScene} scene={component.state.selected_scene}/>
+                    : ""}</Paper>
                     </Grid>
                 </Grid>
                 {this.renderError()}
