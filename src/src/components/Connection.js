@@ -689,10 +689,12 @@ class Connection {
 
         return new Promise((resolve, reject) => {
             this._socket.emit('getObjectView', 'system', type, {startkey: start, endkey: end}, (err, res) => {
-                if (!err && res) {
-                    const _res   = {};
-                    for (let i = 0; i < res.rows.length; i++) {
-                        _res[res.rows[i].id] = res.rows[i].value;
+                if (!err) {
+                    const _res = {};
+                    if (res && res.rows) {
+                        for (let i = 0; i < res.rows.length; i++) {
+                            _res[res.rows[i].id] = res.rows[i].value;
+                        }
                     }
                     resolve(_res);
                 } else {

@@ -12,8 +12,11 @@ import Grid from '@material-ui/core/Grid';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Switch from '@material-ui/core/Switch';
-
+import clsx from 'clsx';
+import Utils from '@iobroker/adapter-react/Components/Utils';
 import I18n from '@iobroker/adapter-react/i18n';
+
+const LEVEL_PADDING = 24;
 
 const styles = theme => ({
     root: {},
@@ -101,10 +104,10 @@ class App extends GenericApp {
                     console.log(error);
                 }
 
-                this.getScenes()
-                    .then(scenes => {
-                        newState.scenes = scenes;
-                        console.log(scenes);
+                this.getData()
+                .then(newState => {
+                        newState.ready = true;
+                        console.log(newState);
                         this.setState(newState);
                     });
             },
@@ -112,12 +115,12 @@ class App extends GenericApp {
             onObjectChange: (attr, value) => ()=>{console.log(attr); console.log(value);},
             onError: error => {
                 console.error(error);
-                this.showAlert(error, 'error');
+                this.showError(error);
             }
         });
     }
 
-    getScenes() {
+    getData() {
         return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state');
     }
 
@@ -126,6 +129,156 @@ class App extends GenericApp {
         this.socket.setObject(event.target.name, this.state.scenes[event.target.name]);
         this.setState(this.state);
       };
+
+      getFolder(root, folderId) {
+        if (root.id === folderId) {
+            return root;
+        } else {
+            return root.children.find(item =>
+                item.type === 'folder' && item.id === folderId || (item.id.startsWith(folderId + '.') && this.getFolder(item, folderId)));
+        }
+    }
+
+    buildTree(folders, scenes) {
+        folders = folders || this.state.folders;
+        scenes  = scenes  || this.state.scenes;
+
+        const ids = Object.keys(scenes);
+        const folderIDs = Object.keys(folders);
+
+        // create missing folders
+        ids.forEach(id => {
+            const parts = id.split('.');
+            let _id = parts[0] + '.' + parts[1];
+            for (let i = 2; i < parts.length - 1; i++) {
+                _id += '.' + parts[i];
+
+                // add folder if not exists
+                if (!folderIDs.includes(_id)) {
+                    folders[_id] = {
+                        type: 'folder',
+                        common: {
+                            name: parts[i],
+                        },
+                        native: {}
+                    };
+                    folderIDs.push(_id);
+                }
+            }
+        });
+
+        // collect children of all folders
+        const root = {
+            id: 'scene.0',
+            children: [],
+            type: 'folder'
+        };
+
+        Object.keys(folders).sort().forEach(id => {
+            const parts = id.split('.');
+            parts.pop();
+            const parentId = parts.join('.');
+            const f = this.getFolder(root, parentId);
+            f.children.push({id, name: Utils.getObjectNameFromObj(folders[id], null, {language: I18n.getLanguage()}), type: 'folder', children: []});
+        });
+        Object.keys(scenes).sort().forEach(id => {
+            const parts = id.split('.');
+            const name = parts.pop();
+            const parentId = parts.join('.');
+            const f = this.getFolder(root, parentId);
+            f.children.push({id, name: Utils.getObjectNameFromObj(scenes[id], null, {language: I18n.getLanguage()}), type: 'scene'});
+        });
+
+        return root;
+    }
+
+    getData() {
+        let scenes;
+        return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state')
+            .then(_scenes => {
+                scenes = _scenes;
+                return {scenes, folders: [], tree: this.buildTree([], scenes)};
+            });
+    }
+
+    addFolder(id) {
+        const folders = JSON.parse(JSON.stringify(this.state.folders));
+        folders[id] = {
+            type: 'folder',
+            common: {
+                name: id.split('.').pop(),
+            },
+            native: {}
+        };
+
+        this.setState({folders, tree: this.buildTree(folders, null)});
+    }
+
+    deleteFolder(id) {
+        const folders = JSON.parse(JSON.stringify(this.state.folders));
+        if (folders[id]) {
+            // find some children
+            const sceneId = Object.keys(this.state.scenes).find(_id => _id.startsWith(id + '.'));
+            if (sceneId) {
+                // cannot delete, because still have children
+                return this.showError(I18n.t('Cannot delete non-empty folder'));
+            }
+
+            delete folders[id];
+
+            this.socket.delObject(id, () =>
+                this.setState({folders, tree: this.buildTree(folders, null)}));
+        }
+    }
+
+    deleteScript(id) {
+        const scripts = JSON.parse(JSON.stringify(this.state.scripts));
+        if (scripts[id]) {
+            delete scripts[id];
+
+            this.socket.delObject(id, () =>
+                this.setState({scripts, tree: this.buildTree(null, scripts)}));
+        }
+    }
+
+    renderTreeFolder(item, level) {
+        return <div style={{paddingLeft: level * LEVEL_PADDING}} className={ this.props.classes.folderDiv }>
+            { item.name }
+        </div>;
+    }
+
+    renderTreeScene(item, level) {
+        const scene = this.state.scenes[item.id];
+        let component = this;
+
+        return <div style={{paddingLeft: level * LEVEL_PADDING}} key={scene._id} onClick={()=>{
+            component.setState({selectedScene: scene});
+        }}>
+            <h2>{ scene._id }
+                <Switch
+                    checked={scene.common.enabled}
+                    onChange={component.sceneSwitch}
+                    name={scene._id}
+                />
+            </h2>
+            <div>{ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }</div>
+            {scene.native.members.map(e=><div key={e.id}>{e.id}</div>)}
+        </div>;
+    }
+    
+    renderTreeItem(item, level) {
+        if (level === undefined) {
+            level = -1;
+        }
+        if (item.type === 'folder') {
+            return [
+                item.id !== 'scene.0' ? this.renderTreeFolder(item, level) : null,
+                item.children.map(item => this.renderTreeItem(item, level + 1))
+            ];
+        } else {
+            return this.renderTreeScene(item, level);
+        }
+    }
 
     updateScene = (id, data) => {
         this.state.scenes[id] = data;
@@ -153,7 +306,7 @@ class App extends GenericApp {
                     <Grid item xs={4}>
                     <Paper>
                     <div>
-                        { Object.values(this.state.scenes).map((scene) => {
+                        { null && Object.values(this.state.scenes).map((scene) => {
                             return <div key={scene._id} className={this.state.selected_scene == scene ? "selectedScene" : ""} onClick={()=>{
                                 component.setState({selected_scene : scene});
                             }}>
@@ -167,6 +320,7 @@ class App extends GenericApp {
                                 <div>{ scene.common.desc }</div>
                             </div>
                         }) }
+                    {this.renderTreeItem(this.state.tree)}}
                     </div>
                     </Paper>
                     </Grid>

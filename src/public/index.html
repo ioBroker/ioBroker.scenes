@@ -19,10 +19,14 @@
         window.registerSocketOnLoad = function (cb) {
             window.socketLoadedHandler = cb;
         };
+        const parts = (window.location.search || '').replace(/^\?/, '').split('&');
+        const query = {};
+        parts.forEach(item => {
+            const [name, val] = item.split('=');
+            query[decodeURIComponent(name)] = val !== undefined ? decodeURIComponent(val) : true;
+        });
         script.onload = function () { typeof window.socketLoadedHandler === 'function' && window.socketLoadedHandler(); };
-        setTimeout(() => {
-            script.src = window.location.port === '3000' ? 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js' : '%PUBLIC_URL%/../../lib/js/socket.io.js';
-        }, 1000);
+        script.src = window.location.port === '3000' ? window.location.protocol + '//' + (query.host || window.location.hostname) + ':' + (query.port || 8081) + '/lib/js/socket.io.js' : '%PUBLIC_URL%/../../lib/js/socket.io.js';
 
         document.head.appendChild(script);
     </script>
