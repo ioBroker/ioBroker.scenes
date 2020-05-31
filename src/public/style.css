@@ -1,3 +1,7 @@
 .selectedScene {
     background-color: grey;
 }
+
+#root {
+    overflow: auto;
+}

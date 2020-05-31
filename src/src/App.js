@@ -12,6 +12,7 @@ import Grid from '@material-ui/core/Grid';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Switch from '@material-ui/core/Switch';
+import Container from '@material-ui/core/Container';
 import clsx from 'clsx';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 import I18n from '@iobroker/adapter-react/i18n';
@@ -302,6 +303,7 @@ class App extends GenericApp {
                         <Tab label={I18n.t('Scenes')} data-name="list"/>
                     </Tabs>
                 </AppBar>
+                <Container>
                 <Grid container spacing={3}>
                     <Grid item xs={4}>
                     <Paper>
@@ -320,21 +322,22 @@ class App extends GenericApp {
                                 <div>{ scene.common.desc }</div>
                             </div>
                         }) }
-                    {this.renderTreeItem(this.state.tree)}}
+                    {this.renderTreeItem(this.state.tree)}
                     </div>
                     </Paper>
                     </Grid>
                     <Grid item xs={4}>
                     <Paper>{component.state.selectedScene ?
-                        <SceneForm updateScene={this.updateScene} scene={component.state.selectedScene}/>
+                        <SceneForm key={component.state.selectedScene._id} updateScene={this.updateScene} scene={component.state.selectedScene}/>
                     : ""}</Paper>
                     </Grid>
                     <Grid item xs={4}>
                     <Paper>{component.state.selectedScene ?
-                        <SceneMembersForm updateScene={this.updateScene} scene={component.state.selectedScene}/>
+                        <SceneMembersForm key={component.state.selectedScene._id} updateScene={this.updateScene} scene={component.state.selectedScene}/>
                     : ""}</Paper>
                     </Grid>
                 </Grid>
+                </Container>
                 {this.renderError()}
             </div>
         );
