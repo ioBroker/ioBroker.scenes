@@ -245,7 +245,7 @@ class App extends GenericApp {
     }
 
     renderTreeFolder(item, level) {
-        return <div style={{paddingLeft: level * LEVEL_PADDING}} className={ this.props.classes.folderDiv }>
+        return <div key={item.id} style={{paddingLeft: level * LEVEL_PADDING}} className={ this.props.classes.folderDiv }>
             { item.name }
         </div>;
     }
@@ -254,7 +254,7 @@ class App extends GenericApp {
         const scene = this.state.scenes[item.id];
         let component = this;
 
-        return <div className={this.state.selectedScene == scene ? "selectedScene" : ""} style={{paddingLeft: level * LEVEL_PADDING}} key={scene._id} onClick={()=>{
+        return <div key={item.id} className={this.state.selectedScene == scene ? "selectedScene" : ""} style={{paddingLeft: level * LEVEL_PADDING}} key={scene._id} onClick={()=>{
             component.setState({selectedScene: scene});
         }}>
             <h2>{ scene._id }
@@ -380,7 +380,7 @@ class App extends GenericApp {
                     </Grid>
                     <Grid item xs={4}>
                     <Paper>{component.state.selectedScene ?
-                        <SceneMembersForm key={component.state.selectedScene._id} updateScene={this.updateScene} scene={component.state.selectedScene} socket={component.socket}/>
+                        <SceneMembersForm key={'selected' + component.state.selectedScene._id} updateScene={this.updateScene} scene={component.state.selectedScene} socket={component.socket}/>
                     : ""}</Paper>
                     </Grid>
                 </Grid>

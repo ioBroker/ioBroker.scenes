@@ -234,10 +234,11 @@ class Connection {
                 this.props.onLanguage && this.props.onLanguage(this.systemLang);
 
                 if (!this.doNotLoadAllObjects) {
-                    this.getObjects(() => {
-                        this.onProgress(PROGRESS.READY);
-                        this.props.onReady && this.props.onReady(this.objects);
-                    });
+                    this.getObjects()
+                        .then(() => {
+                            this.onProgress(PROGRESS.READY);
+                            this.props.onReady && this.props.onReady(this.objects);
+                        });
                 } else {
                     this.objects = {'system.config': data};
                     this.onProgress(PROGRESS.READY);
@@ -443,20 +444,40 @@ class Connection {
     }
 
     getObjects(update, disableProgressUpdate) {
-        if (!this.connected) {
-            return Promise.reject(NOT_CONNECTED);
-        }
-        return new Promise((resolve, reject) => {
-            if (!update && this.objects) {
-                return resolve(this.objects);
-            }
+        if (typeof update === 'function') {
+            const callback = update;
+            // BF(2020_06_01): old code, must be removed when adapter-react will be updated
+            if (!this.connected) {
+                console.error(NOT_CONNECTED);
+                callback();
+            } else {
+                if (this.objects && Object.keys(this.objects).length > 2) {
+                    setTimeout(() => callback(this.objects), 100);
+                } else {
+                    this._socket.emit('getAllObjects', (err, res) => {
+                        this.objects = res || {};
+                        disableProgressUpdate && this.onProgress(PROGRESS.OBJECTS_LOADED);
+                        callback(this.objects);
+                    });
 
-            this._socket.emit('getAllObjects', (err, res) => {
-                this.objects = res;
-                disableProgressUpdate && this.onProgress(PROGRESS.OBJECTS_LOADED);
-                err ? reject(err) : resolve(this.objects);
+                }
+            }
+        } else {
+            if (!this.connected) {
+                return Promise.reject(NOT_CONNECTED);
+            }
+            return new Promise((resolve, reject) => {
+                if (!update && this.objects) {
+                    return resolve(this.objects);
+                }
+
+                this._socket.emit('getAllObjects', (err, res) => {
+                    this.objects = res;
+                    disableProgressUpdate && this.onProgress(PROGRESS.OBJECTS_LOADED);
+                    err ? reject(err) : resolve(this.objects);
+                });
             });
-        });
+        }
     }
 
     _subscribe(isEnable) {

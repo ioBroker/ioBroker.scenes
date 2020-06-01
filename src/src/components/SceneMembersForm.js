@@ -11,8 +11,7 @@ import {MdModeEdit as IconEdit} from 'react-icons/md';
 import {MdAdd as IconAdd} from 'react-icons/md';
 import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 
-class SceneMembersForm extends React.Component
-{
+class SceneMembersForm extends React.Component {
     state = {}
 
     componentDidMount() {
@@ -22,7 +21,7 @@ class SceneMembersForm extends React.Component
     createSceneMember = () => {
         this.setState({showDialog: true});
         return;
-        let template = {
+        const template = {
             "id": "alias.0.Жалюзи.SET",
             "setIfTrue": null,
             "setIfFalse": null,
@@ -30,7 +29,7 @@ class SceneMembersForm extends React.Component
             "desc": null,
             "disabled": false,
             "delay": null
-          }
+          };
         
           let scene = JSON.parse(JSON.stringify(this.props.scene));
           scene.native.members.push(template);
@@ -43,7 +42,7 @@ class SceneMembersForm extends React.Component
         this.props.updateScene(scene._id, scene);          
     }
 
-    render = ()=>{
+    render = () => {
         let scene = this.state.formData;
         if (!scene) {
             return null;
@@ -120,6 +119,7 @@ class SceneMembersForm extends React.Component
                 //statesOnly={true}
                 selected={null}
                 onOk={id => {
+                    console.log(id);
                     //const ids = JSON.parse(JSON.stringify(this.state.ids));
                     //ids[this.state.selectIdFor] = id;
                     //this.setState({selectIdFor: '', ids})

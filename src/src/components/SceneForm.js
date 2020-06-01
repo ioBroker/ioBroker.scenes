@@ -80,7 +80,7 @@ class SceneForm extends React.Component
                 }}/>
             </div>
             <div>
-                <TextField value={scene.native.onTrue.cron}
+                <TextField value={scene.native.onTrue.cron || ''}
                 onChange={(e)=>{
                     scene.native.onTrue.cron = e.target.value;
                     component.setState({formData: scene});
@@ -116,7 +116,7 @@ class SceneForm extends React.Component
                 }}/>
             </div>
             <div>
-                <TextField value={scene.native.onFalse.cron}
+                <TextField value={scene.native.onFalse.cron || ''}
                 onChange={(e)=>{
                     scene.native.onFalse.cron = e.target.value;
                     component.setState({formData: scene});
