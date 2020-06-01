@@ -20,6 +20,8 @@ class SceneMembersForm extends React.Component
     }
 
     createSceneMember = () => {
+        this.setState({showDialog: true});
+        return;
         let template = {
             "id": "alias.0.Жалюзи.SET",
             "setIfTrue": null,
@@ -110,7 +112,7 @@ class SceneMembersForm extends React.Component
            </div>;
         
         result = [result, 
-                <DialogSelectID
+                this.state.showDialog ? <DialogSelectID
                 key="selectDialog"
                 connection={this.props.socket}
                 dialogName="memberEdit"
@@ -122,8 +124,8 @@ class SceneMembersForm extends React.Component
                     //ids[this.state.selectIdFor] = id;
                     //this.setState({selectIdFor: '', ids})
                 }}
-                onClose={() => this.setState({selectIdFor: ''})}
-            />
+                onClose={() => this.setState({showDialog: false})}
+            /> : null
         ]
 
         return result;
