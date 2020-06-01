@@ -13,9 +13,11 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Switch from '@material-ui/core/Switch';
 import Container from '@material-ui/core/Container';
+import Fab from '@material-ui/core/Fab';
 import clsx from 'clsx';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 import I18n from '@iobroker/adapter-react/i18n';
+import {MdAdd as IconAdd} from 'react-icons/md';
 
 const LEVEL_PADDING = 24;
 
@@ -105,12 +107,7 @@ class App extends GenericApp {
                     console.log(error);
                 }
 
-                this.getData()
-                .then(newState => {
-                        newState.ready = true;
-                        console.log(newState);
-                        this.setState(newState);
-                    });
+                this.refreshData();
             },
             //onObjectChange: (objects, scripts) => this.onObjectChange(objects, scripts),
             onObjectChange: (attr, value) => ()=>{console.log(attr); console.log(value);},
@@ -119,10 +116,6 @@ class App extends GenericApp {
                 this.showError(error);
             }
         });
-    }
-
-    getData() {
-        return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state');
     }
 
     sceneSwitch = (event) => {
@@ -199,6 +192,15 @@ class App extends GenericApp {
             .then(_scenes => {
                 scenes = _scenes;
                 return {scenes, folders: [], tree: this.buildTree([], scenes)};
+            });
+    }
+    refreshData() {
+        this.setState({ready: false, selectedScene: null});
+        this.getData()
+        .then(newState => {
+                newState.ready = true;
+                console.log(newState);
+                this.setState(newState);
             });
     }
 
@@ -281,11 +283,51 @@ class App extends GenericApp {
         }
     }
 
+    createScene = (name) => {
+        let template = {
+            "common": {
+              "name": "",
+              "type": "boolean",
+              "role": "scene.state",
+              "desc": "",
+              "enabled": true,
+              "read": true,
+              "write": true,
+              "def": false,
+              //"engine": "system.adapter.scenes.0"
+            },
+            "native": {
+              "onTrue": {
+                "trigger": {},
+                "cron": null,
+                "astro": null
+              },
+              "onFalse": {
+                "enabled": false,
+                "trigger": {},
+                "cron": null,
+                "astro": null
+              },
+              "members": []
+            },
+            "type": "state"
+          };
+          template.common.desc = template.common.name = this.instance + "." + name;
+          this.socket.setObject("scene." + template.common.name, template);
+          this.refreshData();
+    }
+
     updateScene = (id, data) => {
         this.state.scenes[id] = data;
         this.socket.setObject(id, this.state.scenes[id]);
         this.setState(this.state);
-      };
+        this.refreshData();
+    };
+
+    deleteScene = async (id) => {
+        await this.socket.delObject(id);
+        this.refreshData();
+    }
 
     render() {
         if (!this.state.ready) {
@@ -303,6 +345,11 @@ class App extends GenericApp {
                         <Tab label={I18n.t('Scenes')} data-name="list"/>
                     </Tabs>
                 </AppBar>
+                <div>
+                <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
+                    this.createScene("scene"+(Object.values(this.state.scenes).length+1));
+                }} title={I18n.t('Create new scene')}><IconAdd /></Fab>
+                </div>
                 <Container>
                 <Grid container spacing={3}>
                     <Grid item xs={4}>
@@ -328,12 +375,12 @@ class App extends GenericApp {
                     </Grid>
                     <Grid item xs={4}>
                     <Paper>{component.state.selectedScene ?
-                        <SceneForm key={component.state.selectedScene._id} updateScene={this.updateScene} scene={component.state.selectedScene}/>
+                        <SceneForm key={component.state.selectedScene._id} deleteScene={this.deleteScene} updateScene={this.updateScene} scene={component.state.selectedScene}/>
                     : ""}</Paper>
                     </Grid>
                     <Grid item xs={4}>
                     <Paper>{component.state.selectedScene ?
-                        <SceneMembersForm key={component.state.selectedScene._id} updateScene={this.updateScene} scene={component.state.selectedScene}/>
+                        <SceneMembersForm key={component.state.selectedScene._id} updateScene={this.updateScene} scene={component.state.selectedScene} socket={component.socket}/>
                     : ""}</Paper>
                     </Grid>
                 </Grid>
