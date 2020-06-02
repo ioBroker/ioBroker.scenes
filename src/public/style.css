@@ -1,7 +1,14 @@
-.selectedScene {
+.selectedScene, .members-cell {
     background-color: grey;
 }
 
 #root {
     overflow: auto;
+}
+
+.MuiInputBase-root, .MuiFormControlLabel-root, .MuiFormControl-root {
+    width: 100%;
+}
+.MuiFormControlLabel-label.MuiTypography-body1 {
+    font-size: 0.8rem;
 }

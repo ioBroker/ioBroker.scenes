@@ -7,8 +7,13 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
 import I18n from '@iobroker/adapter-react/i18n';
 import Fab from '@material-ui/core/Fab';
+import Grid from '@material-ui/core/Grid';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
 import {MdDelete as IconDelete} from 'react-icons/md';
-import {MdModeEdit as IconEdit} from 'react-icons/md';
+import {FaClone as IconClone} from 'react-icons/fa';
+import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 
 class SceneForm extends React.Component
 {
@@ -24,104 +29,113 @@ class SceneForm extends React.Component
         if (!scene) {
             return null;
         }
-        return <div>
-            <h2>{scene.common.name}</h2>
-            <div>{scene.common.desc}</div>
-            <div>
-                <Fab size="small" aria-label="Edit" title={I18n.t('Edit')}><IconEdit /></Fab>
+        let result = <div>
+            <h2>
+                {this.props.scene.common.name}
+                <Fab size="small" style={{marginLeft: 5}} aria-label="Clone" title={I18n.t('Clone')} onClick={()=>{this.props.cloneScene(scene._id);}}><IconClone /></Fab>
                 <Fab size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.props.deleteScene(scene._id);}}><IconDelete /></Fab>
-            </div>
+            </h2>
+            <div>{this.props.scene.common.desc}</div>
             <div>
-                <Select value={scene.common.engine}>
-                    <MenuItem value={scene.common.engine}>
-                        {scene.common.engine}
-                    </MenuItem>
-                </Select>
-                <TextField value={scene.native.burstIntervall}
-                onChange={(e)=>{
-                    scene.native.burstIntervall = e.target.value;
-                    component.setState({formData: scene});
-                }}/>
-                <Checkbox checked={scene.native.virtualGroup}
-                onChange={(e)=>{
-                    scene.native.virtualGroup = e.target.checked;
-                    component.setState({formData: scene});
-                }}/>
-            </div>
-            <div><Switch checked={scene.native.onTrue.enabled}
-                onChange={(e)=>{
-                    scene.native.onTrue.enabled = e.target.checked;
-                    component.setState({formData: scene});
-                }}
-            /></div>
-            <div>
-                <Select value={scene.native.onTrue.trigger.id}>
-                    <MenuItem value={scene.native.onTrue.trigger.id}>
-                        {scene.native.onTrue.trigger.id}
-                    </MenuItem>
-                </Select>
-                <Select value={scene.native.onTrue.trigger.condition}
-                onChange={(e)=>{
-                    scene.native.onTrue.trigger.condition = e.target.value;
-                    component.setState({formData: scene});
-                }}>
-                    <MenuItem value="==">==</MenuItem>
-                    <MenuItem value="!=">!=</MenuItem>
-                    <MenuItem value=">">&gt;</MenuItem>
-                    <MenuItem value="<">&lt;</MenuItem>
-                    <MenuItem value=">=">&gt;=</MenuItem>
-                    <MenuItem value="<=">&lt;=</MenuItem>
-                    <MenuItem value="update">on update</MenuItem>
-                </Select>
-                <TextField value={scene.native.onTrue.trigger.value}
-                onChange={(e)=>{
-                    scene.native.onTrue.trigger.value = e.target.value;
-                    component.setState({formData: scene});
-                }}/>
-            </div>
-            <div>
-                <TextField value={scene.native.onTrue.cron || ''}
-                onChange={(e)=>{
-                    scene.native.onTrue.cron = e.target.value;
-                    component.setState({formData: scene});
-                }}/>
-            </div>
-            <div><Switch checked={scene.native.onFalse.enabled} onChange={(e)=>{
-                scene.native.onFalse.enabled = e.target.checked;
+            <TextField InputLabelProps={{shrink: true}} label={I18n.t("Scene name")} value={scene.common.name}
+            onChange={(e)=>{
+                scene.common.name = e.target.value;
                 component.setState({formData: scene});
-            }}/></div>
-            <div>
-                <Select value={scene.native.onFalse.trigger.id}>
-                    <MenuItem value={scene.native.onFalse.trigger.id}>
-                        {scene.native.onFalse.trigger.id}
-                    </MenuItem>
-                </Select>
-                <Select value={scene.native.onFalse.trigger.condition}
-                onChange={(e)=>{
-                    scene.native.onFalse.trigger.condition = e.target.value;
-                    component.setState({formData: scene});
-                }}>
-                    <MenuItem value="==">==</MenuItem>
-                    <MenuItem value="!=">!=</MenuItem>
-                    <MenuItem value=">">&gt;</MenuItem>
-                    <MenuItem value="<">&lt;</MenuItem>
-                    <MenuItem value=">=">&gt;=</MenuItem>
-                    <MenuItem value="<=">&lt;=</MenuItem>
-                    <MenuItem value="update">on update</MenuItem>
-                </Select>
-                <TextField value={scene.native.onFalse.trigger.value}
-                onChange={(e)=>{
-                    scene.native.onFalse.trigger.value = e.target.value;
-                    component.setState({formData: scene});
-                }}/>
+            }}/>
             </div>
             <div>
-                <TextField value={scene.native.onFalse.cron || ''}
-                onChange={(e)=>{
-                    scene.native.onFalse.cron = e.target.value;
-                    component.setState({formData: scene});
-                }}/>
+            <TextField InputLabelProps={{shrink: true}} label={I18n.t("Scene description")} value={scene.common.desc}
+            onChange={(e)=>{
+                scene.common.desc = e.target.value;
+                component.setState({formData: scene});
+            }}/>
             </div>
+            <div>
+            <Grid container>
+                <Grid item xs="4">
+                    <FormControl>
+                        <InputLabel shrink={true}>{I18n.t("Instance")}</InputLabel>
+                        <Select value={scene.common.engine}>
+                            <MenuItem value={scene.common.engine}>
+                                {scene.common.engine}
+                            </MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs="4">
+                    <TextField InputLabelProps={{shrink: true}} label={I18n.t("Interval between commands (ms)")} value={scene.native.burstIntervall}
+                    onChange={(e)=>{
+                        scene.native.burstIntervall = e.target.value;
+                        component.setState({formData: scene});
+                    }}/>
+                </Grid>
+                <Grid item xs="4">
+                    <FormControlLabel label={I18n.t("Virtual group")} control={
+                        <Checkbox checked={scene.native.virtualGroup}
+                        onChange={(e)=>{
+                            scene.native.virtualGroup = e.target.checked;
+                            component.setState({formData: scene});
+                        }}/>
+                    } />
+                </Grid>
+            </Grid>
+            </div>
+            {
+                [scene.native.onTrue, scene.native.onFalse].map((on)=>{
+                return <div>
+                    <h4>{on == scene.native.onTrue ? I18n.t("Trigger for TRUE") : I18n.t("Trigger for FALSE")}
+                    <Switch checked={on.enabled}
+                        onChange={(e)=>{
+                            on.enabled = e.target.checked;
+                            component.setState({formData: scene});
+                        }}
+                    /></h4>
+                    <div>
+                    <Grid container>
+                    <Grid item xs="8">
+                    <TextField InputLabelProps={{shrink: true}} label={I18n.t("Trigger ID")} value={on.trigger.id} onClick={()=>{
+                            component.setState({showDialog: (id) => {
+                                on.trigger.id = id;
+                                component.setState({formData: scene});
+                            }});
+                        }}/>
+                    </Grid>
+                    <Grid item xs="2">
+                        <FormControl>
+                            <InputLabel shrink={true}>{I18n.t("Condition")}</InputLabel>
+                            <Select value={on.trigger.condition}
+                            onChange={(e)=>{
+                                on.trigger.condition = e.target.value;
+                                component.setState({formData: scene});
+                            }}>
+                                <MenuItem value="==">==</MenuItem>
+                                <MenuItem value="!=">!=</MenuItem>
+                                <MenuItem value=">">&gt;</MenuItem>
+                                <MenuItem value="<">&lt;</MenuItem>
+                                <MenuItem value=">=">&gt;=</MenuItem>
+                                <MenuItem value="<=">&lt;=</MenuItem>
+                                <MenuItem value="update">on update</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs="2">
+                        <TextField InputLabelProps={{shrink: true}} label={I18n.t("Value")} value={on.trigger.value}
+                        onChange={(e)=>{
+                            on.trigger.value = e.target.value;
+                            component.setState({formData: scene});
+                        }}/>
+                        </Grid></Grid>
+                    </div>
+                    <div>
+                        <TextField InputLabelProps={{shrink: true}} label={I18n.t("On time (CRON expression)")} value={on.cron || ''}
+                        onChange={(e)=>{
+                            on.cron = e.target.value;
+                            component.setState({formData: scene});
+                        }}/>
+                    </div>
+                </div>
+                })
+            }
             <div>
             <Button variant="contained" onClick={()=>{
                 this.setState({formData: JSON.parse(JSON.stringify(this.props.scene))});
@@ -135,7 +149,22 @@ class SceneForm extends React.Component
             </Button>
             </div>
             <pre>{JSON.stringify(scene, null, 2)}</pre>
-        </div>
+        </div>;
+
+        result = [result, 
+            this.state.showDialog ? <DialogSelectID
+            key="selectDialog"
+            connection={this.props.socket}
+            dialogName="memberEdit"
+            title={I18n.t('Select for ')}
+            //statesOnly={true}
+            selected={null}
+            onOk={this.state.showDialog}
+            onClose={() => this.setState({showDialog: false})}
+        /> : null
+        ]
+
+        return result;
     }
 }
 

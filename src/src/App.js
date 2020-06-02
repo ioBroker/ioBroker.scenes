@@ -22,12 +22,14 @@ import {MdAdd as IconAdd} from 'react-icons/md';
 const LEVEL_PADDING = 24;
 
 const styles = theme => ({
-    root: {},
+    root: {
+    },
     tabContent: {
         padding: 10,
         height: 'calc(100% - 64px - 48px - 20px)',
         overflow: 'auto'
-    }
+    },
+    
 });
 
 function getUrlQuery() {
@@ -190,21 +192,24 @@ class App extends GenericApp {
         let scenes;
         return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state')
             .then(_scenes => {
+                console.log(_scenes);
                 scenes = _scenes;
                 return {scenes, folders: [], tree: this.buildTree([], scenes)};
             });
     }
     refreshData() {
-        this.setState({ready: false, selectedScene: null});
+        this.setState({scenes: {}, ready: false});
         this.getData()
         .then(newState => {
                 newState.ready = true;
+                console.log(this.state);
                 console.log(newState);
                 this.setState(newState);
             });
     }
 
     addFolder(id) {
+        //id = "scene." + this.instance + "." + id;
         const folders = JSON.parse(JSON.stringify(this.state.folders));
         folders[id] = {
             type: 'folder',
@@ -215,6 +220,7 @@ class App extends GenericApp {
         };
 
         this.setState({folders, tree: this.buildTree(folders, null)});
+        //this.socket.setObject(id, folders[id]);
     }
 
     deleteFolder(id) {
@@ -254,10 +260,10 @@ class App extends GenericApp {
         const scene = this.state.scenes[item.id];
         let component = this;
 
-        return <div key={item.id} className={this.state.selectedScene == scene ? "selectedScene" : ""} style={{paddingLeft: level * LEVEL_PADDING}} key={scene._id} onClick={()=>{
+        return <div key={item.id} className={this.state.selectedScene && this.state.selectedScene._id == scene._id ? "selectedScene" : ""} style={{paddingLeft: level * LEVEL_PADDING}} key={scene._id} onClick={()=>{
             component.setState({selectedScene: scene});
         }}>
-            <h2>{ scene._id }
+            <h2>{ scene.common.name }
                 <Switch
                     checked={scene.common.enabled}
                     onChange={component.sceneSwitch}
@@ -265,7 +271,7 @@ class App extends GenericApp {
                 />
             </h2>
             <div>{ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }</div>
-            {scene.native.members.map(e=><div key={e.id}>{e.id}</div>)}
+            <div>{scene.common.desc}</div>
         </div>;
     }
     
@@ -312,20 +318,33 @@ class App extends GenericApp {
             },
             "type": "state"
           };
-          template.common.desc = template.common.name = this.instance + "." + name;
-          this.socket.setObject("scene." + template.common.name, template);
+          template.common.desc = template.common.name = name;
+          this.socket.setObject("scene." + this.instance + "." + template.common.name, template);
           this.refreshData();
+    }
+
+    cloneScene = (id) => {
+        let scene = JSON.parse(JSON.stringify(this.state.scenes[id]));
+        scene._id = scene._id + "_clone"
+        scene.common.name = scene.common.name + " clone";
+        this.socket.setObject(scene._id, scene);
+        this.setState(this.state);
+        this.refreshData();
     }
 
     updateScene = (id, data) => {
         this.state.scenes[id] = data;
         this.socket.setObject(id, this.state.scenes[id]);
         this.setState(this.state);
+        console.log(this.state);
         this.refreshData();
     };
 
     deleteScene = async (id) => {
         await this.socket.delObject(id);
+        if (this.state.selectedScene._id == id) {
+            this.setState({selectedScene: null});
+        }
         this.refreshData();
     }
 
@@ -349,10 +368,13 @@ class App extends GenericApp {
                 <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
                     this.createScene("scene"+(Object.values(this.state.scenes).length+1));
                 }} title={I18n.t('Create new scene')}><IconAdd /></Fab>
+                <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
+                    this.addFolder("folder");
+                }} title={I18n.t('Create new scene')}><IconAdd /></Fab>
                 </div>
                 <Container>
                 <Grid container spacing={3}>
-                    <Grid item xs={4}>
+                    <Grid item xs={3}>
                     <Paper>
                     <div>
                         { null && Object.values(this.state.scenes).map((scene) => {
@@ -375,13 +397,20 @@ class App extends GenericApp {
                     </Grid>
                     <Grid item xs={4}>
                     <Paper>{component.state.selectedScene ?
-                        <SceneForm key={component.state.selectedScene._id} deleteScene={this.deleteScene} updateScene={this.updateScene} scene={component.state.selectedScene}/>
+                        <SceneForm 
+                            key={component.state.selectedScene._id} 
+                            deleteScene={this.deleteScene} 
+                            cloneScene={this.cloneScene} 
+                            updateScene={this.updateScene} 
+                            scene={this.state.scenes[component.state.selectedScene._id]} 
+                            socket={component.socket}
+                        />
                     : ""}</Paper>
                     </Grid>
-                    <Grid item xs={4}>
-                    <Paper>{component.state.selectedScene ?
-                        <SceneMembersForm key={'selected' + component.state.selectedScene._id} updateScene={this.updateScene} scene={component.state.selectedScene} socket={component.socket}/>
-                    : ""}</Paper>
+                    <Grid className="members-cell" item xs={5}>
+                        {component.state.selectedScene ?
+                            <SceneMembersForm key={'selected' + component.state.selectedScene._id} updateScene={this.updateScene} scene={this.state.scenes[component.state.selectedScene._id]} socket={component.socket}/>
+                        : ""}
                     </Grid>
                 </Grid>
                 </Container>
