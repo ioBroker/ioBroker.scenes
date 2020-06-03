@@ -51,7 +51,7 @@ class SceneMembersForm extends React.Component {
         }
         let component = this;
         let result = <div>
-            <div>
+            <div className="align-right">
                 <Fab size="small" color="secondary" aria-label="Add" title={I18n.t('Create new scene')} onClick={()=>{component.setState({showDialog: true})}}><IconAdd /></Fab>
             </div>
             {
@@ -60,16 +60,18 @@ class SceneMembersForm extends React.Component {
                 return <Paper key={key}>
                     <h2>
                         {member.id}
-                        <Fab size="small" aria-label="Edit" title={I18n.t('Edit')}><IconEdit /></Fab>
-                        <Fab size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.deleteSceneMember(key)}}><IconDelete /></Fab>
-                        <Switch
-                            checked={!member.disabled}
-                            onChange={(e)=>{
-                                member.disabled = !e.target.checked
-                                component.props.updateScene(scene._id, scene);
-                            }}
-                            name={member.id}
-                        />
+                        <span className="right">
+                            <Fab size="small" aria-label="Edit" title={I18n.t('Edit')}><IconEdit /></Fab>
+                            <Fab size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.deleteSceneMember(key)}}><IconDelete /></Fab>
+                            <Switch
+                                checked={!member.disabled}
+                                onChange={(e)=>{
+                                    member.disabled = !e.target.checked
+                                    component.props.updateScene(scene._id, scene);
+                                }}
+                                name={member.id}
+                            />
+                        </span>
                     </h2>
                     <div>{member.desc}</div>
                     <div><TextField InputLabelProps={{shrink: true}} label={I18n.t("Description")} value={member.desc}

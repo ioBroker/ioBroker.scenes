@@ -12,3 +12,15 @@
 .MuiFormControlLabel-label.MuiTypography-body1 {
     font-size: 0.8rem;
 }
+
+.right {
+    float: right;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.clear {
+    clear: both;
+}

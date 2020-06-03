@@ -264,11 +264,11 @@ class App extends GenericApp {
             component.setState({selectedScene: scene});
         }}>
             <h2>{ scene.common.name }
-                <Switch
+                <span className="right"><Switch
                     checked={scene.common.enabled}
                     onChange={component.sceneSwitch}
                     name={scene._id}
-                />
+                /></span>
             </h2>
             <div>{ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }</div>
             <div>{scene.common.desc}</div>
@@ -364,18 +364,18 @@ class App extends GenericApp {
                         <Tab label={I18n.t('Scenes')} data-name="list"/>
                     </Tabs>
                 </AppBar>
-                <div>
-                <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
-                    this.createScene("scene"+(Object.values(this.state.scenes).length+1));
-                }} title={I18n.t('Create new scene')}><IconAdd /></Fab>
-                <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
-                    this.addFolder("folder");
-                }} title={I18n.t('Create new scene')}><IconAdd /></Fab>
-                </div>
                 <Container>
                 <Grid container spacing={3}>
                     <Grid item xs={3}>
                     <Paper>
+                    <div>
+                    <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
+                        this.createScene("scene"+(Object.values(this.state.scenes).length+1));
+                    }} title={I18n.t('Create new scene')}><IconAdd /></Fab>
+                    <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
+                        this.addFolder("folder");
+                    }} title={I18n.t('Create new scene')}><IconAdd /></Fab>
+                    </div>
                     <div>
                         { null && Object.values(this.state.scenes).map((scene) => {
                             return <div key={scene._id} className={this.state.selectedScene == scene ? "selectedScene" : ""} onClick={()=>{

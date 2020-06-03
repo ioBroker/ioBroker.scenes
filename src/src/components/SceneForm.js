@@ -32,8 +32,10 @@ class SceneForm extends React.Component
         let result = <div>
             <h2>
                 {this.props.scene.common.name}
-                <Fab size="small" style={{marginLeft: 5}} aria-label="Clone" title={I18n.t('Clone')} onClick={()=>{this.props.cloneScene(scene._id);}}><IconClone /></Fab>
-                <Fab size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.props.deleteScene(scene._id);}}><IconDelete /></Fab>
+                <span className="right">
+                    <Fab size="small" style={{marginLeft: 5}} aria-label="Clone" title={I18n.t('Clone')} onClick={()=>{this.props.cloneScene(scene._id);}}><IconClone /></Fab>
+                    <Fab size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.props.deleteScene(scene._id);}}><IconDelete /></Fab>
+                </span>
             </h2>
             <div>{this.props.scene.common.desc}</div>
             <div>
