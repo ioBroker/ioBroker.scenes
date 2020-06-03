@@ -7,6 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
 import I18n from '@iobroker/adapter-react/i18n';
 import Fab from '@material-ui/core/Fab';
+import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
@@ -20,7 +21,10 @@ class SceneForm extends React.Component
     state={}
 
     componentDidMount() {
-        this.setState({formData: JSON.parse(JSON.stringify(this.props.scene))});
+        this.setState({
+            formData: JSON.parse(JSON.stringify(this.props.scene)),
+            newFolder: this.props.getFolderPrefix(this.props.scene._id)
+        });
     }
 
     render = ()=>{
@@ -38,22 +42,22 @@ class SceneForm extends React.Component
                 </span>
             </h2>
             <div>{this.props.scene.common.desc}</div>
-            <div>
+            <Box component="p">
             <TextField InputLabelProps={{shrink: true}} label={I18n.t("Scene name")} value={scene.common.name}
             onChange={(e)=>{
                 scene.common.name = e.target.value;
                 component.setState({formData: scene});
             }}/>
-            </div>
-            <div>
+            </Box>
+            <Box component="p">
             <TextField InputLabelProps={{shrink: true}} label={I18n.t("Scene description")} value={scene.common.desc}
             onChange={(e)=>{
                 scene.common.desc = e.target.value;
                 component.setState({formData: scene});
             }}/>
-            </div>
-            <div>
-            <Grid container>
+            </Box>
+            <Box component="p">
+            <Grid container spacing="1">
                 <Grid item xs="4">
                     <FormControl>
                         <InputLabel shrink={true}>{I18n.t("Instance")}</InputLabel>
@@ -81,19 +85,22 @@ class SceneForm extends React.Component
                     } />
                 </Grid>
             </Grid>
-            </div>
+            </Box>
             {
                 [scene.native.onTrue, scene.native.onFalse].map((on)=>{
                 return <div>
                     <h4>{on == scene.native.onTrue ? I18n.t("Trigger for TRUE") : I18n.t("Trigger for FALSE")}
-                    <Switch checked={on.enabled}
+                    <span className="right">
+                        <Switch checked={on.enabled}
                         onChange={(e)=>{
                             on.enabled = e.target.checked;
                             component.setState({formData: scene});
                         }}
-                    /></h4>
+                        />
+                    </span>
+                    </h4>
                     <div>
-                    <Grid container>
+                    <Grid container spacing="1">
                     <Grid item xs="8">
                     <TextField InputLabelProps={{shrink: true}} label={I18n.t("Trigger ID")} value={on.trigger.id} onClick={()=>{
                             component.setState({showDialog: (id) => {
@@ -128,17 +135,17 @@ class SceneForm extends React.Component
                         }}/>
                         </Grid></Grid>
                     </div>
-                    <div>
+                    <Box component="p">
                         <TextField InputLabelProps={{shrink: true}} label={I18n.t("On time (CRON expression)")} value={on.cron || ''}
                         onChange={(e)=>{
                             on.cron = e.target.value;
                             component.setState({formData: scene});
                         }}/>
-                    </div>
+                    </Box>
                 </div>
                 })
             }
-            <div>
+            <div className="align-right buttons-container">
             <Button variant="contained" onClick={()=>{
                 this.setState({formData: JSON.parse(JSON.stringify(this.props.scene))});
             }}>
@@ -149,6 +156,22 @@ class SceneForm extends React.Component
             }}>
                 {I18n.t("Save")}
             </Button>
+            </div>
+            <div>
+                <FormControl>
+                    <InputLabel shrink={true}>{I18n.t("Folder")}</InputLabel>
+                    <Select value={this.state.newFolder}
+                    onChange={(e)=>{
+                        component.setState({newFolder: e.target.value});
+                    }}>
+                        {
+                            this.props.getFolderList(this.props.folders).map((folder) => {
+                                return <MenuItem value={folder.prefix}>{folder.prefix ? folder.prefix.replace(".", " > ") : I18n.t("Root")}</MenuItem>
+                            })
+                        }
+                    </Select>
+                </FormControl>
+                <Button onClick={(e)=>{this.props.addSceneToFolderPrefix(scene, this.state.newFolder)}}>{I18n.t("Move to folder")}</Button>
             </div>
             <pre>{JSON.stringify(scene, null, 2)}</pre>
         </div>;

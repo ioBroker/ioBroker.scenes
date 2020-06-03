@@ -1,5 +1,10 @@
-.selectedScene, .members-cell {
+.selectedScene {
     background-color: grey;
+}
+
+.members-cell {
+    background-color: lightgrey;
+    padding: 10px; 
 }
 
 #root {
@@ -23,4 +28,17 @@
 
 .clear {
     clear: both;
+}
+
+.buttons-container button {
+    margin: 0px 10px;
+}
+
+.member-card {
+    padding: 4px;
+    margin: 10px 0px;
+}
+
+.MuiFormLabel-root {
+    white-space: nowrap;
 }

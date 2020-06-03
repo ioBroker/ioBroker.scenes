@@ -6,10 +6,12 @@ import Select from '@material-ui/core/Select';
 import Checkbox from '@material-ui/core/Checkbox';
 import I18n from '@iobroker/adapter-react/i18n';
 import Fab from '@material-ui/core/Fab';
+import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import {MdDelete as IconDelete} from 'react-icons/md';
 import {MdModeEdit as IconEdit} from 'react-icons/md';
+import {IoMdClose as IconClose} from 'react-icons/io';
 import {MdAdd as IconAdd} from 'react-icons/md';
 import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import Paper from '@material-ui/core/Paper';
@@ -18,7 +20,7 @@ class SceneMembersForm extends React.Component {
     state = {}
 
     componentDidMount() {
-        this.setState({formData: JSON.parse(JSON.stringify(this.props.scene))});
+        this.setState({formData: JSON.parse(JSON.stringify(this.props.scene)), selectedMember: 0});
     }
 
     createSceneMember = (id) => {
@@ -51,17 +53,22 @@ class SceneMembersForm extends React.Component {
         }
         let component = this;
         let result = <div>
-            <div className="align-right">
-                <Fab size="small" color="secondary" aria-label="Add" title={I18n.t('Create new scene')} onClick={()=>{component.setState({showDialog: true})}}><IconAdd /></Fab>
-            </div>
+            <h2>
+                {I18n.t("States")}
+                <span className="right">
+                    <Fab size="small" color="secondary" aria-label="Add" title={I18n.t('Create new scene')} onClick={()=>{component.setState({showDialog: true})}}><IconAdd /></Fab>
+                </span>
+            </h2>
             {
                 scene.native.members.map((member, key) => 
                 {
-                return <Paper key={key}>
+                return <Paper key={key} className="member-card">
                     <h2>
                         {member.id}
                         <span className="right">
-                            <Fab size="small" aria-label="Edit" title={I18n.t('Edit')}><IconEdit /></Fab>
+                            <Fab size="small" aria-label="Edit" title={I18n.t('Edit')} onClick={()=>{component.setState({selectedMember: key})}}>
+                                {key == this.state.selectedMember ? <IconClose /> : <IconEdit />}
+                            </Fab>
                             <Fab size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.deleteSceneMember(key)}}><IconDelete /></Fab>
                             <Switch
                                 checked={!member.disabled}
@@ -73,57 +80,62 @@ class SceneMembersForm extends React.Component {
                             />
                         </span>
                     </h2>
-                    <div>{member.desc}</div>
-                    <div><TextField InputLabelProps={{shrink: true}} label={I18n.t("Description")} value={member.desc}
-                        onChange={(e)=>{
-                            member.desc = e.target.value;
-                            component.setState({formData: scene});
-                    }}/>
-                    </div>
-                    <div><TextField InputLabelProps={{shrink: true}} label={I18n.t("Set if TRUE")} disabled={!scene.native.onTrue.enabled} value={member.setIfTrue}
-                    onChange={(e)=>{
-                        member.setIfTrue = e.target.value;
-                        component.setState({formData: scene});
-                    }}/>
-                    </div>
-                    <div><TextField InputLabelProps={{shrink: true}} label={I18n.t("Set if FALSE")} disabled={!scene.native.onFalse.enabled} value={member.setIfFalse}
-                        onChange={(e)=>{
-                            member.setIfFalse = e.target.value;
-                            component.setState({formData: scene});
-                    }}/>
-                    </div>
-                    <div>
-                    <Grid container>
-                        <Grid item xs="4">
-                            <TextField InputLabelProps={{shrink: true}} label={I18n.t("Delay (ms)")} value={member.delay}
-                    onChange={(e)=>{
-                        member.delay = e.target.value;
-                        component.setState({formData: scene});
-                    }}/>
-                    </Grid>
-                    <Grid item xs="8">
-                        <FormControlLabel label={I18n.t("Stop already started commands")} control={
-                            <Checkbox checked={member.stopAllDelays} onChange={(e)=>{
-                                member.stopAllDelays = e.target.checked;
+                    {
+                        key == this.state.selectedMember ?
+                        <div>
+                            <div>{member.desc}</div>
+                            <Box component="p"><TextField InputLabelProps={{shrink: true}} label={I18n.t("Description")} value={member.desc}
+                                onChange={(e)=>{
+                                    member.desc = e.target.value;
+                                    component.setState({formData: scene});
+                            }}/>
+                            </Box>
+                            <Box component="p"><TextField InputLabelProps={{shrink: true}} label={I18n.t("Set if TRUE")} disabled={!scene.native.onTrue.enabled} value={member.setIfTrue}
+                            onChange={(e)=>{
+                                member.setIfTrue = e.target.value;
                                 component.setState({formData: scene});
                             }}/>
-                        } />
-                    </Grid>
-                    </Grid>
-                    </div>
-                    <pre>{JSON.stringify(member, null, 2)}</pre>
-                    <div>
-                    <Button variant="contained" onClick={()=>{
-                        this.setState({formData: JSON.parse(JSON.stringify(this.props.scene))});
-                    }}>
-                        {I18n.t("Cancel")}
-                    </Button>
-                        <Button variant="contained" color="primary" onClick={()=>{
-                            component.props.updateScene(scene._id, scene);
-                        }}>
-                            {I18n.t("Save")}
-                        </Button>
-                    </div>
+                            </Box>
+                            <Box component="p"><TextField InputLabelProps={{shrink: true}} label={I18n.t("Set if FALSE")} disabled={!scene.native.onFalse.enabled} value={member.setIfFalse}
+                                onChange={(e)=>{
+                                    member.setIfFalse = e.target.value;
+                                    component.setState({formData: scene});
+                            }}/>
+                            </Box>
+                            <Box component="p">
+                            <Grid container spacing="4">
+                                <Grid item xs="4">
+                                    <TextField InputLabelProps={{shrink: true}} label={I18n.t("Delay (ms)")} value={member.delay}
+                            onChange={(e)=>{
+                                member.delay = e.target.value;
+                                component.setState({formData: scene});
+                            }}/>
+                            </Grid>
+                            <Grid item xs="8">
+                                <FormControlLabel label={I18n.t("Stop already started commands")} control={
+                                    <Checkbox checked={member.stopAllDelays} onChange={(e)=>{
+                                        member.stopAllDelays = e.target.checked;
+                                        component.setState({formData: scene});
+                                    }}/>
+                                } />
+                            </Grid>
+                            </Grid>
+                            </Box>
+                            <pre>{JSON.stringify(member, null, 2)}</pre>
+                            <Box component="p" className="align-right buttons-container">
+                                <Button variant="contained" onClick={()=>{
+                                    this.setState({formData: JSON.parse(JSON.stringify(this.props.scene))});
+                                }}>
+                                    {I18n.t("Cancel")}
+                                </Button>
+                                <Button variant="contained" color="primary" onClick={()=>{
+                                    component.props.updateScene(scene._id, scene);
+                                }}>
+                                    {I18n.t("Save")}
+                                </Button>
+                            </Box>
+                        </div> : null
+                    }
                 </Paper>
                 }
             )}
