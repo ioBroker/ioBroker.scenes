@@ -238,7 +238,6 @@ class SceneForm extends React.Component
                     </Button>
                 </div>
             : null}
-            <h3>Folder</h3>
         </div>;
 
         result = [
