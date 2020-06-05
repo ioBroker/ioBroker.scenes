@@ -442,7 +442,7 @@ class App extends GenericApp {
                 <Container className="height">
                     <Grid container spacing={3} className="height">
                         <Grid item xs={3} className="height">
-                            <div className="scroll">
+                            <div className="column-container height">
                                 <div>
                                     <IconButton onClick={()=>{
                                         this.createScene(this.getNewSceneId());
@@ -461,13 +461,13 @@ class App extends GenericApp {
                                     </div> : null
                                 }
                                 {this.dialogs()}
-                                <div>
+                                <div className="scroll">
                                     {this.renderTree(this.state.folders)}
                                 </div>
                             </div>
                         </Grid>
                         <Grid item xs={4} className="height">
-                            <div className="scroll">
+                            <div className="height">
                                 {component.state.selectedSceneId ?
                                     <SceneForm 
                                         key={component.state.selectedSceneId} 
@@ -486,12 +486,12 @@ class App extends GenericApp {
                             </div>
                         </Grid>
                         <Grid item xs={5} className="height">
-                            <div className="scroll">
-                                <div className="members-cell">
+                            <div className="height">
                                     {component.state.selectedSceneId ?
-                                        <SceneMembersForm key={'selected' + component.state.selectedSceneId} updateScene={this.updateScene} scene={this.state.scenes[component.state.selectedSceneId]} socket={component.socket}/>
+                                        <div className="members-cell height">
+                                            <SceneMembersForm key={'selected' + component.state.selectedSceneId} updateScene={this.updateScene} scene={this.state.scenes[component.state.selectedSceneId]} socket={component.socket}/>
+                                        </div>
                                     : ""}
-                                </div>
                             </div>
                         </Grid>
                     </Grid>

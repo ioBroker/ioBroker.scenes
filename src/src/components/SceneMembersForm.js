@@ -90,7 +90,7 @@ class SceneMembersForm extends React.Component {
         return <Paper key={key} className="member-card">
             <h3>
                 {member.id}
-                {this.state.states[member.id] ? <span className="memberTrue">TRUE</span> : <span className="memberFalse">FALSE</span>}
+                {this.state.states[member.id] && this.state.states[member.id].val ? <span className="memberTrue">TRUE</span> : <span className="memberFalse">FALSE</span>}
                 <span className="right">
                     <IconButton title={I18n.t('Edit')} onClick={()=>{
                         this.state.memberOpened[key] = !this.state.memberOpened[key];
@@ -184,7 +184,7 @@ class SceneMembersForm extends React.Component {
             return null;
         }
         let component = this;
-        let result = <div>
+        let result = <div class="height column-container">
             <h2>
                 {I18n.t("States")}
                 <span className="right">
@@ -195,11 +195,13 @@ class SceneMembersForm extends React.Component {
                     </IconButton>
                 </span>
             </h2>
-            {
-                scene.native.members.map((member, key) => {
-                    return this.member(member, key, scene);
-                })
-            }
+            <div className="scroll">
+                {
+                    scene.native.members.map((member, key) => {
+                        return this.member(member, key, scene);
+                    })
+                }
+            </div>
         </div>;
         
         result = [

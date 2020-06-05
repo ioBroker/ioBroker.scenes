@@ -3,8 +3,12 @@
 }
 
 .members-cell {
-    background-color: lightblue;
-    padding: 10px; 
+    background-color: #E8E8E8;
+    padding: 0px 10px;
+    border-radius: 4px;
+    padding-bottom: 10px;
+    min-height: calc(100% - 40px);
+    margin-bottom: 10px;
 }
 
 #root {
@@ -16,11 +20,17 @@
     height: 100%;
 }
 
+.column-container {
+    display: flex;
+    flex-direction: column;
+}
+
 .scroll {
     overflow-y: auto;
     overflow-x: hidden;
     height: 100%;
     padding-right: 10px;
+    width: 100%;
 }
 
 .MuiInputBase-root, .MuiFormControlLabel-root, .MuiFormControl-root {
