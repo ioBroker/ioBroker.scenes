@@ -113,7 +113,7 @@ class SceneMembersForm extends React.Component {
                     />
                 </span>
             </h3>
-            <div>{memberOriginal.desc} <IconClock/></div>
+            <div>{memberOriginal.desc} {memberOriginal.delay ? <span> <IconClock/> {memberOriginal.delay}ms</span> : null}</div>
             {
                 this.state.memberOpened[key] ?
                 <div>
