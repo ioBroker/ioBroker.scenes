@@ -1,48 +1,53 @@
 import React from 'react';
 import {withStyles} from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import GenericApp from "@iobroker/adapter-react/GenericApp";
-import Connection from "./components/Connection";
-import SceneForm from "./components/SceneForm";
-import SceneMembersForm from "./components/SceneMembersForm";
-import Loader from '@iobroker/adapter-react/Components/Loader'
-import { PROGRESS } from './components/Connection';
-import Paper from '@material-ui/core/Paper';
+import clsx from 'clsx';
+
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Switch from '@material-ui/core/Switch';
 import Container from '@material-ui/core/Container';
-import Fab from '@material-ui/core/Fab';
-import IconButton from '@material-ui/core/IconButton'; 
-import clsx from 'clsx';
-import Utils from '@iobroker/adapter-react/Components/Utils';
-import I18n from '@iobroker/adapter-react/i18n';
-import {MdAdd as IconAdd} from 'react-icons/md';
-import {MdModeEdit as IconEdit} from 'react-icons/md';
-import {RiFolderAddLine as IconFolderAdd} from 'react-icons/ri';
+import IconButton from '@material-ui/core/IconButton';
+import ListItemText from '@material-ui/core/ListItemText';
 import SearchIcon from '@material-ui/icons/Search';
-import {MdExpandLess as IconCollapse} from 'react-icons/md';
-import {MdExpandMore as IconExpand} from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 
-const LEVEL_PADDING = 24;
+import {PROGRESS} from './components/Connection';
+import Utils from '@iobroker/adapter-react/Components/Utils';
+import GenericApp from "@iobroker/adapter-react/GenericApp";
+import Connection from "./components/Connection";
+import SceneForm from "./components/SceneForm";
+import SceneMembersForm from "./components/SceneMembersForm";
+import Loader from '@iobroker/adapter-react/Components/Loader'
+import I18n from '@iobroker/adapter-react/i18n';
+
+// icons
+import {MdExpandLess as IconCollapse} from 'react-icons/md';
+import {MdExpandMore as IconExpand} from 'react-icons/md';
+import {MdAdd as IconAdd} from 'react-icons/md';
+import {MdModeEdit as IconEdit} from 'react-icons/md';
+import {RiFolderAddLine as IconFolderAdd} from 'react-icons/ri';
+
+const LEVEL_PADDING = 20;
 
 const styles = theme => ({
-    root: {
-    },
+    root: {},
     tabContent: {
         padding: 10,
         height: 'calc(100% - 64px - 48px - 20px)',
         overflow: 'auto'
     },
-    
+    textInput: {
+        display: 'block',
+    },
+    width100: {
+        width: '100%',
+    }
 });
 
 function getUrlQuery() {
@@ -125,7 +130,10 @@ class App extends GenericApp {
                 this.refreshData();
             },
             //onObjectChange: (objects, scripts) => this.onObjectChange(objects, scripts),
-            onObjectChange: (attr, value) => ()=>{console.log(attr); console.log(value);},
+            onObjectChange: (attr, value) => () => {
+                console.log(attr);
+                console.log(value);
+            },
             onError: error => {
                 console.error(error);
                 this.showError(error);
@@ -137,12 +145,12 @@ class App extends GenericApp {
         this.state.scenes[event.target.name].common.enabled = event.target.checked;
         this.socket.setObject(event.target.name, this.state.scenes[event.target.name]);
         this.setState(this.state);
-      };
+    };
 
     buildTree(scenes) {
         scenes = Object.values(scenes);
 
-        let folders = {subfolders: {}, scenes: {}, id: "", prefix: ""};
+        let folders = {subfolders: {}, scenes: {}, id: '', prefix: ''};
 
         // create missing folders
         scenes.forEach((scene) => {
@@ -151,10 +159,10 @@ class App extends GenericApp {
             parts.shift();
             parts.shift();
             let current_folder = folders;
-            let prefix = "";
+            let prefix = '';
             for (let i = 0; i < parts.length - 1; i++) {
-                if (prefix != "") {
-                    prefix = prefix + ".";
+                if (prefix) {
+                    prefix = prefix + '.';
                 }
                 prefix = prefix + parts[i];
                 if (!current_folder.subfolders[parts[i]]) {
@@ -177,11 +185,18 @@ class App extends GenericApp {
                 return {scenes, folders: this.buildTree(scenes)};
             });
     }
-    refreshData() {
-        this.setState({scenes: {}, ready: false});
+
+    refreshData(reasonSceneId) {
+        if (reasonSceneId) {
+            this.setState({changingScene: reasonSceneId});
+        } else {
+            this.setState({ready: false});
+        }
+
         this.getData()
-        .then(newState => {
+            .then(newState => {
                 newState.ready = true;
+                newState.changingScene = null;
                 console.log(this.state);
                 console.log(newState);
                 this.setState(newState);
@@ -189,18 +204,23 @@ class App extends GenericApp {
     }
 
     addFolder(parent_folder, id) {
-        parent_folder.subfolders[id] = {scenes: {}, subfolders: {}, id: id, prefix : parent_folder.prefix ? parent_folder.prefix + "." + id : id};
+        parent_folder.subfolders[id] = {
+            scenes: {},
+            subfolders: {},
+            id: id,
+            prefix: parent_folder.prefix ? parent_folder.prefix + "." + id : id
+        };
         this.setState(this.state);
     }
 
     addSceneToFolder = (scene, folder) => {
         this.addSceneToFolderPrefix(scene, folder.prefix);
-    }
+    };
 
     addSceneToFolderPrefix = async (scene, folderPrefix, noRefresh) => {
         let old_id = scene._id;
         let scene_id = scene._id.split(".").pop();
-        scene._id = "scene." + this.instance + "." + folderPrefix + (folderPrefix ? "." : "") + scene_id;
+        scene._id = "scene." + this.instance + "." + folderPrefix + (folderPrefix ? '.' : '') + scene_id;
         if (!noRefresh) {
             this.setState({selectedSceneId: null});
         }
@@ -210,20 +230,19 @@ class App extends GenericApp {
             this.refreshData();
             this.setState({selectedSceneId: scene._id});
         }
-    }
-
+    };
 
     renameFolder = async (folder, newName) => {
         this.setState({selectedSceneId: null, ready: false});
-        for (let k in folder.scenes)
-        {
-            let prefix = folder.prefix.split(".")
+        for (let k in folder.scenes) {
+            let prefix = folder.prefix.split('.');
             prefix[prefix.length - 1] = newName;
-            prefix.join(".");
+            prefix.join('.');
             await this.addSceneToFolderPrefix(folder.scenes[k], prefix, true);
-        };
+        }
+
         this.refreshData();
-    }
+    };
 
     deleteFolder(folder) {
         if (Object.values(folder.scenes).length) {
@@ -234,201 +253,242 @@ class App extends GenericApp {
         }
     }
 
-    deleteScript(id) {
-        const scripts = JSON.parse(JSON.stringify(this.state.scripts));
-        if (scripts[id]) {
-            delete scripts[id];
-
-            this.socket.delObject(id, () =>
-                this.setState({scripts, tree: this.buildTree(null, scripts)}));
-        }
-    }
-
     renderTreeScene = (item, level) => {
         const scene = this.state.scenes[item._id];
         let component = this;
-        level = 0;
+        level = level || 0;
 
-        if (this.state.search && !item.common.name.includes(this.state.search))
-        {
+        if (this.state.search && !item.common.name.includes(this.state.search)) {
             return null;
         }
 
-        return <ListItem key={item.id} selected={this.state.selectedSceneId && this.state.selectedSceneId == scene._id} button onClick={()=>{
-            component.setState({selectedSceneId: scene._id});
-        }}>
-            <h3>{ scene.common.name }
-                <span className="right"><Switch
-                    checked={scene.common.enabled}
-                    onChange={component.sceneSwitch}
-                    name={scene._id}
-                /></span>
-            </h3>
-            <div>{scene.common.desc}</div>
+        return <ListItem
+            style={ {paddingLeft: level * LEVEL_PADDING} }
+            key={ item.id }
+            selected={ this.state.selectedSceneId && this.state.selectedSceneId === scene._id }
+            button
+            onClick={ () => component.setState({selectedSceneId: scene._id}) }>
+            <ListItemText
+                primary={ scene.common.name }
+                secondary={ scene.common.desc }
+                />
+            <ListItemSecondaryAction>
+                <Switch
+                    checked={ scene.common.enabled }
+                    onChange={ component.sceneSwitch }
+                    name={ scene._id }
+                />
+            </ListItemSecondaryAction>
         </ListItem>;
-    }
-    
-    renderTree = (parent) => {
-        let result = []
-        result.push(<h2>{parent.id}
-        {
-            parent.id ? 
-            <span className="right">
-                <IconButton onClick={()=>{
-                    this.setState({addFolderDialog: parent, addFolderDialogTitle: ""});
-                }} title={I18n.t('Create new folder')}><IconFolderAdd /></IconButton>
-                <IconButton onClick={()=>{
-                    this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id});
-                }} title={I18n.t('Edit folder')}><IconEdit /></IconButton>
-                <IconButton onClick={()=>{
-                    parent.closed = !parent.closed;
-                    this.setState(this.state);
-                }} title={parent.closed ? I18n.t('Expand') : I18n.t('Collapse')}>
-                    { parent.closed ? <IconExpand /> : <IconCollapse /> }
-                </IconButton>
-            </span>
-            : null
+    };
+
+    renderTree = (parent, level) => {
+        let result = [];
+        level = level || 0;
+
+        // Show folder item
+        parent.id && result.push(<ListItem
+            key={ parent.id }
+            className={ this.props.classes.width100 }
+            style={ {paddingLeft: level * LEVEL_PADDING} }
+        >
+            { parent.id }
+            {
+                parent.id ?
+                    <ListItemSecondaryAction>
+                        <IconButton onClick={() => {
+                            this.setState({addFolderDialog: parent, addFolderDialogTitle: ''});
+                        }} title={ I18n.t('Create new folder') }><IconFolderAdd/></IconButton>
+
+                        <IconButton onClick={() => {
+                            this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id});
+                        }} title={ I18n.t('Edit folder') }><IconEdit/></IconButton>
+
+                        <IconButton onClick={() => {
+                            parent.closed = !parent.closed;
+                            this.setState(this.state);
+                        }} title={parent.closed ? I18n.t('Expand') : I18n.t('Collapse')}>
+                            {parent.closed ? <IconExpand/> : <IconCollapse/>}
+                        </IconButton>
+                    </ListItemSecondaryAction>
+                    : null
+            }
+        </ListItem>);
+
+        if (!parent.closed) {
+            result.push(<ListItem
+                key={ 'items_' + parent.id }
+                className={ this.props.classes.width100 }>
+                    <List
+                        className={ clsx(this.props.classes.width100, 'leftMenuItem') }
+                        style={ {paddingLeft: level * LEVEL_PADDING} }
+                    >
+                        { Object.values(parent.scenes).map(scene => this.renderTreeScene(scene, level)) }
+                    </List>
+                </ListItem>);
+
+            result.push(Object.values(parent.subfolders).map(subFolder =>
+                this.renderTree(subFolder, level + 1)));
         }
-        </h2>);
-        result.push(
-            !parent.closed ? <div style={{paddingLeft: "20px"}}>
-                <List className="leftMenuItem">
-                    {Object.values(parent.scenes).map(this.renderTreeScene)}
-                </List>
-                {Object.values(parent.subfolders).map(this.renderTree)}
-            </div> : null
-        );
 
         return result;
-    }
+    };
 
-    createScene = (name) => {
+    createScene = name => {
         let template = {
-            "common": {
-              "name": "",
-              "type": "boolean",
-              "role": "scene.state",
-              "desc": "",
-              "enabled": true,
-              "read": true,
-              "write": true,
-              "def": false,
-              "engine": "system.adapter.scenes." + this.instance
+            common: {
+                name: '',
+                type: 'boolean',
+                role: 'scene.state',
+                desc: '',
+                enabled: true,
+                read: true,
+                write: true,
+                def: false,
+                engine: 'system.adapter.scenes.' + this.instance
             },
-            "native": {
-              "onTrue": {
-                "trigger": {},
-                "cron": null,
-                "astro": null
-              },
-              "onFalse": {
-                "enabled": false,
-                "trigger": {},
-                "cron": null,
-                "astro": null
-              },
-              "members": []
+            native: {
+                onTrue: {
+                    trigger: {},
+                    cron: null,
+                    astro: null
+                },
+                onFalse: {
+                    enabled: false,
+                    trigger: {},
+                    cron: null,
+                    astro: null
+                },
+                members: []
             },
-            "type": "state"
-          };
+            type: 'state'
+        };
+
         template.common.name = name;
-          let id = "scene." + this.instance + "." + template.common.name;
-          this.setState({selectedSceneId : id, ready: false})
-          this.socket.setObject(id, template);
-          this.refreshData();
-    }
+        let id = 'scene.' + this.instance + '.' + template.common.name;
+
+        this.setState({selectedSceneId: id, ready: false}, () =>
+            this.socket.setObject(id, template)
+                .then(() =>
+                    this.refreshData()));
+    };
 
     cloneScene = (id) => {
         let scene = JSON.parse(JSON.stringify(this.state.scenes[id]));
-        scene._id = scene._id.split(".");
+        scene._id = scene._id.split('.');
         scene._id.pop();
         scene._id.push(this.getNewSceneId());
-        scene._id = scene._id.join(".");
+        scene._id = scene._id.join('.');
         console.log(scene._id);
-        scene.common.name = scene.common.name + " clone";
-        this.socket.setObject(scene._id, scene);
-        this.setState({ready: false, selectedSceneId: scene._id});
-        this.refreshData();
-    }
+        scene.common.name = scene.common.name + ' clone';
 
-    updateScene = (id, data) => {
-        this.state.scenes[id] = data;
-        this.socket.setObject(id, this.state.scenes[id]);
-        this.setState(this.state);
-        console.log(this.state);
-        this.refreshData();
+        this.setState({ready: false, selectedSceneId: scene._id}, () =>
+            this.socket.setObject(scene._id, scene)
+                .then(() =>
+                    this.refreshData()));
     };
 
-    deleteScene = async (id) => {
-        await this.socket.delObject(id);
-        if (this.state.selectedSceneId == id) {
-            this.setState({selectedSceneId: null});
-        }
-        this.refreshData();
-    }
+    updateScene = (id, data) => {
+        const scenes = JSON.parse(JSON.stringify(this.state.scenes));
+        scenes[id] = data;
+
+        this.socket.setObject(id, scenes[id])
+            .then(() =>
+                this.refreshData());
+    };
+
+    deleteScene = id => {
+        this.socket.delObject(id)
+            .then(() => {
+                if (this.state.selectedSceneId === id) {
+                    this.setState({selectedSceneId: null}, () =>
+                        this.refreshData());
+                } else {
+                    this.refreshData();
+                }
+            });
+    };
 
     getFolderPrefix(sceneId) {
-        let result = sceneId.split(".");
+        let result = sceneId.split('.');
         result.shift();
         result.shift();
         result.pop();
-        result = result.join(".");
+        result = result.join('.');
         return result;
     }
 
     getFolderList = (folder) => {
         let result = [];
-        result.push(folder)
-        Object.values(folder.subfolders).forEach((subfolder) => {
-            result = result.concat(this.getFolderList(subfolder));
-        });
+        result.push(folder);
+        Object.values(folder.subfolders).forEach(subfolder =>
+            result = result.concat(this.getFolderList(subfolder)));
 
         return result;
-    }
+    };
 
     getNewSceneId = () => {
         let newId = 0;
 
-        for (let id in this.state.scenes) {
-            let shortId = id.split(".").pop();
+        for (const id in this.state.scenes) {
+            let shortId = id.split('.').pop();
             let matches;
             if (matches = shortId.match(/^scene([0-9]+)$/)) {
-                if (matches[1] >= parseInt(newId)) {
+                if (matches[1] >= parseInt(newId, 10)) {
                     newId = parseInt(matches[1]) + 1;
                 }
             }
         }
 
-        return "scene" + newId;
-    }
+        return 'scene' + newId;
+    };
 
     dialogs = () => {
         let component = this;
         return <React.Fragment>
-            <Dialog open={this.state.addFolderDialog} onClose={()=>{this.setState({addFolderDialog: null})}}>
-                <DialogTitle>{I18n.t("Create folder")}</DialogTitle>
+            <Dialog open={this.state.addFolderDialog} onClose={() => {
+                this.setState({addFolderDialog: null})
+            }}>
+                <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
                 <Box component="p">
-                    <TextField label={I18n.t("Title")} value={this.state.addFolderDialogTitle} onChange={(e)=>{this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
+                    <TextField label={I18n.t('Title')} value={this.state.addFolderDialogTitle} onChange={(e) => {
+                        this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
+                    }}/>
                 </Box>
                 <Box component="p">
-                    <Button variant="contained" onClick={()=>{component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle); this.setState({addFolderDialog: null});}} color="primary" autoFocus>
-                        {I18n.t("Create")}
+                    <Button variant="contained" onClick={() => {
+                        component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle);
+                        this.setState({addFolderDialog: null});
+                    }} color="primary" autoFocus>
+                        {I18n.t('Create')}
                     </Button>
                 </Box>
             </Dialog>
-            <Dialog open={this.state.editFolderDialog} onClose={()=>{this.setState({editFolderDialog: null})}}>
-                <DialogTitle>{I18n.t("Edit folder")}</DialogTitle>
+            <Dialog open={this.state.editFolderDialog} onClose={() => {
+                this.setState({editFolderDialog: null})
+            }}>
+                <DialogTitle>{I18n.t('Edit folder')}</DialogTitle>
                 <Box component="p">
-                    <TextField label={I18n.t("Title")} value={this.state.editFolderDialogTitle} onChange={(e)=>{this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
+                    <TextField label={I18n.t('Title')} value={this.state.editFolderDialogTitle} onChange={(e) => {
+                        this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
+                    }}/>
                 </Box>
                 <Box component="p">
-                    <Button variant="contained" onClick={()=>{component.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle); this.setState({editFolderDialog: null});}} color="primary" autoFocus>
-                        {I18n.t("edit")}
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            component.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle);
+                            this.setState({editFolderDialog: null});
+                        }}
+                        color="primary"
+                        autoFocus
+                    >
+                        { I18n.t('edit') }
                     </Button>
                 </Box>
             </Dialog>
         </React.Fragment>;
-    }
+    };
 
     render() {
         if (!this.state.ready) {
@@ -444,37 +504,41 @@ class App extends GenericApp {
                         <Grid item xs={3} className="height">
                             <div className="column-container height">
                                 <div>
-                                    <IconButton onClick={()=>{
+                                    <IconButton onClick={() => {
                                         this.createScene(this.getNewSceneId());
-                                    }} title={I18n.t('Create new scene')}><IconAdd /></IconButton>
-                                    <IconButton onClick={()=>{
-                                        this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ""});
-                                    }} title={I18n.t('Create new folder')}><IconFolderAdd /></IconButton>
+                                    }} title={I18n.t('Create new scene')}><IconAdd/></IconButton>
+
+                                    <IconButton onClick={() => {
+                                        this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''});
+                                    }} title={I18n.t('Create new folder')}><IconFolderAdd/></IconButton>
+
                                     <span className="right">
-                                        <IconButton onClick={()=>{this.setState({showSearch: !component.state.showSearch})}}>
-                                            <SearchIcon />
+                                        <IconButton onClick={() => {
+                                            this.setState({showSearch: !component.state.showSearch})
+                                        }}>
+                                            <SearchIcon/>
                                         </IconButton>
                                     </span>
                                 </div>
-                                {this.state.showSearch ? <div>
-                                        <TextField value={this.state.search} onChange={(e)=>{this.setState({search: e.target.value})}}/>
-                                    </div> : null
+                                {this.state.showSearch ?
+                                    <TextField value={ this.state.search } className={this.props.classes.textInput} onChange={e =>
+                                        this.setState({search: e.target.value})}/>: null
                                 }
-                                {this.dialogs()}
-                                <div className="scroll">
-                                    {this.renderTree(this.state.folders)}
-                                </div>
+                                { this.dialogs() }
+                                <List className="scroll">
+                                    { this.renderTree(this.state.folders) }
+                                </List>
                             </div>
                         </Grid>
                         <Grid item xs={4} className="height">
                             <div className="height">
                                 {component.state.selectedSceneId ?
-                                    <SceneForm 
-                                        key={component.state.selectedSceneId} 
-                                        deleteScene={this.deleteScene} 
-                                        cloneScene={this.cloneScene} 
-                                        updateScene={this.updateScene} 
-                                        scene={this.state.scenes[component.state.selectedSceneId]} 
+                                    <SceneForm
+                                        key={component.state.selectedSceneId}
+                                        deleteScene={this.deleteScene}
+                                        cloneScene={this.cloneScene}
+                                        updateScene={this.updateScene}
+                                        scene={this.state.scenes[component.state.selectedSceneId]}
                                         socket={component.socket}
                                         addSceneToFolderPrefix={component.addSceneToFolderPrefix}
                                         folders={this.state.folders}
@@ -482,26 +546,26 @@ class App extends GenericApp {
                                         getFolderList={this.getFolderList}
                                         getFolderPrefix={this.getFolderPrefix}
                                     />
-                                : ""}
+                                    : ''}
                             </div>
                         </Grid>
                         <Grid item xs={5} className="height">
                             <div className="height">
-                                    {component.state.selectedSceneId ?
-                                        <div className="members-cell height">
-                                            <SceneMembersForm
-                                                key={'selected' + component.state.selectedSceneId}
-                                                updateScene={ this.updateScene }
-                                                scene={ this.state.scenes[component.state.selectedSceneId] }
-                                                socket={ component.socket }
-                                            />
-                                        </div>
+                                {component.state.selectedSceneId ?
+                                    <div className="members-cell height">
+                                        <SceneMembersForm
+                                            key={'selected' + component.state.selectedSceneId}
+                                            updateScene={this.updateScene}
+                                            scene={this.state.scenes[component.state.selectedSceneId]}
+                                            socket={component.socket}
+                                        />
+                                    </div>
                                     : ''}
                             </div>
                         </Grid>
                     </Grid>
                 </Container>
-                {this.renderError()}
+                { this.renderError() }
             </div>
         );
     }
