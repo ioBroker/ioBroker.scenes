@@ -23,6 +23,8 @@ import {MdAdd as IconAdd} from 'react-icons/md';
 import {MdModeEdit as IconEdit} from 'react-icons/md';
 import {RiFolderAddLine as IconFolderAdd} from 'react-icons/ri';
 import SearchIcon from '@material-ui/icons/Search';
+import {MdExpandLess as IconCollapse} from 'react-icons/md';
+import {MdExpandMore as IconExpand} from 'react-icons/md';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
@@ -262,7 +264,6 @@ class App extends GenericApp {
                     name={scene._id}
                 /></span>
             </h3>
-            <div>{ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }</div>
             <div>{scene.common.desc}</div>
         </ListItem>;
     }
@@ -279,17 +280,23 @@ class App extends GenericApp {
                 <IconButton onClick={()=>{
                     this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id});
                 }} title={I18n.t('Edit folder')}><IconEdit /></IconButton>
+                <IconButton onClick={()=>{
+                    parent.closed = !parent.closed;
+                    this.setState(this.state);
+                }} title={parent.closed ? I18n.t('Expand') : I18n.t('Collapse')}>
+                    { parent.closed ? <IconExpand /> : <IconCollapse /> }
+                </IconButton>
             </span>
             : null
         }
         </h2>);
         result.push(
-            <div style={{paddingLeft: "20px"}}>
+            !parent.closed ? <div style={{paddingLeft: "20px"}}>
                 <List className="leftMenuItem">
                     {Object.values(parent.scenes).map(this.renderTreeScene)}
                 </List>
                 {Object.values(parent.subfolders).map(this.renderTree)}
-            </div>
+            </div> : null
         );
 
         return result;
@@ -324,7 +331,7 @@ class App extends GenericApp {
             },
             "type": "state"
           };
-          template.common.desc = template.common.name = name;
+        template.common.name = name;
           let id = "scene." + this.instance + "." + template.common.name;
           this.setState({selectedSceneId : id, ready: false})
           this.socket.setObject(id, template);
@@ -395,6 +402,34 @@ class App extends GenericApp {
         return "scene" + newId;
     }
 
+    dialogs = () => {
+        let component = this;
+        return <React.Fragment>
+            <Dialog open={this.state.addFolderDialog} onClose={()=>{this.setState({addFolderDialog: null})}}>
+                <DialogTitle>{I18n.t("Create folder")}</DialogTitle>
+                <Box component="p">
+                    <TextField label={I18n.t("Title")} value={this.state.addFolderDialogTitle} onChange={(e)=>{this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
+                </Box>
+                <Box component="p">
+                    <Button variant="contained" onClick={()=>{component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle); this.setState({addFolderDialog: null});}} color="primary" autoFocus>
+                        {I18n.t("Create")}
+                    </Button>
+                </Box>
+            </Dialog>
+            <Dialog open={this.state.editFolderDialog} onClose={()=>{this.setState({editFolderDialog: null})}}>
+                <DialogTitle>{I18n.t("Edit folder")}</DialogTitle>
+                <Box component="p">
+                    <TextField label={I18n.t("Title")} value={this.state.editFolderDialogTitle} onChange={(e)=>{this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
+                </Box>
+                <Box component="p">
+                    <Button variant="contained" onClick={()=>{component.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle); this.setState({editFolderDialog: null});}} color="primary" autoFocus>
+                        {I18n.t("edit")}
+                    </Button>
+                </Box>
+            </Dialog>
+        </React.Fragment>;
+    }
+
     render() {
         if (!this.state.ready) {
             return (<Loader theme={this.state.themeType}/>);
@@ -402,89 +437,64 @@ class App extends GenericApp {
 
         let component = this;
 
-
         return (
             <div className="App">
-                <AppBar position="static">
-                    <Tabs value={0}
-                          onChange={(e, index) => this.selectTab(e.target.parentNode.dataset.name, index)}>
-                        <Tab label={I18n.t('Scenes')} data-name="list"/>
-                    </Tabs>
-                </AppBar>
-                <Container>
-                <Grid container spacing={3}>
-                    <Grid item xs={3}>
-                    <div>
-                    <IconButton onClick={()=>{
-                        this.createScene(this.getNewSceneId());
-                    }} title={I18n.t('Create new scene')}><IconAdd /></IconButton>
-                    <IconButton onClick={()=>{
-                        this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ""});
-                    }} title={I18n.t('Create new folder')}><IconFolderAdd /></IconButton>
-                    <span className="right">
-                        <IconButton onClick={()=>{this.setState({showSearch: !component.state.showSearch})}}>
-                            <SearchIcon />
-                        </IconButton>
-                    </span>
-                    </div>
-                    {this.state.showSearch ? <div>
-                            <TextField value={this.state.search} onChange={(e)=>{this.setState({search: e.target.value})}}/>
-                        </div> : null
-                    }
-                    <Dialog open={this.state.addFolderDialog} onClose={()=>{this.setState({addFolderDialog: null})}}>
-                        <DialogTitle>{I18n.t("Create folder")}</DialogTitle>
-                        <Box component="p">
-                            <TextField label={I18n.t("Title")} value={this.state.addFolderDialogTitle} onChange={(e)=>{this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
-                        </Box>
-                        <Box component="p">
-                            <Button variant="contained" onClick={()=>{component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle); this.setState({addFolderDialog: null});}} color="primary" autoFocus>
-                                {I18n.t("Create")}
-                            </Button>
-                        </Box>
-                    </Dialog>
-                    <Dialog open={this.state.editFolderDialog} onClose={()=>{this.setState({editFolderDialog: null})}}>
-                        <DialogTitle>{I18n.t("Edit folder")}</DialogTitle>
-                        <Box component="p">
-                            <TextField label={I18n.t("Title")} value={this.state.editFolderDialogTitle} onChange={(e)=>{this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
-                        </Box>
-                        <Box component="p">
-                            <Button variant="contained" onClick={()=>{component.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle); this.setState({editFolderDialog: null});}} color="primary" autoFocus>
-                                {I18n.t("edit")}
-                            </Button>
-                        </Box>
-                    </Dialog>
-                    <div>
-                        {this.renderTree(this.state.folders)}
-                        { false && Object.values(this.state.scenes).map((scene) => {
-                            return this.renderTreeScene(scene);
-                        }) }
-                    </div>
+                <Container className="height">
+                    <Grid container spacing={3} className="height">
+                        <Grid item xs={3} className="height">
+                            <div className="scroll">
+                                <div>
+                                    <IconButton onClick={()=>{
+                                        this.createScene(this.getNewSceneId());
+                                    }} title={I18n.t('Create new scene')}><IconAdd /></IconButton>
+                                    <IconButton onClick={()=>{
+                                        this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ""});
+                                    }} title={I18n.t('Create new folder')}><IconFolderAdd /></IconButton>
+                                    <span className="right">
+                                        <IconButton onClick={()=>{this.setState({showSearch: !component.state.showSearch})}}>
+                                            <SearchIcon />
+                                        </IconButton>
+                                    </span>
+                                </div>
+                                {this.state.showSearch ? <div>
+                                        <TextField value={this.state.search} onChange={(e)=>{this.setState({search: e.target.value})}}/>
+                                    </div> : null
+                                }
+                                {this.dialogs()}
+                                <div>
+                                    {this.renderTree(this.state.folders)}
+                                </div>
+                            </div>
+                        </Grid>
+                        <Grid item xs={4} className="height">
+                            <div className="scroll">
+                                {component.state.selectedSceneId ?
+                                    <SceneForm 
+                                        key={component.state.selectedSceneId} 
+                                        deleteScene={this.deleteScene} 
+                                        cloneScene={this.cloneScene} 
+                                        updateScene={this.updateScene} 
+                                        scene={this.state.scenes[component.state.selectedSceneId]} 
+                                        socket={component.socket}
+                                        addSceneToFolderPrefix={component.addSceneToFolderPrefix}
+                                        folders={this.state.folders}
+                                        getFolder={this.getFolder}
+                                        getFolderList={this.getFolderList}
+                                        getFolderPrefix={this.getFolderPrefix}
+                                    />
+                                : ""}
+                            </div>
+                        </Grid>
+                        <Grid item xs={5} className="height">
+                            <div className="scroll">
+                                <div className="members-cell">
+                                    {component.state.selectedSceneId ?
+                                        <SceneMembersForm key={'selected' + component.state.selectedSceneId} updateScene={this.updateScene} scene={this.state.scenes[component.state.selectedSceneId]} socket={component.socket}/>
+                                    : ""}
+                                </div>
+                            </div>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={4}>
-                    {component.state.selectedSceneId ?
-                        <SceneForm 
-                            key={component.state.selectedSceneId} 
-                            deleteScene={this.deleteScene} 
-                            cloneScene={this.cloneScene} 
-                            updateScene={this.updateScene} 
-                            scene={this.state.scenes[component.state.selectedSceneId]} 
-                            socket={component.socket}
-                            addSceneToFolderPrefix={component.addSceneToFolderPrefix}
-                            folders={this.state.folders}
-                            getFolder={this.getFolder}
-                            getFolderList={this.getFolderList}
-                            getFolderPrefix={this.getFolderPrefix}
-                        />
-                    : ""}
-                    </Grid>
-                    <Grid item xs={5}>
-                        <div className="members-cell">
-                            {component.state.selectedSceneId ?
-                                <SceneMembersForm key={'selected' + component.state.selectedSceneId} updateScene={this.updateScene} scene={this.state.scenes[component.state.selectedSceneId]} socket={component.socket}/>
-                            : ""}
-                        </div>
-                    </Grid>
-                </Grid>
                 </Container>
                 {this.renderError()}
             </div>

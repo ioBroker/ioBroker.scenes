@@ -8,7 +8,19 @@
 }
 
 #root {
-    overflow: auto;
+    overflow-y: hidden;
+    height: 100%;
+}
+
+.height {
+    height: 100%;
+}
+
+.scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    padding-right: 10px;
 }
 
 .MuiInputBase-root, .MuiFormControlLabel-root, .MuiFormControl-root {
