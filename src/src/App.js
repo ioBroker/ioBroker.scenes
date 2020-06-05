@@ -333,10 +333,14 @@ class App extends GenericApp {
 
     cloneScene = (id) => {
         let scene = JSON.parse(JSON.stringify(this.state.scenes[id]));
-        scene._id = scene._id + "_clone"
+        scene._id = scene._id.split(".");
+        scene._id.pop();
+        scene._id.push(this.getNewSceneId());
+        scene._id = scene._id.join(".");
+        console.log(scene._id);
         scene.common.name = scene.common.name + " clone";
         this.socket.setObject(scene._id, scene);
-        this.setState(this.state);
+        this.setState({ready: false, selectedSceneId: scene._id});
         this.refreshData();
     }
 
@@ -375,6 +379,22 @@ class App extends GenericApp {
         return result;
     }
 
+    getNewSceneId = () => {
+        let newId = 0;
+
+        for (let id in this.state.scenes) {
+            let shortId = id.split(".").pop();
+            let matches;
+            if (matches = shortId.match(/^scene([0-9]+)$/)) {
+                if (matches[1] >= parseInt(newId)) {
+                    newId = parseInt(matches[1]) + 1;
+                }
+            }
+        }
+
+        return "scene" + newId;
+    }
+
     render() {
         if (!this.state.ready) {
             return (<Loader theme={this.state.themeType}/>);
@@ -396,7 +416,7 @@ class App extends GenericApp {
                     <Grid item xs={3}>
                     <div>
                     <IconButton onClick={()=>{
-                        this.createScene("scene"+(Object.values(this.state.scenes).length+1));
+                        this.createScene(this.getNewSceneId());
                     }} title={I18n.t('Create new scene')}><IconAdd /></IconButton>
                     <IconButton onClick={()=>{
                         this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ""});
