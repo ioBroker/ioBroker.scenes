@@ -489,9 +489,14 @@ class App extends GenericApp {
                             <div className="height">
                                     {component.state.selectedSceneId ?
                                         <div className="members-cell height">
-                                            <SceneMembersForm key={'selected' + component.state.selectedSceneId} updateScene={this.updateScene} scene={this.state.scenes[component.state.selectedSceneId]} socket={component.socket}/>
+                                            <SceneMembersForm
+                                                key={'selected' + component.state.selectedSceneId}
+                                                updateScene={ this.updateScene }
+                                                scene={ this.state.scenes[component.state.selectedSceneId] }
+                                                socket={ component.socket }
+                                            />
                                         </div>
-                                    : ""}
+                                    : ''}
                             </div>
                         </Grid>
                     </Grid>

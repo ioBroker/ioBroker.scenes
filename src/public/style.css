@@ -3,7 +3,7 @@
 }
 
 .members-cell {
-    background-color: #E8E8E8;
+    background-color: #ADD8E6;
     padding: 0px 10px;
     border-radius: 4px;
     padding-bottom: 10px;
@@ -56,33 +56,12 @@
     margin: 0px 10px;
 }
 
-.member-card {
-    padding: 4px;
-    margin: 10px 0px;
-}
-
 .MuiFormLabel-root {
     white-space: nowrap;
 }
 
 .leftMenuItem .MuiListItem-root {
     display: block; border-radius: 10px;
-}
-
-.memberTrue, .memberFalse {
-    border-radius: 10px;
-    padding: 2px 8px;
-    font-size: initial;
-    font-weight: initial;
-    margin: 0px 10px;
-}
-
-.memberTrue {
-    background-color: lightgreen;
-}
-
-.memberFalse {
-    background-color: pink;
 }
 
 .MuiDialog-paper {
