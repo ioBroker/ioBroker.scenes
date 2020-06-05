@@ -7,6 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
 import I18n from '@iobroker/adapter-react/i18n';
 import Fab from '@material-ui/core/Fab';
+import IconButton from '@material-ui/core/IconButton';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -37,8 +38,8 @@ class SceneForm extends React.Component
             <h2>
                 {this.props.scene.common.name}
                 <span className="right">
-                    <Fab size="small" style={{marginLeft: 5}} aria-label="Clone" title={I18n.t('Clone')} onClick={()=>{this.props.cloneScene(scene._id);}}><IconClone /></Fab>
-                    <Fab size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.props.deleteScene(scene._id);}}><IconDelete /></Fab>
+                    <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={()=>{this.props.cloneScene(scene._id);}}><IconClone /></IconButton>
+                    <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.props.deleteScene(scene._id);}}><IconDelete /></IconButton>
                 </span>
             </h2>
             <div>{this.props.scene.common.desc}</div>
@@ -76,7 +77,7 @@ class SceneForm extends React.Component
                     }}/>
                 </Grid>
                 <Grid item xs="4">
-                    <FormControlLabel label={I18n.t("Virtual group")} control={
+                    <FormControlLabel style={{paddingTop: "10px"}} label={I18n.t("Virtual group")} control={
                         <Checkbox checked={scene.native.virtualGroup}
                         onChange={(e)=>{
                             scene.native.virtualGroup = e.target.checked;
@@ -157,23 +158,27 @@ class SceneForm extends React.Component
                 {I18n.t("Save")}
             </Button>
             </div>
+            <h3>Folder</h3>
             <div>
-                <FormControl>
-                    <InputLabel shrink={true}>{I18n.t("Folder")}</InputLabel>
-                    <Select value={this.state.newFolder}
-                    onChange={(e)=>{
-                        component.setState({newFolder: e.target.value});
-                    }}>
-                        {
-                            this.props.getFolderList(this.props.folders).map((folder) => {
-                                return <MenuItem value={folder.prefix}>{folder.prefix ? folder.prefix.replace(".", " > ") : I18n.t("Root")}</MenuItem>
-                            })
-                        }
-                    </Select>
-                </FormControl>
-                <Button onClick={(e)=>{this.props.addSceneToFolderPrefix(scene, this.state.newFolder)}}>{I18n.t("Move to folder")}</Button>
+                <Box component="p">
+                    <FormControl>
+                        <InputLabel shrink={true}>{I18n.t("Folder")}</InputLabel>
+                        <Select value={this.state.newFolder}
+                        onChange={(e)=>{
+                            component.setState({newFolder: e.target.value});
+                        }}>
+                            {
+                                this.props.getFolderList(this.props.folders).map((folder) => {
+                                    return <MenuItem value={folder.prefix}>{folder.prefix ? folder.prefix.replace(".", " > ") : I18n.t("Root")}</MenuItem>
+                                })
+                            }
+                        </Select>
+                    </FormControl>
+                </Box>
+                <div className="align-right buttons-container">
+                    <Button variant="contained" color="primary" onClick={(e)=>{this.props.addSceneToFolderPrefix(scene, this.state.newFolder)}}>{I18n.t("Move to folder")}</Button>
+                </div>
             </div>
-            <pre>{JSON.stringify(scene, null, 2)}</pre>
         </div>;
 
         result = [result, 

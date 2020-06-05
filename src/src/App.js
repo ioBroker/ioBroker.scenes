@@ -9,21 +9,26 @@ import Loader from '@iobroker/adapter-react/Components/Loader'
 import { PROGRESS } from './components/Connection';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Switch from '@material-ui/core/Switch';
 import Container from '@material-ui/core/Container';
 import Fab from '@material-ui/core/Fab';
+import IconButton from '@material-ui/core/IconButton'; 
 import clsx from 'clsx';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 import I18n from '@iobroker/adapter-react/i18n';
 import {MdAdd as IconAdd} from 'react-icons/md';
 import {MdModeEdit as IconEdit} from 'react-icons/md';
 import {RiFolderAddLine as IconFolderAdd} from 'react-icons/ri';
+import SearchIcon from '@material-ui/icons/Search';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 
 const LEVEL_PADDING = 24;
 
@@ -242,7 +247,12 @@ class App extends GenericApp {
         let component = this;
         level = 0;
 
-        return <div key={item.id} className={this.state.selectedSceneId && this.state.selectedSceneId == scene._id ? "selectedScene" : ""} style={{paddingLeft: level * LEVEL_PADDING}} key={scene._id} onClick={()=>{
+        if (this.state.search && !item.common.name.includes(this.state.search))
+        {
+            return null;
+        }
+
+        return <ListItem key={item.id} selected={this.state.selectedSceneId && this.state.selectedSceneId == scene._id} button onClick={()=>{
             component.setState({selectedSceneId: scene._id});
         }}>
             <h3>{ scene.common.name }
@@ -254,7 +264,7 @@ class App extends GenericApp {
             </h3>
             <div>{ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }</div>
             <div>{scene.common.desc}</div>
-        </div>;
+        </ListItem>;
     }
     
     renderTree = (parent) => {
@@ -263,19 +273,21 @@ class App extends GenericApp {
         {
             parent.id ? 
             <span className="right">
-                <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
+                <IconButton onClick={()=>{
                     this.setState({addFolderDialog: parent, addFolderDialogTitle: ""});
-                }} title={I18n.t('Create new folder')}><IconFolderAdd /></Fab>
-                <Fab size="small" color="secondary" aria-label="Edit" onClick={()=>{
+                }} title={I18n.t('Create new folder')}><IconFolderAdd /></IconButton>
+                <IconButton onClick={()=>{
                     this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id});
-                }} title={I18n.t('Edit folder')}><IconEdit /></Fab>
+                }} title={I18n.t('Edit folder')}><IconEdit /></IconButton>
             </span>
             : null
         }
         </h2>);
         result.push(
             <div style={{paddingLeft: "20px"}}>
-                {Object.values(parent.scenes).map(this.renderTreeScene)}
+                <List className="leftMenuItem">
+                    {Object.values(parent.scenes).map(this.renderTreeScene)}
+                </List>
                 {Object.values(parent.subfolders).map(this.renderTree)}
             </div>
         );
@@ -294,7 +306,7 @@ class App extends GenericApp {
               "read": true,
               "write": true,
               "def": false,
-              //"engine": "system.adapter.scenes.0"
+              "engine": "system.adapter.scenes." + this.instance
             },
             "native": {
               "onTrue": {
@@ -313,7 +325,9 @@ class App extends GenericApp {
             "type": "state"
           };
           template.common.desc = template.common.name = name;
-          this.socket.setObject("scene." + this.instance + "." + template.common.name, template);
+          let id = "scene." + this.instance + "." + template.common.name;
+          this.setState({selectedSceneId : id, ready: false})
+          this.socket.setObject(id, template);
           this.refreshData();
     }
 
@@ -381,26 +395,43 @@ class App extends GenericApp {
                 <Grid container spacing={3}>
                     <Grid item xs={3}>
                     <div>
-                    <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
-                        this.createScene("folder.folder2.scene"+(Object.values(this.state.scenes).length+1));
-                    }} title={I18n.t('Create new scene')}><IconAdd /></Fab>
-                    <Fab size="small" color="secondary" aria-label="Add" onClick={()=>{
+                    <IconButton onClick={()=>{
+                        this.createScene("scene"+(Object.values(this.state.scenes).length+1));
+                    }} title={I18n.t('Create new scene')}><IconAdd /></IconButton>
+                    <IconButton onClick={()=>{
                         this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ""});
-                    }} title={I18n.t('Create new folder')}><IconFolderAdd /></Fab>
+                    }} title={I18n.t('Create new folder')}><IconFolderAdd /></IconButton>
+                    <span className="right">
+                        <IconButton onClick={()=>{this.setState({showSearch: !component.state.showSearch})}}>
+                            <SearchIcon />
+                        </IconButton>
+                    </span>
                     </div>
+                    {this.state.showSearch ? <div>
+                            <TextField value={this.state.search} onChange={(e)=>{this.setState({search: e.target.value})}}/>
+                        </div> : null
+                    }
                     <Dialog open={this.state.addFolderDialog} onClose={()=>{this.setState({addFolderDialog: null})}}>
                         <DialogTitle>{I18n.t("Create folder")}</DialogTitle>
-                        <TextField value={this.state.addFolderDialogTitle} onChange={(e)=>{this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
-                        <Button onClick={()=>{component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle); this.setState({addFolderDialog: null});}} color="primary" autoFocus>
-                            {I18n.t("Create")}
-                        </Button>
+                        <Box component="p">
+                            <TextField label={I18n.t("Title")} value={this.state.addFolderDialogTitle} onChange={(e)=>{this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
+                        </Box>
+                        <Box component="p">
+                            <Button variant="contained" onClick={()=>{component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle); this.setState({addFolderDialog: null});}} color="primary" autoFocus>
+                                {I18n.t("Create")}
+                            </Button>
+                        </Box>
                     </Dialog>
                     <Dialog open={this.state.editFolderDialog} onClose={()=>{this.setState({editFolderDialog: null})}}>
                         <DialogTitle>{I18n.t("Edit folder")}</DialogTitle>
-                        <TextField value={this.state.editFolderDialogTitle} onChange={(e)=>{this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
-                        <Button onClick={()=>{component.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle); this.setState({editFolderDialog: null});}} color="primary" autoFocus>
-                            {I18n.t("edit")}
-                        </Button>
+                        <Box component="p">
+                            <TextField label={I18n.t("Title")} value={this.state.editFolderDialogTitle} onChange={(e)=>{this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, "")})}}/>
+                        </Box>
+                        <Box component="p">
+                            <Button variant="contained" onClick={()=>{component.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle); this.setState({editFolderDialog: null});}} color="primary" autoFocus>
+                                {I18n.t("edit")}
+                            </Button>
+                        </Box>
                     </Dialog>
                     <div>
                         {this.renderTree(this.state.folders)}

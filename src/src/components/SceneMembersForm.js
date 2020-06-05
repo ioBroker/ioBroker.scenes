@@ -6,6 +6,7 @@ import Select from '@material-ui/core/Select';
 import Checkbox from '@material-ui/core/Checkbox';
 import I18n from '@iobroker/adapter-react/i18n';
 import Fab from '@material-ui/core/Fab';
+import IconButton from '@material-ui/core/IconButton';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -15,6 +16,7 @@ import {IoMdClose as IconClose} from 'react-icons/io';
 import {MdAdd as IconAdd} from 'react-icons/md';
 import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import Paper from '@material-ui/core/Paper';
+import {AiOutlineClockCircle as IconClock} from 'react-icons/ai';
 
 class SceneMembersForm extends React.Component {
     state = {}
@@ -56,20 +58,22 @@ class SceneMembersForm extends React.Component {
             <h2>
                 {I18n.t("States")}
                 <span className="right">
-                    <Fab size="small" color="secondary" aria-label="Add" title={I18n.t('Create new scene')} onClick={()=>{component.setState({showDialog: true})}}><IconAdd /></Fab>
+                    <IconButton title={I18n.t('Create new scene')} onClick={()=>{component.setState({showDialog: true})}}><IconAdd /></IconButton>
                 </span>
             </h2>
             {
                 scene.native.members.map((member, key) => 
                 {
+                let memberOriginal = this.props.scene.native.members[key];
                 return <Paper key={key} className="member-card">
-                    <h2>
+                    <h3>
                         {member.id}
+                        {!member.disabled ? <span className="memberTrue">TRUE</span> : <span className="memberFalse">FALSE</span>}
                         <span className="right">
-                            <Fab size="small" aria-label="Edit" title={I18n.t('Edit')} onClick={()=>{component.setState({selectedMember: key})}}>
+                            <IconButton title={I18n.t('Edit')} onClick={()=>{component.setState({selectedMember: key})}}>
                                 {key == this.state.selectedMember ? <IconClose /> : <IconEdit />}
-                            </Fab>
-                            <Fab size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.deleteSceneMember(key)}}><IconDelete /></Fab>
+                            </IconButton>
+                            <IconButton size="small" style={{marginLeft: 5}} aria-label="Delete" title={I18n.t('Delete')} onClick={()=>{this.deleteSceneMember(key)}}><IconDelete /></IconButton>
                             <Switch
                                 checked={!member.disabled}
                                 onChange={(e)=>{
@@ -79,11 +83,11 @@ class SceneMembersForm extends React.Component {
                                 name={member.id}
                             />
                         </span>
-                    </h2>
+                    </h3>
+                    <div>{memberOriginal.desc} <IconClock/></div>
                     {
                         key == this.state.selectedMember ?
                         <div>
-                            <div>{member.desc}</div>
                             <Box component="p"><TextField InputLabelProps={{shrink: true}} label={I18n.t("Description")} value={member.desc}
                                 onChange={(e)=>{
                                     member.desc = e.target.value;
@@ -121,7 +125,6 @@ class SceneMembersForm extends React.Component {
                             </Grid>
                             </Grid>
                             </Box>
-                            <pre>{JSON.stringify(member, null, 2)}</pre>
                             <Box component="p" className="align-right buttons-container">
                                 <Button variant="contained" onClick={()=>{
                                     this.setState({formData: JSON.parse(JSON.stringify(this.props.scene))});

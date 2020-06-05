@@ -3,7 +3,7 @@
 }
 
 .members-cell {
-    background-color: lightgrey;
+    background-color: lightblue;
     padding: 10px; 
 }
 
@@ -41,4 +41,28 @@
 
 .MuiFormLabel-root {
     white-space: nowrap;
+}
+
+.leftMenuItem .MuiListItem-root {
+    display: block; border-radius: 10px;
+}
+
+.memberTrue, .memberFalse {
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: initial;
+    font-weight: initial;
+    margin: 0px 10px;
+}
+
+.memberTrue {
+    background-color: lightgreen;
+}
+
+.memberFalse {
+    background-color: pink;
+}
+
+.MuiDialog-paper {
+    padding: 10px;
 }
