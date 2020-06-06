@@ -99,7 +99,7 @@ function getUrlQuery() {
 
 class App extends GenericApp {
     state = {
-        scenes: null,
+        scenes: {},
         folders: null,
         search: null,
         selectedSceneId: null,
@@ -277,6 +277,9 @@ class App extends GenericApp {
             .then(newState => {
                 newState.ready = true;
                 newState.changingScene = null;
+                if (!newState.scenes[this.state.selectedSceneId]) {
+                    newState.selectedSceneId = null;
+                }
                 console.log(this.state);
                 console.log(newState);
                 this.setState(newState);
