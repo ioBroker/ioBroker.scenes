@@ -150,7 +150,7 @@ class App extends GenericApp {
     buildTree(scenes) {
         scenes = Object.values(scenes);
 
-        let folders = {subfolders: {}, scenes: {}, id: '', prefix: ''};
+        let folders = {subFolders: {}, scenes: {}, id: '', prefix: ''};
 
         // create missing folders
         scenes.forEach((scene) => {
@@ -165,10 +165,10 @@ class App extends GenericApp {
                     prefix = prefix + '.';
                 }
                 prefix = prefix + parts[i];
-                if (!current_folder.subfolders[parts[i]]) {
-                    current_folder.subfolders[parts[i]] = {subfolders: {}, scenes: {}, id: parts[i], prefix: prefix}
+                if (!current_folder.subFolders[parts[i]]) {
+                    current_folder.subFolders[parts[i]] = {subFolders: {}, scenes: {}, id: parts[i], prefix: prefix}
                 }
-                current_folder = current_folder.subfolders[parts[i]];
+                current_folder = current_folder.subFolders[parts[i]];
             }
             current_folder.scenes[id] = scene;
         });
@@ -203,12 +203,12 @@ class App extends GenericApp {
             });
     }
 
-    addFolder(parent_folder, id) {
-        parent_folder.subfolders[id] = {
+    addFolder(parentFolder, id) {
+        parentFolder.subFolders[id] = {
             scenes: {},
-            subfolders: {},
+            subFolders: {},
             id: id,
-            prefix: parent_folder.prefix ? parent_folder.prefix + "." + id : id
+            prefix: parentFolder.prefix ? parentFolder.prefix + '.' + id : id
         };
         this.setState(this.state);
     }
@@ -323,7 +323,7 @@ class App extends GenericApp {
                     </List>
                 </ListItem>);
 
-            result.push(Object.values(parent.subfolders).map(subFolder =>
+            result.push(Object.values(parent.subFolders).map(subFolder =>
                 this.renderTree(subFolder, level + 1)));
         }
 

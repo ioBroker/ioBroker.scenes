@@ -3,7 +3,6 @@ import clsx from 'clsx'
 import {withStyles} from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
-
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import Button from '@material-ui/core/Button';
@@ -45,7 +44,7 @@ const styles = theme => ({
     },
     memberCard: {
         padding: 4,
-        margin: this.spacing(1) + 'px 0',
+        margin: theme.spacing(1) + 'px 0',
     },
     right: {
         float: 'right',
@@ -54,7 +53,7 @@ const styles = theme => ({
         overflowY: 'auto',
         overflowX: 'hidden',
         height: '100%',
-        paddingRight: this.spacing(1),
+        paddingRight: theme.spacing(1),
         width: '100%',
     },
     height: {
@@ -69,7 +68,7 @@ const styles = theme => ({
     },
     buttonsContainer: {
         '& button': {
-            margin: '0 ' + this.spacing(1) + 'px',
+            margin: '0 ' + theme.spacing(1) + 'px',
         },
     }
 });

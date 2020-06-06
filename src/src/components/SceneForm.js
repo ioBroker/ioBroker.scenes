@@ -1,4 +1,8 @@
 import React from 'react'
+import clsx from 'clsx'
+import PropTypes from 'prop-types';
+import {withStyles} from "@material-ui/core/styles";
+
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import Select from '@material-ui/core/Select';
@@ -21,8 +25,6 @@ import I18n from '@iobroker/adapter-react/i18n';
 import {MdDelete as IconDelete} from 'react-icons/md';
 import {FaClone as IconClone} from 'react-icons/fa';
 import {BsFolderSymlink as IconMoveToFolder} from 'react-icons/bs';
-import PropTypes from "prop-types";
-import {withStyles} from "@material-ui/core/styles";
 
 const styles = theme => ({
     alignRight: {
@@ -30,7 +32,7 @@ const styles = theme => ({
     },
     buttonsContainer: {
         '& button': {
-            margin: '0 ' + this.spacing(1) + 'px',
+            margin: '0 ' + theme.spacing(1) + 'px',
         },
     },
     height: {
@@ -47,7 +49,7 @@ const styles = theme => ({
         overflowY: 'auto',
         overflowX: 'hidden',
         height: '100%',
-        paddingRight: this.spacing(1),
+        paddingRight: theme.spacing(1),
         width: '100%',
     },
 
