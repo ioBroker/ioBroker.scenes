@@ -1,37 +1,14 @@
-.selectedScene {
-    background-color: grey;
-}
-
 #root {
     overflow-y: hidden;
     height: 100%;
 }
 
-.MuiInputBase-root, .MuiFormControlLabel-root, .MuiFormControl-root {
-    width: 100%;
-}
 .MuiFormControlLabel-label.MuiTypography-body1 {
     font-size: 0.8rem;
 }
 
-.align-right {
-    text-align: right;
-}
-
-.clear {
-    clear: both;
-}
-
-.buttons-container button {
-    margin: 0px 10px;
-}
-
 .MuiFormLabel-root {
     white-space: nowrap;
-}
-
-.leftMenuItem .MuiListItem-root {
-    display: block; border-radius: 10px;
 }
 
 .MuiDialog-paper {

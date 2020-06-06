@@ -194,7 +194,7 @@ class SceneMembersForm extends React.Component {
 
     dialogs = () => {
         return this.state.showDialog ? <DialogSelectID
-            key="selectDialog"
+            key="selectDialogMembers"
             connection={ this.props.socket }
             dialogName="memberEdit"
             title={ I18n.t('Select for ') }
@@ -266,8 +266,9 @@ class SceneMembersForm extends React.Component {
                     <div>
                         <Box component="p">
                             <TextField
+                                fullWidth
                                 InputLabelProps={{shrink: true}} label={I18n.t('Description')}
-                                value={member.desc}
+                                value={ member.desc || '' }
                                 onChange={ e => {
                                     const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                     sceneObj.native.members[index].desc = e.target.value;
@@ -288,6 +289,7 @@ class SceneMembersForm extends React.Component {
                                 :
                                 <TextField InputLabelProps={{shrink: true}} label={I18n.t('Set if TRUE')}
                                            value={member.setIfTrue}
+                                           fullWidth
                                            onChange={e => {
                                                const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                                if (this.state.objectTypes[member.id] === 'number') {
@@ -314,6 +316,7 @@ class SceneMembersForm extends React.Component {
                                         />
                                         :
                                         <TextField
+                                            fullWidth
                                             InputLabelProps={{shrink: true}} label={I18n.t('Set if FALSE')}
                                             value={member.setIfFalse}
                                             onChange={e => {
@@ -330,9 +333,10 @@ class SceneMembersForm extends React.Component {
                             </Box>
                             : null}
                         <Box component="p">
-                            <Grid container spacing="4">
-                                <Grid item xs="4">
+                            <Grid container spacing={4}>
+                                <Grid item xs={4}>
                                     <TextField
+                                        fullWidth
                                         InputLabelProps={{shrink: true}}
                                         label={ I18n.t('Delay (ms)') }
                                         value={member.delay}
@@ -343,7 +347,7 @@ class SceneMembersForm extends React.Component {
                                             component.setState({sceneObj});
                                        }}/>
                                 </Grid>
-                                { member.delay ? <Grid item xs="8">
+                                { member.delay ? <Grid item xs={8}>
                                     <FormControlLabel label={I18n.t('Stop already started commands')} control={
                                         <Checkbox checked={member.stopAllDelays} onChange={e => {
                                             const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
@@ -380,7 +384,7 @@ class SceneMembersForm extends React.Component {
             return null;
         }
         let component = this;
-        let result = <div className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
+        let result = <div key="paper" className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
             <h2>
                 {I18n.t('States')}
                 <span className={this.props.classes.right}>
@@ -397,12 +401,10 @@ class SceneMembersForm extends React.Component {
             </div>
         </div>;
 
-        result = [
+        return [
             result,
             this.dialogs()
         ];
-
-        return result;
     }
 }
 

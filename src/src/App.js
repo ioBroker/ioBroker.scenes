@@ -66,6 +66,10 @@ const styles = theme => ({
         paddingRight: '10px',
         width: '100%',
     },
+    list: {
+        width: '100%',
+        padding: 0,
+    },
     right: {
         float: 'right',
     },
@@ -76,7 +80,11 @@ const styles = theme => ({
         paddingBottom: '10px',
         minHeight: 'calc(100% - 40px)',
         marginBottom: '10px',
-    }
+    },
+    leftMenuItem: {
+        display: 'block',
+        borderRadius: 10,
+    },
 });
 
 function getUrlQuery() {
@@ -131,8 +139,6 @@ class App extends GenericApp {
         this.host = query.host || window.location.hostname;
 
         window.iobForceHost = this.host;
-
-        this.state.selectedSceneId = window.localStorage.getItem("selectedSceneId");
     }
 
     componentDidMount() {
@@ -164,11 +170,10 @@ class App extends GenericApp {
             onReady: async (objects, scripts) => {
                 I18n.setLanguage(this.socket.systemLang);
 
-                console.log(objects);
-                console.log(scripts);
                 const newState = {
                     lang: this.socket.systemLang,
                     ready: false,
+                    selectedSceneId: window.localStorage.getItem('selectedSceneId') || '',
                 };
 
                 try {
@@ -240,11 +245,11 @@ class App extends GenericApp {
     }
 
     findFolder(parent, folder) {
-        if (parent.prefix == folder.prefix) {
+        if (parent.prefix === folder.prefix) {
             return parent;
         }
         for (let index in parent.subFolders) {
-            let result = this.findFolder(parent.subFolders[index], folder)
+            let result = this.findFolder(parent.subFolders[index], folder);
             if (result) {
                 return result;
             }
@@ -292,7 +297,7 @@ class App extends GenericApp {
 
     addSceneToFolderPrefix = async (scene, folderPrefix, noRefresh) => {
         let oldId = scene._id;
-        let sceneId = scene._id.split(".").pop();
+        let sceneId = scene._id.split('.').pop();
         scene._id = 'scene.' + this.instance + '.' + folderPrefix + (folderPrefix ? '.' : '') + sceneId;
         if (!noRefresh) {
             this.setState({selectedSceneId: null});
@@ -337,7 +342,7 @@ class App extends GenericApp {
 
         return <ListItem
             style={ {paddingLeft: level * LEVEL_PADDING} }
-            key={ item.id }
+            key={ item._id }
             selected={ this.state.selectedSceneId && this.state.selectedSceneId === scene._id }
             button
             onClick={ () => component.setState({selectedSceneId: scene._id}) }>
@@ -401,7 +406,8 @@ class App extends GenericApp {
                 key={ 'items_' + parent.id }
                 className={ this.props.classes.width100 }>
                     <List
-                        className={ clsx(this.props.classes.width100, 'leftMenuItem') }
+                        className={ this.props.classes.list }
+                        classes={ {root: this.props.classes.leftMenuItem }}
                         style={ {paddingLeft: level * LEVEL_PADDING} }
                     >
                         { Object.values(parent.scenes).map(scene => this.renderTreeScene(scene, level)) }
@@ -509,7 +515,7 @@ class App extends GenericApp {
     dialogs() {
         let component = this;
         return <React.Fragment>
-            <Dialog open={this.state.addFolderDialog} onClose={() => {
+            <Dialog open={ !!this.state.addFolderDialog } onClose={() => {
                 this.setState({addFolderDialog: null})
             }}>
                 <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
@@ -527,7 +533,7 @@ class App extends GenericApp {
                     </Button>
                 </Box>
             </Dialog>
-            <Dialog open={this.state.editFolderDialog} onClose={() => {
+            <Dialog open={ !!this.state.editFolderDialog } onClose={() => {
                 this.setState({editFolderDialog: null})
             }}>
                 <DialogTitle>{I18n.t('Edit folder')}</DialogTitle>
@@ -598,7 +604,7 @@ class App extends GenericApp {
                             <div className={this.props.classes.height}>
                                 {component.state.selectedSceneId ?
                                     <SceneForm
-                                        key={component.state.selectedSceneId}
+                                        key={ component.state.selectedSceneId }
                                         deleteScene={this.deleteScene}
                                         cloneScene={this.cloneScene}
                                         updateScene={this.updateScene}
