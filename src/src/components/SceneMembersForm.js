@@ -73,6 +73,8 @@ const styles = theme => ({
     }
 });
 
+// Todo: do not allow to add ID if yet exists
+
 class SceneMembersForm extends React.Component {
     constructor(props) {
         super(props);
@@ -90,7 +92,7 @@ class SceneMembersForm extends React.Component {
             .then(objectTypes =>
                 this.setState({objectTypes}, () =>
                     // subscribe on all states
-                    this.props.scene.native.members.forEach(member =>
+                    this.state.sceneObj.native.members.forEach(member =>
                         this.props.socket.subscribeState(member.id, this.memberStateChange))));
     }
 
@@ -133,7 +135,7 @@ class SceneMembersForm extends React.Component {
     };
 
     componentWillUnmount() {
-        this.props.scene.native.members.forEach(member =>
+        this.state.sceneObj.native.members.forEach(member =>
             this.props.socket.unsubscribeState(member.id, this.memberStateChange));
     }
 
@@ -165,23 +167,29 @@ class SceneMembersForm extends React.Component {
                         }
                     }
 
-                    let scene = JSON.parse(JSON.stringify(this.props.scene));
+                    let scene = JSON.parse(JSON.stringify(this.state.sceneObj));
                     scene.native.members.push(template);
 
                     // open added state
                     const memberOpened = JSON.parse(JSON.stringify(this.state.memberOpened));
                     memberOpened[scene.native.members.length - 1] = true;
 
-                    this.setState({objectTypes}, () =>
-                        this.props.updateScene(scene._id, scene));
+
+                    this.setState({objectTypes}, () => {
+                        // subscribe on new state
+                        this.props.socket.subscribeState(id, this.memberStateChange);
+                        this.props.updateScene(scene._id, scene);
+                    });
                 });
         });
     };
 
     deleteSceneMember = index => {
         let scene = JSON.parse(JSON.stringify(this.state.sceneObj));
+        const id = scene.native.members[index].id;
         scene.native.members.splice(index, 1);
         this.props.updateScene(scene._id, scene);
+        this.props.socket.unsubscribeState(id, this.memberStateChange);
     };
 
     dialogs = () => {
@@ -200,7 +208,7 @@ class SceneMembersForm extends React.Component {
     renderMember = (member, index, scene) => {
         let component = this;
 
-        let memberOriginal = this.props.scene.native.members[index];
+        let memberOriginal = this.state.sceneObj.native.members[index];
 
         let value = null;
         if (this.state.states[member.id] !== undefined && this.state.states[member.id] !== null) {
