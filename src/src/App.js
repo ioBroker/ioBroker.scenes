@@ -168,7 +168,7 @@ class App extends GenericApp {
                 console.log(scripts);
                 const newState = {
                     lang: this.socket.systemLang,
-                    ready: true,
+                    ready: false,
                 };
 
                 try {
