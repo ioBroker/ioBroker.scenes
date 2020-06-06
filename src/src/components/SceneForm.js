@@ -54,15 +54,26 @@ const styles = theme => ({
     },
 
 });
-// For BF todo: fill engines
 
 class SceneForm extends React.Component {
-    state = {
-        sceneObj: JSON.parse(JSON.stringify(this.props.scene)),
-        newFolder: SceneForm.getFolderPrefix(this.props.scene._id),
-        moveDialog: null,
-        showDialog: null,
-    };
+    constructor(props) {
+        super(props);
+
+        const sceneObj = JSON.parse(JSON.stringify(this.props.scene));
+
+        sceneObj.common = sceneObj.common || {};
+        sceneObj.native = sceneObj.native || {};
+        sceneObj.native.onFalse = sceneObj.native.onFalse || {};
+        sceneObj.native.onTrue  = sceneObj.native.onTrue  || {};
+
+        this.state = {
+            sceneObj,
+            newFolder: SceneForm.getFolderPrefix(sceneObj._id),
+            moveDialog: null,
+            showDialog: null,
+        };
+    }
+
 
     static getFolderPrefix(sceneId) {
         let result = sceneId.split('.');
@@ -132,17 +143,11 @@ class SceneForm extends React.Component {
         if (!scene) {
             return null;
         }
-        let engine = '';
-        if (scene.common.engine) {
-            let engineId = scene.common.engine.split('.');
-            engine = engineId.pop();
-            engine = engine + '.' + engineId.pop();
-        }
 
         let result = <div className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
             <div>
                 <h2>
-                    {this.props.scene.common.name}
+                    {scene.common.name}
                     <span className={ this.props.classes.right }>
                         <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={() => {
                             this.props.cloneScene(scene._id);
@@ -158,7 +163,7 @@ class SceneForm extends React.Component {
 
                     </span>
                 </h2>
-                <div>{this.props.scene.common.desc}</div>
+                <div>{scene.common.desc}</div>
             </div>
             <div className={ this.props.classes.scroll }>
                 <Box component="p">
@@ -183,8 +188,12 @@ class SceneForm extends React.Component {
                         <Grid item xs="6">
                             <FormControl>
                                 <InputLabel shrink={true}>{ I18n.t('Instance') }</InputLabel>
-                                <Select value={engine}>
-                                    <MenuItem value={engine}>{ engine }</MenuItem>
+                                <Select value={ scene.common.engine } onChange={e => {
+                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                    sceneObj.common.engine = e.target.value;
+                                    component.setState({sceneObj});
+                                }}>
+                                    { this.props.instances.map(id => <MenuItem value={id}>{ id.replace('system.adapter.', '') }</MenuItem>) }
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -213,7 +222,7 @@ class SceneForm extends React.Component {
                             }/>
                         </Grid>
                         <Grid item xs="6">
-                            {!scene.native.virtualGroup ?
+                            { !scene.native.virtualGroup ?
                                 <FormControlLabel style={{paddingTop: 10}} label={I18n.t('Set value if false')}
                                                   control={
                                                       <Checkbox checked={scene.native.onFalse.enabled}
@@ -353,7 +362,8 @@ SceneForm.propTypes = {
     cloneScene: PropTypes.func.isRequired,
     deleteScene: PropTypes.func.isRequired,
     addSceneToFolderPrefix: PropTypes.func.isRequired,
-    folders: PropTypes.func,
+    folders: PropTypes.object,
+    instances: PropTypes.array,
 };
 
 export default withStyles(styles)(SceneForm);

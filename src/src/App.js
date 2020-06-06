@@ -90,7 +90,6 @@ function getUrlQuery() {
 }
 
 class App extends GenericApp {
-
     state = {
         scenes: null,
         folders: null,
@@ -103,7 +102,8 @@ class App extends GenericApp {
         ready: null,
         themeType: null,
         showSearch: null,
-    }
+        instances: [],
+    };
 
     constructor(props) {
         super(props);
@@ -177,7 +177,13 @@ class App extends GenericApp {
                     console.log(error);
                 }
 
-                this.refreshData();
+                this.socket.getAdapterInstances(this.adapterName)
+                    .then(instances => {
+                        newState.instances = instances.map(item => item._id);
+                        this.setState(newState, () =>
+                            this.refreshData());
+                    });
+
             },
             //onObjectChange: (objects, scripts) => this.onObjectChange(objects, scripts),
             onObjectChange: (attr, value) => () => {
@@ -355,7 +361,7 @@ class App extends GenericApp {
         level = level || 0;
 
         // Show folder item
-        parent.id && result.push(<ListItem
+        parent && parent.id && result.push(<ListItem
             key={ parent.id }
             className={ this.props.classes.width100 }
             style={ {paddingLeft: level * LEVEL_PADDING} }
@@ -390,7 +396,7 @@ class App extends GenericApp {
             }
         </ListItem>);
 
-        if (!parent.closed) {
+        if (parent && !parent.closed) {
             result.push(<ListItem
                 key={ 'items_' + parent.id }
                 className={ this.props.classes.width100 }>
@@ -600,6 +606,7 @@ class App extends GenericApp {
                                         socket={component.socket}
                                         addSceneToFolderPrefix={component.addSceneToFolderPrefix}
                                         folders={this.state.folders}
+                                        instances={ this.state.instances }
                                     />
                                     : ''}
                             </div>
