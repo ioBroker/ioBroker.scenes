@@ -2,35 +2,9 @@
     background-color: grey;
 }
 
-.members-cell {
-    background-color: #ADD8E6;
-    padding: 0px 10px;
-    border-radius: 4px;
-    padding-bottom: 10px;
-    min-height: calc(100% - 40px);
-    margin-bottom: 10px;
-}
-
 #root {
     overflow-y: hidden;
     height: 100%;
-}
-
-.height {
-    height: 100%;
-}
-
-.column-container {
-    display: flex;
-    flex-direction: column;
-}
-
-.scroll {
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 100%;
-    padding-right: 10px;
-    width: 100%;
 }
 
 .MuiInputBase-root, .MuiFormControlLabel-root, .MuiFormControl-root {
@@ -38,10 +12,6 @@
 }
 .MuiFormControlLabel-label.MuiTypography-body1 {
     font-size: 0.8rem;
-}
-
-.right {
-    float: right;
 }
 
 .align-right {

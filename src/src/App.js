@@ -1,7 +1,9 @@
+// Common
 import React from 'react';
 import {withStyles} from '@material-ui/core/styles';
 import clsx from 'clsx';
-
+ 
+// MaterialUi
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import Switch from '@material-ui/core/Switch';
@@ -17,14 +19,16 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 
+// Own
 import {PROGRESS} from './components/Connection';
 import Utils from '@iobroker/adapter-react/Components/Utils';
-import GenericApp from "@iobroker/adapter-react/GenericApp";
-import Connection from "./components/Connection";
-import SceneForm from "./components/SceneForm";
-import SceneMembersForm from "./components/SceneMembersForm";
+import GenericApp from '@iobroker/adapter-react/GenericApp';
+import Connection from './components/Connection';
+import SceneForm from './components/SceneForm';
+import SceneMembersForm from './components/SceneMembersForm';
 import Loader from '@iobroker/adapter-react/Components/Loader'
 import I18n from '@iobroker/adapter-react/i18n';
+import clone from './utils/clone';
 
 // icons
 import {MdExpandLess as IconCollapse} from 'react-icons/md';
@@ -47,6 +51,31 @@ const styles = theme => ({
     },
     width100: {
         width: '100%',
+    },
+    height: {
+        height: '100%',
+    },
+    columnContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    scroll: {
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        height: '100%',
+        paddingRight: '10px',
+        width: '100%',
+    },
+    right: {
+        float: 'right',
+    },
+    membersCell: {
+        backgroundColor: '#ADD8E6',
+        padding: '0px 10px',
+        borderRadius: '4px',
+        paddingBottom: '10px',
+        minHeight: 'calc(100% - 40px)',
+        marginBottom: '10px',
     }
 });
 
@@ -61,6 +90,21 @@ function getUrlQuery() {
 }
 
 class App extends GenericApp {
+
+    state = {
+        scenes: null,
+        folders: null,
+        search: null,
+        selectedSceneId: null,
+        addFolderDialog: null,
+        addFolderDialogTitle: null,
+        editFolderDialog: null,
+        editFolderDialogTitle: null,
+        ready: null,
+        themeType: null,
+        showSearch: null,
+    }
+
     constructor(props) {
         super(props);
         this.translations = {
@@ -90,6 +134,10 @@ class App extends GenericApp {
     }
 
     componentDidMount() {
+        if (!window.localStorage.getItem('closedFolders')) {
+            window.localStorage.setItem('closedFolders', '{}');
+        }
+
         this.socket = new Connection({
             name: this.adapterName,
             host: this.host,
@@ -142,9 +190,10 @@ class App extends GenericApp {
     }
 
     sceneSwitch = (event) => {
-        this.state.scenes[event.target.name].common.enabled = event.target.checked;
-        this.socket.setObject(event.target.name, this.state.scenes[event.target.name]);
-        this.setState(this.state);
+        let scenes = clone(this.state.scenes);
+        scenes[event.target.name].common.enabled = event.target.checked;
+        this.socket.setObject(event.target.name, scenes[event.target.name]);
+        this.setState({scenes: scenes});
     };
 
     buildTree(scenes) {
@@ -158,19 +207,25 @@ class App extends GenericApp {
             const parts = id.split('.');
             parts.shift();
             parts.shift();
-            let current_folder = folders;
+            let currentFolder = folders;
             let prefix = '';
             for (let i = 0; i < parts.length - 1; i++) {
                 if (prefix) {
                     prefix = prefix + '.';
                 }
                 prefix = prefix + parts[i];
-                if (!current_folder.subFolders[parts[i]]) {
-                    current_folder.subFolders[parts[i]] = {subFolders: {}, scenes: {}, id: parts[i], prefix: prefix}
+                if (!currentFolder.subFolders[parts[i]]) {
+                    currentFolder.subFolders[parts[i]] = {
+                        subFolders: {}, 
+                        scenes: {}, 
+                        id: parts[i], 
+                        prefix: prefix,
+                        closed: JSON.parse(window.localStorage.getItem('closedFolders'))[prefix]
+                    }
                 }
-                current_folder = current_folder.subFolders[parts[i]];
+                currentFolder = currentFolder.subFolders[parts[i]];
             }
-            current_folder.scenes[id] = scene;
+            currentFolder.scenes[id] = scene;
         });
 
         return folders;
@@ -210,17 +265,18 @@ class App extends GenericApp {
             id: id,
             prefix: parentFolder.prefix ? parentFolder.prefix + '.' + id : id
         };
-        this.setState(this.state);
+        let folders = clone(this.state.folders);
+        this.setState({folders: folders});
     }
 
     addSceneToFolderPrefix = async (scene, folderPrefix, noRefresh) => {
-        let old_id = scene._id;
-        let scene_id = scene._id.split(".").pop();
-        scene._id = "scene." + this.instance + "." + folderPrefix + (folderPrefix ? '.' : '') + scene_id;
+        let oldId = scene._id;
+        let sceneId = scene._id.split(".").pop();
+        scene._id = 'scene.' + this.instance + '.' + folderPrefix + (folderPrefix ? '.' : '') + sceneId;
         if (!noRefresh) {
             this.setState({selectedSceneId: null});
         }
-        await this.socket.delObject(old_id);
+        await this.socket.delObject(oldId);
         await this.socket.setObject(scene._id, scene);
         if (!noRefresh) {
             this.refreshData();
@@ -278,7 +334,7 @@ class App extends GenericApp {
         </ListItem>;
     };
 
-    renderTree = (parent, level) => {
+    renderTree(parent, level) {
         let result = [];
         level = level || 0;
 
@@ -302,7 +358,13 @@ class App extends GenericApp {
 
                         <IconButton onClick={() => {
                             parent.closed = !parent.closed;
-                            this.setState(this.state);
+                            
+                            let closedFolders = JSON.parse(window.localStorage.getItem('closedFolders'));
+                            closedFolders[parent.prefix] = parent.closed;
+                            window.localStorage.setItem('closedFolders', JSON.stringify(closedFolders));
+
+                            let folders = clone(this.state.folders);
+                            this.setState({folders: folders});
                         }} title={parent.closed ? I18n.t('Expand') : I18n.t('Collapse')}>
                             {parent.closed ? <IconExpand/> : <IconCollapse/>}
                         </IconButton>
@@ -330,7 +392,7 @@ class App extends GenericApp {
         return result;
     };
 
-    createScene = name => {
+    createScene(name) {
         let template = {
             common: {
                 name: '',
@@ -369,8 +431,8 @@ class App extends GenericApp {
                     this.refreshData()));
     };
 
-    cloneScene = (id) => {
-        let scene = JSON.parse(JSON.stringify(this.state.scenes[id]));
+    cloneScene(id) {
+        let scene = clone(this.state.scenes[id]);
         scene._id = scene._id.split('.');
         scene._id.pop();
         scene._id.push(this.getNewSceneId());
@@ -385,7 +447,7 @@ class App extends GenericApp {
     };
 
     updateScene = (id, data) => {
-        const scenes = JSON.parse(JSON.stringify(this.state.scenes));
+        const scenes = clone(this.state.scenes);
         scenes[id] = data;
 
         this.socket.setObject(id, scenes[id])
@@ -393,7 +455,7 @@ class App extends GenericApp {
                 this.refreshData());
     };
 
-    deleteScene = id => {
+    deleteScene = (id) => {
         this.socket.delObject(id)
             .then(() => {
                 if (this.state.selectedSceneId === id) {
@@ -405,7 +467,7 @@ class App extends GenericApp {
             });
     };
 
-    getNewSceneId = () => {
+    getNewSceneId() {
         let newId = 0;
 
         for (const id in this.state.scenes) {
@@ -421,7 +483,7 @@ class App extends GenericApp {
         return 'scene' + newId;
     };
 
-    dialogs = () => {
+    dialogs() {
         let component = this;
         return <React.Fragment>
             <Dialog open={this.state.addFolderDialog} onClose={() => {
@@ -477,10 +539,10 @@ class App extends GenericApp {
 
         return (
             <div className="App">
-                <Container className="height">
-                    <Grid container spacing={3} className="height">
-                        <Grid item xs={3} className="height">
-                            <div className="column-container height">
+                <Container className={this.props.classes.height}>
+                    <Grid container spacing={3} className={this.props.classes.height}>
+                        <Grid item xs={3} className={this.props.classes.height}>
+                            <div className={clsx(this.props.classes.columnContainer, this.props.classes.height)}>
                                 <div>
                                     <IconButton onClick={() => {
                                         this.createScene(this.getNewSceneId());
@@ -490,7 +552,7 @@ class App extends GenericApp {
                                         this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''});
                                     }} title={I18n.t('Create new folder')}><IconFolderAdd/></IconButton>
 
-                                    <span className="right">
+                                    <span className={this.props.classes.right}>
                                         <IconButton onClick={() => {
                                             this.setState({showSearch: !component.state.showSearch})
                                         }}>
@@ -503,13 +565,13 @@ class App extends GenericApp {
                                         this.setState({search: e.target.value})}/>: null
                                 }
                                 { this.dialogs() }
-                                <List className="scroll">
+                                <List className={this.props.classes.scroll}>
                                     { this.renderTree(this.state.folders) }
                                 </List>
                             </div>
                         </Grid>
-                        <Grid item xs={4} className="height">
-                            <div className="height">
+                        <Grid item xs={4} className={this.props.classes.height}>
+                            <div className={this.props.classes.height}>
                                 {component.state.selectedSceneId ?
                                     <SceneForm
                                         key={component.state.selectedSceneId}
@@ -524,10 +586,10 @@ class App extends GenericApp {
                                     : ''}
                             </div>
                         </Grid>
-                        <Grid item xs={5} className="height">
-                            <div className="height">
+                        <Grid item xs={5} className={this.props.classes.height}>
+                            <div className={this.props.classes.height}>
                                 {component.state.selectedSceneId ?
-                                    <div className="members-cell height">
+                                    <div className={clsx(this.props.classes.membersCell, this.props.classes.height)}>
                                         <SceneMembersForm
                                             key={'selected' + component.state.selectedSceneId}
                                             updateScene={this.updateScene}
