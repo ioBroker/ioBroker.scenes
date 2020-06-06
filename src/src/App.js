@@ -131,6 +131,8 @@ class App extends GenericApp {
         this.host = query.host || window.location.hostname;
 
         window.iobForceHost = this.host;
+
+        this.state.selectedSceneId = window.localStorage.getItem("selectedSceneId");
     }
 
     componentDidMount() {
@@ -231,6 +233,18 @@ class App extends GenericApp {
         return folders;
     }
 
+    findFolder(parent, folder) {
+        if (parent.prefix == folder.prefix) {
+            return parent;
+        }
+        for (let index in parent.subFolders) {
+            let result = this.findFolder(parent.subFolders[index], folder)
+            if (result) {
+                return result;
+            }
+        }
+    }
+
     getData() {
         let scenes;
         return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state')
@@ -259,13 +273,14 @@ class App extends GenericApp {
     }
 
     addFolder(parentFolder, id) {
-        parentFolder.subFolders[id] = {
+        let folders = clone(this.state.folders);
+        let _parentFolder = this.findFolder(folders, parentFolder);
+        _parentFolder.subFolders[id] = {
             scenes: {},
             subFolders: {},
             id: id,
-            prefix: parentFolder.prefix ? parentFolder.prefix + '.' + id : id
+            prefix: _parentFolder.prefix ? _parentFolder.prefix + '.' + id : id
         };
-        let folders = clone(this.state.folders);
         this.setState({folders: folders});
     }
 
@@ -335,6 +350,7 @@ class App extends GenericApp {
     };
 
     renderTree(parent, level) {
+        let component = this;
         let result = [];
         level = level || 0;
 
@@ -357,13 +373,14 @@ class App extends GenericApp {
                         }} title={ I18n.t('Edit folder') }><IconEdit/></IconButton>
 
                         <IconButton onClick={() => {
-                            parent.closed = !parent.closed;
+                            let folders = clone(this.state.folders);
+                            let _parent = component.findFolder(folders, parent);
+                            _parent.closed = !_parent.closed;
                             
                             let closedFolders = JSON.parse(window.localStorage.getItem('closedFolders'));
-                            closedFolders[parent.prefix] = parent.closed;
+                            closedFolders[_parent.prefix] = _parent.closed;
                             window.localStorage.setItem('closedFolders', JSON.stringify(closedFolders));
 
-                            let folders = clone(this.state.folders);
                             this.setState({folders: folders});
                         }} title={parent.closed ? I18n.t('Expand') : I18n.t('Collapse')}>
                             {parent.closed ? <IconExpand/> : <IconCollapse/>}
@@ -534,6 +551,7 @@ class App extends GenericApp {
         if (!this.state.ready) {
             return (<Loader theme={this.state.themeType}/>);
         }
+        window.localStorage.setItem("selectedSceneId", this.state.selectedSceneId);
 
         let component = this;
 
