@@ -213,10 +213,6 @@ class App extends GenericApp {
         this.setState(this.state);
     }
 
-    addSceneToFolder = (scene, folder) => {
-        this.addSceneToFolderPrefix(scene, folder.prefix);
-    };
-
     addSceneToFolderPrefix = async (scene, folderPrefix, noRefresh) => {
         let old_id = scene._id;
         let scene_id = scene._id.split(".").pop();
@@ -234,7 +230,7 @@ class App extends GenericApp {
 
     renameFolder = async (folder, newName) => {
         this.setState({selectedSceneId: null, ready: false});
-        for (let k in folder.scenes) {
+        for (const k in folder.scenes) {
             let prefix = folder.prefix.split('.');
             prefix[prefix.length - 1] = newName;
             prefix.join('.');
@@ -244,14 +240,14 @@ class App extends GenericApp {
         this.refreshData();
     };
 
-    deleteFolder(folder) {
+    /*deleteFolder(folder) {
         if (Object.values(folder.scenes).length) {
             return this.showError(I18n.t('Cannot delete non-empty folder'));
         } else {
             //delete folder;
             this.setState(this.state);
         }
-    }
+    }*/
 
     renderTreeScene = (item, level) => {
         const scene = this.state.scenes[item._id];
@@ -409,24 +405,6 @@ class App extends GenericApp {
             });
     };
 
-    getFolderPrefix(sceneId) {
-        let result = sceneId.split('.');
-        result.shift();
-        result.shift();
-        result.pop();
-        result = result.join('.');
-        return result;
-    }
-
-    getFolderList = (folder) => {
-        let result = [];
-        result.push(folder);
-        Object.values(folder.subfolders).forEach(subfolder =>
-            result = result.concat(this.getFolderList(subfolder)));
-
-        return result;
-    };
-
     getNewSceneId = () => {
         let newId = 0;
 
@@ -542,9 +520,6 @@ class App extends GenericApp {
                                         socket={component.socket}
                                         addSceneToFolderPrefix={component.addSceneToFolderPrefix}
                                         folders={this.state.folders}
-                                        getFolder={this.getFolder}
-                                        getFolderList={this.getFolderList}
-                                        getFolderPrefix={this.getFolderPrefix}
                                     />
                                     : ''}
                             </div>

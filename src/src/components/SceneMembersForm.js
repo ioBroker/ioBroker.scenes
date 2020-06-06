@@ -45,7 +45,7 @@ const styles = theme => ({
     },
     memberCard: {
         padding: 4,
-        margin: '10px 0px',
+        margin: this.spacing(1) + 'px 0',
     },
     right: {
         float: 'right',
@@ -54,7 +54,7 @@ const styles = theme => ({
         overflowY: 'auto',
         overflowX: 'hidden',
         height: '100%',
-        paddingRight: 10,
+        paddingRight: this.spacing(1),
         width: '100%',
     },
     height: {
@@ -69,7 +69,7 @@ const styles = theme => ({
     },
     buttonsContainer: {
         '& button': {
-            margin: '0px 10px',
+            margin: '0 ' + this.spacing(1) + 'px',
         },
     }
 });
@@ -198,7 +198,7 @@ class SceneMembersForm extends React.Component {
         /> : null
     };
 
-    renderMember = (member, index, scene, ) => {
+    renderMember = (member, index, scene) => {
         let component = this;
 
         let memberOriginal = this.props.scene.native.members[index];
@@ -262,79 +262,106 @@ class SceneMembersForm extends React.Component {
                                 InputLabelProps={{shrink: true}} label={I18n.t('Description')}
                                 value={member.desc}
                                 onChange={ e => {
-                                    member.desc = e.target.value;
-                                    component.setState({sceneObj: scene});
+                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                    sceneObj.native.members[index].desc = e.target.value;
+                                    component.setState({sceneObj});
                                 } }
                             />
                         </Box>
                         <Box component="p">
                             {this.state.objectTypes[member.id] === 'boolean' ?
                                 <FormControlLabel
-                                    control={<Checkbox checked={member.setIfTrue} onChange={(e) => {
-                                        member.setIfTrue = e.target.checked;
-                                        component.setState({sceneObj: scene});
+                                    control={<Checkbox checked={member.setIfTrue} onChange={e => {
+                                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                        sceneObj.native.members[index].setIfTrue = e.target.checked;
+                                        component.setState({sceneObj});
                                     }}/>}
                                     label={I18n.t('Set if TRUE')}
                                 />
                                 :
                                 <TextField InputLabelProps={{shrink: true}} label={I18n.t('Set if TRUE')}
                                            value={member.setIfTrue}
-                                           onChange={(e) => {
+                                           onChange={e => {
+                                               const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                                if (this.state.objectTypes[member.id] === 'number') {
-                                                   member.setIfTrue = parseFloat(e.target.value);
+                                                   sceneObj.native.members[index].setIfTrue = parseFloat(e.target.value);
                                                } else {
-                                                   member.setIfTrue = e.target.value;
+                                                   sceneObj.native.members[index].setIfTrue = e.target.value;
                                                }
 
-                                               component.setState({sceneObj: scene});
+                                               component.setState({sceneObj});
                                            }}/>
                             }
                         </Box>
                         {scene.native.onFalse.enabled ?
                             <Box component="p">
-                                <TextField
-                                    InputLabelProps={{shrink: true}} label={I18n.t('Set if FALSE')}
-                                    value={member.setIfFalse}
-                                    onChange={(e) => {
-                                        member.setIfFalse = e.target.value;
-                                        component.setState({sceneObj: scene});
-                                    }}
-                                />
+                                {
+                                    this.state.objectTypes[member.id] === 'boolean' ?
+                                        <FormControlLabel
+                                            control={<Checkbox checked={ member.setIfFalse } onChange={e => {
+                                                const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                                sceneObj.native.members[index].setIfFalse = e.target.checked;
+                                                component.setState({sceneObj});
+                                            }}/>}
+                                            label={I18n.t('Set if FALSE')}
+                                        />
+                                        :
+                                        <TextField
+                                            InputLabelProps={{shrink: true}} label={I18n.t('Set if FALSE')}
+                                            value={member.setIfFalse}
+                                            onChange={e => {
+                                                const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                                if (this.state.objectTypes[member.id] === 'number') {
+                                                    sceneObj.native.members[index].setIfFalse = parseFloat(e.target.value);
+                                                } else {
+                                                    sceneObj.native.members[index].setIfFalse = e.target.value;
+                                                }
+                                                component.setState({sceneObj});
+                                            }}
+                                        />
+                                }
                             </Box>
                             : null}
                         <Box component="p">
                             <Grid container spacing="4">
                                 <Grid item xs="4">
-                                    <TextField InputLabelProps={{shrink: true}} label={ I18n.t('Delay (ms)') }
-                                               value={member.delay}
-                                               onChange={(e) => {
-                                                   member.delay = e.target.value;
-                                                   component.setState({sceneObj: scene});
-                                               }}/>
+                                    <TextField
+                                        InputLabelProps={{shrink: true}}
+                                        label={ I18n.t('Delay (ms)') }
+                                        value={member.delay}
+                                        type="number"
+                                        onChange={e => {
+                                            const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                            sceneObj.native.members[index].delay = parseInt(e.target.value, 10);
+                                            component.setState({sceneObj});
+                                       }}/>
                                 </Grid>
-                                <Grid item xs="8">
+                                { member.delay ? <Grid item xs="8">
                                     <FormControlLabel label={I18n.t('Stop already started commands')} control={
-                                        <Checkbox checked={member.stopAllDelays} onChange={(e) => {
-                                            member.stopAllDelays = e.target.checked;
-                                            component.setState({sceneObj: scene});
+                                        <Checkbox checked={member.stopAllDelays} onChange={e => {
+                                            const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                            sceneObj.native.members[index].stopAllDelays = e.target.checked;
+                                            component.setState({sceneObj});
                                         }}/>
                                     }/>
-                                </Grid>
+                                </Grid> : null }
                             </Grid>
                         </Box>
-                        {JSON.stringify(member) !== JSON.stringify(this.props.scene.native.members[index]) ?
+                        { JSON.stringify(member) !== JSON.stringify(this.props.scene.native.members[index]) ?
                             <Box component="p"
                                  className={clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
                                 <Button variant="contained" onClick={() =>
-                                    this.setState({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}>
-                                    {I18n.t('Cancel')}
+                                    this.setState({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}
+                                >
+                                    { I18n.t('Cancel') }
                                 </Button>
                                 <Button variant="contained" color="primary" onClick={() =>
-                                    component.props.updateScene(scene._id, scene)}>
-                                    {I18n.t('Save')}
+                                    component.props.updateScene(scene._id, scene)}
+                                >
+                                    { I18n.t('Save') }
                                 </Button>
                             </Box>
-                            : null}
+                            : null }
                     </div> : null
             }
         </Paper>
@@ -355,7 +382,7 @@ class SceneMembersForm extends React.Component {
                     </IconButton>
                 </span>
             </h2>
-            <div className={this.props.classes.scroll}>
+            <div className={ this.props.classes.scroll }>
                 {
                     scene.native.members.map((member, i) =>
                         this.renderMember(member, i, scene))
