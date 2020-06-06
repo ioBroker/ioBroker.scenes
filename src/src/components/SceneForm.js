@@ -76,7 +76,7 @@ class SceneForm extends React.Component {
     static getFolderList(folder) {
         let result = [];
         result.push(folder);
-        Object.values(folder.subfolders).forEach(subFolder =>
+        Object.values(folder.subFolders).forEach(subFolder =>
             result = result.concat(SceneForm.getFolderList(subFolder)));
 
         return result;
