@@ -320,10 +320,12 @@ class App extends GenericApp {
     renameFolder = async (folder, newName) => {
         this.setState({selectedSceneId: null, ready: false});
         for (const k in folder.scenes) {
-            let prefix = folder.prefix.split('.');
-            prefix[prefix.length - 1] = newName;
-            prefix.join('.');
-            await this.addSceneToFolderPrefix(folder.scenes[k], prefix, true);
+            if (folder.scenes.hasOwnProperty(k)) {
+                let prefix = folder.prefix.split('.');
+                prefix[prefix.length - 1] = newName;
+                prefix.join('.');
+                await this.addSceneToFolderPrefix(folder.scenes[k], prefix, true);
+            }
         }
 
         this.refreshData();
@@ -354,8 +356,8 @@ class App extends GenericApp {
             button
             onClick={ () => component.setState({selectedSceneId: scene._id}) }>
             <ListItemText
-                primary={ scene.common.name }
-                secondary={ scene.common.desc }
+                primary={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }
+                secondary={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}, true) }
                 />
             <ListItemSecondaryAction>
                 <Switch

@@ -177,7 +177,6 @@ class SceneMembersForm extends React.Component {
                     const memberOpened = JSON.parse(JSON.stringify(this.state.memberOpened));
                     memberOpened[scene.native.members.length - 1] = true;
 
-
                     this.setState({objectTypes}, () => {
                         // subscribe on new state
                         this.props.socket.subscribeState(id, this.memberStateChange);
@@ -262,7 +261,7 @@ class SceneMembersForm extends React.Component {
                 </span>
                 { value }
             </h3>
-            <div>{ memberOriginal.desc } { memberOriginal.delay ?
+            <div>{ memberOriginal.desc } { !this.state.memberOpened[index] && memberOriginal.delay ?
                 <span> <IconClock/> {memberOriginal.delay + I18n.t('ms')}</span> : null }</div>
             {
                 this.state.memberOpened[index] ?

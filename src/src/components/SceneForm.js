@@ -22,6 +22,7 @@ import Typography from '@material-ui/core/Typography';
 
 import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import I18n from '@iobroker/adapter-react/i18n';
+import Utils from '@iobroker/adapter-react/Components/Utils';
 
 // icons
 import {MdDelete as IconDelete} from 'react-icons/md';
@@ -270,8 +271,8 @@ class SceneForm extends React.Component {
         let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero}}>
                 <Typography variant="h6" className={this.props.classes.sceneTitle}>
-                    {scene.common.name}
-                    <span className={this.props.classes.sceneSubTitle}>{scene.common.desc}</span>
+                    { Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }
+                    <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}, true) }</span>
                 </Typography>
                 <span>
                     <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={() => {
@@ -290,7 +291,8 @@ class SceneForm extends React.Component {
 
             <Box className={ this.props.classes.scroll }>
                 <Box className={ this.props.classes.editItem }>
-                    <TextField fullWidth InputLabelProps={{shrink: true}} label={I18n.t('Scene name')} value={scene.common.name}
+                    <TextField fullWidth InputLabelProps={{shrink: true}} label={I18n.t('Scene name')}
+                               value={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()})}
                                onChange={e => {
                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                    sceneObj.common.name = e.target.value;
@@ -299,7 +301,7 @@ class SceneForm extends React.Component {
                 </Box>
                 <Box className={ this.props.classes.editItem }>
                     <TextField fullWidth InputLabelProps={{shrink: true}} label={I18n.t('Scene description')}
-                               value={scene.common.desc}
+                               value={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}, true) }
                                onChange={e => {
                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                    sceneObj.common.desc = e.target.value;
