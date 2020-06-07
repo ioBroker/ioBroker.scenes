@@ -125,9 +125,9 @@ class SceneMembersForm extends React.Component {
     memberStateChange = (id, result) => {
         const states = JSON.parse(JSON.stringify(this.state.states));
         states[id] = result ? result.val : null;
-        const objectTypes = JSON.parse(JSON.stringify(objectTypes));
+        const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
 
-        if (!this.state.objectTypes[id] && states[id] !== null && states[id] !== undefined) {
+        if (!objectTypes[id] && states[id] !== null && states[id] !== undefined) {
             objectTypes[id] = typeof states[id];
         }
 
