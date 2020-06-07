@@ -95,9 +95,9 @@ class SceneForm extends React.Component {
             newFolder: SceneForm.getFolderPrefix(sceneObj._id),
             moveDialog: null,
             showDialog: null,
+            sceneState: null,
         };
     }
-
 
     static getFolderPrefix(sceneId) {
         let result = sceneId.split('.');
@@ -116,6 +116,20 @@ class SceneForm extends React.Component {
 
         return result;
     };
+
+    componentDidMount() {
+        this.props.socket.subscribeState(this.state.sceneObj._id, this.stateChange);
+    }
+
+    stateChange = (id, state) => {
+        const sceneState = state ? state.val : null;
+        if (sceneState !== this.state.sceneState) {
+            this.setState({sceneState});
+        }
+    };
+    componentWillUnmount() {
+        this.props.socket.unsubscribeState(this.state.sceneObj._id, this.stateChange);
+    }
 
     dialogs = scene => {
         let component = this;

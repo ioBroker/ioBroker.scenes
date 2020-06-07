@@ -100,9 +100,9 @@ class SceneMembersForm extends React.Component {
     }
 
     readObjects() {
-        if (this.state.sceneObj.native && this.state.sceneObj.members) {
+        if (this.state.sceneObj.native && this.state.sceneObj.native.members) {
             return Promise.all(
-                this.state.sceneObj.members.map(member =>
+                this.state.sceneObj.native.members.map(member =>
                     this.props.socket.getObject(member.id)))
                 .then(results => {
                     const objectTypes = {};
@@ -122,19 +122,24 @@ class SceneMembersForm extends React.Component {
     memberStateChange = (id, result) => {
         const states = JSON.parse(JSON.stringify(this.state.states));
         states[id] = result ? result.val : null;
+        const objectTypes = JSON.parse(JSON.stringify(objectTypes));
 
-        if (this.state.objectTypes[id] === 'boolean') {
+        if (!this.state.objectTypes[id] && states[id] !== null && states[id] !== undefined) {
+            objectTypes[id] = typeof states[id];
+        }
+
+        if (objectTypes[id] === 'boolean') {
             if (states[id] === 'true') {
                 states[id] = true;
             }
             if (states[id] === 'false') {
                 states[id] = false;
             }
-        } else if (this.state.objectTypes[id] === 'number') {
+        } else if (objectTypes[id] === 'number') {
             states[id] = parseFloat(states[id]);
         }
 
-        this.setState({states});
+        this.setState({states, objectTypes});
     };
 
     componentWillUnmount() {
@@ -144,6 +149,11 @@ class SceneMembersForm extends React.Component {
 
     createSceneMember = id => {
         this.setState({showDialog: false}, () => {
+            if (this.state.sceneObj.native.members.find(item => item.id === id)) {
+                // Show alert
+                return;
+            }
+
             // Read type of state
             this.props.socket.getObject(id)
                 .then(obj => {
