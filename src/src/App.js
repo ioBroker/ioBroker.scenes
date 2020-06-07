@@ -66,6 +66,9 @@ const styles = theme => ({
         paddingRight: '10px',
         width: '100%',
     },
+    alignRight: {
+        textAlign: 'right',
+    },
     right: {
         float: 'right',
     },
@@ -106,6 +109,7 @@ class App extends GenericApp {
         themeType: null,
         showSearch: null,
         instances: [],
+        selectedSceneChanged: false,
     };
 
     constructor(props) {
@@ -346,7 +350,13 @@ class App extends GenericApp {
             key={ item._id }
             selected={ this.state.selectedSceneId && this.state.selectedSceneId === scene._id }
             button
-            onClick={ () => component.setState({selectedSceneId: scene._id}) }>
+            onClick={ () => {
+                if (component.state.selectedSceneChanged) {
+                    component.setState({sceneChangeDialog: scene._id});
+                } else {
+                    component.setState({selectedSceneId: scene._id});
+                }
+            }}>
             <ListItemText
                 primary={ scene.common.name }
                 secondary={ scene.common.desc }
@@ -512,6 +522,12 @@ class App extends GenericApp {
         return 'scene' + newId;
     };
 
+    setSelectedSceneChanged = (selectedSceneChanged) => {
+        if (selectedSceneChanged != this.state.selectedSceneChanged) {
+            this.setState({selectedSceneChanged: selectedSceneChanged});
+        }
+    }
+
     dialogs() {
         let component = this;
         return <React.Fragment>
@@ -555,6 +571,24 @@ class App extends GenericApp {
                         { I18n.t('edit') }
                     </Button>
                 </Box>
+            </Dialog>
+            <Dialog
+            open={ !!this.state.sceneChangeDialog }
+            key="sceneChangeDialog"
+            onClose={ () =>
+                this.setState({sceneChangeDialog: false}) }
+            >
+                <DialogTitle>{ I18n.t('Are you sure for cancel unsaved changes?') }</DialogTitle>
+                <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" color="secondary" onClick={e => {
+                        this.setState({
+                            selectedSceneId: this.state.sceneChangeDialog,
+                            sceneChangeDialog: false,
+                        });
+                    }}>
+                        { I18n.t('Yes') }
+                    </Button>
+                </div>
             </Dialog>
         </React.Fragment>;
     };
@@ -613,6 +647,7 @@ class App extends GenericApp {
                                         addSceneToFolderPrefix={component.addSceneToFolderPrefix}
                                         folders={this.state.folders}
                                         instances={ this.state.instances }
+                                        setSelectedSceneChanged={this.setSelectedSceneChanged}
                                     />
                                     : ''}
                             </div>
