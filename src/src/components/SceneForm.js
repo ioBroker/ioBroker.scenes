@@ -95,6 +95,7 @@ class SceneForm extends React.Component {
             newFolder: SceneForm.getFolderPrefix(sceneObj._id),
             moveDialog: null,
             showDialog: null,
+            deleteDialog: null,
             sceneState: null,
         };
     }
@@ -170,6 +171,22 @@ class SceneForm extends React.Component {
                         this.props.addSceneToFolderPrefix(scene, this.state.newFolder);
                     }}>
                         { I18n.t('Move to folder') }
+                    </Button>
+                </div>
+            </Dialog>,
+            <Dialog
+            open={ !!this.state.deleteDialog }
+            key="deleteDialog"
+            onClose={ () =>
+                this.setState({deleteDialog: false}) }
+            >
+                <DialogTitle>{ I18n.t('Are you sure for delete this scene?') }</DialogTitle>
+                <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" color="secondary" onClick={e => {
+                        this.props.deleteScene(scene._id);
+                        this.setState({deleteDialog: false});
+                    }}>
+                        { I18n.t('Delete') }
                     </Button>
                 </div>
             </Dialog>
@@ -282,6 +299,8 @@ class SceneForm extends React.Component {
             return null;
         }
 
+        this.props.setSelectedSceneChanged(JSON.stringify(scene) !== JSON.stringify(this.props.scene));
+
         let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero}}>
                 <Typography variant="h6" className={this.props.classes.sceneTitle}>
@@ -293,9 +312,9 @@ class SceneForm extends React.Component {
                         this.props.cloneScene(scene._id);
                     }}><IconClone/></IconButton>
 
-                    <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => {
-                        this.props.deleteScene(scene._id);
-                    }}><IconDelete/></IconButton>
+                        <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => {
+                            this.setState({deleteDialog: true})
+                        }}><IconDelete/></IconButton>
 
                     <IconButton aria-label="Move to folder" title={I18n.t('Move to folder')} onClick={() => {
                         this.setState({moveDialog: true})

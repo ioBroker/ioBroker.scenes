@@ -12,6 +12,8 @@ import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Paper from '@material-ui/core/Paper';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 // own components
 import I18n from '@iobroker/adapter-react/i18n';
@@ -86,7 +88,8 @@ class SceneMembersForm extends React.Component {
             states: {},
             memberOpened:  {},
             objectTypes: {},
-            sceneObj: JSON.parse(JSON.stringify(this.props.scene))
+            sceneObj: JSON.parse(JSON.stringify(this.props.scene)),
+            deleteDialog: null,
         };
     }
 
@@ -205,7 +208,8 @@ class SceneMembersForm extends React.Component {
     };
 
     dialogs = () => {
-        return this.state.showDialog ? <DialogSelectID
+        return [
+        this.state.showDialog ? <DialogSelectID
             key="selectDialogMembers"
             connection={ this.props.socket }
             dialogName="memberEdit"
@@ -214,13 +218,30 @@ class SceneMembersForm extends React.Component {
             selected={null}
             onOk={id => this.createSceneMember(id)}
             onClose={() => this.setState({showDialog: false})}
-        /> : null
+        /> : null,
+        <Dialog
+        open={ this.state.deleteDialog !== null }
+        key="deleteDialog"
+        onClose={ () =>
+            this.setState({deleteDialog: null}) }
+        >
+            <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
+            <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                <Button variant="contained" color="secondary" onClick={e => {
+                    this.deleteSceneMember(this.state.deleteDialog)
+                    this.setState({deleteDialog: null});
+                }}>
+                    { I18n.t('Delete') }
+                </Button>
+            </div>
+        </Dialog>
+        ]
     };
 
     renderMember = (member, index, scene) => {
         let component = this;
 
-        let memberOriginal = this.state.sceneObj.native.members[index];
+        let memberOriginal = this.props.scene.native.members[index];
 
         let value = null;
         if (this.state.states[member.id] !== undefined && this.state.states[member.id] !== null) {
@@ -257,7 +278,7 @@ class SceneMembersForm extends React.Component {
                         { this.state.memberOpened[index] ? <IconClose/> : <IconEdit/> }
                     </IconButton>
                     <IconButton size="small" style={{ marginLeft: 5 }} aria-label="Delete" title={I18n.t('Delete')}
-                                onClick={ () => this.deleteSceneMember(index) }>
+                                onClick={ () => this.setState({deleteDialog: index}) }>
                         <IconDelete/>
                     </IconButton>
                     <Switch
