@@ -70,7 +70,10 @@ const styles = theme => ({
     editItem: {
         display: 'block',
         marginBottom: theme.spacing(2),
-    }
+    },
+    p: {
+        margin: "1em 0",
+    },
 });
 
 class SceneForm extends React.Component {
@@ -127,13 +130,13 @@ class SceneForm extends React.Component {
                 onClose={ () => this.setState({showDialog: false}) }
             /> : null,
             <Dialog
-                key="moveDialog"
                 open={ !!this.state.moveDialog }
+                key="moveDialog"
                 onClose={ () =>
                     this.setState({moveDialog: null}) }
             >
                 <DialogTitle>{ I18n.t('Move to folder') }</DialogTitle>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <FormControl>
                         <InputLabel shrink={ true }>{ I18n.t('Folder') }</InputLabel>
                         <Select
@@ -264,7 +267,7 @@ class SceneForm extends React.Component {
             return null;
         }
 
-        let result = <div key="sceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
+        let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero}}>
                 <Typography variant="h6" className={this.props.classes.sceneTitle}>
                     {scene.common.name}
@@ -285,16 +288,16 @@ class SceneForm extends React.Component {
                 </span>
             </Toolbar>
 
-            <div className={ this.props.classes.scroll }>
-                <div className={ this.props.classes.editItem }>
+            <Box className={ this.props.classes.scroll }>
+                <Box className={ this.props.classes.editItem }>
                     <TextField fullWidth InputLabelProps={{shrink: true}} label={I18n.t('Scene name')} value={scene.common.name}
                                onChange={e => {
                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                    sceneObj.common.name = e.target.value;
                                    component.setState({sceneObj});
                                }}/>
-                </div>
-                <div className={ this.props.classes.editItem }>
+                </Box>
+                <Box className={ this.props.classes.editItem }>
                     <TextField fullWidth InputLabelProps={{shrink: true}} label={I18n.t('Scene description')}
                                value={scene.common.desc}
                                onChange={e => {
@@ -302,8 +305,8 @@ class SceneForm extends React.Component {
                                    sceneObj.common.desc = e.target.value;
                                    component.setState({sceneObj});
                                }}/>
-                </div>
-                <div className={ this.props.classes.editItem }>
+                </Box>
+                <Box className={ this.props.classes.editItem }>
                     <Grid container spacing={1}>
                         <Grid item xs={6}>
                             <FormControl className={this.props.classes.width100}>
@@ -328,8 +331,8 @@ class SceneForm extends React.Component {
                                        }}/>
                         </Grid>
                     </Grid>
-                </div>
-                <div className={ this.props.classes.editItem }>
+                </Box>
+                <Box className={ this.props.classes.editItem }>
                     <Grid container spacing={1}>
                         <Grid item xs={6}>
                             <FormControlLabel style={{paddingTop: 10}} label={I18n.t('Virtual group')} control={
@@ -355,11 +358,11 @@ class SceneForm extends React.Component {
                                 : null}
                         </Grid>
                     </Grid>
-                </div>
+                </Box>
                 { !scene.native.virtualGroup ? this.renderOnTrueFalse('onTrue') : null }
                 { !scene.native.virtualGroup && scene.native.onFalse.enabled ? this.renderOnTrueFalse('onFalse') : null }
                 { JSON.stringify(scene) !== JSON.stringify(this.props.scene) ?
-                    <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer, this.props.classes.editItem) }>
+                    <Box className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer, this.props.classes.editItem) }>
                         <Button variant="contained" onClick={() =>
                             this.setState({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}>
                             {I18n.t('Cancel')}
@@ -370,10 +373,10 @@ class SceneForm extends React.Component {
                             onClick={() => component.props.updateScene(scene._id, this.state.sceneObj)}>
                             { I18n.t('Save') }
                         </Button>
-                    </div>
+                    </Box>
                     : null }
-            </div>
-        </div>;
+            </Box>
+        </Box>;
 
         return [
             result,

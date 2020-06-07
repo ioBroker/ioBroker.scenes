@@ -70,6 +70,9 @@ const styles = theme => ({
         '& button': {
             margin: '0 ' + theme.spacing(1) + 'px',
         },
+    },
+    p: {
+        margin: "1em 0em",
     }
 });
 
@@ -264,7 +267,7 @@ class SceneMembersForm extends React.Component {
             {
                 this.state.memberOpened[index] ?
                     <div>
-                        <Box component="p">
+                        <Box className={this.props.classes.p}>
                             <TextField
                                 fullWidth
                                 InputLabelProps={{shrink: true}} label={I18n.t('Description')}
@@ -276,7 +279,7 @@ class SceneMembersForm extends React.Component {
                                 } }
                             />
                         </Box>
-                        <Box component="p">
+                        <Box className={this.props.classes.p}>
                             {this.state.objectTypes[member.id] === 'boolean' ?
                                 <FormControlLabel
                                     control={<Checkbox checked={member.setIfTrue} onChange={e => {
@@ -303,7 +306,7 @@ class SceneMembersForm extends React.Component {
                             }
                         </Box>
                         {scene.native.onFalse.enabled ?
-                            <Box component="p">
+                            <Box className={this.props.classes.p}>
                                 {
                                     this.state.objectTypes[member.id] === 'boolean' ?
                                         <FormControlLabel
@@ -332,7 +335,7 @@ class SceneMembersForm extends React.Component {
                                 }
                             </Box>
                             : null}
-                        <Box component="p">
+                        <Box className={this.props.classes.p}>
                             <Grid container spacing={4}>
                                 <Grid item xs={4}>
                                     <TextField
@@ -359,7 +362,7 @@ class SceneMembersForm extends React.Component {
                             </Grid>
                         </Box>
                         { JSON.stringify(member) !== JSON.stringify(this.props.scene.native.members[index]) ?
-                            <Box component="p"
+                            <Box className={this.props.classes.p}
                                  className={clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
                                 <Button variant="contained" onClick={() =>
                                     this.setState({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}
@@ -384,7 +387,7 @@ class SceneMembersForm extends React.Component {
             return null;
         }
         let component = this;
-        let result = <div key="paper" className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
+        let result = <div key="SceneMembersForm" className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
             <h2>
                 {I18n.t('States')}
                 <span className={this.props.classes.right}>

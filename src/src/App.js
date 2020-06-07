@@ -2,7 +2,8 @@
 import React from 'react';
 import {withStyles} from '@material-ui/core/styles';
 import clsx from 'clsx';
- 
+import { withTheme } from '@material-ui/core/styles';
+
 // MaterialUi
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
@@ -84,6 +85,9 @@ const styles = theme => ({
     leftMenuItem: {
         display: 'block',
         borderRadius: 10,
+    },
+    p: {
+        margin: '1em 0',
     },
 });
 
@@ -344,7 +348,7 @@ class App extends GenericApp {
         }
 
         return <ListItem
-            style={ {paddingLeft: level * LEVEL_PADDING} }
+            style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
             key={ item._id }
             selected={ this.state.selectedSceneId && this.state.selectedSceneId === scene._id }
             button
@@ -370,9 +374,9 @@ class App extends GenericApp {
 
         // Show folder item
         parent && parent.id && result.push(<ListItem
-            key={ parent.id }
+            key={ parent.prefix }
             className={ this.props.classes.width100 }
-            style={ {paddingLeft: level * LEVEL_PADDING} }
+            style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
         >
             { parent.id }
             {
@@ -406,12 +410,12 @@ class App extends GenericApp {
 
         if (parent && !parent.closed) {
             result.push(<ListItem
-                key={ 'items_' + parent.id }
+                key={ 'items_' + parent.prefix }
                 className={ this.props.classes.width100 }>
                     <List
                         className={ this.props.classes.list }
                         classes={ {root: this.props.classes.leftMenuItem }}
-                        style={ {paddingLeft: level * LEVEL_PADDING} }
+                        style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
                     >
                         { Object.values(parent.scenes).map(scene => this.renderTreeScene(scene, level)) }
                     </List>
@@ -522,12 +526,12 @@ class App extends GenericApp {
                 this.setState({addFolderDialog: null})
             }}>
                 <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <TextField label={I18n.t('Title')} value={this.state.addFolderDialogTitle} onChange={(e) => {
                         this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
                     }}/>
                 </Box>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <Button variant="contained" onClick={() => {
                         component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle);
                         this.setState({addFolderDialog: null});
@@ -540,12 +544,12 @@ class App extends GenericApp {
                 this.setState({editFolderDialog: null})
             }}>
                 <DialogTitle>{I18n.t('Edit folder')}</DialogTitle>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <TextField label={I18n.t('Title')} value={this.state.editFolderDialogTitle} onChange={(e) => {
                         this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
                     }}/>
                 </Box>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <Button
                         variant="contained"
                         onClick={() => {
@@ -564,7 +568,7 @@ class App extends GenericApp {
 
     render() {
         if (!this.state.ready) {
-            return (<Loader theme={this.state.themeType}/>);
+            return (<Loader theme={ this.state.themeType }/>);
         }
         window.localStorage.setItem("selectedSceneId", this.state.selectedSceneId);
 
@@ -642,4 +646,4 @@ class App extends GenericApp {
     }
 }
 
-export default withStyles(styles)(App);
+export default withStyles(styles)(withTheme(App));
