@@ -132,6 +132,12 @@ class SceneForm extends React.Component {
         this.props.socket.unsubscribeState(this.state.sceneObj._id, this.stateChange);
     }
 
+    setStateWithParent = (newState) => {
+        this.setState(newState, () => {
+            this.props.setSelectedSceneChanged(this.state.sceneObj._id, this.state.sceneObj)
+        });
+    }
+
     dialogs = scene => {
         let component = this;
         return [
@@ -150,7 +156,7 @@ class SceneForm extends React.Component {
                 key="moveDialog"
                 onClose={ () =>
                     this.setState({moveDialog: null}) }
-            >
+                >
                 <DialogTitle>{ I18n.t('Move to folder') }</DialogTitle>
                 <Box className={this.props.classes.p}>
                     <FormControl>
@@ -166,6 +172,11 @@ class SceneForm extends React.Component {
                     </FormControl>
                 </Box>
                 <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" onClick={() => {
+                        this.setState({moveDialog: null});
+                    }}>
+                        {I18n.t('Cancel')}
+                    </Button>
                     <Button variant="contained" color="primary" onClick={e => {
                         this.setState({moveDialog: null});
                         this.props.addSceneToFolderPrefix(scene, this.state.newFolder);
@@ -182,6 +193,11 @@ class SceneForm extends React.Component {
             >
                 <DialogTitle>{ I18n.t('Are you sure for delete this scene?') }</DialogTitle>
                 <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" onClick={() => {
+                            this.setState({deleteDialog: false});
+                        }}>
+                            {I18n.t('Cancel')}
+                    </Button>
                     <Button variant="contained" color="secondary" onClick={e => {
                         this.props.deleteScene(scene._id);
                         this.setState({deleteDialog: false});
@@ -207,13 +223,13 @@ class SceneForm extends React.Component {
                                             showDialog: id => {
                                                 const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                                 sceneObj.native[name].trigger.id = id;
-                                                this.setState({sceneObj});
+                                                this.setStateWithParent({sceneObj});
                                             }
                                         });
                                     } else {
                                         const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                         sceneObj.native[name].trigger.id = '';
-                                        this.setState({sceneObj});
+                                        this.setStateWithParent({sceneObj});
                                     }
                                 }}
                         />
@@ -234,7 +250,8 @@ class SceneForm extends React.Component {
                                         showDialog: id => {
                                             const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                             sceneObj.native[name].trigger.id = id;
-                                            this.setState({sceneObj});
+                                            this.props.setSelectedSceneChanged(sceneObj._id, sceneObj);
+                                            this.setStateWithParent({sceneObj});
                                         }
                                     });
                                 }}
@@ -248,7 +265,7 @@ class SceneForm extends React.Component {
                                         onChange={e => {
                                             const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                             sceneObj.native[name].trigger.condition = e.target.value;
-                                            this.setState({sceneObj});
+                                            this.setStateWithParent({sceneObj});
                                         }}
                                 >
                                     <MenuItem value="==">==</MenuItem>
@@ -269,7 +286,7 @@ class SceneForm extends React.Component {
                                 onChange={ e => {
                                     const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                     sceneObj.native[name].trigger.value = e.target.value;
-                                    this.setState({sceneObj});
+                                    this.setStateWithParent({sceneObj});
                                 }}
                             />
                         </Grid>
@@ -283,9 +300,9 @@ class SceneForm extends React.Component {
                     label={ name === 'onTrue' ? I18n.t('On time (CRON expression)') : I18n.t('Off time (CRON expression)')}
                     value={ on.cron || '' }
                     onChange={e => {
-                               const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                               sceneObj.native[name].cron = e.target.value;
-                               this.setState({sceneObj});
+                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                        sceneObj.native[name].cron = e.target.value;
+                        this.setStateWithParent({sceneObj});
                     }}
                 />
             </div>
@@ -298,8 +315,6 @@ class SceneForm extends React.Component {
         if (!scene) {
             return null;
         }
-
-        this.props.setSelectedSceneChanged(JSON.stringify(scene) !== JSON.stringify(this.props.scene));
 
         let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero}}>
@@ -329,7 +344,7 @@ class SceneForm extends React.Component {
                                onChange={e => {
                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                    sceneObj.common.name = e.target.value;
-                                   component.setState({sceneObj});
+                                   component.setStateWithParent({sceneObj});
                                }}/>
                 </Box>
                 <Box className={ this.props.classes.editItem }>
@@ -338,7 +353,7 @@ class SceneForm extends React.Component {
                                onChange={e => {
                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                    sceneObj.common.desc = e.target.value;
-                                   component.setState({sceneObj});
+                                   component.setStateWithParent({sceneObj});
                                }}/>
                 </Box>
                 <Box className={ this.props.classes.editItem }>
@@ -362,7 +377,7 @@ class SceneForm extends React.Component {
                                        onChange={e => {
                                            const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                            sceneObj.native.burstIntervall = e.target.value;
-                                           component.setState({sceneObj});
+                                           component.setStateWithParent({sceneObj});
                                        }}/>
                         </Grid>
                     </Grid>
@@ -375,7 +390,7 @@ class SceneForm extends React.Component {
                                           onChange={e => {
                                               const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                               sceneObj.native.virtualGroup = e.target.checked;
-                                              component.setState({sceneObj});
+                                              component.setStateWithParent({sceneObj});
                                           }}/>
                             }/>
                         </Grid>
@@ -387,7 +402,7 @@ class SceneForm extends React.Component {
                                                                 onChange={e => {
                                                                     const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                                                     sceneObj.native.onFalse.enabled = e.target.checked;
-                                                                    component.setState({sceneObj});
+                                                                    component.setStateWithParent({sceneObj});
                                                                 }}/>}
                                 />
                                 : null}
@@ -399,7 +414,7 @@ class SceneForm extends React.Component {
                 { JSON.stringify(scene) !== JSON.stringify(this.props.scene) ?
                     <Box className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer, this.props.classes.editItem) }>
                         <Button variant="contained" onClick={() =>
-                            this.setState({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}>
+                            this.setStateWithParent({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}>
                             {I18n.t('Cancel')}
                         </Button>
                         <Button

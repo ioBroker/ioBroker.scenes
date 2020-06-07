@@ -67,6 +67,11 @@ const styles = theme => ({
         paddingRight: '10px',
         width: '100%',
     },
+    buttonsContainer: {
+        '& button': {
+            margin: '0 ' + theme.spacing(1) + 'px',
+        },
+    },
     alignRight: {
         textAlign: 'right',
     },    list: {
@@ -530,7 +535,8 @@ class App extends GenericApp {
         return 'scene' + newId;
     };
 
-    setSelectedSceneChanged = (selectedSceneChanged) => {
+    setSelectedSceneChanged = (sceneId, newSceneData) => {
+        let selectedSceneChanged = JSON.stringify(this.state.scenes[sceneId]) !== JSON.stringify(newSceneData);
         if (selectedSceneChanged !== this.state.selectedSceneChanged) {
             this.setState({selectedSceneChanged});
         }
@@ -548,7 +554,12 @@ class App extends GenericApp {
                         this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
                     }}/>
                 </Box>
-                <Box className={this.props.classes.p}>
+                <Box className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" onClick={() => {
+                        this.setState({addFolderDialog: null});
+                    }}>
+                        {I18n.t('Cancel')}
+                    </Button>
                     <Button variant="contained" onClick={() => {
                         component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle);
                         this.setState({addFolderDialog: null});
@@ -566,7 +577,12 @@ class App extends GenericApp {
                         this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
                     }}/>
                 </Box>
-                <Box className={this.props.classes.p}>
+                <Box className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" onClick={() => {
+                        this.setState({editFolderDialog: null});
+                    }}>
+                        {I18n.t('Cancel')}
+                    </Button>
                     <Button
                         variant="contained"
                         onClick={() => {
@@ -588,6 +604,11 @@ class App extends GenericApp {
             >
                 <DialogTitle>{ I18n.t('Are you sure for cancel unsaved changes?') }</DialogTitle>
                 <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" onClick={() => {
+                        this.setState({sceneChangeDialog: false});
+                    }}>
+                        {I18n.t('Cancel')}
+                    </Button>
                     <Button variant="contained" color="secondary" onClick={e => {
                         this.setState({
                             selectedSceneId: this.state.sceneChangeDialog,
@@ -669,6 +690,7 @@ class App extends GenericApp {
                                             updateScene={this.updateScene}
                                             scene={this.state.scenes[component.state.selectedSceneId]}
                                             socket={component.socket}
+                                            setSelectedSceneChanged={this.setSelectedSceneChanged}
                                         />
                                     </div>
                                     : ''}

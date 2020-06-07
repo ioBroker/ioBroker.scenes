@@ -207,6 +207,12 @@ class SceneMembersForm extends React.Component {
         this.props.socket.unsubscribeState(id, this.memberStateChange);
     };
 
+    setStateWithParent = (newState) => {
+        this.setState(newState, () => {
+            this.props.setSelectedSceneChanged(this.state.sceneObj._id, this.state.sceneObj)
+        });
+    }
+
     dialogs = () => {
         return [
         this.state.showDialog ? <DialogSelectID
@@ -227,6 +233,11 @@ class SceneMembersForm extends React.Component {
         >
             <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
             <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                <Button variant="contained" onClick={() => {
+                        this.setState({deleteDialog: null});
+                    }}>
+                        {I18n.t('Cancel')}
+                </Button>
                 <Button variant="contained" color="secondary" onClick={e => {
                     this.deleteSceneMember(this.state.deleteDialog)
                     this.setState({deleteDialog: null});
@@ -305,7 +316,7 @@ class SceneMembersForm extends React.Component {
                                 onChange={ e => {
                                     const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                     sceneObj.native.members[index].desc = e.target.value;
-                                    component.setState({sceneObj});
+                                    component.setStateWithParent({sceneObj});
                                 } }
                             />
                         </Box>
@@ -315,7 +326,7 @@ class SceneMembersForm extends React.Component {
                                     control={<Checkbox checked={member.setIfTrue} onChange={e => {
                                         const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                         sceneObj.native.members[index].setIfTrue = e.target.checked;
-                                        component.setState({sceneObj});
+                                        component.setStateWithParent({sceneObj});
                                     }}/>}
                                     label={I18n.t('Set if TRUE')}
                                 />
@@ -331,7 +342,7 @@ class SceneMembersForm extends React.Component {
                                                    sceneObj.native.members[index].setIfTrue = e.target.value;
                                                }
 
-                                               component.setState({sceneObj});
+                                               component.setStateWithParent({sceneObj});
                                            }}/>
                             }
                         </Box>
@@ -343,7 +354,7 @@ class SceneMembersForm extends React.Component {
                                             control={<Checkbox checked={ member.setIfFalse } onChange={e => {
                                                 const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                                 sceneObj.native.members[index].setIfFalse = e.target.checked;
-                                                component.setState({sceneObj});
+                                                component.setStateWithParent({sceneObj});
                                             }}/>}
                                             label={I18n.t('Set if FALSE')}
                                         />
@@ -359,7 +370,7 @@ class SceneMembersForm extends React.Component {
                                                 } else {
                                                     sceneObj.native.members[index].setIfFalse = e.target.value;
                                                 }
-                                                component.setState({sceneObj});
+                                                component.setStateWithParent({sceneObj});
                                             }}
                                         />
                                 }
@@ -377,7 +388,7 @@ class SceneMembersForm extends React.Component {
                                         onChange={e => {
                                             const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                             sceneObj.native.members[index].delay = parseInt(e.target.value, 10);
-                                            component.setState({sceneObj});
+                                            component.setStateWithParent({sceneObj});
                                        }}/>
                                 </Grid>
                                 { member.delay ? <Grid item xs={8}>
@@ -385,7 +396,7 @@ class SceneMembersForm extends React.Component {
                                         <Checkbox checked={member.stopAllDelays} onChange={e => {
                                             const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                             sceneObj.native.members[index].stopAllDelays = e.target.checked;
-                                            component.setState({sceneObj});
+                                            component.setStateWithParent({sceneObj});
                                         }}/>
                                     }/>
                                 </Grid> : null }
@@ -395,7 +406,7 @@ class SceneMembersForm extends React.Component {
                             <Box className={this.props.classes.p}
                                  className={clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
                                 <Button variant="contained" onClick={() =>
-                                    this.setState({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}
+                                    this.setStateWithParent({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}
                                 >
                                     { I18n.t('Cancel') }
                                 </Button>
