@@ -76,6 +76,9 @@ const styles = theme => ({
         paddingBottom: '10px',
         minHeight: 'calc(100% - 40px)',
         marginBottom: '10px',
+    },
+    p: {
+        margin: "1em 0em",
     }
 });
 
@@ -340,7 +343,7 @@ class App extends GenericApp {
 
         return <ListItem
             style={ {paddingLeft: level * LEVEL_PADDING} }
-            key={ item.id }
+            key={ item._id }
             selected={ this.state.selectedSceneId && this.state.selectedSceneId === scene._id }
             button
             onClick={ () => component.setState({selectedSceneId: scene._id}) }>
@@ -365,7 +368,7 @@ class App extends GenericApp {
 
         // Show folder item
         parent && parent.id && result.push(<ListItem
-            key={ parent.id }
+            key={ parent.prefix }
             className={ this.props.classes.width100 }
             style={ {paddingLeft: level * LEVEL_PADDING} }
         >
@@ -401,7 +404,7 @@ class App extends GenericApp {
 
         if (parent && !parent.closed) {
             result.push(<ListItem
-                key={ 'items_' + parent.id }
+                key={ 'items_' + parent.prefix }
                 className={ this.props.classes.width100 }>
                     <List
                         className={ clsx(this.props.classes.width100, 'leftMenuItem') }
@@ -512,16 +515,16 @@ class App extends GenericApp {
     dialogs() {
         let component = this;
         return <React.Fragment>
-            <Dialog open={this.state.addFolderDialog} onClose={() => {
+            <Dialog open={!!this.state.addFolderDialog} onClose={() => {
                 this.setState({addFolderDialog: null})
             }}>
                 <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <TextField label={I18n.t('Title')} value={this.state.addFolderDialogTitle} onChange={(e) => {
                         this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
                     }}/>
                 </Box>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <Button variant="contained" onClick={() => {
                         component.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle);
                         this.setState({addFolderDialog: null});
@@ -530,16 +533,16 @@ class App extends GenericApp {
                     </Button>
                 </Box>
             </Dialog>
-            <Dialog open={this.state.editFolderDialog} onClose={() => {
+            <Dialog open={!!this.state.editFolderDialog} onClose={() => {
                 this.setState({editFolderDialog: null})
             }}>
                 <DialogTitle>{I18n.t('Edit folder')}</DialogTitle>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <TextField label={I18n.t('Title')} value={this.state.editFolderDialogTitle} onChange={(e) => {
                         this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
                     }}/>
                 </Box>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <Button
                         variant="contained"
                         onClick={() => {

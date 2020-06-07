@@ -52,6 +52,9 @@ const styles = theme => ({
         paddingRight: theme.spacing(1),
         width: '100%',
     },
+    p: {
+        margin: "1em 0em",
+    }
 
 });
 
@@ -107,19 +110,20 @@ class SceneForm extends React.Component {
                 onClose={ () => this.setState({showDialog: false}) }
             /> : null,
             <Dialog
-                open={ this.state.moveDialog }
+                open={ !!this.state.moveDialog }
+                key="moveDialog"
                 onClose={ () =>
                     this.setState({moveDialog: null}) }
             >
                 <DialogTitle>{ I18n.t('Move to folder') }</DialogTitle>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <FormControl>
                         <InputLabel shrink={ true }>{ I18n.t('Folder') }</InputLabel>
                         <Select
                             value={ this.state.newFolder }
                             onChange={e => component.setState({newFolder: e.target.value}) }>
                             {
-                                SceneForm.getFolderList(this.props.folders).map(folder => <MenuItem
+                                SceneForm.getFolderList(this.props.folders).map(folder => <MenuItem key={folder.prefix}
                                         value={ folder.prefix }>{ folder.prefix ? folder.prefix.replace('.', ' > ') : I18n.t('Root') }</MenuItem>)
                             }
                         </Select>
@@ -144,7 +148,7 @@ class SceneForm extends React.Component {
             return null;
         }
 
-        let result = <div className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
+        let result = <div key="SceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
             <div>
                 <h2>
                     {scene.common.name}
@@ -166,7 +170,7 @@ class SceneForm extends React.Component {
                 <div>{scene.common.desc}</div>
             </div>
             <div className={ this.props.classes.scroll }>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <TextField InputLabelProps={{shrink: true}} label={I18n.t('Scene name')} value={scene.common.name}
                                onChange={e => {
                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
@@ -174,7 +178,7 @@ class SceneForm extends React.Component {
                                    component.setState({sceneObj});
                                }}/>
                 </Box>
-                <Box component="p">
+                <Box className={this.props.classes.p}>
                     <TextField InputLabelProps={{shrink: true}} label={I18n.t('Scene description')}
                                value={scene.common.desc}
                                onChange={e => {
@@ -183,9 +187,9 @@ class SceneForm extends React.Component {
                                    component.setState({sceneObj});
                                }}/>
                 </Box>
-                <Box component="p">
-                    <Grid container spacing="1">
-                        <Grid item xs="6">
+                <Box className={this.props.classes.p}>
+                    <Grid container spacing={1}>
+                        <Grid item xs={6}>
                             <FormControl>
                                 <InputLabel shrink={true}>{ I18n.t('Instance') }</InputLabel>
                                 <Select value={ scene.common.engine } onChange={e => {
@@ -193,11 +197,11 @@ class SceneForm extends React.Component {
                                     sceneObj.common.engine = e.target.value;
                                     component.setState({sceneObj});
                                 }}>
-                                    { this.props.instances.map(id => <MenuItem value={id}>{ id.replace('system.adapter.', '') }</MenuItem>) }
+                                    { this.props.instances.map(id => <MenuItem key={id} value={id}>{ id.replace('system.adapter.', '') }</MenuItem>) }
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs="6">
+                        <Grid item xs={6}>
                             <TextField InputLabelProps={{shrink: true}} label={ I18n.t('Interval between commands (ms)') }
                                        value={ scene.native.burstIntervall }
                                        type="number"
@@ -209,9 +213,9 @@ class SceneForm extends React.Component {
                         </Grid>
                     </Grid>
                 </Box>
-                <Box component="p">
-                    <Grid container spacing="1">
-                        <Grid item xs="6">
+                <Box className={this.props.classes.p}>
+                    <Grid container spacing={1}>
+                        <Grid item xs={6}>
                             <FormControlLabel style={{paddingTop: 10}} label={I18n.t('Virtual group')} control={
                                 <Checkbox checked={scene.native.virtualGroup}
                                           onChange={e => {
@@ -221,7 +225,7 @@ class SceneForm extends React.Component {
                                           }}/>
                             }/>
                         </Grid>
-                        <Grid item xs="6">
+                        <Grid item xs={6}>
                             { !scene.native.virtualGroup ?
                                 <FormControlLabel style={{paddingTop: 10}} label={I18n.t('Set value if false')}
                                                   control={
@@ -238,7 +242,7 @@ class SceneForm extends React.Component {
                 </Box>
                 { !scene.native.virtualGroup ?
                     (scene.native.onFalse.enabled ? [scene.native.onTrue, scene.native.onFalse] : [scene.native.onTrue]).map((on, i) => {
-                        return <div>
+                        return <div key={i}>
                             <h4>{ on === scene.native.onTrue ? I18n.t('Trigger for TRUE') : I18n.t('Trigger for FALSE') }
                                 <span className={ this.props.classes.right }>
                                         <Switch checked={ !!on.trigger.id }
@@ -264,8 +268,8 @@ class SceneForm extends React.Component {
                             </h4>
                             <div>
                                 {on.trigger.id ?
-                                    <Grid container spacing="1">
-                                        <Grid item xs="8">
+                                    <Grid container spacing={1}>
+                                        <Grid item xs={8}>
                                             <TextField 
                                                 InputLabelProps={{shrink: true}} 
                                                 label={ I18n.t('Trigger ID') }
@@ -281,7 +285,7 @@ class SceneForm extends React.Component {
                                             }}/>
                                         </Grid>
                                         
-                                        <Grid item xs="2">
+                                        <Grid item xs={2}>
                                             <FormControl>
                                                 <InputLabel shrink={true}>{I18n.t('Condition')}</InputLabel>
                                                 <Select value={on.trigger.condition}
@@ -301,7 +305,7 @@ class SceneForm extends React.Component {
                                                 </Select>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs="2">
+                                        <Grid item xs={2}>
                                             <TextField InputLabelProps={{shrink: true}} label={ I18n.t('Value') }
                                                        value={ on.trigger.value }
                                                        onChange={ e => {
@@ -314,7 +318,7 @@ class SceneForm extends React.Component {
                                     </Grid>
                                     : null}
                             </div>
-                            <Box component="p">
+                            <Box className={this.props.classes.p}>
                                 <TextField InputLabelProps={{shrink: true}} label={I18n.t('On time (CRON expression)')}
                                            value={on.cron || ''}
                                            onChange={e => {
