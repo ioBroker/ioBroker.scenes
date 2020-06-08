@@ -60,6 +60,7 @@ const styles = theme => ({
     },
     sceneTitle: {
         flexGrow: 1,
+        paddingLeft: theme.spacing(1),
     },
     sceneSubTitle: {
         fontSize: 'small',
@@ -73,7 +74,13 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
     },
     p: {
-        margin: "1em 0",
+        margin: theme.spacing(1) + 'px 0',
+    },
+    onTrue: {
+        background: 'lightgreen',
+    },
+    onFalse: {
+        background: '#ff9999',
     },
 });
 
@@ -96,7 +103,6 @@ class SceneForm extends React.Component {
             moveDialog: null,
             showDialog: null,
             deleteDialog: null,
-            sceneState: null,
         };
     }
 
@@ -118,25 +124,11 @@ class SceneForm extends React.Component {
         return result;
     };
 
-    componentDidMount() {
-        this.props.socket.subscribeState(this.state.sceneObj._id, this.stateChange);
-    }
-
-    stateChange = (id, state) => {
-        const sceneState = state ? state.val : null;
-        if (sceneState !== this.state.sceneState) {
-            this.setState({sceneState});
-        }
-    };
-    componentWillUnmount() {
-        this.props.socket.unsubscribeState(this.state.sceneObj._id, this.stateChange);
-    }
-
     setStateWithParent = (newState) => {
         this.setState(newState, () => {
             this.props.setSelectedSceneChanged(this.state.sceneObj._id, this.state.sceneObj)
         });
-    }
+    };
 
     dialogs = scene => {
         let component = this;
@@ -317,9 +309,11 @@ class SceneForm extends React.Component {
         }
 
         let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
-            <Toolbar classes={{ gutters: this.props.classes.guttersZero}}>
-                <Typography variant="h6" className={this.props.classes.sceneTitle}>
-                    { Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }
+            <Toolbar
+                classes={{ gutters: this.props.classes.guttersZero}}
+            >
+                <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle)}>
+                    { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
                     <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}, true) }</span>
                 </Typography>
                 <span>
@@ -327,9 +321,9 @@ class SceneForm extends React.Component {
                         this.props.cloneScene(scene._id);
                     }}><IconClone/></IconButton>
 
-                        <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => {
-                            this.setState({deleteDialog: true})
-                        }}><IconDelete/></IconButton>
+                    <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => {
+                        this.setState({deleteDialog: true})
+                    }}><IconDelete/></IconButton>
 
                     <IconButton aria-label="Move to folder" title={I18n.t('Move to folder')} onClick={() => {
                         this.setState({moveDialog: true})
@@ -340,7 +334,7 @@ class SceneForm extends React.Component {
             <Box className={ this.props.classes.scroll }>
                 <Box className={ this.props.classes.editItem }>
                     <TextField fullWidth InputLabelProps={{shrink: true}} label={I18n.t('Scene name')}
-                               value={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()})}
+                               value={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }
                                onChange={e => {
                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                    sceneObj.common.name = e.target.value;
@@ -361,24 +355,31 @@ class SceneForm extends React.Component {
                         <Grid item xs={6}>
                             <FormControl className={this.props.classes.width100}>
                                 <InputLabel shrink={true}>{ I18n.t('Instance') }</InputLabel>
-                                <Select value={ scene.common.engine } onChange={e => {
-                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                    sceneObj.common.engine = e.target.value;
-                                    component.setState({sceneObj});
-                                }}>
+                                <Select
+                                    value={ scene.common.engine }
+                                    onChange={e => {
+                                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                        sceneObj.common.engine = e.target.value;
+                                        component.setState({sceneObj});
+                                    }}
+                                >
                                     { this.props.instances.map(id => <MenuItem key={ id } value={ id }>{ id.replace('system.adapter.', '') }</MenuItem>) }
                                 </Select>
                             </FormControl>
                         </Grid>
                         <Grid item xs={6}>
-                            <TextField fullWidth InputLabelProps={{shrink: true}} label={ I18n.t('Interval between commands (ms)') }
-                                       value={ scene.native.burstIntervall }
-                                       type="number"
-                                       onChange={e => {
-                                           const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                           sceneObj.native.burstIntervall = e.target.value;
-                                           component.setStateWithParent({sceneObj});
-                                       }}/>
+                            <TextField
+                                fullWidth
+                                InputLabelProps={{shrink: true}}
+                                label={ I18n.t('Interval between commands (ms)') }
+                                value={ scene.native.burstIntervall }
+                                type="number"
+                                onChange={e => {
+                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                    sceneObj.native.burstIntervall = e.target.value;
+                                    component.setStateWithParent({sceneObj});
+                                }}
+                            />
                         </Grid>
                     </Grid>
                 </Box>
@@ -396,14 +397,17 @@ class SceneForm extends React.Component {
                         </Grid>
                         <Grid item xs={6}>
                             { !scene.native.virtualGroup ?
-                                <FormControlLabel style={{paddingTop: 10}} label={I18n.t('Set value if false')}
-                                                  control={
-                                                      <Checkbox checked={scene.native.onFalse.enabled}
-                                                                onChange={e => {
-                                                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                                                    sceneObj.native.onFalse.enabled = e.target.checked;
-                                                                    component.setStateWithParent({sceneObj});
-                                                                }}/>}
+                                <FormControlLabel
+                                    style={{paddingTop: 10}}
+                                    label={I18n.t('Set value if false')}
+                                    control={
+                                          <Checkbox
+                                              checked={ scene.native.onFalse.enabled }
+                                                    onChange={e => {
+                                                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                                        sceneObj.native.onFalse.enabled = e.target.checked;
+                                                        component.setStateWithParent({sceneObj});
+                                                    }}/>}
                                 />
                                 : null}
                         </Grid>
@@ -443,6 +447,7 @@ SceneForm.propTypes = {
     cloneScene: PropTypes.func.isRequired,
     deleteScene: PropTypes.func.isRequired,
     addSceneToFolderPrefix: PropTypes.func.isRequired,
+    setSelectedSceneChanged: PropTypes.func,
     folders: PropTypes.object,
     instances: PropTypes.array,
 };

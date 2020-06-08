@@ -524,11 +524,9 @@ class App extends GenericApp {
 
         for (const id in this.state.scenes) {
             let shortId = id.split('.').pop();
-            let matches;
-            if (matches = shortId.match(/^scene([0-9]+)$/)) {
-                if (matches[1] >= parseInt(newId, 10)) {
-                    newId = parseInt(matches[1]) + 1;
-                }
+            let matches = shortId.match(/^scene([0-9]+)$/);
+            if (matches && parseInt(matches[1], 10) >= newId) {
+                newId = parseInt(matches[1]) + 1;
             }
         }
 
