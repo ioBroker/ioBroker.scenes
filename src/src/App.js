@@ -613,7 +613,7 @@ class App extends GenericApp {
                             sceneChangeDialog: false,
                         });
                     }}>
-                        { I18n.t('Yes') }
+                        { I18n.t('Discard') }
                     </Button>
                 </div>
             </Dialog>

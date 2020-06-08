@@ -334,6 +334,32 @@ class SceneMembersForm extends React.Component {
             }
         }
 
+        let setIfTrue = scene.native.members[index].setIfTrue;
+        if (setIfTrue === undefined || setIfTrue === null) {
+            setIfTrue = '';
+        } else {
+            if (setIfTrue === true) {
+                setIfTrue = 'TRUE';
+            } else if (setIfTrue === false) {
+                setIfTrue = 'FALSE';
+            } else {
+                setIfTrue = setIfTrue.toString();
+            }
+        }
+
+        let setIfFalse = scene.native.members[index].setIfFalse;
+        if (setIfFalse === undefined || setIfFalse === null) {
+            setIfFalse = '';
+        } else {
+            if (setIfFalse === true) {
+                setIfFalse = 'TRUE';
+            } else if (setIfFalse === false) {
+                setIfFalse = 'FALSE';
+            } else {
+                setIfFalse = setIfFalse.toString();
+            }
+        }
+
         return <Paper key={ member.id } className={ this.props.classes.memberCard }>
             <h3>
                 { member.id }
@@ -420,7 +446,7 @@ class SceneMembersForm extends React.Component {
                                         <TextField
                                             fullWidth
                                             InputLabelProps={{shrink: true}} label={I18n.t('Set if FALSE')}
-                                            value={member.setIfFalse}
+                                            value={ member.setIfFalse || ''}
                                             onChange={e => {
                                                 const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
                                                 if (this.state.objectTypes[member.id] === 'number') {
@@ -441,7 +467,7 @@ class SceneMembersForm extends React.Component {
                                         fullWidth
                                         InputLabelProps={{shrink: true}}
                                         label={I18n.t('Delay (ms)')}
-                                        value={member.delay}
+                                        value={ member.delay || 0}
                                         type="number"
                                         onChange={e => {
                                             const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
@@ -477,9 +503,9 @@ class SceneMembersForm extends React.Component {
                             : null}
                     </div> :
                     <div className={ this.props.classes.smallOnTrueFalse}>
-                        { I18n.t('Set if TRUE') + ': ' } <span className={ this.props.classes.stateValueTrue }>{ scene.native.members[index].setIfTrue }</span>
+                        { I18n.t('Set if TRUE') + ': ' } <span className={ this.props.classes.stateValueTrue }>{ setIfTrue }</span>
                         { this.state.sceneObj.native.onFalse.enabled ? ' / ' + I18n.t('Set if FALSE') + ': '  : null}
-                        { this.state.sceneObj.native.onFalse.enabled ? <span className={ this.props.classes.stateValueFalse }>{ scene.native.members[index].setIfFalse }</span> : null}
+                        { this.state.sceneObj.native.onFalse.enabled ? <span className={ this.props.classes.stateValueFalse }>{ setIfFalse }</span> : null}
                     </div>
             }
         </Paper>
