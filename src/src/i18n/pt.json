@@ -44,8 +44,10 @@
   "Actual state value": "Valor atual do estado",
   "ms": "em",
   "Set if TRUE": "Defina se TRUE",
-  "Set if FALSE": "Defina se FALSE",
+  "Set if FALSE": "se FALSE",
   "Are you sure for delete this state?": "Tem certeza de que deseja excluir este estado?",
   "Are you sure for delete this scene?": "Tem certeza de que deseja excluir esta cena?",
-  "Edit": "Editar"
+  "Edit": "Editar",
+  "Save changes": "",
+  "Collapse": ""
 }

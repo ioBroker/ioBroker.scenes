@@ -43,9 +43,11 @@
   "Test FALSE": "Test ONWAAR",
   "Actual state value": "Werkelijke statuswaarde",
   "ms": "Mevrouw",
-  "Set if TRUE": "Stel in als WAAR",
-  "Set if FALSE": "Stel in als ONWAAR",
+  "Set if TRUE": "Stel in als TRUE",
+  "Set if FALSE": "als FALSE",
   "Are you sure for delete this state?": "Weet u zeker dat u deze staat wilt verwijderen?",
   "Are you sure for delete this scene?": "Weet je zeker dat je deze scène wilt verwijderen?",
-  "Edit": "Bewerk"
+  "Edit": "Bewerk",
+  "Save changes": "",
+  "Collapse": ""
 }

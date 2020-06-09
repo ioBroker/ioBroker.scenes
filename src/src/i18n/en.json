@@ -44,8 +44,10 @@
   "Actual state value": "Actual state value",
   "ms": "ms",
   "Set if TRUE": "Set if TRUE",
-  "Set if FALSE": "Set if FALSE",
+  "Set if FALSE": "if FALSE",
   "Are you sure for delete this state?": "Are you sure for delete this state?",
   "Are you sure for delete this scene?": "Are you sure for delete this scene?",
-  "Edit": "Edit"
+  "Edit": "Edit",
+  "Save changes": "Save changes",
+  "Collapse": "Collapse"
 }

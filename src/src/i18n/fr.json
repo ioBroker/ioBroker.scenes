@@ -33,7 +33,7 @@
   "on update": "à jour",
   "Value": "Valeur",
   "On time (CRON expression)": "À l'heure (expression CRON)",
-  "Trigger for FALSE": "Déclencheur pour FAUX",
+  "Trigger for FALSE": "Déclencheur pour FALSE",
   "Off time (CRON expression)": "Temps d'arrêt (expression CRON)",
   "Root": "Racine",
   "Scene states": "États de la scène",
@@ -43,9 +43,11 @@
   "Test FALSE": "Test FALSE",
   "Actual state value": "Valeur d'état réelle",
   "ms": "SP",
-  "Set if TRUE": "Définir si VRAI",
-  "Set if FALSE": "Définir si FAUX",
+  "Set if TRUE": "Définir si TRUE",
+  "Set if FALSE": "si FALSE",
   "Are you sure for delete this state?": "Voulez-vous vraiment supprimer cet état?",
   "Are you sure for delete this scene?": "Voulez-vous vraiment supprimer cette scène?",
-  "Edit": "Éditer"
+  "Edit": "Éditer",
+  "Save changes": "",
+  "Collapse": ""
 }

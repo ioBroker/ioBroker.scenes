@@ -61,9 +61,13 @@ let adapter;
 function startAdapter(options) {
     options = options || {};
     Object.assign(options, {
-        name:           adapterName, // adapter name
-        dirname:        __dirname,   // say own position
-        install:        callback => typeof callback === 'function' && callback()
+        name:    adapterName, // adapter name
+        dirname: __dirname,   // say own position
+        unload: cb => {
+            Object.keys(scenesTimeout).forEach(id => scenesTimeout[id] && clearTimeout(scenesTimeout[id]));
+            scenesTimeout = {};
+            cb && cb();
+        },
     });
 
     adapter = new utils.Adapter(options);
@@ -228,13 +232,14 @@ function restartAdapter() {
     main();
 }
 
-let subscription = null;
-let scenes       = {};
-let ids          = {};
-let triggers     = {};
-let timers       = {};
-let checkTimers  = {};
-let cronTasks    = {};
+let subscription  = null;
+let scenes        = {};
+let ids           = {};
+let triggers      = {};
+let timers        = {};
+let checkTimers   = {};
+let cronTasks     = {};
+let scenesTimeout = {};
 
 // Check if actual states are exactly as desired in the scene
 function checkScene(sceneId, stateId, state) {
@@ -477,7 +482,7 @@ function activateSceneStates(sceneId, state, isTrue, interval, callback) {
     if (!scenes[sceneId].native.members[state]) {
         return callback();
     }
-    if (state == 0) {
+    if (!state) {
         activateSceneState(sceneId, state, isTrue);
         state++;
         if (!scenes[sceneId].native.members[state]) {
@@ -486,6 +491,7 @@ function activateSceneStates(sceneId, state, isTrue, interval, callback) {
     }
 
     scenesTimeout[sceneId + '_' + state] = setTimeout(() => {
+        scenesTimeout[sceneId + '_' + state] = null;
         activateSceneState(sceneId, state, isTrue);
         activateSceneStates(sceneId, state + 1, isTrue, interval, callback);
     }, interval);

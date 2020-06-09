@@ -19,6 +19,7 @@ import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 // Own
 import {PROGRESS} from './components/Connection';
@@ -37,8 +38,10 @@ import {MdExpandMore as IconExpand} from 'react-icons/md';
 import {MdAdd as IconAdd} from 'react-icons/md';
 import {MdModeEdit as IconEdit} from 'react-icons/md';
 import {RiFolderAddLine as IconFolderAdd} from 'react-icons/ri';
+import {MdClose as IconCancel} from 'react-icons/md';
+import {MdSave as IconSave} from 'react-icons/md';
 
-const LEVEL_PADDING = 20;
+const LEVEL_PADDING = 16;
 
 const styles = theme => ({
     root: {},
@@ -55,6 +58,9 @@ const styles = theme => ({
     },
     height: {
         height: '100%',
+    },
+    folderItem: {
+        fontWeight: 'bold',
     },
     columnContainer: {
         display: 'flex',
@@ -96,6 +102,19 @@ const styles = theme => ({
     p: {
         margin: '1em 0',
     },
+    changed: {
+        position: 'relative',
+        '&:after': {
+            content: '""',
+            width: 6,
+            height: 6,
+            borderRadius: 6,
+            background: '#FF0000',
+            position: 'absolute',
+            top: 5,
+            right: 5,
+        },
+    }
 });
 
 function getUrlQuery() {
@@ -110,15 +129,18 @@ function getUrlQuery() {
 
 class App extends GenericApp {
     state = {
+        lang: '',
+        ready: false,
+        selectedSceneId: null,
+        opened: [],
         scenes: {},
         folders: null,
         search: null,
-        selectedSceneId: null,
         addFolderDialog: null,
         addFolderDialogTitle: null,
         editFolderDialog: null,
         editFolderDialogTitle: null,
-        ready: null,
+        changingScene: '',
         themeType: null,
         showSearch: null,
         instances: [],
@@ -151,13 +173,10 @@ class App extends GenericApp {
         this.host = query.host || window.location.hostname;
 
         window.iobForceHost = this.host;
+        this.selectedSceneData = '';
     }
 
     componentDidMount() {
-        if (!window.localStorage.getItem('closedFolders')) {
-            window.localStorage.setItem('closedFolders', '{}');
-        }
-
         this.socket = new Connection({
             name: this.adapterName,
             host: this.host,
@@ -182,10 +201,30 @@ class App extends GenericApp {
             onReady: async (objects, scripts) => {
                 I18n.setLanguage(this.socket.systemLang);
 
+                let opened;
+                try {
+                    opened = JSON.parse(window.localStorage.getItem('Scenes.opened')) || [];
+                } catch (e) {
+                    opened = [];
+                }
+
                 const newState = {
                     lang: this.socket.systemLang,
                     ready: false,
-                    selectedSceneId: window.localStorage.getItem('selectedSceneId') || '',
+                    selectedSceneId: window.localStorage.getItem('Scenes.selectedSceneId') || '',
+                    opened,
+                    scenes: {},
+                    folders: null,
+                    search: null,
+                    addFolderDialog: null,
+                    addFolderDialogTitle: null,
+                    editFolderDialog: null,
+                    editFolderDialogTitle: null,
+                    changingScene: '',
+                    themeType: null,
+                    showSearch: null,
+                    instances: [],
+                    selectedSceneChanged: false,
                 };
 
                 try {
@@ -200,7 +239,6 @@ class App extends GenericApp {
                         this.setState(newState, () =>
                             this.refreshData());
                     });
-
             },
             //onObjectChange: (objects, scripts) => this.onObjectChange(objects, scripts),
             onObjectChange: (attr, value) => () => {
@@ -244,8 +282,7 @@ class App extends GenericApp {
                         subFolders: {}, 
                         scenes: {}, 
                         id: parts[i], 
-                        prefix: prefix,
-                        closed: JSON.parse(window.localStorage.getItem('closedFolders'))[prefix]
+                        prefix,
                     }
                 }
                 currentFolder = currentFolder.subFolders[parts[i]];
@@ -278,22 +315,24 @@ class App extends GenericApp {
             });
     }
 
-    refreshData(reasonSceneId) {
-        if (reasonSceneId) {
-            this.setState({changingScene: reasonSceneId});
+    refreshData(changingScene) {
+        if (changingScene) {
+            this.setState({changingScene});
         } else {
             this.setState({ready: false});
         }
 
-        this.getData()
+        return this.getData()
             .then(newState => {
                 newState.ready = true;
-                newState.changingScene = null;
+                newState.changingScene = '';
+                newState.sceneChangeDialog = '';
+                newState.selectedSceneChanged = false;
+                this.selectedSceneData = '';
+
                 if (!newState.scenes[this.state.selectedSceneId]) {
-                    newState.selectedSceneId = null;
+                    newState.selectedSceneId = Object.keys(newState.scenes).shift() || '';
                 }
-                console.log(this.state);
-                console.log(newState);
                 this.setState(newState);
             });
     }
@@ -301,32 +340,39 @@ class App extends GenericApp {
     addFolder(parentFolder, id) {
         let folders = clone(this.state.folders);
         let _parentFolder = this.findFolder(folders, parentFolder);
+
+        let opened = JSON.parse(JSON.stringify(this.state.opened));
+
         _parentFolder.subFolders[id] = {
             scenes: {},
             subFolders: {},
-            id: id,
+            id,
             prefix: _parentFolder.prefix ? _parentFolder.prefix + '.' + id : id
         };
-        this.setState({folders: folders});
+
+        opened.push(id);
+
+        this.setState({folders, opened});
     }
 
     addSceneToFolderPrefix = async (scene, folderPrefix, noRefresh) => {
         let oldId = scene._id;
         let sceneId = scene._id.split('.').pop();
         scene._id = 'scene.' + this.instance + '.' + folderPrefix + (folderPrefix ? '.' : '') + sceneId;
-        if (!noRefresh) {
-            this.setState({selectedSceneId: null});
-        }
+
         await this.socket.delObject(oldId);
         await this.socket.setObject(scene._id, scene);
+
         if (!noRefresh) {
-            this.refreshData();
-            this.setState({selectedSceneId: scene._id});
+            await this.refreshData(sceneId);
+            this.changeSelectedScene(scene._id);
         }
     };
 
     renameFolder = async (folder, newName) => {
-        this.setState({selectedSceneId: null, ready: false});
+        this.changeSelectedScene('');
+        this.setState({changingScene: folder});
+
         for (const k in folder.scenes) {
             if (folder.scenes.hasOwnProperty(k)) {
                 let prefix = folder.prefix.split('.');
@@ -336,7 +382,7 @@ class App extends GenericApp {
             }
         }
 
-        this.refreshData();
+        this.refreshData(folder);
     };
 
     /*deleteFolder(folder) {
@@ -350,93 +396,102 @@ class App extends GenericApp {
 
     renderTreeScene = (item, level) => {
         const scene = this.state.scenes[item._id];
+        if (!scene || (this.state.search && !item.common.name.includes(this.state.search))) {
+            return null;
+        }
+
         let component = this;
         level = level || 0;
 
-        if (this.state.search && !item.common.name.includes(this.state.search)) {
-            return null;
-        }
+        const changed = this.state.selectedSceneId && this.state.selectedSceneId === scene._id && this.state.selectedSceneChanged;
 
         return <ListItem
             style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
             key={ item._id }
-            selected={ this.state.selectedSceneId && this.state.selectedSceneId === scene._id }
+            selected={ this.state.selectedSceneId ? this.state.selectedSceneId === scene._id : false }
             button
-            onClick={ () => {
-                if (component.state.selectedSceneChanged) {
-                    component.setState({sceneChangeDialog: scene._id});
-                } else {
-                    component.setState({selectedSceneId: scene._id});
-                }
-            }}>
+            className={ changed ? this.props.classes.changed : ''}
+            onClick={ () => this.changeSelectedScene(scene._id) }>
             <ListItemText
                 primary={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }
                 secondary={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}, true) }
                 />
             <ListItemSecondaryAction>
-                <Switch
-                    checked={ scene.common.enabled }
-                    onChange={ component.sceneSwitch }
-                    name={ scene._id }
-                />
+                {this.state.changingScene === scene._id ?
+                    <CircularProgress size={ 24 }/>
+                    :
+                    <Switch
+                        checked={scene.common.enabled}
+                        onChange={component.sceneSwitch}
+                        name={scene._id}
+                    />
+                }
             </ListItemSecondaryAction>
         </ListItem>;
     };
 
     renderTree(parent, level) {
-        let component = this;
         let result = [];
         level = level || 0;
+        let opened = this.state.opened ? this.state.opened.includes(parent.prefix) : false;
 
         // Show folder item
         parent && parent.id && result.push(<ListItem
             key={ parent.prefix }
-            className={ this.props.classes.width100 }
+            className={ clsx(this.props.classes.width100, this.props.classes.folderItem) }
             style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
         >
             { parent.id }
-            {
-                parent.id ?
-                    <ListItemSecondaryAction>
-                        <IconButton onClick={() => {
-                            this.setState({addFolderDialog: parent, addFolderDialogTitle: ''});
-                        }} title={ I18n.t('Create new folder') }><IconFolderAdd/></IconButton>
+            <ListItemSecondaryAction>
+                <IconButton onClick={() => {
+                    const opened = [...this.state.opened];
+                    const pos = opened.indexOf(parent.prefix);
+                    if (pos === -1) {
+                        opened.push(parent.prefix);
+                    } else {
+                        opened.splice(pos, 1);
+                    }
 
-                        <IconButton onClick={() => {
-                            this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id});
-                        }} title={ I18n.t('Edit folder') }><IconEdit/></IconButton>
+                    window.localStorage.setItem('Scenes.opened', JSON.stringify(opened));
 
-                        <IconButton onClick={() => {
-                            let folders = clone(this.state.folders);
-                            let _parent = component.findFolder(folders, parent);
-                            _parent.closed = !_parent.closed;
-                            
-                            let closedFolders = JSON.parse(window.localStorage.getItem('closedFolders'));
-                            closedFolders[_parent.prefix] = _parent.closed;
-                            window.localStorage.setItem('closedFolders', JSON.stringify(closedFolders));
-
-                            this.setState({folders: folders});
-                        }} title={parent.closed ? I18n.t('Expand') : I18n.t('Collapse')}>
-                            {parent.closed ? <IconExpand/> : <IconCollapse/>}
-                        </IconButton>
-                    </ListItemSecondaryAction>
-                    : null
-            }
+                    this.setState({opened});
+                }} title={ opened ? I18n.t('Expand') : I18n.t('Collapse')}>
+                    { opened ? <IconExpand/> : <IconCollapse/>}
+                </IconButton>
+            </ListItemSecondaryAction>
         </ListItem>);
 
-        if (parent && !parent.closed) {
+        if (parent && (opened || !parent.id)) { // root cannot be closed and have id === ''
+            parent.id && result.push(<ListItem key={ 'keys_' + parent.prefix }>
+                <ListItemSecondaryAction>
+                    <IconButton
+                        onClick={() => this.createScene(this.getNewSceneId(), parent.id) }
+                        title={ I18n.t('Create new scene') }
+                    ><IconAdd/></IconButton>
+                    <IconButton
+                        onClick={() => this.setState({addFolderDialog: parent, addFolderDialogTitle: ''})}
+                        title={ I18n.t('Create new folder') }
+                    ><IconFolderAdd/></IconButton>
+
+                    <IconButton onClick={() => this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id})}
+                                title={ I18n.t('Edit folder') }
+                    ><IconEdit/></IconButton>
+                </ListItemSecondaryAction>
+            </ListItem>);
+            // Add first scenes
             result.push(<ListItem
                 key={ 'items_' + parent.prefix }
                 className={ this.props.classes.width100 }>
                     <List
                         className={ this.props.classes.list }
-                        classes={ {root: this.props.classes.leftMenuItem }}
+                        classes={ {root: this.props.classes.leftMenuItem} }
                         style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
                     >
                         { Object.values(parent.scenes).map(scene => this.renderTreeScene(scene, level)) }
                     </List>
                 </ListItem>);
 
+            // add sub-folders
             result.push(Object.values(parent.subFolders).map(subFolder =>
                 this.renderTree(subFolder, level + 1)));
         }
@@ -444,7 +499,7 @@ class App extends GenericApp {
         return result;
     };
 
-    createScene(name) {
+    createScene(name, parentId) {
         let template = {
             common: {
                 name: '',
@@ -475,12 +530,12 @@ class App extends GenericApp {
         };
 
         template.common.name = name;
-        let id = 'scene.' + this.instance + '.' + template.common.name;
+        let id = 'scene.' + this.instance + '.' + (parentId ? parentId + '.' : '') + template.common.name;
 
-        this.setState({selectedSceneId: id, ready: false}, () =>
+        this.setState({changingScene: id}, () =>
             this.socket.setObject(id, template)
-                .then(() =>
-                    this.refreshData()));
+                .then(() => this.refreshData(id))
+                .then(() => this.changeSelectedScene(id)));
     };
 
     cloneScene(id) {
@@ -489,32 +544,52 @@ class App extends GenericApp {
         scene._id.pop();
         scene._id.push(this.getNewSceneId());
         scene._id = scene._id.join('.');
-        console.log(scene._id);
-        scene.common.name = scene.common.name + ' clone';
+        scene.common.name = scene.common.name + ' ' + I18n.t('copy');
 
-        this.setState({ready: false, selectedSceneId: scene._id}, () =>
+        this.setState({changingScene: scene._id}, () =>
             this.socket.setObject(scene._id, scene)
-                .then(() =>
-                    this.refreshData()));
+                .then(() => this.refreshData(scene._id))
+                .then(() => this.changeSelectedScene( scene._id)));
     };
 
     updateScene = (id, data) => {
-        const scenes = clone(this.state.scenes);
-        scenes[id] = data;
+        if (data) {
+            const scenes = clone(this.state.scenes);
+            scenes[id] = data;
 
-        this.socket.setObject(id, scenes[id])
-            .then(() =>
-                this.refreshData());
+            return this.socket.setObject(id, scenes[id])
+                .then(() => this.refreshData(id));
+        } else {
+            return Promise.resolve();
+        }
     };
 
     deleteScene = (id) => {
-        this.socket.delObject(id)
+        return this.socket.delObject(id)
             .then(() => {
                 if (this.state.selectedSceneId === id) {
-                    this.setState({selectedSceneId: null}, () =>
-                        this.refreshData());
+                    return this.refreshData(id)
+                        .then(() => {
+                            const ids = Object.keys(this.state.scenes);
+                            // Find next scene
+                            let nextId = ids.find(_id => _id > id) || '';
+                            if (!nextId) {
+                                // try prev scene
+                                for (let i = ids.length - 1; i >= 0; i--) {
+                                    if (ids[i] < id) {
+                                        nextId = ids[i];
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!nextId && ids.length) {
+                                nextId = ids.shift();
+                            }
+
+                            this.changeSelectedScene(nextId);
+                        });
                 } else {
-                    this.refreshData();
+                    return this.refreshData(id);
                 }
             });
     };
@@ -534,11 +609,35 @@ class App extends GenericApp {
     };
 
     setSelectedSceneChanged = (sceneId, newSceneData) => {
-        let selectedSceneChanged = JSON.stringify(this.state.scenes[sceneId]) !== JSON.stringify(newSceneData);
+        this.selectedSceneData = JSON.stringify(newSceneData);
+        let selectedSceneChanged = JSON.stringify(this.state.scenes[sceneId]) !== this.selectedSceneData;
+        if (!selectedSceneChanged) {
+            this.selectedSceneData = '';
+        }
+
         if (selectedSceneChanged !== this.state.selectedSceneChanged) {
             this.setState({selectedSceneChanged});
         }
     };
+
+    changeSelectedScene(newId, ignoreUnsaved, cb) {
+        if (this.state.sceneChangeDialog !== newId) {
+            if (this.state.selectedSceneChanged && !ignoreUnsaved) {
+                this.confirmCb = cb;
+                this.setState({sceneChangeDialog: this.state.selectedSceneId});
+            } else {
+                window.localStorage.setItem('Scenes.selectedSceneId', this.state.sceneChangeDialog);
+                this.selectedSceneData = '';
+                this.setState({
+                    sceneChangeDialog: '',
+                    selectedSceneId: newId,
+                    selectedSceneChanged: false,
+                }, () => cb && cb());
+            }
+        } else {
+            cb && cb();
+        }
+    }
 
     dialogs() {
         let component = this;
@@ -566,6 +665,8 @@ class App extends GenericApp {
                     </Button>
                 </Box>
             </Dialog>
+
+
             <Dialog open={ !!this.state.editFolderDialog } onClose={() => {
                 this.setState({editFolderDialog: null})
             }}>
@@ -594,26 +695,40 @@ class App extends GenericApp {
                     </Button>
                 </Box>
             </Dialog>
+
+
             <Dialog
             open={ !!this.state.sceneChangeDialog }
             key="sceneChangeDialog"
             onClose={ () =>
-                this.setState({sceneChangeDialog: false}) }
+                this.setState({sceneChangeDialog: ''}) }
             >
                 <DialogTitle>{ I18n.t('Are you sure for cancel unsaved changes?') }</DialogTitle>
                 <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
                     <Button variant="contained" onClick={() => {
-                        this.setState({sceneChangeDialog: false});
+                        this.confirmCb = null; // cancel callback
+                        this.setState({sceneChangeDialog: ''});
                     }}>
-                        {I18n.t('Cancel')}
+                        <IconCancel/> { I18n.t('Cancel') }
+                    </Button>
+                    <Button variant="contained" color="secondary" onClick={e =>
+                        this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
+                            const cb = this.confirmCb;
+                            this.confirmCb = null;
+                            cb && cb();
+                        }) }>
+                        { I18n.t('Discard') }
                     </Button>
                     <Button variant="contained" color="secondary" onClick={e => {
-                        this.setState({
-                            selectedSceneId: this.state.sceneChangeDialog,
-                            sceneChangeDialog: false,
-                        });
+                        // save scene
+                        this.updateScene(this.state.selectedSceneId, this.selectedSceneData)
+                            .then(() => this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
+                                const cb = this.confirmCb;
+                                this.confirmCb = null;
+                                cb && cb();
+                            }))
                     }}>
-                        { I18n.t('Discard') }
+                        <IconSave/> { I18n.t('Save changes') }
                     </Button>
                 </div>
             </Dialog>
@@ -624,39 +739,40 @@ class App extends GenericApp {
         if (!this.state.ready) {
             return (<Loader theme={ this.state.themeType }/>);
         }
-        window.localStorage.setItem("selectedSceneId", this.state.selectedSceneId);
 
         let component = this;
 
         return (
             <div className="App">
-                <Container className={this.props.classes.height}>
-                    <Grid container spacing={3} className={this.props.classes.height}>
-                        <Grid item xs={3} className={this.props.classes.height}>
-                            <div className={clsx(this.props.classes.columnContainer, this.props.classes.height)}>
+                <Container className={ this.props.classes.height }>
+                    <Grid container spacing={ 3 } className={ this.props.classes.height } lg={ 12 }>
+                        <Grid item xs={3} className={ this.props.classes.height }>
+                            <div className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
                                 <div>
-                                    <IconButton onClick={() => {
-                                        this.createScene(this.getNewSceneId());
-                                    }} title={I18n.t('Create new scene')}><IconAdd/></IconButton>
+                                    <IconButton
+                                        onClick={ () => this.createScene(this.getNewSceneId()) }
+                                        title={ I18n.t('Create new scene') }
+                                    ><IconAdd/></IconButton>
 
-                                    <IconButton onClick={() => {
-                                        this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''});
-                                    }} title={I18n.t('Create new folder')}><IconFolderAdd/></IconButton>
+                                    <IconButton
+                                        onClick={ () => this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''}) }
+                                        title={ I18n.t('Create new folder') }
+                                    ><IconFolderAdd/></IconButton>
 
                                     <span className={this.props.classes.right}>
-                                        <IconButton onClick={() => {
-                                            this.setState({showSearch: !component.state.showSearch})
-                                        }}>
+                                        <IconButton onClick={() => this.setState({showSearch: !component.state.showSearch}) }>
                                             <SearchIcon/>
                                         </IconButton>
                                     </span>
                                 </div>
                                 {this.state.showSearch ?
-                                    <TextField value={ this.state.search } className={this.props.classes.textInput} onChange={e =>
-                                        this.setState({search: e.target.value})}/>: null
+                                    <TextField
+                                        value={ this.state.search }
+                                        className={ this.props.classes.textInput }
+                                        onChange={ e => this.setState({search: e.target.value}) }/> : null
                                 }
                                 { this.dialogs() }
-                                <List className={this.props.classes.scroll}>
+                                <List className={ this.props.classes.scroll }>
                                     { this.renderTree(this.state.folders) }
                                 </List>
                             </div>

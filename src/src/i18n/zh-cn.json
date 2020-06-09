@@ -47,5 +47,7 @@
   "Set if FALSE": "设置是否为FALSE",
   "Are you sure for delete this state?": "您确定要删除此状态吗？",
   "Are you sure for delete this scene?": "您确定要删除此场景吗？",
-  "Edit": "编辑"
+  "Edit": "编辑",
+  "Save changes": "",
+  "Collapse": ""
 }

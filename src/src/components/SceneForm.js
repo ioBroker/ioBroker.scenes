@@ -88,7 +88,7 @@ class SceneForm extends React.Component {
     constructor(props) {
         super(props);
 
-        const sceneObj = JSON.parse(JSON.stringify(this.props.scene));
+        const sceneObj = props.scene ? JSON.parse(JSON.stringify(props.scene)) : {};
 
         sceneObj.common = sceneObj.common || {};
         sceneObj.native = sceneObj.native || {};
@@ -150,45 +150,40 @@ class SceneForm extends React.Component {
                     this.setState({moveDialog: null}) }
                 >
                 <DialogTitle>{ I18n.t('Move to folder') }</DialogTitle>
-                <Box className={this.props.classes.p}>
+                <Box className={ this.props.classes.p }>
                     <FormControl>
                         <InputLabel shrink={ true }>{ I18n.t('Folder') }</InputLabel>
                         <Select
-                            value={ this.state.newFolder }
+                            value={ this.state.newFolder || '__root__' }
                             onChange={e => component.setState({newFolder: e.target.value}) }>
                             {
                                 SceneForm.getFolderList(this.props.folders).map(folder => <MenuItem key={ folder.prefix }
-                                        value={ folder.prefix }>{ folder.prefix ? folder.prefix.replace('.', ' > ') : I18n.t('Root') }</MenuItem>)
+                                        value={ folder.prefix || '__root__' }>{ folder.prefix ? folder.prefix.replace('.', ' > ') : I18n.t('Root') }</MenuItem>)
                             }
                         </Select>
                     </FormControl>
                 </Box>
                 <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                    <Button variant="contained" onClick={() => {
-                        this.setState({moveDialog: null});
-                    }}>
-                        {I18n.t('Cancel')}
+                    <Button variant="contained" onClick={ () => this.setState({moveDialog: null}) }>
+                        { I18n.t('Cancel') }
                     </Button>
-                    <Button variant="contained" color="primary" onClick={e => {
-                        this.setState({moveDialog: null});
-                        this.props.addSceneToFolderPrefix(scene, this.state.newFolder);
-                    }}>
+                    <Button variant="contained" color="primary" onClick={ e =>
+                        this.setState({moveDialog: null}, () =>
+                            this.props.addSceneToFolderPrefix(scene, this.state.newFolder === '__root__' ? '' : this.state.newFolder)) }
+                    >
                         { I18n.t('Move to folder') }
                     </Button>
                 </div>
             </Dialog>,
             <Dialog
-            open={ !!this.state.deleteDialog }
-            key="deleteDialog"
-            onClose={ () =>
-                this.setState({deleteDialog: false}) }
+                open={ !!this.state.deleteDialog }
+                key="deleteDialog"
+                onClose={ () => this.setState({deleteDialog: false}) }
             >
                 <DialogTitle>{ I18n.t('Are you sure for delete this scene?') }</DialogTitle>
                 <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                    <Button variant="contained" onClick={() => {
-                            this.setState({deleteDialog: false});
-                        }}>
-                            {I18n.t('Cancel')}
+                    <Button variant="contained" onClick={ () => this.setState({deleteDialog: false}) }>
+                        {I18n.t('Cancel')}
                     </Button>
                     <Button variant="contained" color="secondary" onClick={e => {
                         this.props.deleteScene(scene._id);

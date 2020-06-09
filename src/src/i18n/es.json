@@ -43,9 +43,11 @@
   "Test FALSE": "Prueba FALSA",
   "Actual state value": "Valor de estado real",
   "ms": "em",
-  "Set if TRUE": "Establecer si es VERDADERO",
-  "Set if FALSE": "Establecer si es FALSO",
+  "Set if TRUE": "Establecer si es TRUE",
+  "Set if FALSE": "es FALSE",
   "Are you sure for delete this state?": "¿Estás seguro de eliminar este estado?",
   "Are you sure for delete this scene?": "¿Estás seguro de eliminar esta escena?",
-  "Edit": "Editar"
+  "Edit": "Editar",
+  "Save changes": "",
+  "Collapse": ""
 }

@@ -43,9 +43,11 @@
   "Test FALSE": "Przetestuj FAŁSZ",
   "Actual state value": "Rzeczywista wartość stanu",
   "ms": "SM",
-  "Set if TRUE": "Ustaw, jeśli PRAWDA",
-  "Set if FALSE": "Ustaw, jeśli FAŁSZ",
+  "Set if TRUE": "Ustaw, jeśli TRUE",
+  "Set if FALSE": "jeśli FALSE",
   "Are you sure for delete this state?": "Czy na pewno chcesz usunąć ten stan?",
   "Are you sure for delete this scene?": "Czy na pewno chcesz usunąć tę scenę?",
-  "Edit": "Edytować"
+  "Edit": "Edytować",
+  "Save changes": "",
+  "Collapse": ""
 }

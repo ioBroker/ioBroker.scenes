@@ -527,8 +527,9 @@ class Connection {
             return Promise.reject(NOT_CONNECTED);
         }
         return new Promise((resolve, reject) =>
-            this._socket.emit('setObject', id, obj, err =>
-                err ? reject(err) : resolve()));
+            this._socket.emit('setObject', id, obj, err => {
+                err ? reject(err) : resolve()
+            }));
     }
 
     getObject(id) {
