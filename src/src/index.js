@@ -1,23 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { MuiThemeProvider} from '@material-ui/core/styles';
-import './index.css';
-import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import createTheme from '@iobroker/adapter-react/createTheme';
+import './index.css';
+import App from './App';
+import { version } from '../package.json';
 
-let theme = 'light';
+import theme from '@iobroker/adapter-react/Theme';
+
+console.log('iobroker.scenes@' + version);
+let themeName = window.localStorage ? window.localStorage.getItem('App.themeName') || 'light' : 'light';
 
 function build() {
-    return ReactDOM.render(<MuiThemeProvider theme={createTheme(theme)}>
+    return ReactDOM.render(<MuiThemeProvider theme={ theme(themeName) }>
         <App onThemeChange={_theme => {
-            theme = _theme;
+            themeName = _theme;
             build();
         }}/>
     </MuiThemeProvider>, document.getElementById('root'));
 }
-
 
 build();
 

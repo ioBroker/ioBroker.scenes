@@ -17,9 +17,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 
-// own thiss
+// own components
 import I18n from '@iobroker/adapter-react/i18n';
-import DialogSelectID from './SelectID';
+import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 
 // icons
@@ -32,6 +32,8 @@ import {MdPlayArrow as IconPlay} from 'react-icons/md';
 
 const TRUE_COLOR      = '#90ee90';
 const FALSE_COLOR     = '#ff9999';
+const TRUE_DARK_COLOR      = '#528952';
+const FALSE_DARK_COLOR     = '#774747';
 const UNCERTAIN_COLOR = '#bfb7be';
 
 const styles = theme => ({
@@ -45,7 +47,7 @@ const styles = theme => ({
         //float: 'right'
     },
     memberTrue: {
-        backgroundColor: TRUE_COLOR,
+        backgroundColor: theme.palette.type === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
     },
     memberFalse: {
         backgroundColor: 'pink',
@@ -90,6 +92,7 @@ const styles = theme => ({
     },
     sceneTitle: {
         flexGrow: 1,
+        color: theme.palette.type === 'dark' ? '#FFF': '#000',
     },
     sceneSubTitle: {
         fontSize: 'small',
@@ -97,21 +100,21 @@ const styles = theme => ({
         padding: '2px ' + theme.spacing(1) + 'px',
     },
     sceneTrue: {
-        background: TRUE_COLOR,
+        background: theme.palette.type === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
     },
     sceneFalse: {
-        background: FALSE_COLOR,
+        background: theme.palette.type === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
     },
     sceneUncertain: {
         background: UNCERTAIN_COLOR,
     },
     btnTestTrue: {
-        background: TRUE_COLOR,
+        background: theme.palette.type === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
         marginRight: theme.spacing(1),
         marginBottom: theme.spacing(0.5),
     },
     btnTestFalse: {
-        background: FALSE_COLOR,
+        background: theme.palette.type === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
         marginBottom: theme.spacing(0.5),
     },
     smallOnTrueFalse: {
@@ -156,6 +159,7 @@ const styles = theme => ({
         minHeight: 72,
     },
     memberButtons: {
+        textAlign: 'right',
         position: 'absolute',
         top: 2,
         right: 2,
@@ -584,7 +588,7 @@ class SceneMembersForm extends React.Component {
 
         let result = <div key="SceneMembersForm" className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero}}>
-                <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle)} >
+                <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle) } >
                     {I18n.t('Scene states')}
                     <br/>
                     <span className={ clsx(

@@ -14,7 +14,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 
-import DialogSelectID from './SelectID';
+import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import I18n from '@iobroker/adapter-react/i18n';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 
@@ -50,6 +50,7 @@ const styles = theme => ({
     editItem: {
         display: 'block',
         marginBottom: theme.spacing(2),
+        color: theme.palette.type === 'dark' ? '#FFF': '#000',
     },
     p: {
         margin: theme.spacing(1) + 'px 0',

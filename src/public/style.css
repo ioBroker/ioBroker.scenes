@@ -2,15 +2,3 @@
     overflow-y: hidden;
     height: 100%;
 }
-
-.MuiFormControlLabel-label.MuiTypography-body1 {
-    font-size: 0.8rem;
-}
-
-.MuiFormLabel-root {
-    white-space: nowrap;
-}
-
-.MuiDialog-paper {
-    padding: 10px;
-}

@@ -3,6 +3,7 @@ import React from 'react';
 import {withStyles} from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { withTheme } from '@material-ui/core/styles';
+import { MuiThemeProvider } from '@material-ui/core/styles';
 
 // MaterialUi
 import Grid from '@material-ui/core/Grid';
@@ -24,15 +25,15 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from "@material-ui/core/Typography";
 
 // Own
-import {PROGRESS} from './components/Connection';
+import {PROGRESS} from '@iobroker/adapter-react/Connection';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 import GenericApp from '@iobroker/adapter-react/GenericApp';
-import Connection from './components/Connection';
-import SceneForm from './components/SceneForm';
-import SceneMembersForm from './components/SceneMembersForm';
+import Connection from '@iobroker/adapter-react/Connection';
 import Loader from '@iobroker/adapter-react/Components/Loader'
 import I18n from '@iobroker/adapter-react/i18n';
-import clone from './utils/clone';
+
+import SceneForm from './components/SceneForm';
+import SceneMembersForm from './components/SceneMembersForm';
 
 // icons
 import {MdExpandLess as IconCollapse} from 'react-icons/md';
@@ -53,7 +54,11 @@ import MenuItem from "@material-ui/core/MenuItem";
 const LEVEL_PADDING = 16;
 
 const styles = theme => ({
-    root: {},
+    root: {
+        width: '100%',
+        height: 'calc(100% + 4px)',
+        backgroundColor: theme.palette.type === 'dark' ? '#000': '#fff',
+    },
     tabContent: {
         padding: 10,
         height: 'calc(100% - 64px - 48px - 20px)',
@@ -77,6 +82,7 @@ const styles = theme => ({
     },
     folderItem: {
         fontWeight: 'bold',
+        color: theme.palette.type === 'dark' ? '#FFF': '#000',
     },
     columnContainer: {
         display: 'flex',
@@ -104,7 +110,7 @@ const styles = theme => ({
         float: 'right',
     },
     membersCell: {
-        backgroundColor: '#ADD8E6',
+        backgroundColor: theme.palette.type === 'dark' ? '#566770': '#ADD8E6',
         padding: '0px 10px',
         borderRadius: '4px',
         paddingBottom: '10px',
@@ -132,6 +138,7 @@ const styles = theme => ({
         },
     },
     sceneTitle: {
+        color: theme.palette.type === 'dark' ? '#FFF': '#000',
         flexGrow: 1,
         paddingLeft: theme.spacing(1),
     },
@@ -143,7 +150,13 @@ const styles = theme => ({
         marginRight: theme.spacing(1),
     },
     settingsBackground: {
-        background: '#eeeeee',
+        background: theme.palette.type === 'dark' ? '#3a3a3a': '#eeeeee',
+    },
+    listItemTitle: {
+        color: theme.palette.type === 'dark' ? '#FFF': '#000',
+    },
+    listItemSubTitle: {
+        color: theme.palette.type === 'dark' ? '#bababa': '#2a2a2a',
     }
 });
 
@@ -176,29 +189,6 @@ function getFolderList(folder) {
 }
 
 class App extends GenericApp {
-    state = {
-        lang: '',
-        ready: false,
-        selectedSceneId: null,
-        opened: [],
-        scenes: {},
-        folders: null,
-        search: null,
-        addFolderDialog: null,
-        addFolderDialogTitle: null,
-        editFolderDialog: null,
-        editFolderDialogTitle: null,
-        changingScene: '',
-        themeType: null,
-        showSearch: null,
-        instances: [],
-        selectedSceneChanged: false,
-        deleteDialog: null,
-        moveDialog: null,
-        newFolder: '',
-        selectedSceneData: null,
-    };
-
     constructor(props) {
         super(props);
         this.translations = {
@@ -272,10 +262,13 @@ class App extends GenericApp {
                     editFolderDialog: null,
                     editFolderDialogTitle: null,
                     changingScene: '',
-                    themeType: null,
                     showSearch: null,
                     instances: [],
                     selectedSceneChanged: false,
+                    deleteDialog: null,
+                    moveDialog: null,
+                    newFolder: '',
+                    selectedSceneData: null,
                 };
 
                 try {
@@ -305,7 +298,7 @@ class App extends GenericApp {
 
     sceneSwitch = event => {
         const id = event.target.name;
-        let scenes = clone(this.state.scenes);
+        let scenes = JSON.parse(JSON.stringify(this.state.scenes));
 
         if (id === this.state.selectedSceneId) {
             scenes[id] = JSON.parse(JSON.stringify(this.state.selectedSceneData));
@@ -414,7 +407,7 @@ class App extends GenericApp {
     }
 
     addFolder(parentFolder, id) {
-        let folders = clone(this.state.folders);
+        let folders = JSON.parse(JSON.stringify(this.state.folders));
         let _parentFolder = this.findFolder(folders, parentFolder);
 
         let opened = JSON.parse(JSON.stringify(this.state.opened));
@@ -530,6 +523,7 @@ class App extends GenericApp {
             className={ changed ? this.props.classes.changed : ''}
             onClick={ () => this.changeSelectedScene(scene._id) }>
             <ListItemText
+                classes={ {primary: this.props.classes.listItemTitle, secondary: this.props.classes.listItemSubTitle} }
                 primary={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }
                 secondary={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}, true) }
                 />
@@ -658,7 +652,7 @@ class App extends GenericApp {
     };
 
     cloneScene(id) {
-        let scene = clone(this.state.scenes[id]);
+        let scene = JSON.parse(JSON.stringify(this.state.scenes[id]));
         scene._id = scene._id.split('.');
         scene._id.pop();
         scene._id.push(this.getNewSceneId());
@@ -787,6 +781,7 @@ class App extends GenericApp {
             </Box>
         </Dialog> : null;
     }
+
     renderEditFolderDialog() {
         return this.state.editFolderDialog ? <Dialog open={ !!this.state.editFolderDialog } onClose={() => {
             this.setState({editFolderDialog: null})
@@ -879,124 +874,128 @@ class App extends GenericApp {
     render() {
         const component = this;
         if (!this.state.ready) {
-            return (<Loader theme={ this.state.themeType }/>);
+            return <MuiThemeProvider theme={ this.state.theme }>
+                <Loader theme={ this.state.themeName }/>
+            </MuiThemeProvider>;
         }
 
         return (
-            <div className="App">
-                <Container className={ this.props.classes.height }>
-                    <Grid container spacing={ 1 } className={ this.props.classes.height }>
-                        <Grid item xs={ 3 } className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
-                            <Toolbar variant="dense">
-                                <IconButton
-                                    onClick={ () => this.createScene(this.getNewSceneId()) }
-                                    title={ I18n.t('Create new scene') }
-                                ><IconAdd/></IconButton>
+            <MuiThemeProvider theme={ this.state.theme }>
+                    <div className={ this.props.classes.root }>
+                    <Container className={ this.props.classes.height }>
+                        <Grid container spacing={ 1 } className={ this.props.classes.height }>
+                            <Grid item xs={ 3 } className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
+                                <Toolbar variant="dense">
+                                    <IconButton
+                                        onClick={ () => this.createScene(this.getNewSceneId()) }
+                                        title={ I18n.t('Create new scene') }
+                                    ><IconAdd/></IconButton>
 
-                                <IconButton
-                                    onClick={ () => this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''}) }
-                                    title={ I18n.t('Create new folder') }
-                                ><IconFolderAdd/></IconButton>
+                                    <IconButton
+                                        onClick={ () => this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''}) }
+                                        title={ I18n.t('Create new folder') }
+                                    ><IconFolderAdd/></IconButton>
 
-                                <span className={this.props.classes.right}>
-                                    <IconButton onClick={() => this.setState({showSearch: !this.state.showSearch}) }>
-                                        <SearchIcon/>
-                                    </IconButton>
-                                </span>
-                                {this.state.showSearch ?
-                                    <TextField
-                                        value={ this.state.search }
-                                        className={ this.props.classes.textInput }
-                                        onChange={ e => this.setState({search: e.target.value}) }/> : null
-                                }
-                            </Toolbar>
-                            <div className={ this.props.classes.heightMinusToolbar }>
-                                <List className={ this.props.classes.scroll }>
-                                    { this.renderTree(this.state.folders) }
-                                </List>
-                            </div>
-                        </Grid>
-                        { this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
-                            <Grid item xs={ 9 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
-                                <Toolbar variant="dense" classes={ {gutters: this.props.classes.noGutters} }>
-                                    <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle) }>
-                                        { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
-                                        <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, {language: I18n.getLanguage()}, true) }</span>
-                                    </Typography>
-
-                                    { this.state.selectedSceneChanged ? <Button
-                                            className={ this.props.classes.toolbarButtons }
-                                            variant="contained"
-                                            color="secondary"
-                                            onClick={() => this.writeScene()}
-                                        >
-                                            { I18n.t('Save') }
-                                        </Button> : null }
-
-                                    { this.state.selectedSceneChanged ? <Button
-                                            className={ this.props.classes.toolbarButtons }
-                                            variant="contained"
-                                            onClick={() => this.refreshData(this.state.selectedSceneId)}
-                                        >
-                                            { I18n.t('Cancel') }
-                                        </Button> : null }
-                                    <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={() => {
-                                        component.cloneScene(this.state.selectedSceneId);
-                                    }}><IconClone/></IconButton>
-
-                                    <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => {
-                                        component.setState({deleteDialog: true})
-                                    }}><IconDelete/></IconButton>
-
-                                    <IconButton aria-label="Move to folder" title={I18n.t('Move to folder')} onClick={() => {
-                                        component.setState({moveDialog: true, newFolder: getFolderPrefix(this.state.selectedSceneId)})
-                                    }}><IconMoveToFolder/></IconButton>
+                                    <span className={this.props.classes.right}>
+                                        <IconButton onClick={() => this.setState({showSearch: !this.state.showSearch}) }>
+                                            <SearchIcon/>
+                                        </IconButton>
+                                    </span>
+                                    {this.state.showSearch ?
+                                        <TextField
+                                            value={ this.state.search }
+                                            className={ this.props.classes.textInput }
+                                            onChange={ e => this.setState({search: e.target.value}) }/> : null
+                                    }
                                 </Toolbar>
-                                <Grid container spacing={ 1 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
-                                    <Grid item xs={5} className={ this.props.classes.heightMinusToolbar }>
-                                        <div className={this.props.classes.height}>
-                                            {this.state.selectedSceneId ?
-                                                <SceneForm
-                                                    key={ this.state.selectedSceneId }
-                                                    updateScene={ (common, native, cb) => component.updateScene(common, native, cb) }
-                                                    scene={ this.state.scenes[this.state.selectedSceneId] }
-                                                    socket={ this.socket }
-                                                    folders={this.state.folders }
-                                                    instances={ this.state.instances }
-                                                />
-                                                : ''}
-                                        </div>
-                                    </Grid>
-                                    <Grid item xs={7} className={ this.props.classes.heightMinusToolbar }>
-                                        <div className={this.props.classes.height}>
-                                            { this.state.selectedSceneId ?
-                                                <div className={ clsx(this.props.classes.membersCell, this.props.classes.height) }>
-                                                    <SceneMembersForm
-                                                        key={ 'selected' + this.state.selectedSceneId }
-                                                        updateSceneMembers={ (members, cb) => component.updateSceneMembers(members, cb) }
-                                                        members={ this.state.selectedSceneData.native.members }
+                                <div className={ this.props.classes.heightMinusToolbar }>
+                                    <List className={ this.props.classes.scroll }>
+                                        { this.renderTree(this.state.folders) }
+                                    </List>
+                                </div>
+                            </Grid>
+                            { this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
+                                <Grid item xs={ 9 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
+                                    <Toolbar variant="dense" classes={ {gutters: this.props.classes.noGutters} }>
+                                        <Typography variant="h6" className={ this.props.classes.sceneTitle }>
+                                            { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
+                                            <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, {language: I18n.getLanguage()}, true) }</span>
+                                        </Typography>
+
+                                        { this.state.selectedSceneChanged ? <Button
+                                                className={ this.props.classes.toolbarButtons }
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={() => this.writeScene()}
+                                            >
+                                                { I18n.t('Save') }
+                                            </Button> : null }
+
+                                        { this.state.selectedSceneChanged ? <Button
+                                                className={ this.props.classes.toolbarButtons }
+                                                variant="contained"
+                                                onClick={() => this.refreshData(this.state.selectedSceneId)}
+                                            >
+                                                { I18n.t('Cancel') }
+                                            </Button> : null }
+                                        <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={() => {
+                                            component.cloneScene(this.state.selectedSceneId);
+                                        }}><IconClone/></IconButton>
+
+                                        <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => {
+                                            component.setState({deleteDialog: true})
+                                        }}><IconDelete/></IconButton>
+
+                                        <IconButton aria-label="Move to folder" title={I18n.t('Move to folder')} onClick={() => {
+                                            component.setState({moveDialog: true, newFolder: getFolderPrefix(this.state.selectedSceneId)})
+                                        }}><IconMoveToFolder/></IconButton>
+                                    </Toolbar>
+                                    <Grid container spacing={ 1 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
+                                        <Grid item xs={5} className={ this.props.classes.heightMinusToolbar }>
+                                            <div className={this.props.classes.height}>
+                                                {this.state.selectedSceneId ?
+                                                    <SceneForm
+                                                        key={ this.state.selectedSceneId }
+                                                        updateScene={ (common, native, cb) => component.updateScene(common, native, cb) }
+                                                        scene={ this.state.scenes[this.state.selectedSceneId] }
                                                         socket={ this.socket }
-                                                        onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
-                                                        virtualGroup={ this.state.selectedSceneData.native.virtualGroup }
-                                                        sceneId={ this.state.selectedSceneId }
+                                                        folders={this.state.folders }
+                                                        instances={ this.state.instances }
                                                     />
-                                                </div>
-                                                : ''}
-                                        </div>
+                                                    : ''}
+                                            </div>
+                                        </Grid>
+                                        <Grid item xs={7} className={ this.props.classes.heightMinusToolbar }>
+                                            <div className={this.props.classes.height}>
+                                                { this.state.selectedSceneId ?
+                                                    <div className={ clsx(this.props.classes.membersCell, this.props.classes.height) }>
+                                                        <SceneMembersForm
+                                                            key={ 'selected' + this.state.selectedSceneId }
+                                                            updateSceneMembers={ (members, cb) => component.updateSceneMembers(members, cb) }
+                                                            members={ this.state.selectedSceneData.native.members }
+                                                            socket={ this.socket }
+                                                            onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
+                                                            virtualGroup={ this.state.selectedSceneData.native.virtualGroup }
+                                                            sceneId={ this.state.selectedSceneId }
+                                                        />
+                                                    </div>
+                                                    : ''}
+                                            </div>
+                                        </Grid>
                                     </Grid>
                                 </Grid>
-                            </Grid>
-                            : null
-                        }
-                    </Grid>
-                </Container>
-                { this.renderSceneChangeDialog() }
-                { this.renderEditFolderDialog() }
-                { this.renderMoveDialog() }
-                { this.renderDeleteDialog() }
-                { this.renderAddDialog() }
-                { this.renderError() }
-            </div>
+                                : null
+                            }
+                        </Grid>
+                    </Container>
+                    { this.renderSceneChangeDialog() }
+                    { this.renderEditFolderDialog() }
+                    { this.renderMoveDialog() }
+                    { this.renderDeleteDialog() }
+                    { this.renderAddDialog() }
+                    { this.renderError() }
+                </div>
+            </MuiThemeProvider>
         );
     }
 }
