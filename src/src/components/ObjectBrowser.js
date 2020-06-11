@@ -20,6 +20,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import copy from 'copy-to-clipboard';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
+import Checkbox from '@material-ui/core/Checkbox';
 
 // own
 import UtilsAdapter from '@iobroker/adapter-react/Components/Utils';
@@ -37,15 +38,18 @@ import {FaCogs as IconSystem} from 'react-icons/fa';
 import {FaPhotoVideo as IconPhoto} from 'react-icons/fa';
 import {FaLightbulb as IconAlias} from 'react-icons/fa';
 import {FaUserFriends as IconGroup} from 'react-icons/fa';
+import {FaCalendarAlt as IconSchedule} from 'react-icons/fa';
 import {FaUser as IconUser} from 'react-icons/fa';
 import {FaDigitalTachograph as IconHost} from 'react-icons/fa';
 import {FaWifi as IconConnection} from 'react-icons/fa';
 import {FaInfoCircle as IconInfo} from 'react-icons/fa';
 import {FaFileCode as IconMeta} from 'react-icons/fa';
+import {FaScroll as IconScript} from 'react-icons/fa';
 
-import {FaFileCode as IconState} from 'react-icons/fa';
-import {FaFileCode as IconChannel} from 'react-icons/fa';
-import {FaFileCode as IconDevice} from 'react-icons/fa';
+import {FaScrewdriver as IconInstance} from 'react-icons/fa';
+import {FaChartLine as IconChart} from 'react-icons/fa';
+import {FaListOl as IconEnum} from 'react-icons/fa';
+import {FaScrewdriver as IconAdapter} from 'react-icons/fa';
 
 import TabContainer from './TabContainer';
 import TabContent from './TabContent';
@@ -87,6 +91,9 @@ const styles = theme => ({
             background: theme.palette.primary.main,
             color: invertColor(theme.palette.primary.main, true),
         },
+    },
+    checkBox: {
+        padding: 0,
     },
     cellId: {
         //display: 'inline-block',
@@ -1119,21 +1126,65 @@ const DEFAULT_FILTER = {
     expertMode: false
 };
 
+class IconState extends React.Component {
+    render() {
+        return <svg width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+            <g>
+                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="10" stroke="currentColor" fill="none"/>
+                <ellipse ry="54" rx="54" id="svg_2" cy="160" cx="160" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="#fff"/>
+            </g>
+        </svg>;
+    }
+}
+
+class IconChannel extends React.Component {
+    render() {
+        return <svg width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+            <g>
+                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="10" stroke="currentColor" fill="none"/>
+                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_2" cy="252" cx="160" fillOpacity="null" strokeOpacity="null" strokeWidth="10" fill="none"/>
+                <line strokeLinecap="null" strokeLinejoin="null" id="svg_3" y2="201.94531" x2="159.5" y1="46.94531" x1="159.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="none"/>
+                <rect id="svg_4" height="27" width="50" y="79.7979" x="133.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="#fff"/>
+            </g>
+        </svg>;
+    }
+}
+
+class IconDevice extends React.Component {
+    render() {
+        return <svg width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+            <g>
+                <title>Layer 1</title>
+                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="10" stroke="currentColor" fill="none"/>
+                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_2" cy="252" cx="160" fillOpacity="null" strokeOpacity="null" strokeWidth="10" fill="#fff"/>
+                <line strokeLinecap="null" strokeLinejoin="null" id="svg_3" y2="201.94531" x2="159.5" y1="46.94531" x1="159.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="none"/>
+                <rect height="27" width="50" y="140.83068" x="133.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="#fff"/>
+                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_5" cy="251" cx="241" fillOpacity="null" strokeOpacity="null" strokeWidth="10" fill="#fff"/>
+                <line strokeLinecap="null" strokeLinejoin="null" id="svg_6" y2="200.94531" x2="240.5" y1="45.94531" x1="240.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="none"/>
+                <rect height="27" width="50" y="78.7979" x="214.5" strokeWidth="10" stroke="currentColor" fill="#fff"/>
+                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_8" cy="252" cx="84" fillOpacity="null" strokeOpacity="null" strokeWidth="10" fill="#fff"/>
+                <line strokeLinecap="null" strokeLinejoin="null" id="svg_9" y2="201.94531" x2="83.5" y1="46.94531" x1="83.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="none"/>
+                <rect height="27" width="50" y="79.7979" x="57.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="#fff"/>
+            </g>
+        </svg>;
+    }
+}
+
 const ITEM_IMAGES = {
     state: <IconState className="itemIcon" />,
-    channel: <IconState className="itemIcon" />,
-    device: <IconState className="itemIcon" />,
-    adapter: null,
-    meta: null,
-    instance: null,
-    enum: null,
-    chart: null,
-    config: null,
-    group: null,
-    user: null,
-    host: null,
-    schedule: null,
-    script: null,
+    channel: <IconChannel className="itemIcon" />,
+    device: <IconDevice className="itemIcon" />,
+    adapter: <IconAdapter className="itemIcon" />,
+    meta: <IconMeta className="itemIcon" />,
+    instance: <IconInstance className="itemIcon" style={{color: '#7da7ff'}}/>,
+    enum: <IconEnum className="itemIcon" />,
+    chart: <IconChart className="itemIcon" />,
+    config: <IconConfig className="itemIcon" />,
+    group: <IconGroup className="itemIcon" />,
+    user: <IconUser className="itemIcon" />,
+    host: <IconHost className="itemIcon" />,
+    schedule: <IconSchedule className="itemIcon" />,
+    script: <IconScript className="itemIcon" />,
 };
 
 const StyledBadge = withStyles((theme) => ({
@@ -1149,7 +1200,17 @@ class ObjectBrowser extends React.Component {
     constructor(props) {
         super(props);
 
-        this.lastSelectedItem = window.localStorage.getItem((this.props.key || 'App') + '.objectSelected') || '';
+        this.lastSelectedItems = window.localStorage.getItem((this.props.key || 'App') + '.objectSelected') || '[]';
+        try {
+            this.lastSelectedItems = JSON.parse(this.lastSelectedItems);
+            if (typeof this.lastSelectedItems !== 'object') {
+                this.lastSelectedItems = [this.lastSelectedItems];
+            }
+            this.lastSelectedItems = this.lastSelectedItems.filter(id => id);
+        } catch (e) {
+
+        }
+
         let expanded = window.localStorage.getItem((this.props.key || 'App') + '.objectExpanded') || '[]';
         try {
             expanded = JSON.parse(expanded);
@@ -1207,9 +1268,15 @@ class ObjectBrowser extends React.Component {
             }
         }
 
+        let selected = (this.props.selected || '');
+        if (typeof selected !== 'object') {
+            selected = [selected];
+        }
+        selected = selected.map(id => id.replace(/["']/g, '')).filter(id => id);
+
         this.state = {
             loaded: false,
-            selected: (this.props.selected || '').replace(/["']/g, ''),
+            selected,
             filter,
             depth: 0,
             expandAllVisible: false,
@@ -1265,19 +1332,19 @@ class ObjectBrowser extends React.Component {
                 this.root = root;
                 this.info = info;
 
-                let node = this.state.selected && findNode(this.root, this.state.selected);
+                // Show first selected item
+                let node = this.state.selected && this.state.selected.length && findNode(this.root, this.state.selected[0]);
 
                 // If selected ID is not visible, reset filter
                 if (node && !applyFilter(node, this.state.filter, this.state.lang, this.objects)) {
                     // reset filter
                     this.setState({ filter: Object.assign({}, DEFAULT_FILTER) }, () => {
-                        this.setState({ loaded: true });
-                        this.state.selected && this.onSelect(this.state.selected);
+                        this.setState({ loaded: true }, () =>
+                            this.state.selected && this.state.selected.length && this.onSelect());
                     });
                 } else {
-                    this.setState({ loaded: true });
-
-                    this.state.selected && this.onSelect(this.state.selected);
+                    this.setState({ loaded: true }, () =>
+                        this.state.selected && this.state.selected.length && this.onSelect());
                 }
             });
 
@@ -1324,26 +1391,44 @@ class ObjectBrowser extends React.Component {
         this.subscribes = [];
     }
 
-    onSelect(selected, isDouble) {
-        if (this.objects[selected] && (!this.props.types || this.props.types.includes(this.objects[selected].type))) {
-            if (selected !== this.state.selected) {
-                this.lastSelectedItem = selected;
-                window.localStorage.setItem((this.props.key || 'App') + '.objectSelected', selected);
+    onSelect(toggleItem, isDouble) {
+        if (!this.props.multiSelect) {
+            if (this.objects[toggleItem] && (!this.props.types || this.props.types.includes(this.objects[toggleItem].type))) {
+                if (this.state.selected[0] !== toggleItem) {
+                    this.lastSelectedItems = [toggleItem];
 
-                this.setState({ selected }, () => {
-                    const name = selected ? UtilsAdapter.getObjectName(this.objects, selected, null, { language: this.state.lang }) : '';
-                    this.props.onSelect && this.props.onSelect(selected, name, isDouble);
-                });
-            } else if (isDouble) {
-                const name = selected ? UtilsAdapter.getObjectName(this.objects, selected, null, { language: this.state.lang }) : '';
-                this.props.onSelect && this.props.onSelect(selected, name, isDouble);
+                    window.localStorage.setItem((this.props.key || 'App') + '.objectSelected', JSON.stringify(this.lastSelectedItems));
+
+                    this.setState({ selected: this.lastSelectedItems }, () => {
+                        const name = this.props.onSelect ? UtilsAdapter.getObjectName(this.objects, toggleItem, null, { language: this.state.lang }) : '';
+                        this.props.onSelect && this.props.onSelect(this.lastSelectedItems, name, isDouble);
+                    });
+                } else if (isDouble && this.props.onSelect) {
+                    const name = toggleItem ? UtilsAdapter.getObjectName(this.objects, toggleItem, null, { language: this.state.lang }) : '';
+                    this.props.onSelect(this.lastSelectedItems, name, isDouble);
+                }
+            } else {
+                this.lastSelectedItems = [];
+                window.localStorage.setItem((this.props.key || 'App') + '.objectSelected', '');
+                this.setState({ selected: [] }, () => this.props.onSelect && this.props.onSelect([], ''));
             }
         } else {
-            this.lastSelectedItem = '';
-            window.localStorage.setItem((this.props.key || 'App') + '.objectSelected', '');
-            this.setState({ selected: '' }, () => {
-                this.props.onSelect && this.props.onSelect('', '');
-            });
+            if (this.objects[toggleItem] && (!this.props.types || this.props.types.includes(this.objects[toggleItem].type))) {
+                this.lastSelectedItems = [...this.state.selected];
+                const pos = this.lastSelectedItems.indexOf(toggleItem);
+                if (pos === -1) {
+                    this.lastSelectedItems.push(toggleItem);
+                    this.lastSelectedItems.sort();
+                } else if (!isDouble) {
+                    this.lastSelectedItems.splice(pos, 1);
+                }
+                window.localStorage.setItem((this.props.key || 'App') + '.objectSelected', JSON.stringify(this.lastSelectedItems));
+
+                this.setState({ selected: this.lastSelectedItems }, () => {
+                    const name = this.lastSelectedItems.length === 1 ? UtilsAdapter.getObjectName(this.objects, this.lastSelectedItems[0], null, { language: this.state.lang }) : '';
+                    this.props.onSelect && this.props.onSelect(this.lastSelectedItems, name, isDouble);
+                });
+            }
         }
     }
 
@@ -1873,11 +1958,20 @@ class ObjectBrowser extends React.Component {
             item.data.lang  = this.state.lang;
         }
 
+        const checkbox =
+            this.props.multiSelect &&
+            this.objects[id] && (!this.props.types || this.props.types.includes(this.objects[id].type)) ?
+                <Checkbox
+                    className={ classes.checkBox }
+                    checked={ this.state.selected.includes(id) }
+                /> :
+                null;
+
         return (
             <Grid
                 container
                 direction="row"
-                className={ clsx(classes.tableRow, !item.data.visible && classes.filteredOut, this.state.selected === id && classes.itemSelected) }
+                className={ clsx(classes.tableRow, !item.data.visible && classes.filteredOut, this.state.selected.includes(id) && classes.itemSelected) }
                 key={ id }
                 id={ id }
                 onClick={ () => this.onSelect(id) }
@@ -1901,6 +1995,7 @@ class ObjectBrowser extends React.Component {
                         container
                         alignItems="center"
                     >
+                        { checkbox }
                         { iconFolder }
                     </Grid>
                     <Grid
@@ -1926,11 +2021,11 @@ class ObjectBrowser extends React.Component {
                     </Grid>
                 </Grid>
                 {this.visibleCols.includes('name')    ? <div className={ classes.cellName }    style={{ width: widths.widthName }}>{ item.data.title || '' }</div> : null }
-                {this.visibleCols.includes('type')    ? <div className={ classes.cellType }    style={{ width: widths.WIDTHS[0] }}>{ typeImg } { obj && obj.type }</div> : null }
-                {this.visibleCols.includes('role')    ? <div className={ classes.cellRole }    style={{ width: widths.WIDTHS[1] }}>{ obj && obj.common && obj.common.role }</div> : null }
-                {this.visibleCols.includes('room')    ? <div className={ classes.cellRoom }    style={{ width: widths.WIDTHS[2] }}>{ item.data.rooms }</div> : null }
-                {this.visibleCols.includes('func')    ? <div className={ classes.cellFunc }    style={{ width: widths.WIDTHS[3] }}>{ item.data.funcs }</div> : null }
-                {this.visibleCols.includes('val')     ? <div className={ classes.cellValue }   style={{ width: widths.WIDTHS[4] }} onClick={e => {
+                {this.visibleCols.includes('type')    ? <div className={ classes.cellType }    style={{ width: widths.WIDTHS.type }}>{ typeImg } { obj && obj.type }</div> : null }
+                {this.visibleCols.includes('role')    ? <div className={ classes.cellRole }    style={{ width: widths.WIDTHS.role }}>{ obj && obj.common && obj.common.role }</div> : null }
+                {this.visibleCols.includes('room')    ? <div className={ classes.cellRoom }    style={{ width: widths.WIDTHS.room }}>{ item.data.rooms }</div> : null }
+                {this.visibleCols.includes('func')    ? <div className={ classes.cellFunc }    style={{ width: widths.WIDTHS.func }}>{ item.data.funcs }</div> : null }
+                {this.visibleCols.includes('val')     ? <div className={ classes.cellValue }   style={{ width: widths.WIDTHS.val }} onClick={e => {
                     if (!item.data.obj || !this.states) {
                         return null;
                     }
@@ -1942,7 +2037,7 @@ class ObjectBrowser extends React.Component {
                     };
                     this.setState({ updateOpened: true });
                 }}>{ this.renderColumnValue(id, item, classes) }</div> : null }
-                {this.visibleCols.includes('buttons') ? <div className={ classes.cellButtons } style={{ width: widths.WIDTHS[5] }}>{ this.renderColumnButtons(id, item, classes) }</div> : null }
+                {this.visibleCols.includes('buttons') ? <div className={ classes.cellButtons } style={{ width: widths.WIDTHS.buttons }}>{ this.renderColumnButtons(id, item, classes) }</div> : null }
             </Grid>
         );
     }
@@ -1968,12 +2063,12 @@ class ObjectBrowser extends React.Component {
         return <div className={ classes.headerRow } >
             <div className={ classes.headerCell } style={{ width: widths.idWidth }}>{ this.getFilterInput('id') }</div>
             {this.visibleCols.includes('name')    ? <div className={ classes.headerCell } style={{ width: widths.widthNameHeader }}>{ this.getFilterInput('name') }</div> : null }
-            {this.visibleCols.includes('type')    ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS[0] }}>{ this.getFilterSelectType() }</div> : null }
-            {this.visibleCols.includes('role')    ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS[1] }}>{ this.getFilterSelectRole() }</div> : null }
-            {this.visibleCols.includes('room')    ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS[2] }}>{ this.getFilterSelectRoom() }</div> : null }
-            {this.visibleCols.includes('func')    ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS[3] }}>{ this.getFilterSelectFunction() }</div> : null }
-            {this.visibleCols.includes('val')     ? <div className={ clsx(classes.headerCell, classes.headerCellValue) } style={{ width: widths.WIDTHS[4] }}>{ this.props.t('Value') }</div> : null }
-            {this.visibleCols.includes('buttons') ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS[5] }}> { this.getFilterSelectCustoms() }</div> : null }
+            {this.visibleCols.includes('type')    ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS.type }}>{ this.getFilterSelectType() }</div> : null }
+            {this.visibleCols.includes('role')    ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS.role }}>{ this.getFilterSelectRole() }</div> : null }
+            {this.visibleCols.includes('room')    ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS.room }}>{ this.getFilterSelectRoom() }</div> : null }
+            {this.visibleCols.includes('func')    ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS.func }}>{ this.getFilterSelectFunction() }</div> : null }
+            {this.visibleCols.includes('val')     ? <div className={ clsx(classes.headerCell, classes.headerCellValue) } style={{ width: widths.WIDTHS.val}}>{ this.props.t('Value') }</div> : null }
+            {this.visibleCols.includes('buttons') ? <div className={ classes.headerCell } style={{ width: widths.WIDTHS.buttons }}> { this.getFilterSelectCustoms() }</div> : null }
         </div>;
     }
 
@@ -1989,8 +2084,8 @@ class ObjectBrowser extends React.Component {
             if (this.state.scrollBarWidth !== scrollBarWidth) {
                 setTimeout(() => this.setState({ scrollBarWidth }), 100);
             } else {
-                if (!this.selectedFound && (this.props.selected || this.lastSelectedItem)) {
-                    const node = window.document.getElementById(this.props.selected || this.lastSelectedItem);
+                if (!this.selectedFound && ((this.state.selected && this.state.selected[0]) || this.lastSelectedItems)) {
+                    const node = window.document.getElementById((this.state.selected && this.state.selected[0]) || this.lastSelectedItems);
                     node && node.scrollIntoView();
                     this.selectedFound = true;
                 }
@@ -2097,13 +2192,28 @@ class ObjectBrowser extends React.Component {
             return (<CircularProgress/>);
         } else {
             const idWidth = 300;
-            const WIDTHS = [80, 120, 180, 180, 120, 76];
+            const WIDTHS = {
+                type: 80,
+                role: 120,
+                room: 180,
+                func: 180,
+                val: 120,
+                buttons: 76
+            };
+
+            let widthSum = idWidth;
+            widthSum += this.visibleCols.includes('type')    ? WIDTHS.type : 0;
+            widthSum += this.visibleCols.includes('role')    ? WIDTHS.role : 0;
+            widthSum += this.visibleCols.includes('room')    ? WIDTHS.room : 0;
+            widthSum += this.visibleCols.includes('func')    ? WIDTHS.func : 0;
+            widthSum += this.visibleCols.includes('val')     ? WIDTHS.val : 0;
+            widthSum += this.visibleCols.includes('buttons') ? WIDTHS.buttons : 0;
 
             const widths = {
                 idWidth,
                 WIDTHS,
-                widthName:       `calc(100% - ${idWidth + WIDTHS[0] + WIDTHS[1] + WIDTHS[2] + WIDTHS[3] + WIDTHS[4] + WIDTHS[5]}px)`,
-                widthNameHeader: `calc(100% - ${idWidth + WIDTHS[0] + WIDTHS[1] + WIDTHS[2] + WIDTHS[3] + WIDTHS[4] + WIDTHS[5] + this.state.scrollBarWidth}px)`,
+                widthName:       `calc(100% - ${widthSum}px)`,
+                widthNameHeader: `calc(100% - ${widthSum + this.state.scrollBarWidth}px)`,
             };
 
             const classes = this.props.classes;
@@ -2144,6 +2254,7 @@ ObjectBrowser.propTypes = {
     t: PropTypes.func,
     lang: PropTypes.string,
     columns: PropTypes.array,
+    multiSelect: PropTypes.bool,
 
     // components
     objectCustomDialog: PropTypes.object,

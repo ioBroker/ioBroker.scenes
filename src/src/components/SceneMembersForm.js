@@ -266,52 +266,57 @@ class SceneMembersForm extends React.Component {
         this.setState({states, objectTypes});
     };
     
-    createSceneMember = id => {
+    createSceneMembers = ids => {
         this.setState({showDialog: false}, () => {
-            if (this.state.members.find(item => item.id === id)) {
-                // Show alert
-                return;
-            }
+            // filter out yet existing IDs
+            ids = ids.filter(id => !this.state.members.find(item => item.id === id));
+            if (ids.length) {
+                const openedMembers = [...this.state.openedMembers];
+                const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
+                const objectNames = JSON.parse(JSON.stringify(this.state.objectNames));
+                const members     = JSON.parse(JSON.stringify(this.state.members));
 
-            // Read type of state
-            this.props.socket.getObject(id)
-                .then(obj => {
-                    const template = {
-                        id,
-                        setIfTrue: null,
-                        setIfFalse: null,
-                        stopAllDelays: false,
-                        desc: null,
-                        disabled: false,
-                        delay: 0
-                    };
+                Promise.all(ids.map(id =>
+                    // Read type of state
+                    this.props.socket.getObject(id)
+                        .then(obj => {
+                            const template = {
+                                id,
+                                setIfTrue: null,
+                                setIfFalse: null,
+                                stopAllDelays: false,
+                                desc: null,
+                                disabled: false,
+                                delay: 0
+                            };
 
-                    const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
-                    const objectNames = JSON.parse(JSON.stringify(this.state.objectNames));
-                    objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, true);
+                            objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, true);
 
-                    if (obj && obj.common && obj.common.type) {
-                        objectTypes[id] = obj.common.type;
+                            if (obj && obj.common && obj.common.type) {
+                                objectTypes[id] = obj.common.type;
 
-                        if (objectTypes[id] === 'boolean') {
-                            template.setIfTrue = true;
-                            if (this.state.onFalseEnabled) {
-                                template.setIfFalse = false;
+                                if (objectTypes[id] === 'boolean') {
+                                    template.setIfTrue = true;
+                                    if (this.state.onFalseEnabled) {
+                                        template.setIfFalse = false;
+                                    }
+                                }
                             }
-                        }
-                    }
 
-                    let members = JSON.parse(JSON.stringify(this.state.members));
-                    members.push(template);
+                            members.push(template);
 
-                    // open added state
-                    const openedMembers = [...this.state.memberOpened];
-                    openedMembers.push(id);
-
-                    this.setStateWithParent({objectTypes, objectNames, members, openedMembers}, () =>
-                        // subscribe on new state
-                        this.props.socket.subscribeState(id, this.memberStateChange));
-                });
+                            // open added state
+                            openedMembers.push(id);
+                        })
+                        .then(() => this.setStateWithParent({objectTypes, objectNames, members, openedMembers}, () =>
+                            // Subscribe on all new members
+                            ids.forEach(id => this.props.socket.subscribeState(id, this.memberStateChange)))
+                        )
+                    )
+                );
+            } else {
+                // Show alert
+            }
         });
     };
 
@@ -335,16 +340,21 @@ class SceneMembersForm extends React.Component {
             key="selectDialogMembers"
             socket={ this.props.socket }
             dialogName="memberEdit"
+            multiSelect={ true }
             title={ I18n.t('Select for ') }
             selected={ null }
-            onOk={ id => this.createSceneMember(id) }
+            onOk={ id => this.createSceneMembers(id) }
             onClose={ () => this.setState({showDialog: false}) }
         /> : null;
     }
     
     renderDeleteDialog() {
+        if (this.state.deleteDialog === null) {
+            return;
+        }
+
         return <Dialog
-            open={ !!this.state.deleteDialog }
+            open={ true }
             key="deleteDialog"
             onClose={ () =>
                 this.setState({deleteDialog: null}) }

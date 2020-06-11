@@ -45,9 +45,15 @@ class DialogSelectID extends React.Component {
             this.filters = {};
         }
 
+        let selected = this.props.selected || [];
+        if (typeof selected !== 'object') {
+            selected = [selected];
+        }
+        selected = selected.filter(id => id);
+
         this.state =  {
-            selected: this.props.selected || '',
-            name:     ''
+            selected,
+            name: ''
         };
     }
 
@@ -56,16 +62,28 @@ class DialogSelectID extends React.Component {
     };
 
     handleOk() {
-        this.props.onOk(this.state.selected, this.state.name);
+        this.props.onOk(this.props.multiSelect ? this.state.selected : this.state.selected[0] || '', this.state.name);
         this.props.onClose();
     };
 
     render() {
         let title;
-        if (this.state.name || this.state.selected) {
-            title = [(<span key="selected">{I18n.t('Selected')} </span>), (<span key="id" className={this.props.classes.headerID}>{
-                (this.state.name || this.state.selected) + (this.state.name ? ' [' + this.state.selected + ']' : '')
-            }</span>)];
+        if (this.state.name || this.state.selected.length) {
+            if (this.state.selected.length === 1) {
+                title = [
+                    <span key="selected">{ I18n.t('Selected') } </span>,
+                    <span key="id" className={ this.props.classes.headerID }>{
+                        (this.state.name || this.state.selected) + (this.state.name ? ' [' + this.state.selected + ']' : '')
+                    }</span>
+                ];
+            } else {
+                title = [
+                    <span key="selected">{ I18n.t('Selected') } </span>,
+                    <span key="id" className={ this.props.classes.headerID }>{
+                        I18n.t('%s items', this.state.selected.length)
+                    }</span>
+                ];
+            }
         } else {
             title = this.props.title || I18n.t('Please select object ID...');
         }
@@ -92,6 +110,7 @@ class DialogSelectID extends React.Component {
                         t={ I18n.t }
                         socket={ this.props.socket }
                         selected={ this.state.selected }
+                        multiSelect={ this.props.multiSelect }
                         name={ this.state.name }
                         theme={ this.props.theme }
                         onFilterChanged={ filterConfig => {
@@ -99,13 +118,17 @@ class DialogSelectID extends React.Component {
                             window.localStorage.setItem(this.dialogName, JSON.stringify(filterConfig));
                         } }
                         onSelect={ (selected, name, isDouble) => {
-                            selected !== this.state.selected && this.setState({selected, name});
-                            isDouble && this.handleOk();
+                            if (JSON.stringify(selected) !== JSON.stringify(this.state.selected)) {
+                                this.setState({selected, name}, () =>
+                                    isDouble && this.handleOk());
+                            } else if (isDouble) {
+                                this.handleOk();
+                            }
                         } }
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={ () => this.handleOk() } disabled={ !this.state.selected } color="primary">{ this.props.ok || I18n.t('Ok') }</Button>
+                    <Button onClick={ () => this.handleOk() } disabled={ !this.state.selected.length } color="primary">{ this.props.ok || I18n.t('Ok') }</Button>
                     <Button onClick={ () => this.handleCancel() } color="primary">{ this.props.cancel || I18n.t('Cancel') }</Button>
                 </DialogActions>
             </Dialog>

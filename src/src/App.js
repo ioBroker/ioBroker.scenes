@@ -311,7 +311,7 @@ class App extends GenericApp {
             scenes[id] = JSON.parse(JSON.stringify(this.state.selectedSceneData));
             scenes[id].common.enabled = event.target.checked;
         }
-        
+
         scenes[id].common.enabled = event.target.checked;
 
         this.socket.setObject(id, scenes[id])
