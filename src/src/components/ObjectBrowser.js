@@ -58,6 +58,7 @@ import TabHeader from './TabHeader';
 const ROW_HEIGHT = 32;
 const ITEM_LEVEL = ROW_HEIGHT;
 const SMALL_BUTTON_SIZE = 20;
+const ICON_SIZE = 24;
 
 const styles = theme => ({
     toolbar: {
@@ -177,8 +178,8 @@ const styles = theme => ({
         verticalAlign: 'top',
         '& .itemIcon': {
             verticalAlign: 'middle',
-            width: 24,
-            height: 24,
+            width: ICON_SIZE,
+            height: ICON_SIZE,
             display: 'inline-block',
         },
     },
@@ -377,15 +378,15 @@ const styles = theme => ({
         paddingTop: 3,
         '& .itemIcon': {
             verticalAlign: 'middle',
-            width: 24,
-            height: 24,
+            width: ICON_SIZE,
+            height: ICON_SIZE,
             display: 'inline-block',
         }
     },
     headerCellSelectItem: {
         '& .itemIcon': {
-            width: 24,
-            height: 24,
+            width: ICON_SIZE,
+            height: ICON_SIZE,
             marginRight: 5,
             display: 'inline-block'
         }
@@ -490,7 +491,7 @@ function applyFilter(item, filters, lang, objects, context, counter) {
             filteredOut =
                 data.id === 'system' ||
                 data.id === 'enum' ||
-               // (data.obj && data.obj.type === 'meta') ||
+                // (data.obj && data.obj.type === 'meta') ||
                 data.id.startsWith('system.') ||
                 data.id.startsWith('enum.') ||
                 data.id.startsWith('_design/') ||
@@ -1128,10 +1129,10 @@ const DEFAULT_FILTER = {
 
 class IconState extends React.Component {
     render() {
-        return <svg width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+        return <svg viewBox="0 0 320 320" width={ICON_SIZE} height={ICON_SIZE} xmlns="http://www.w3.org/2000/svg" className={ this.props.className }>
             <g>
-                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="10" stroke="currentColor" fill="none"/>
-                <ellipse ry="54" rx="54" id="svg_2" cy="160" cx="160" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="#fff"/>
+                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="15" stroke="currentColor" fill="none"/>
+                <ellipse ry="54" rx="54" id="svg_2" cy="160" cx="160" fillOpacity="null" strokeOpacity="null" strokeWidth="15" stroke="currentColor" fill="#fff"/>
             </g>
         </svg>;
     }
@@ -1139,12 +1140,12 @@ class IconState extends React.Component {
 
 class IconChannel extends React.Component {
     render() {
-        return <svg width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+        return <svg viewBox="0 0 320 320" width={ICON_SIZE} height={ICON_SIZE} xmlns="http://www.w3.org/2000/svg" className={ this.props.className }>
             <g>
-                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="10" stroke="currentColor" fill="none"/>
-                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_2" cy="252" cx="160" fillOpacity="null" strokeOpacity="null" strokeWidth="10" fill="none"/>
-                <line strokeLinecap="null" strokeLinejoin="null" id="svg_3" y2="201.94531" x2="159.5" y1="46.94531" x1="159.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="none"/>
-                <rect id="svg_4" height="27" width="50" y="79.7979" x="133.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="#fff"/>
+                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="15" stroke="currentColor" fill="none"/>
+                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_2" cy="248" cx="160" fill="none" strokeWidth="15"/>
+                <line strokeLinecap="null" strokeLinejoin="null" id="svg_3" y2="201.94531" x2="159.5" y1="46.94531" x1="159.5" fillOpacity="null" strokeOpacity="null" strokeWidth="15" stroke="currentColor" fill="none"/>
+                <rect id="svg_4" height="27" width="50" y="79.7979" x="133.5" fillOpacity="null" strokeOpacity="null" strokeWidth="15" stroke="currentColor" fill="#fff"/>
             </g>
         </svg>;
     }
@@ -1152,19 +1153,19 @@ class IconChannel extends React.Component {
 
 class IconDevice extends React.Component {
     render() {
-        return <svg width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+        return <svg viewBox="0 0 320 320" width={ICON_SIZE} height={ICON_SIZE} xmlns="http://www.w3.org/2000/svg" className={ this.props.className }>
             <g>
                 <title>Layer 1</title>
-                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="10" stroke="currentColor" fill="none"/>
-                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_2" cy="252" cx="160" fillOpacity="null" strokeOpacity="null" strokeWidth="10" fill="#fff"/>
-                <line strokeLinecap="null" strokeLinejoin="null" id="svg_3" y2="201.94531" x2="159.5" y1="46.94531" x1="159.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="none"/>
-                <rect height="27" width="50" y="140.83068" x="133.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="#fff"/>
-                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_5" cy="251" cx="241" fillOpacity="null" strokeOpacity="null" strokeWidth="10" fill="#fff"/>
-                <line strokeLinecap="null" strokeLinejoin="null" id="svg_6" y2="200.94531" x2="240.5" y1="45.94531" x1="240.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="none"/>
-                <rect height="27" width="50" y="78.7979" x="214.5" strokeWidth="10" stroke="currentColor" fill="#fff"/>
-                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_8" cy="252" cx="84" fillOpacity="null" strokeOpacity="null" strokeWidth="10" fill="#fff"/>
-                <line strokeLinecap="null" strokeLinejoin="null" id="svg_9" y2="201.94531" x2="83.5" y1="46.94531" x1="83.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="none"/>
-                <rect height="27" width="50" y="79.7979" x="57.5" fillOpacity="null" strokeOpacity="null" strokeWidth="10" stroke="currentColor" fill="#fff"/>
+                <rect rx="32" id="svg_1" height="272" width="267" y="25" x="25" strokeWidth="15" stroke="currentColor" fill="none"/>
+                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_2" cy="252" cx="160" fillOpacity="null" strokeOpacity="null" strokeWidth="15" fill="#fff"/>
+                <line strokeLinecap="null" strokeLinejoin="null" id="svg_3" y2="201.94531" x2="159.5" y1="46.94531" x1="159.5" fillOpacity="null" strokeOpacity="null" strokeWidth="15" stroke="currentColor" fill="none"/>
+                <rect height="27" width="50" y="140.83068" x="133.5" fillOpacity="null" strokeOpacity="null" strokeWidth="15" stroke="currentColor" fill="#fff"/>
+                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_5" cy="251" cx="241" fillOpacity="null" strokeOpacity="null" strokeWidth="15" fill="#fff"/>
+                <line strokeLinecap="null" strokeLinejoin="null" id="svg_6" y2="200.94531" x2="240.5" y1="45.94531" x1="240.5" fillOpacity="null" strokeOpacity="null" strokeWidth="15" stroke="currentColor" fill="none"/>
+                <rect height="27" width="50" y="78.7979" x="214.5" strokeWidth="15" stroke="currentColor" fill="#fff"/>
+                <ellipse stroke="currentColor" ry="26" rx="26" id="svg_8" cy="252" cx="84" fillOpacity="null" strokeOpacity="null" strokeWidth="15" fill="#fff"/>
+                <line strokeLinecap="null" strokeLinejoin="null" id="svg_9" y2="201.94531" x2="83.5" y1="46.94531" x1="83.5" fillOpacity="null" strokeOpacity="null" strokeWidth="15" stroke="currentColor" fill="none"/>
+                <rect height="27" width="50" y="79.7979" x="57.5" fillOpacity="null" strokeOpacity="null" strokeWidth="15" stroke="currentColor" fill="#fff"/>
             </g>
         </svg>;
     }
@@ -1436,7 +1437,7 @@ class ObjectBrowser extends React.Component {
         // Remove unused subscribed
         for (let i = this.subscribes.length - 1; i >= 0; i--) {
             !this.recordStates.includes(this.subscribes[i]) &&
-                this.unsubscribe(this.subscribes[i]);
+            this.unsubscribe(this.subscribes[i]);
         }
         this.recordStates = [];
     }
@@ -1624,9 +1625,9 @@ class ObjectBrowser extends React.Component {
                 }
 
                 return <MenuItem className={ this.props.classes.headerCellSelectItem } key={ id } value={ id }>
-                        { icon ? icon : (hasIcons ? <div className="itemIcon"/> : null)}
-                        { name }
-                    </MenuItem>;
+                    { icon ? icon : (hasIcons ? <div className="itemIcon"/> : null)}
+                    { name }
+                </MenuItem>;
             }) }
         </Select>;
     }
@@ -1777,8 +1778,8 @@ class ObjectBrowser extends React.Component {
     renderColumnButtons(id, item, classes) {
         if (!item.data.obj) {
             return <IconButton className={ clsx(classes.cellButtonsButton, classes.cellButtonsButtonAlone) }  size="small" aria-label="delete" title={ this.texts.deleteObject }>
-                    <IconDelete className={ classes.cellButtonsButtonIcon }  />
-                </IconButton>;
+                <IconDelete className={ classes.cellButtonsButtonIcon }  />
+            </IconButton>;
         }
 
         return [
@@ -1927,12 +1928,12 @@ class ObjectBrowser extends React.Component {
         let iconFolder;
         if (item.children) {
             iconFolder = isExpanded ? <IconOpen
-                    className={ classes.cellIdIconFolder }
-                    onClick={ () => this.toggleExpanded(id) }
-                /> : <IconClosed
-                    className={ classes.cellIdIconFolder }
-                    onClick={ () => this.toggleExpanded(id) }
-                />;
+                className={ classes.cellIdIconFolder }
+                onClick={ () => this.toggleExpanded(id) }
+            /> : <IconClosed
+                className={ classes.cellIdIconFolder }
+                onClick={ () => this.toggleExpanded(id) }
+            />;
         } else {
             iconFolder = <IconDocument className={ classes.cellIdIconDocument } />;
         }
@@ -2162,7 +2163,7 @@ class ObjectBrowser extends React.Component {
             }}
         />;
     }
-    
+
     render() {
         this.recordStates = [];
         this.unsubscribeTimer && clearTimeout(this.unsubscribeTimer);
