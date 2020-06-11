@@ -1248,7 +1248,7 @@ class ObjectBrowser extends React.Component {
 
         this.onStateChangeBound = this.onStateChange.bind(this);
 
-        this.props.socket.getObjects(true)
+        this.props.socket.getObjects(true, true)
             .then(objects => {
                 if (this.props.types) {
                     this.objects = {};
@@ -1746,7 +1746,12 @@ class ObjectBrowser extends React.Component {
             sessionId?: any;
             aggregate?: 'minmax' | 'min' | 'max' | 'average' | 'total' | 'count' | 'none';
         }*/
-        if (this.defaultHistory && this.objects[id] && this.objects[id].common && this.objects[id].common.custom && this.objects[id].common.custom[this.defaultHistory]) {
+        if (window.sparkline &&
+            this.defaultHistory &&
+            this.objects[id] &&
+            this.objects[id].common &&
+            this.objects[id].common.custom &&
+            this.objects[id].common.custom[this.defaultHistory]) {
 
             const now = new Date();
             now.setHours(now.getHours() - 24);

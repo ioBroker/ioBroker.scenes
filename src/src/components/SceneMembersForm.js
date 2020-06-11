@@ -17,7 +17,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 
-// own components
+// own thiss
 import I18n from '@iobroker/adapter-react/i18n';
 import DialogSelectID from './SelectID';
 import Utils from '@iobroker/adapter-react/Components/Utils';
@@ -166,14 +166,23 @@ class SceneMembersForm extends React.Component {
     constructor(props) {
         super(props);
 
+        let openedMembers = window.localStorage.getItem('Scenes.openedMembers') || '[]';
+        try {
+            openedMembers = JSON.parse(openedMembers);
+        } catch (e) {
+            openedMembers = [];
+        }
+
         this.state = {
             states: {},
-            memberOpened:  {},
+            openedMembers,
             objectTypes: {},
             objectNames: {},
-            sceneObj: JSON.parse(JSON.stringify(this.props.scene)),
-            deleteDialog: null,
+            members: JSON.parse(JSON.stringify(props.members)),
             writeSceneState: '',
+            deleteDialog: null,
+            onFalseEnabled: props.onFalseEnabled,
+            virtualGroup: props.virtualGroup,
         };
     }
 
@@ -182,23 +191,40 @@ class SceneMembersForm extends React.Component {
             .then(newState =>
                 this.setState(newState, () => {
                     // subscribe on scene state
-                    this.props.socket.subscribeState(this.state.sceneObj._id, this.memberStateChange);
+                    this.props.socket.subscribeState(this.props.sceneId, this.memberStateChange);
                     // subscribe on all states
-                    this.state.sceneObj.native.members.forEach(member =>
+                    this.state.members.forEach(member =>
                         this.props.socket.subscribeState(member.id, this.memberStateChange))
                 }));
     }
 
+    componentWillUnmount() {
+        this.props.socket.unsubscribeState(this.props.sceneId, this.memberStateChange);
+
+        this.state.members.forEach(member =>
+            this.props.socket.unsubscribeState(member.id, this.memberStateChange));
+    }
+    
     static getDerivedStateFromProps(props, state) {
-        if (JSON.stringify(props.scene) !== JSON.stringify(state.sceneObj)) {
-            return {sceneObj: JSON.parse(JSON.stringify(props.scene))};
+        const newState = {};
+        let changed = false;
+
+        if (props.onFalseEnabled !== state.onFalseEnabled) {
+            newState.onFalseEnabled = props.onFalseEnabled;
+            changed = true;
         }
+        if (props.virtualGroup !== state.virtualGroup) {
+            newState.virtualGroup = props.virtualGroup;
+            changed = true;
+        }
+
+        return changed ? newState : null;
     }
 
     readObjects() {
-        if (this.state.sceneObj.native && this.state.sceneObj.native.members) {
+        if (this.state.members) {
             return Promise.all(
-                this.state.sceneObj.native.members.map(member =>
+                this.state.members.map(member =>
                     this.props.socket.getObject(member.id)))
                 .then(results => {
                     const objectTypes = {};
@@ -239,17 +265,10 @@ class SceneMembersForm extends React.Component {
 
         this.setState({states, objectTypes});
     };
-
-    componentWillUnmount() {
-        this.props.socket.unsubscribeState(this.state.sceneObj._id, this.memberStateChange);
-
-        this.state.sceneObj.native.members.forEach(member =>
-            this.props.socket.unsubscribeState(member.id, this.memberStateChange));
-    }
-
+    
     createSceneMember = id => {
         this.setState({showDialog: false}, () => {
-            if (this.state.sceneObj.native.members.find(item => item.id === id)) {
+            if (this.state.members.find(item => item.id === id)) {
                 // Show alert
                 return;
             }
@@ -264,7 +283,7 @@ class SceneMembersForm extends React.Component {
                         stopAllDelays: false,
                         desc: null,
                         disabled: false,
-                        delay: null
+                        delay: 0
                     };
 
                     const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
@@ -276,87 +295,73 @@ class SceneMembersForm extends React.Component {
 
                         if (objectTypes[id] === 'boolean') {
                             template.setIfTrue = true;
-                            if (this.state.sceneObj.native && this.state.sceneObj.native.onFalse && this.state.sceneObj.native.onFalse.enabled) {
+                            if (this.state.onFalseEnabled) {
                                 template.setIfFalse = false;
                             }
                         }
                     }
 
-                    let scene = JSON.parse(JSON.stringify(this.state.sceneObj));
-                    scene.native.members.push(template);
+                    let members = JSON.parse(JSON.stringify(this.state.members));
+                    members.push(template);
 
                     // open added state
-                    const memberOpened = JSON.parse(JSON.stringify(this.state.memberOpened));
-                    memberOpened[scene.native.members.length - 1] = true;
+                    const openedMembers = [...this.state.memberOpened];
+                    openedMembers.push(id);
 
-                    this.setState({objectTypes, objectNames}, () => {
+                    this.setStateWithParent({objectTypes, objectNames, members, openedMembers}, () =>
                         // subscribe on new state
-                        this.props.socket.subscribeState(id, this.memberStateChange);
-                        this.props.updateScene(scene._id, scene);
-                    });
+                        this.props.socket.subscribeState(id, this.memberStateChange));
                 });
         });
     };
 
     deleteSceneMember = index => {
-        let scene = JSON.parse(JSON.stringify(this.state.sceneObj));
-        const id = scene.native.members[index].id;
-        scene.native.members.splice(index, 1);
-        this.props.updateScene(scene._id, scene);
-        this.props.socket.unsubscribeState(id, this.memberStateChange);
+        let members = JSON.parse(JSON.stringify(this.state.members));
+        const id = members[index].id;
+        members.splice(index, 1);
+        
+        this.setStateWithParent({members, deleteDialog: null}, () =>
+            this.props.socket.unsubscribeState(id, this.memberStateChange));
     };
 
-    setStateWithParent = (newState) => {
+    setStateWithParent(newState, cb) {
+        const that = this;
         this.setState(newState, () =>
-            this.props.setSelectedSceneChanged(this.state.sceneObj._id, this.state.sceneObj));
+            this.props.updateSceneMembers(that.state.members, cb));
     };
 
-    dialogs = () => {
-        return [
-        this.state.showDialog ? <DialogSelectID
+    renderSelectIdDialog() {
+        return this.state.showDialog ? <DialogSelectID
             key="selectDialogMembers"
             socket={ this.props.socket }
             dialogName="memberEdit"
             title={ I18n.t('Select for ') }
-            //statesOnly={true}
             selected={ null }
-            onOk={ id =>
-                this.createSceneMember(id) }
+            onOk={ id => this.createSceneMember(id) }
             onClose={ () => this.setState({showDialog: false}) }
-        /> : null,
-        <Dialog
-        open={ this.state.deleteDialog !== null }
-        key="deleteDialog"
-        onClose={ () =>
-            this.setState({deleteDialog: null}) }
-        >
-            <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
-            <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                <Button variant="contained" onClick={() => {
-                        this.setState({deleteDialog: null});
-                    }}>
+        /> : null;
+    }
+    
+    renderDeleteDialog() {
+        return <Dialog
+            open={ !!this.state.deleteDialog }
+            key="deleteDialog"
+            onClose={ () =>
+                this.setState({deleteDialog: null}) }
+            >
+                <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
+                <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" onClick={ () => this.setState({deleteDialog: null}) }>
                         {I18n.t('Cancel')}
-                </Button>
-                <Button variant="contained" color="secondary" onClick={e => {
-                    this.deleteSceneMember(this.state.deleteDialog)
-                    this.setState({deleteDialog: null});
-                }}>
-                    { I18n.t('Delete') }
-                </Button>
-            </div>
-        </Dialog>
-        ]
+                    </Button>
+                    <Button variant="contained" color="secondary" onClick={ e => this.deleteSceneMember(this.state.deleteDialog) }>
+                        { I18n.t('Delete') }
+                    </Button>
+                </div>
+            </Dialog>;
     };
 
-    renderMember = (member, index, scene) => {
-        let component = this;
-
-        let memberOriginal = this.props.scene.native.members[index];
-
-        if (!memberOriginal) {
-            return null;
-        }
-
+    renderMember = (member, index) => {
         let value = null;
         if (this.state.states[member.id] !== undefined && this.state.states[member.id] !== null) {
             let _valStr = this.state.states[member.id].toString();
@@ -382,7 +387,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        let setIfTrue = scene.native.members[index].setIfTrue;
+        let setIfTrue = member.setIfTrue;
         if (setIfTrue === undefined || setIfTrue === null) {
             setIfTrue = '';
         } else {
@@ -395,7 +400,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        let setIfFalse = scene.native.members[index].setIfFalse;
+        let setIfFalse = member.setIfFalse;
         if (setIfFalse === undefined || setIfFalse === null) {
             setIfFalse = '';
         } else {
@@ -408,17 +413,26 @@ class SceneMembersForm extends React.Component {
             }
         }
 
+        const opened = this.state.openedMembers.includes(member.id);
+
         return <Paper key={ member.id } className={ this.props.classes.memberCard }>
             <div className={ this.props.classes.memberToolbar }>
                 <div className={ this.props.classes.memberTitle }>{ member.id }</div>
                 <div className={ this.props.classes.memberDesc }>{ member.desc || this.state.objectNames[member.id] || '' }</div>
                 <div className={ this.props.classes.memberButtons }>
                     <IconButton title={ I18n.t('Edit') } onClick={ () => {
-                        const memberOpened = JSON.parse(JSON.stringify(this.state.memberOpened));
-                        memberOpened[index] = !memberOpened[index];
-                        component.setState({memberOpened});
+                        const openedMembers = [...this.state.openedMembers];
+                        const pos = openedMembers.indexOf(member.id);
+                        if (pos !== -1) {
+                            openedMembers.splice(pos, 1);
+                        } else {
+                            openedMembers.push(member.id);
+                            openedMembers.sort();
+                        }
+                        window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
+                        this.setState({openedMembers});
                     }}>
-                        { this.state.memberOpened[index] ? <IconClose/> : <IconEdit/> }
+                        { opened ? <IconClose/> : <IconEdit/> }
                     </IconButton>
                     <IconButton
                         size="small"
@@ -429,18 +443,19 @@ class SceneMembersForm extends React.Component {
                     <Switch
                         checked={ !member.disabled }
                         onChange={ e => {
-                            member.disabled = !e.target.checked;
-                            component.props.updateScene(scene._id, scene);
+                            const members = JSON.parse(JSON.stringify(this.state.members));
+                            members[index].disabled = !e.target.checked;
+                            this.setStateWithParent({members});
                         }}
                         name={ member.id }
                     />
                     { value }
                 </div>
             </div>
-            <div>{ memberOriginal.desc } { !this.state.memberOpened[index] && memberOriginal.delay ?
-                <span> <IconClock/> {memberOriginal.delay + I18n.t('ms')}</span> : null }</div>
+            <div>{ member.desc } { !opened && member.delay ?
+                <span> <IconClock/> {member.delay + I18n.t('ms')}</span> : null }</div>
             {
-                this.state.memberOpened[index] ?
+                opened ?
                     <div>
                         {/*<Box className={this.props.classes.p}>
                             <TextField
@@ -448,9 +463,9 @@ class SceneMembersForm extends React.Component {
                                 InputLabelProps={{shrink: true}} label={I18n.t('Description')}
                                 value={member.desc || ''}
                                 onChange={e => {
-                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                    sceneObj.native.members[index].desc = e.target.value;
-                                    component.setStateWithParent({sceneObj});
+                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    members[index].desc = e.target.value;
+                                    this.setStateWithParent({members});
                                 }}
                             />
                         </Box>*/ }
@@ -458,9 +473,9 @@ class SceneMembersForm extends React.Component {
                             {this.state.objectTypes[member.id] === 'boolean' ?
                                 <FormControlLabel
                                     control={<Checkbox checked={member.setIfTrue} onChange={e => {
-                                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                        sceneObj.native.members[index].setIfTrue = e.target.checked;
-                                        component.setStateWithParent({sceneObj});
+                                        const members = JSON.parse(JSON.stringify(this.state.members));
+                                        members[index].setIfTrue = e.target.checked;
+                                        this.setStateWithParent({members});
                                     }}/>}
                                     label={I18n.t('Set if TRUE')}
                                 />
@@ -468,29 +483,29 @@ class SceneMembersForm extends React.Component {
                                 <TextField InputLabelProps={{shrink: true}} label={I18n.t('Set if TRUE')}
                                            value={member.setIfTrue}
                                            fullWidth
-                                           onChange={e => {
-                                               const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                           onChange={ e => {
+                                               const members = JSON.parse(JSON.stringify(this.state.members));
                                                if (this.state.objectTypes[member.id] === 'number') {
-                                                   sceneObj.native.members[index].setIfTrue = parseFloat(e.target.value);
+                                                   members[index].setIfTrue = parseFloat(e.target.value);
                                                } else {
-                                                   sceneObj.native.members[index].setIfTrue = e.target.value;
+                                                   members[index].setIfTrue = e.target.value;
                                                }
 
-                                               component.setStateWithParent({sceneObj});
-                                           }}/>
+                                               this.setStateWithParent({members});
+                                           } }/>
                             }
                         </Box>
-                        {scene.native.onFalse.enabled ?
+                        { this.state.onFalseEnabled ?
                             <Box className={this.props.classes.p}>
                                 {
                                     this.state.objectTypes[member.id] === 'boolean' ?
                                         <FormControlLabel
                                             control={<Checkbox checked={member.setIfFalse} onChange={e => {
-                                                const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                                sceneObj.native.members[index].setIfFalse = e.target.checked;
-                                                component.setStateWithParent({sceneObj});
+                                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                                members[index].setIfFalse = e.target.checked;
+                                                this.setStateWithParent({members});
                                             }}/>}
-                                            label={I18n.t('Set if FALSE')}
+                                            label={ I18n.t('Set if FALSE') }
                                         />
                                         :
                                         <TextField
@@ -498,13 +513,13 @@ class SceneMembersForm extends React.Component {
                                             InputLabelProps={{shrink: true}} label={I18n.t('Set if FALSE')}
                                             value={ member.setIfFalse || ''}
                                             onChange={e => {
-                                                const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
+                                                const members = JSON.parse(JSON.stringify(this.state.members));
                                                 if (this.state.objectTypes[member.id] === 'number') {
-                                                    sceneObj.native.members[index].setIfFalse = parseFloat(e.target.value);
+                                                    members[index].setIfFalse = parseFloat(e.target.value);
                                                 } else {
-                                                    sceneObj.native.members[index].setIfFalse = e.target.value;
+                                                    members[index].setIfFalse = e.target.value;
                                                 }
-                                                component.setStateWithParent({sceneObj});
+                                                this.setStateWithParent({members});
                                             }}
                                         />
                                 }
@@ -518,60 +533,41 @@ class SceneMembersForm extends React.Component {
                                         InputLabelProps={{shrink: true}}
                                         label={I18n.t('Delay (ms)')}
                                         value={ member.delay || 0}
+                                        min={ 0 }
                                         type="number"
                                         onChange={e => {
-                                            const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                            sceneObj.native.members[index].delay = parseInt(e.target.value, 10);
-                                            component.setStateWithParent({sceneObj});
+                                            const members = JSON.parse(JSON.stringify(this.state.members));
+                                            members[index].delay = parseInt(e.target.value, 10);
+                                            this.setStateWithParent({members});
                                         }}/>
                                 </Grid>
-                                {member.delay ? <Grid item xs={8}>
+                                { member.delay ? <Grid item xs={8}>
                                     <FormControlLabel label={I18n.t('Stop already started commands')} control={
                                         <Checkbox checked={member.stopAllDelays} onChange={e => {
-                                            const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                            sceneObj.native.members[index].stopAllDelays = e.target.checked;
-                                            component.setStateWithParent({sceneObj});
+                                            const members = JSON.parse(JSON.stringify(this.state.members));
+                                            members[index].stopAllDelays = e.target.checked;
+                                            this.setStateWithParent({members});
                                         }}/>
                                     }/>
-                                </Grid> : null}
+                                </Grid> : null }
                             </Grid>
                         </Box>
-                        {JSON.stringify(member) !== JSON.stringify(this.props.scene.native.members[index]) ?
-                            <Box
-                                className={clsx(this.props.classes.p, this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
-                                <Button variant="contained" onClick={() =>
-                                    this.setStateWithParent({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}
-                                >
-                                    {I18n.t('Cancel')}
-                                </Button>
-                                <Button variant="contained" color="primary" onClick={() =>
-                                    component.props.updateScene(scene._id, scene)}
-                                >
-                                    {I18n.t('Save')}
-                                </Button>
-                            </Box>
-                            : null}
                     </div> :
                     <div className={ this.props.classes.smallOnTrueFalse}>
                         { I18n.t('Set if TRUE') + ': ' } <span className={ this.props.classes.stateValueTrue }>{ setIfTrue }</span>
-                        { this.state.sceneObj.native.onFalse.enabled ? ' / ' + I18n.t('Set if FALSE') + ': '  : null}
-                        { this.state.sceneObj.native.onFalse.enabled ? <span className={ this.props.classes.stateValueFalse }>{ setIfFalse }</span> : null}
+                        { this.state.onFalseEnabled ? ' / ' + I18n.t('Set if FALSE') + ': ' : null}
+                        { this.state.onFalseEnabled ? <span className={ this.props.classes.stateValueFalse }>{ setIfFalse }</span> : null}
                     </div>
             }
         </Paper>
     };
 
     onWriteScene(val) {
-        this.props.socket.setState(this.state.sceneObj._id, val);
+        this.props.socket.setState(this.props.sceneId, val);
     }
 
     render = () => {
-        let scene = this.state.sceneObj;
-        if (!scene) {
-            return null;
-        }
-        let component = this;
-        let sceneState = this.state.states[scene._id];
+        let sceneState = this.state.states[this.props.sceneId];
         if (sceneState === undefined || sceneState === null) {
             sceneState = '';
         }
@@ -583,43 +579,43 @@ class SceneMembersForm extends React.Component {
                     <br/>
                     <span className={ clsx(
                         this.props.classes.sceneSubTitle,
-                        !scene.native.virtualGroup && sceneState === true && this.props.classes.sceneTrue,
-                        !scene.native.virtualGroup && sceneState === false && this.props.classes.sceneFalse,
-                        !scene.native.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
+                        !this.state.virtualGroup && sceneState === true && this.props.classes.sceneTrue,
+                        !this.state.virtualGroup && sceneState === false && this.props.classes.sceneFalse,
+                        !this.state.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
                     ) }>{ I18n.t('Scene state:') } { sceneState.toString() }</span>
                 </Typography>
-                <IconButton title={I18n.t('Add new state')} onClick={() => component.setState({showDialog: true})}>
+                <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({showDialog: true})}>
                     <IconAdd/>
                 </IconButton>
             </Toolbar>
             <div className={ this.props.classes.testButtons }>
-                { scene.native.virtualGroup ? <TextField
+                { this.state.virtualGroup ? <TextField
                     label={ I18n.t('Write to virtual group') }
                     defaultValue={ sceneState }
                     onKeyUp={e => e.keyCode === 13 && this.onWriteScene(this.state.writeSceneState)}
                     onChange={e => this.setState({writeSceneState: e.target.value}) }
                 /> : null}
-                { scene.native.virtualGroup ? <IconButton
+                { this.state.virtualGroup ? <IconButton
                     onClick={e => this.onWriteScene(this.state.writeSceneState) }
                 ><IconPlay/></IconButton> : null}
-                { !scene.native.virtualGroup ? <Button
+                { !this.state.virtualGroup ? <Button
                     className={ this.props.classes.btnTestTrue }
-                    onClick={() => this.onWriteScene(true)}
+                    onClick={ () => this.onWriteScene(true) }
                 ><IconPlay/>{ I18n.t('Test TRUE') }</Button> : null }
-                { !scene.native.virtualGroup && scene.native.onFalse.enabled ? <Button
+                { !this.state.virtualGroup && this.state.onFalseEnabled ? <Button
                     className={ this.props.classes.btnTestFalse }
                     onClick={ () => this.onWriteScene(false) }
                 ><IconPlay/>{ I18n.t('Test FALSE') }</Button> : null }
             </div>
             <div className={ this.props.classes.scroll }>
-                { scene.native.members.map((member, i) =>
-                        this.renderMember(member, i, scene)) }
+                { this.state.members.map((member, i) => this.renderMember(member, i)) }
             </div>
         </div>;
 
         return [
             result,
-            this.dialogs()
+            this.renderDeleteDialog(),
+            this.renderSelectIdDialog()
         ];
     }
 }
@@ -628,7 +624,10 @@ SceneMembersForm.propTypes = {
     classes: PropTypes.object,
     socket: PropTypes.object,
     scene: PropTypes.object,
-    updateScene: PropTypes.func,
+    updateSceneMembers: PropTypes.func,
+    sceneId: PropTypes.string,
+    onFalseEnabled: PropTypes.bool,
+    virtualGroup: PropTypes.bool,
 };
 
 export default withStyles(styles)(SceneMembersForm);

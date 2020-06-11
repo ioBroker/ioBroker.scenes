@@ -6,28 +6,17 @@ import {withStyles} from "@material-ui/core/styles";
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import Select from '@material-ui/core/Select';
-import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 
-import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
+import DialogSelectID from './SelectID';
 import I18n from '@iobroker/adapter-react/i18n';
 import Utils from '@iobroker/adapter-react/Components/Utils';
-
-// icons
-import {MdDelete as IconDelete} from 'react-icons/md';
-import {FaClone as IconClone} from 'react-icons/fa';
-import {BsFolderSymlink as IconMoveToFolder} from 'react-icons/bs';
 
 const styles = theme => ({
     alignRight: {
@@ -58,17 +47,6 @@ const styles = theme => ({
         paddingRight: theme.spacing(1),
         width: '100%',
     },
-    sceneTitle: {
-        flexGrow: 1,
-        paddingLeft: theme.spacing(1),
-    },
-    sceneSubTitle: {
-        fontSize: 'small',
-        display: 'block'
-    },
-    guttersZero: {
-        padding: 0,
-    },
     editItem: {
         display: 'block',
         marginBottom: theme.spacing(2),
@@ -90,133 +68,54 @@ class SceneForm extends React.Component {
 
         const sceneObj = props.scene ? JSON.parse(JSON.stringify(props.scene)) : {};
 
-        sceneObj.common = sceneObj.common || {};
-        sceneObj.native = sceneObj.native || {};
-        sceneObj.native.onFalse = sceneObj.native.onFalse || {};
-        sceneObj.native.onTrue  = sceneObj.native.onTrue  || {};
-        sceneObj.native.onFalse.trigger = sceneObj.native.onFalse.trigger || {};
-        sceneObj.native.onTrue.trigger  = sceneObj.native.onTrue.trigger  || {};
+        delete sceneObj.native.members;
 
         this.state = {
-            sceneObj,
-            newFolder: SceneForm.getFolderPrefix(sceneObj._id),
-            moveDialog: null,
+            common: sceneObj.common,
+            native: sceneObj.native,
             showDialog: null,
-            deleteDialog: null,
+            sceneId: props.scene._id,
         };
     }
 
-    static getFolderPrefix(sceneId) {
-        let result = sceneId.split('.');
-        result.shift();
-        result.shift();
-        result.pop();
-        result = result.join('.');
-        return result;
-    }
-
-    static getFolderList(folder) {
-        let result = [];
-        result.push(folder);
-        Object.values(folder.subFolders).forEach(subFolder =>
-            result = result.concat(SceneForm.getFolderList(subFolder)));
-
-        return result;
+    setStateWithParent = (newState, cb) => {
+        this.setState(newState, () =>
+            this.props.updateScene(newState.common, newState.native, cb));
     };
 
-    setStateWithParent = (newState) => {
-        this.setState(newState, () => {
-            this.props.setSelectedSceneChanged(this.state.sceneObj._id, this.state.sceneObj)
-        });
-    };
-
-    dialogs = scene => {
-        let component = this;
-        return [
-            this.state.showDialog ? <DialogSelectID
+    renderSelectIdDialog() {
+        return this.state.showDialog ? <DialogSelectID
                 key="selectDialog"
-                connection={ this.props.socket }
+                socket={ this.props.socket }
                 dialogName="memberEdit"
                 title={ I18n.t('Select for ') }
-                //statesOnly={true}
                 selected={ null }
                 onOk={ this.state.showDialog }
                 onClose={ () => this.setState({showDialog: false}) }
-            /> : null,
-            <Dialog
-                open={ !!this.state.moveDialog }
-                key="moveDialog"
-                onClose={ () =>
-                    this.setState({moveDialog: null}) }
-                >
-                <DialogTitle>{ I18n.t('Move to folder') }</DialogTitle>
-                <Box className={ this.props.classes.p }>
-                    <FormControl>
-                        <InputLabel shrink={ true }>{ I18n.t('Folder') }</InputLabel>
-                        <Select
-                            value={ this.state.newFolder || '__root__' }
-                            onChange={e => component.setState({newFolder: e.target.value}) }>
-                            {
-                                SceneForm.getFolderList(this.props.folders).map(folder => <MenuItem key={ folder.prefix }
-                                        value={ folder.prefix || '__root__' }>{ folder.prefix ? folder.prefix.replace('.', ' > ') : I18n.t('Root') }</MenuItem>)
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-                <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                    <Button variant="contained" onClick={ () => this.setState({moveDialog: null}) }>
-                        { I18n.t('Cancel') }
-                    </Button>
-                    <Button variant="contained" color="primary" onClick={ e =>
-                        this.setState({moveDialog: null}, () =>
-                            this.props.addSceneToFolderPrefix(scene, this.state.newFolder === '__root__' ? '' : this.state.newFolder)) }
-                    >
-                        { I18n.t('Move to folder') }
-                    </Button>
-                </div>
-            </Dialog>,
-            <Dialog
-                open={ !!this.state.deleteDialog }
-                key="deleteDialog"
-                onClose={ () => this.setState({deleteDialog: false}) }
-            >
-                <DialogTitle>{ I18n.t('Are you sure for delete this scene?') }</DialogTitle>
-                <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                    <Button variant="contained" onClick={ () => this.setState({deleteDialog: false}) }>
-                        {I18n.t('Cancel')}
-                    </Button>
-                    <Button variant="contained" color="secondary" onClick={e => {
-                        this.props.deleteScene(scene._id);
-                        this.setState({deleteDialog: false});
-                    }}>
-                        { I18n.t('Delete') }
-                    </Button>
-                </div>
-            </Dialog>
-        ];
+            /> : null;
     };
 
     renderOnTrueFalse(name) {
-        const on = this.state.sceneObj.native[name];
+        const on = this.state.native[name];
 
         return [
             <div key="switch" className={ this.props.classes.editItem }>
-                <h4>{ on === this.state.sceneObj.native.onTrue ? I18n.t('Trigger for TRUE') : I18n.t('Trigger for FALSE') }
+                <h4>{ on === this.state.native.onTrue ? I18n.t('Trigger for TRUE') : I18n.t('Trigger for FALSE') }
                     <span className={ this.props.classes.right }>
                         <Switch checked={ !!on.trigger.id }
                                 onChange={e => {
                                     if (e.target.checked) {
                                         this.setState({
                                             showDialog: id => {
-                                                const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                                sceneObj.native[name].trigger.id = id;
-                                                this.setStateWithParent({sceneObj});
+                                                const native = JSON.parse(JSON.stringify(this.state.native));
+                                                native[name].trigger.id = id;
+                                                this.setStateWithParent({native});
                                             }
                                         });
                                     } else {
-                                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                        sceneObj.native[name].trigger.id = '';
-                                        this.setStateWithParent({sceneObj});
+                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                        native[name].trigger.id = '';
+                                        this.setStateWithParent({native});
                                     }
                                 }}
                         />
@@ -235,10 +134,9 @@ class SceneForm extends React.Component {
                                 onClick={() => {
                                     this.setState({
                                         showDialog: id => {
-                                            const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                            sceneObj.native[name].trigger.id = id;
-                                            this.props.setSelectedSceneChanged(sceneObj._id, sceneObj);
-                                            this.setStateWithParent({sceneObj});
+                                            const native = JSON.parse(JSON.stringify(this.state.native));
+                                            native[name].trigger.id = id;
+                                            this.setStateWithParent({native});
                                         }
                                     });
                                 }}
@@ -250,9 +148,9 @@ class SceneForm extends React.Component {
                                 <InputLabel shrink={true}>{I18n.t('Condition')}</InputLabel>
                                 <Select value={on.trigger.condition || '=='}
                                         onChange={e => {
-                                            const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                            sceneObj.native[name].trigger.condition = e.target.value;
-                                            this.setStateWithParent({sceneObj});
+                                            const native = JSON.parse(JSON.stringify(this.state.native));
+                                            native[name].trigger.condition = e.target.value;
+                                            this.setStateWithParent({native});
                                         }}
                                 >
                                     <MenuItem value="==">==</MenuItem>
@@ -271,9 +169,9 @@ class SceneForm extends React.Component {
                                 InputLabelProps={{shrink: true}} label={ I18n.t('Value') }
                                 value={ on.trigger.value || '' }
                                 onChange={ e => {
-                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                    sceneObj.native[name].trigger.value = e.target.value;
-                                    this.setStateWithParent({sceneObj});
+                                    const native = JSON.parse(JSON.stringify(this.state.native));
+                                    native[name].trigger.value = e.target.value;
+                                    this.setStateWithParent({native});
                                 }}
                             />
                         </Grid>
@@ -287,9 +185,9 @@ class SceneForm extends React.Component {
                     label={ name === 'onTrue' ? I18n.t('On time (CRON expression)') : I18n.t('Off time (CRON expression)')}
                     value={ on.cron || '' }
                     onChange={e => {
-                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                        sceneObj.native[name].cron = e.target.value;
-                        this.setStateWithParent({sceneObj});
+                        const native = JSON.parse(JSON.stringify(this.state.native));
+                        native[name].cron = e.target.value;
+                        this.setStateWithParent({native});
                     }}
                 />
             </div>
@@ -297,53 +195,33 @@ class SceneForm extends React.Component {
     }
 
     render() {
-        let component = this;
-        let scene = this.state.sceneObj;
-        if (!scene) {
-            return null;
-        }
-
         let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
-            <Toolbar
-                classes={{ gutters: this.props.classes.guttersZero}}
-            >
-                <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle)}>
-                    { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
-                    <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}, true) }</span>
-                </Typography>
-                <span>
-                    <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={() => {
-                        this.props.cloneScene(scene._id);
-                    }}><IconClone/></IconButton>
-
-                    <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => {
-                        this.setState({deleteDialog: true})
-                    }}><IconDelete/></IconButton>
-
-                    <IconButton aria-label="Move to folder" title={I18n.t('Move to folder')} onClick={() => {
-                        this.setState({moveDialog: true})
-                    }}><IconMoveToFolder/></IconButton>
-                </span>
-            </Toolbar>
-
             <Box className={ this.props.classes.scroll }>
                 <Box className={ this.props.classes.editItem }>
-                    <TextField fullWidth InputLabelProps={{shrink: true}} label={I18n.t('Scene name')}
-                               value={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }
-                               onChange={e => {
-                                   const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                   sceneObj.common.name = e.target.value;
-                                   component.setStateWithParent({sceneObj});
-                               }}/>
+                    <TextField
+                        fullWidth
+                        InputLabelProps={ {shrink: true} }
+                        label={ I18n.t('Scene name') }
+                        value={ Utils.getObjectNameFromObj({common: this.state.common, _id: this.state.sceneId}, null, {language: I18n.getLanguage()}) }
+                        onChange={e => {
+                           const common = JSON.parse(JSON.stringify(this.state.common));
+                           common.name = e.target.value;
+                           this.setStateWithParent({common});
+                       }}/>
                 </Box>
                 <Box className={ this.props.classes.editItem }>
-                    <TextField fullWidth InputLabelProps={{shrink: true}} label={I18n.t('Scene description')}
-                               value={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}, true) }
-                               onChange={e => {
-                                   const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                   sceneObj.common.desc = e.target.value;
-                                   component.setStateWithParent({sceneObj});
-                               }}/>
+                    <TextField
+                        fullWidth
+                        InputLabelProps={{shrink: true}}
+                        label={I18n.t('Scene description')}
+                        value={
+                            Utils.getObjectNameFromObj({common: this.state.common, _id: this.state.sceneId}, null, {language: I18n.getLanguage()}, true) }
+                        onChange={ e => {
+                               const common = JSON.parse(JSON.stringify(this.state.common));
+                               common.desc = e.target.value;
+                               this.setStateWithParent({common});
+                           }
+                        }/>
                 </Box>
                 <Box className={ this.props.classes.editItem }>
                     <Grid container spacing={1}>
@@ -351,11 +229,11 @@ class SceneForm extends React.Component {
                             <FormControl className={this.props.classes.width100}>
                                 <InputLabel shrink={true}>{ I18n.t('Instance') }</InputLabel>
                                 <Select
-                                    value={ scene.common.engine }
+                                    value={ this.state.common.engine }
                                     onChange={e => {
-                                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                        sceneObj.common.engine = e.target.value;
-                                        component.setState({sceneObj});
+                                        const common = JSON.parse(JSON.stringify(this.state.common));
+                                        common.engine = e.target.value;
+                                        this.setStateWithParent({common});
                                     }}
                                 >
                                     { this.props.instances.map(id => <MenuItem key={ id } value={ id }>{ id.replace('system.adapter.', '') }</MenuItem>) }
@@ -365,14 +243,16 @@ class SceneForm extends React.Component {
                         <Grid item xs={6}>
                             <TextField
                                 fullWidth
-                                InputLabelProps={{shrink: true}}
-                                label={ I18n.t('Interval between commands (ms)') }
-                                value={ scene.native.burstIntervall }
+                                InputLabelProps={ {shrink: true} }
+                                label={ I18n.t('Interval between commands') }
+                                min={ 0 }
+                                value={ this.state.native.burstIntervall || 0 }
+                                helperText="ms"
                                 type="number"
                                 onChange={e => {
-                                    const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                    sceneObj.native.burstIntervall = e.target.value;
-                                    component.setStateWithParent({sceneObj});
+                                    const native = JSON.parse(JSON.stringify(this.state.native));
+                                    native.burstIntervall = parseInt(e.target.value, 10);
+                                    this.setStateWithParent({native});
                                 }}
                             />
                         </Grid>
@@ -382,54 +262,40 @@ class SceneForm extends React.Component {
                     <Grid container spacing={1}>
                         <Grid item xs={6}>
                             <FormControlLabel style={{paddingTop: 10}} label={I18n.t('Virtual group')} control={
-                                <Checkbox checked={scene.native.virtualGroup}
+                                <Checkbox checked={this.state.native.virtualGroup}
                                           onChange={e => {
-                                              const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                              sceneObj.native.virtualGroup = e.target.checked;
-                                              component.setStateWithParent({sceneObj});
+                                              const native = JSON.parse(JSON.stringify(this.state.native));
+                                              native.virtualGroup = e.target.checked;
+                                              this.setStateWithParent({native});
                                           }}/>
                             }/>
                         </Grid>
                         <Grid item xs={6}>
-                            { !scene.native.virtualGroup ?
+                            { !this.state.native.virtualGroup ?
                                 <FormControlLabel
                                     style={{paddingTop: 10}}
                                     label={I18n.t('Set value if false')}
                                     control={
                                           <Checkbox
-                                              checked={ scene.native.onFalse.enabled }
+                                              checked={ this.state.native.onFalse.enabled }
                                                     onChange={e => {
-                                                        const sceneObj = JSON.parse(JSON.stringify(this.state.sceneObj));
-                                                        sceneObj.native.onFalse.enabled = e.target.checked;
-                                                        component.setStateWithParent({sceneObj});
+                                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                                        native.onFalse.enabled = e.target.checked;
+                                                        this.setStateWithParent({native});
                                                     }}/>}
                                 />
                                 : null}
                         </Grid>
                     </Grid>
                 </Box>
-                { !scene.native.virtualGroup ? this.renderOnTrueFalse('onTrue') : null }
-                { !scene.native.virtualGroup && scene.native.onFalse.enabled ? this.renderOnTrueFalse('onFalse') : null }
-                { JSON.stringify(scene) !== JSON.stringify(this.props.scene) ?
-                    <Box className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer, this.props.classes.editItem) }>
-                        <Button variant="contained" onClick={() =>
-                            this.setStateWithParent({sceneObj: JSON.parse(JSON.stringify(this.props.scene))})}>
-                            {I18n.t('Cancel')}
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => component.props.updateScene(scene._id, this.state.sceneObj)}>
-                            { I18n.t('Save') }
-                        </Button>
-                    </Box>
-                    : null }
+                { !this.state.native.virtualGroup ? this.renderOnTrueFalse('onTrue') : null }
+                { !this.state.native.virtualGroup && this.state.native.onFalse.enabled ? this.renderOnTrueFalse('onFalse') : null }
             </Box>
         </Box>;
 
         return [
             result,
-            this.dialogs(scene)
+            this.renderSelectIdDialog()
         ];
     }
 }
@@ -439,11 +305,6 @@ SceneForm.propTypes = {
     socket: PropTypes.object,
     scene: PropTypes.object,
     updateScene: PropTypes.func.isRequired,
-    cloneScene: PropTypes.func.isRequired,
-    deleteScene: PropTypes.func.isRequired,
-    addSceneToFolderPrefix: PropTypes.func.isRequired,
-    setSelectedSceneChanged: PropTypes.func,
-    folders: PropTypes.object,
     instances: PropTypes.array,
 };
 
