@@ -430,9 +430,9 @@ let tIndex = 1; // never ending counter
 // Set one state of the scene
 function activateSceneState(sceneId, state, isTrue) {
     const stateObj = scenes[sceneId].native.members[state];
-
+    let desiredValue;
     if (!scenes[sceneId].native.virtualGroup) {
-        isTrue = isTrue ? stateObj.setIfTrue : stateObj.setIfFalse;
+        desiredValue = isTrue ? stateObj.setIfTrue : stateObj.setIfFalse;
     }
 
     if (stateObj.delay) {
@@ -451,7 +451,13 @@ function activateSceneState(sceneId, state, isTrue) {
         const timer = setTimeout((id, setValue, _tIndex) => {
             adapter.log.debug('Set delayed state for "' + sceneId + '": ' + id + ' = ' + setValue);
             // execute timeout
-            adapter.setForeignState(id, setValue);
+            adapter.getForeignState(id, (err, state) => {
+                // Set new state only if differ from desired state
+                if (!state || state.val !== setValue) {
+                    adapter.setForeignState(id, setValue);
+                }
+            });
+
 
             if (timers[id]) {
                 // remove timer from the list
@@ -462,18 +468,24 @@ function activateSceneState(sceneId, state, isTrue) {
                     }
                 }
             }
-        }, stateObj.delay, stateObj.id, isTrue, tIndex);
+        }, stateObj.delay, stateObj.id, desiredValue, tIndex);
 
         timers[stateObj.id].push({timer, tIndex});
     } else {
         if (stateObj.stopAllDelays && timers[stateObj.id] && timers[stateObj.id].length) {
-            adapter.log.debug('Cancel running timers for "' + stateObj.id + '" (' + timers[stateObj.id].length + ')');
+            adapter.log.debug(`Cancel running timers for "${stateObj.id}" (${timers[stateObj.id].length})`);
             for (let t = 0; t < timers[stateObj.id].length; t++) {
                 clearTimeout(timers[stateObj.id][t].timer);
             }
             timers[stateObj.id] = [];
         }
-        adapter.setForeignState(stateObj.id, isTrue);
+        // execute timeout
+        adapter.getForeignState(stateObj.id, (err, state) => {
+            // Set new state only if differ from desired state
+            if (!state || state.val !== desiredValue) {
+                adapter.setForeignState(stateObj.id, desiredValue);
+            }
+        });
     }
 }
 
@@ -680,19 +692,28 @@ function main() {
         if (states) {
             for (const id in states) {
                 // ignore if no states involved
-                if (!states.hasOwnProperty(id) || !states[id].native || !states[id].native.members || !states[id].native.members.length) continue;
+                if (!states.hasOwnProperty(id) || !states[id].native || !states[id].native.members || !states[id].native.members.length) {
+                    continue;
+                }
                 //ignore if scene is disabled
-                if (!states[id].common.enabled) continue;
+                if (!states[id].common.enabled) {
+                    continue;
+                }
                 // ignore if another instance
-                if (states[id].common.engine !== 'system.adapter.' + adapter.namespace) continue;
+                if (states[id].common.engine !== 'system.adapter.' + adapter.namespace) {
+                    continue;
+                }
 
                 scenes[id] = states[id];
 
                 // Remove all disabled scenes
                 for (let m = states[id].native.members.length - 1; m >= 0; m--) {
+                    if (!scenes[id].native.members[m] || states[id].native.members[m].disabled) {
+                        scenes[id].native.members.splice(m, 1);
+                    }
+
                     // Reset actual state
                     scenes[id].native.members[m].actual = null;
-                    if (states[id].native.members[m].disabled) scenes[id].native.members.splice(m, 1);
                 }
             }
         }

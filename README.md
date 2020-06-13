@@ -107,7 +107,7 @@ sendTo(
 The adapter will read all actual values for IDs defined in this scene and save it as configured ones.
 
 ## Changelog
-### 2.0.0 (2019-05-26)
+### 2.0.1 (2019-06-13)
 * (bluefox) New GUI based on react
 
 ### 1.1.1 (2019-05-26)
