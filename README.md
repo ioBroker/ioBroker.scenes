@@ -107,8 +107,11 @@ sendTo(
 The adapter will read all actual values for IDs defined in this scene and save it as configured ones.
 
 ## Changelog
+### 2.0.0 (2019-05-26)
+* (bluefox) New GUI based on react
+
 ### 1.1.1 (2019-05-26)
-* (bluefox)Added storing of actual values in scene via message
+* (bluefox) Added storing of actual values in scene via message
 
 ### 1.1.0 (2018-04-24)
 * (bluefox) Works now with Admin3

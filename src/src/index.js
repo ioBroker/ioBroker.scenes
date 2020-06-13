@@ -9,7 +9,9 @@ import { version } from '../package.json';
 
 import theme from '@iobroker/adapter-react/Theme';
 
-console.log('iobroker.scenes@' + version);
+window.adapterName = 'scenes';
+
+console.log('iobroker.' + window.adapterName + '@' + version);
 let themeName = window.localStorage ? window.localStorage.getItem('App.themeName') || 'light' : 'light';
 
 function build() {

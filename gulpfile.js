@@ -268,4 +268,4 @@ gulp.task('updateReadme', done => {
     done();
 });
 
-gulp.task('default', gulp.series('updateReadme')); //gulp.series('6-patch-dep')
+gulp.task('default', gulp.series('6-patch-dep', 'updateReadme')); //gulp.series('6-patch-dep')

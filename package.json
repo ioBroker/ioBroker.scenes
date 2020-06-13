@@ -1,6 +1,6 @@
 {
   "name": "iobroker.scenes",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "Scenes for ioBroker.",
   "author": {
     "name": "bluefox",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "gulp": "^4.0.2",
-    "mocha": "^7.2.0",
+    "mocha": "^8.0.1",
     "chai": "^4.2.0",
     "gulp-rename": "^2.0.0",
     "del": "^5.1.0"

@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "1.1.1",
+        "version": "2.0.0",
         "news": {
+            "2.0.0": {
+                "en": "New GUI based on react",
+                "de": "Neue GUI basierend auf react",
+                "ru": "Новый графический интерфейс, основанный на react",
+                "pt": "Nova GUI baseada em react",
+                "nl": "Nieuwe GUI gebaseerd op react",
+                "fr": "Nouvelle interface graphique basée sur react",
+                "it": "Nuova interfaccia grafica basata su react",
+                "es": "Nueva GUI basada en react",
+                "pl": "Nowy GUI oparty na react",
+                "zh-cn": "基于react的新GUI"
+            },
             "1.1.1": {
                 "en": "Added storing of actual values in scene via message",
                 "de": "Speicherung von Istwerten in Szene per Meldung hinzugefügt",

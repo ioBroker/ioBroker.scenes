@@ -25,10 +25,8 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from "@material-ui/core/Typography";
 
 // Own
-import {PROGRESS} from '@iobroker/adapter-react/Connection';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 import GenericApp from '@iobroker/adapter-react/GenericApp';
-import Connection from '@iobroker/adapter-react/Connection';
 import Loader from '@iobroker/adapter-react/Components/Loader'
 import I18n from '@iobroker/adapter-react/i18n';
 
@@ -207,7 +205,6 @@ class App extends GenericApp {
         // init translations
         I18n.setTranslations(this.translations);
         I18n.setLanguage((navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase());
-        this.adapterName = 'scenes';
 
         const query = getUrlQuery();
 
@@ -217,83 +214,48 @@ class App extends GenericApp {
         window.iobForceHost = this.host;
     }
 
-    componentDidMount() {
-        this.socket = new Connection({
-            name: this.adapterName,
-            host: this.host,
-            port: this.port || this.getPort(),
-            onProgress: progress => {
-                if (progress === PROGRESS.CONNECTING) {
-                    this.setState({
-                        connected: false
-                    });
-                } else if (progress === PROGRESS.READY) {
-                    this.setState({
-                        connected: true,
-                        progress: 100
-                    });
-                } else {
-                    this.setState({
-                        connected: true,
-                        progress: Math.round(PROGRESS.READY / progress * 100)
-                    });
-                }
-            },
-            onReady: async (objects, scripts) => {
-                I18n.setLanguage(this.socket.systemLang);
+    onConnectionReady() {
+        let opened;
+        try {
+            opened = JSON.parse(window.localStorage.getItem('Scenes.opened')) || [];
+        } catch (e) {
+            opened = [];
+        }
 
-                let opened;
-                try {
-                    opened = JSON.parse(window.localStorage.getItem('Scenes.opened')) || [];
-                } catch (e) {
-                    opened = [];
-                }
+        const newState = {
+            lang: this.socket.systemLang,
+            ready: false,
+            selectedSceneId: window.localStorage.getItem('Scenes.selectedSceneId') || '',
+            opened,
+            scenes: {},
+            folders: null,
+            search: null,
+            addFolderDialog: null,
+            addFolderDialogTitle: null,
+            editFolderDialog: null,
+            editFolderDialogTitle: null,
+            changingScene: '',
+            showSearch: null,
+            instances: [],
+            selectedSceneChanged: false,
+            deleteDialog: null,
+            moveDialog: null,
+            newFolder: '',
+            selectedSceneData: null,
+        };
 
-                const newState = {
-                    lang: this.socket.systemLang,
-                    ready: false,
-                    selectedSceneId: window.localStorage.getItem('Scenes.selectedSceneId') || '',
-                    opened,
-                    scenes: {},
-                    folders: null,
-                    search: null,
-                    addFolderDialog: null,
-                    addFolderDialogTitle: null,
-                    editFolderDialog: null,
-                    editFolderDialogTitle: null,
-                    changingScene: '',
-                    showSearch: null,
-                    instances: [],
-                    selectedSceneChanged: false,
-                    deleteDialog: null,
-                    moveDialog: null,
-                    newFolder: '',
-                    selectedSceneData: null,
-                };
+        this.socket.getSystemConfig()
+            .then(systemConfig => {
+                newState.systemConfig = systemConfig;
 
-                try {
-                    newState.systemConfig = await this.socket.getSystemConfig();
-                } catch (error) {
-                    console.log(error);
-                }
-
-                this.socket.getAdapterInstances(this.adapterName)
+                return this.socket.getAdapterInstances(window.adapterName)
                     .then(instances => {
                         newState.instances = instances.map(item => item._id);
                         this.setState(newState, () =>
                             this.refreshData());
                     });
-            },
-            //onObjectChange: (objects, scripts) => this.onObjectChange(objects, scripts),
-            onObjectChange: (attr, value) => () => {
-                console.log(attr);
-                console.log(value);
-            },
-            onError: error => {
-                console.error(error);
-                this.showError(error);
-            }
-        });
+            })
+            .catch(e => this.showError(e));
     }
 
     sceneSwitch = event => {

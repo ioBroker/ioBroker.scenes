@@ -53,7 +53,8 @@ const styles = theme => ({
         backgroundColor: 'pink',
     },
     memberUncertain: {
-        backgroundColor: 'grey',
+        color: '#FFF',
+        backgroundColor: '#808080',
     },
     memberCard: {
         padding: 4,
