@@ -33,6 +33,7 @@ import I18n from '@iobroker/adapter-react/i18n';
 
 import SceneForm from './components/SceneForm';
 import SceneMembersForm from './components/SceneMembersForm';
+import ExportImportDialog from './components/ExportImportDialog';
 
 // icons
 import {MdExpandLess as IconCollapse} from 'react-icons/md';
@@ -43,6 +44,8 @@ import {RiFolderAddLine as IconFolderAdd} from 'react-icons/ri';
 import {MdClose as IconCancel} from 'react-icons/md';
 import {MdSave as IconSave} from 'react-icons/md';
 import {MdDelete as IconDelete} from 'react-icons/md';
+import {MdFileDownload as IconExport} from 'react-icons/md';
+// import {MdFileUpload as IconImport} from 'react-icons/md';
 import {FaClone as IconClone} from 'react-icons/fa';
 import {BsFolderSymlink as IconMoveToFolder} from 'react-icons/bs';
 import FormControl from "@material-ui/core/FormControl";
@@ -246,6 +249,8 @@ class App extends GenericApp {
             moveDialog: null,
             newFolder: '',
             selectedSceneData: null,
+            exportDialog: false,
+            importDialog: false,
         };
 
         this.socket.getSystemConfig()
@@ -834,6 +839,78 @@ class App extends GenericApp {
         </Dialog> : null;
     }
 
+    renderExportImportDialog() {
+        if (!this.state.exportDialog) {
+            return null;
+        }
+
+        return <ExportImportDialog
+            isImport={ false }
+            themeType={ this.state.themeType }
+            onClose={ text => this.setState({exportDialog: false}) }
+            sceneObj={ this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId] }
+        />
+    }
+
+    renderListToolbar() {
+        return <Toolbar variant="dense">
+            <IconButton
+                onClick={ () => this.createScene(this.getNewSceneId()) }
+                title={ I18n.t('Create new scene') }
+            ><IconAdd/></IconButton>
+
+            <IconButton
+                onClick={ () => this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''}) }
+                title={ I18n.t('Create new folder') }
+            ><IconFolderAdd/></IconButton>
+
+            <span className={this.props.classes.right}>
+                                        <IconButton onClick={() => this.setState({showSearch: !this.state.showSearch}) }>
+                                            <SearchIcon/>
+                                        </IconButton>
+                                    </span>
+            {this.state.showSearch ?
+                <TextField
+                    value={ this.state.search }
+                    className={ this.props.classes.textInput }
+                    onChange={ e => this.setState({search: e.target.value}) }/> : null
+            }
+        </Toolbar>;
+    }
+
+    renderSceneToolbar() {
+        return <Toolbar variant="dense" classes={ {gutters: this.props.classes.noGutters} }>
+            <Typography variant="h6" className={ this.props.classes.sceneTitle }>
+                { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
+                <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, {language: I18n.getLanguage()}, true) }</span>
+            </Typography>
+
+            { this.state.selectedSceneChanged ? <Button
+                className={ this.props.classes.toolbarButtons }
+                variant="contained"
+                color="secondary"
+                onClick={() => this.writeScene()}
+            >
+                { I18n.t('Save') }
+            </Button> : null }
+
+            { this.state.selectedSceneChanged ? <Button
+                className={ this.props.classes.toolbarButtons }
+                variant="contained"
+                onClick={ () => this.refreshData(this.state.selectedSceneId) }
+            >
+                { I18n.t('Cancel') }
+            </Button> : null }
+            <IconButton aria-label="Clone" title={ I18n.t('Clone') } onClick={ () => this.cloneScene(this.state.selectedSceneId) }><IconClone/></IconButton>
+
+            <IconButton aria-label="Delete" title={ I18n.t('Delete') } onClick={ () => this.setState({deleteDialog: true}) }><IconDelete/></IconButton>
+
+            <IconButton aria-label="Move to folder" title={ I18n.t('Move to folder') } onClick={ () => this.setState({moveDialog: true, newFolder: getFolderPrefix(this.state.selectedSceneId)}) }><IconMoveToFolder/></IconButton>
+
+            <IconButton aria-label="Export" title={ I18n.t('Export scene') } onClick={ () => this.setState({exportDialog: true}) }><IconExport/></IconButton>
+        </Toolbar>;
+    }
+
     render() {
         const component = this;
         if (!this.state.ready) {
@@ -848,29 +925,7 @@ class App extends GenericApp {
                     <Container className={ clsx(this.props.classes.height, this.props.classes.fullWidthContainer) }>
                         <Grid container spacing={ 1 } className={ this.props.classes.height }>
                             <Grid item xs={ 3 } className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
-                                <Toolbar variant="dense">
-                                    <IconButton
-                                        onClick={ () => this.createScene(this.getNewSceneId()) }
-                                        title={ I18n.t('Create new scene') }
-                                    ><IconAdd/></IconButton>
-
-                                    <IconButton
-                                        onClick={ () => this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''}) }
-                                        title={ I18n.t('Create new folder') }
-                                    ><IconFolderAdd/></IconButton>
-
-                                    <span className={this.props.classes.right}>
-                                        <IconButton onClick={() => this.setState({showSearch: !this.state.showSearch}) }>
-                                            <SearchIcon/>
-                                        </IconButton>
-                                    </span>
-                                    {this.state.showSearch ?
-                                        <TextField
-                                            value={ this.state.search }
-                                            className={ this.props.classes.textInput }
-                                            onChange={ e => this.setState({search: e.target.value}) }/> : null
-                                    }
-                                </Toolbar>
+                                { this.renderListToolbar() }
                                 <div className={ this.props.classes.heightMinusToolbar }>
                                     <List className={ this.props.classes.scroll }>
                                         { this.renderTree(this.state.folders) }
@@ -879,40 +934,7 @@ class App extends GenericApp {
                             </Grid>
                             { this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
                                 <Grid item xs={ 9 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
-                                    <Toolbar variant="dense" classes={ {gutters: this.props.classes.noGutters} }>
-                                        <Typography variant="h6" className={ this.props.classes.sceneTitle }>
-                                            { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
-                                            <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, {language: I18n.getLanguage()}, true) }</span>
-                                        </Typography>
-
-                                        { this.state.selectedSceneChanged ? <Button
-                                                className={ this.props.classes.toolbarButtons }
-                                                variant="contained"
-                                                color="secondary"
-                                                onClick={() => this.writeScene()}
-                                            >
-                                                { I18n.t('Save') }
-                                            </Button> : null }
-
-                                        { this.state.selectedSceneChanged ? <Button
-                                                className={ this.props.classes.toolbarButtons }
-                                                variant="contained"
-                                                onClick={() => this.refreshData(this.state.selectedSceneId)}
-                                            >
-                                                { I18n.t('Cancel') }
-                                            </Button> : null }
-                                        <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={() => {
-                                            component.cloneScene(this.state.selectedSceneId);
-                                        }}><IconClone/></IconButton>
-
-                                        <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => {
-                                            component.setState({deleteDialog: true})
-                                        }}><IconDelete/></IconButton>
-
-                                        <IconButton aria-label="Move to folder" title={I18n.t('Move to folder')} onClick={() => {
-                                            component.setState({moveDialog: true, newFolder: getFolderPrefix(this.state.selectedSceneId)})
-                                        }}><IconMoveToFolder/></IconButton>
-                                    </Toolbar>
+                                    { this.renderSceneToolbar() }
                                     <Grid container spacing={ 1 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
                                         <Grid item xs={5} className={ this.props.classes.heightMinusToolbar }>
                                             <div className={this.props.classes.height}>
@@ -956,6 +978,7 @@ class App extends GenericApp {
                     { this.renderMoveDialog() }
                     { this.renderDeleteDialog() }
                     { this.renderAddDialog() }
+                    { this.renderExportImportDialog() }
                     { this.renderError() }
                 </div>
             </MuiThemeProvider>

@@ -54,7 +54,7 @@
   "Interval between commands": "Intervall zwischen Befehlen",
   "Write to virtual group": "In virtuelle Gruppe schreiben",
   "Delay (ms)": "Verzögerung (ms)",
-  "Stop already started commands": "Stoppen Sie bereits gestartete Befehle",
+  "Stop already started commands": "Bereits gestartete Befehle anhalten",
   "Save scene before test": "Szene vor dem Test speichern",
   "Tolerance for TRUE": "Toleranz für TRUE",
   "Tolerance for FALSE": "Toleranz für FALSE"
