@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.3",
+        "version": "2.0.4",
         "news": {
+            "2.0.4": {
+                "en": "The tolerance is implemented",
+                "de": "Die Toleranz ist implementiert",
+                "ru": "Допуск реализован",
+                "pt": "A tolerância é implementada",
+                "nl": "De tolerantie is geïmplementeerd",
+                "fr": "La tolérance est mise en œuvre",
+                "it": "La tolleranza è implementata",
+                "es": "Se implementa la tolerancia.",
+                "pl": "Tolerancja jest realizowana",
+                "zh-cn": "公差已实现"
+            },
             "2.0.3": {
                 "en": "New GUI based on react",
                 "de": "Neue GUI basierend auf react",

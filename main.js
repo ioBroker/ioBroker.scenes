@@ -27,6 +27,8 @@
 //                 "id": "system.adapter.node-red.0.memHeapTotal",
 //                 "setIfTrue": null,
 //                 "setIfFalse": 28.54,
+//                 "setIfFalseTolerance": 1,
+//                 "setIfTrueTolerance": 0,
 //                 "stopAllDelays": true                      // if all other timers for this ID must be stopped
 //             }
 //         ],
@@ -244,8 +246,8 @@ let scenesTimeout = {};
 // Check if actual states are exactly as desired in the scene
 function checkScene(sceneId, stateId, state) {
     for (let i = 0; i < scenes[sceneId].native.members.length; i++) {
-        // Do not check states with delay
-        if (scenes[sceneId].native.members[i].delay) {
+        // Do not check states with big delays
+        if (scenes[sceneId].native.members[i].delay > 1000) {
             continue;
         }
 
@@ -260,13 +262,14 @@ function checkScene(sceneId, stateId, state) {
         let activeTrue  = null;
         let activeFalse = null;
         let activeValue = null;
+
         const sceneObj = scenes[_sceneId];
         const sceneObjNative = sceneObj.native;
-        const isWithFalse = (scenes[_sceneId].native.onFalse && scenes[_sceneId].native.onFalse.enabled);
+        const isWithFalse = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
 
-        for (let i = 0; i < scenes[_sceneId].native.members.length; i++) {
-            // Do not check states with delay
-            if (scenes[_sceneId].native.members[i].delay) {
+        for (let i = 0; i < sceneObjNative.members.length; i++) {
+            // Do not check states with big delays
+            if (sceneObjNative.members[i].delay > 1000) {
                 continue;
             }
 
@@ -278,65 +281,77 @@ function checkScene(sceneId, stateId, state) {
                 activeFalse = true;
             }
 
-            if (scenes[_sceneId].native.virtualGroup) {
+            if (sceneObjNative.virtualGroup) {
                 if (activeValue === 'uncertain') {
                     continue;
                 }
 
                 if (activeValue === null) {
-                    activeValue = scenes[_sceneId].native.members[i].actual;
-                } else if (activeValue != scenes[_sceneId].native.members[i].actual) {
+                    activeValue = sceneObjNative.members[i].actual;
+                } else if (activeValue != sceneObjNative.members[i].actual) {
                     activeValue = 'uncertain';
                 }
             } else {
-                if (scenes[_sceneId].native.members[i].setIfTrue != scenes[_sceneId].native.members[i].actual) {
-                    activeTrue = false;
-                    //if (!isWithFalse) break; -- state must be updated
+                if (sceneObjNative.members[i].setIfTrueTolerance) {
+                    if (Math.abs(sceneObjNative.members[i].setIfTrue - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfTrueTolerance) {
+                        activeTrue = false;
+                    }
+                } else {
+                    if (sceneObjNative.members[i].setIfTrue != sceneObjNative.members[i].actual) {
+                        activeTrue = false;
+                    }
                 }
-                if (isWithFalse && scenes[_sceneId].native.members[i].setIfFalse != scenes[_sceneId].native.members[i].actual) {
-                    activeFalse = false;
+
+                if (isWithFalse) {
+                    if (sceneObjNative.members[i].setIfFalseTolerance) {
+                        if (Math.abs(sceneObjNative.members[i].setIfFalse - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfFalseTolerance) {
+                            activeFalse = false;
+                        }
+                    } else if (sceneObjNative.members[i].setIfFalse != sceneObjNative.members[i].actual) {
+                        activeFalse = false;
+                    }
                 }
             }
         }
 
-        if (scenes[_sceneId].native.virtualGroup) {
+        if (sceneObjNative.virtualGroup) {
             if (activeValue !== null) {
-                if (scenes[_sceneId].value.val !== activeValue || !scenes[_sceneId].value.ack) {
-                    scenes[_sceneId].value.val = activeValue;
-                    scenes[_sceneId].value.ack = true;
+                if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
+                    sceneObj.value.val = activeValue;
+                    sceneObj.value.ack = true;
 
                     adapter.setForeignState(_sceneId, activeValue, true);
                 }
             }
         } else {
-            if (scenes[_sceneId].native.onFalse && scenes[_sceneId].native.onFalse.enabled) {
+            if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
                 if (activeTrue) {
-                    if (scenes[_sceneId].value.val !== true || !scenes[_sceneId].value.ack) {
-                        scenes[_sceneId].value.val = true;
-                        scenes[_sceneId].value.ack = true;
+                    if (sceneObj.value.val !== true || !sceneObj.value.ack) {
+                        sceneObj.value.val = true;
+                        sceneObj.value.ack = true;
 
                         adapter.setForeignState(_sceneId, true, true);
                     }
                 } else if (activeFalse) {
-                    if (scenes[_sceneId].value.val !== false || !scenes[_sceneId].value.ack) {
-                        scenes[_sceneId].value.val = false;
-                        scenes[_sceneId].value.ack = true;
+                    if (sceneObj.value.val !== false || !sceneObj.value.ack) {
+                        sceneObj.value.val = false;
+                        sceneObj.value.ack = true;
 
                         adapter.setForeignState(_sceneId, false, true);
                     }
                 } else {
-                    if (scenes[_sceneId].value.val !== 'uncertain' || !scenes[_sceneId].value.ack) {
-                        scenes[_sceneId].value.val = 'uncertain';
-                        scenes[_sceneId].value.ack = true;
+                    if (sceneObj.value.val !== 'uncertain' || !sceneObj.value.ack) {
+                        sceneObj.value.val = 'uncertain';
+                        sceneObj.value.ack = true;
 
                         adapter.setForeignState(_sceneId, 'uncertain', true);
                     }
                 }
             } else {
                 if (activeTrue !== null) {
-                    if (scenes[_sceneId].value.val !== activeTrue || !scenes[_sceneId].value.ack) {
-                        scenes[_sceneId].value.val = activeTrue;
-                        scenes[_sceneId].value.ack = true;
+                    if (sceneObj.value.val !== activeTrue || !sceneObj.value.ack) {
+                        sceneObj.value.val = activeTrue;
+                        sceneObj.value.ack = true;
 
                         adapter.setForeignState(_sceneId, activeTrue, true);
                     }
