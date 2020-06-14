@@ -55,5 +55,7 @@
   "Write to virtual group": "Schrijf naar virtuele groep",
   "Delay (ms)": "Vertraging (ms)",
   "Stop already started commands": "Stop al gestarte opdrachten",
-  "Save scene before test": "Sla scène op voor test"
+  "Save scene before test": "Sla scène op voor test",
+  "Tolerance for TRUE": "Tolerantie voor TRUE",
+  "Tolerance for FALSE": "Tolerantie voor FALSE"
 }

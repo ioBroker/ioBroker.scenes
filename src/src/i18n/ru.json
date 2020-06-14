@@ -55,5 +55,7 @@
   "Write to virtual group": "Написать в виртуальную группу",
   "Delay (ms)": "Задержка (мс)",
   "Stop already started commands": "Остановить уже запущенные команды",
-  "Save scene before test": "Сохранить сцену перед тестом"
+  "Save scene before test": "Сохранить сцену перед тестом",
+  "Tolerance for TRUE": "Допуск для TRUE",
+  "Tolerance for FALSE": "Допуск для FALSE"
 }

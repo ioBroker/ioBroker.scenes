@@ -55,5 +55,7 @@
   "Write to virtual group": "Gravar no grupo virtual",
   "Delay (ms)": "Atraso (ms)",
   "Stop already started commands": "Parar comandos já iniciados",
-  "Save scene before test": "Salvar cena antes do teste"
+  "Save scene before test": "Salvar cena antes do teste",
+  "Tolerance for TRUE": "Tolerância para TRUE",
+  "Tolerance for FALSE": "Tolerância a FALSE"
 }

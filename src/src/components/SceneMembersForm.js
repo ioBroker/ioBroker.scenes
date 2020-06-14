@@ -566,7 +566,7 @@ class SceneMembersForm extends React.Component {
                                          } }/>
                                     <TextField
                                         InputLabelProps={ {shrink: true} }
-                                        label={ I18n.t('Tolerance for TRUE') }
+                                        label={ '± ' + I18n.t('Tolerance for TRUE') }
                                         value={ member.setIfTrueTolerance || '' }
                                         className={ this.props.classes.setValue }
                                         onChange={ e => {
@@ -593,7 +593,8 @@ class SceneMembersForm extends React.Component {
                                         <Box className={ this.props.classes.p }>
                                             <TextField
                                                 fullWidth
-                                                InputLabelProps={{shrink: true}} label={I18n.t('Set if FALSE')}
+                                                InputLabelProps={ {shrink: true} }
+                                                label={ I18n.t('Set if FALSE') }
                                                 value={ member.setIfFalse || ''}
                                                 className={ this.props.classes.setValue }
                                                 onChange={ e => {
@@ -608,7 +609,7 @@ class SceneMembersForm extends React.Component {
                                             />
                                             <TextField
                                                 InputLabelProps={ {shrink: true} }
-                                                label={ I18n.t('Tolerance for FALSE') }
+                                                label={ '± ' + I18n.t('Tolerance for FALSE') }
                                                 value={ member.setIfFalseTolerance || '' }
                                                 className={ this.props.classes.setValue }
                                                 onChange={ e => {

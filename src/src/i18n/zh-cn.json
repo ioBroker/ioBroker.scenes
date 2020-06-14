@@ -55,5 +55,7 @@
   "Write to virtual group": "写入虚拟组",
   "Delay (ms)": "延迟（毫秒）",
   "Stop already started commands": "停止已经启动的命令",
-  "Save scene before test": "测试前保存场景"
+  "Save scene before test": "测试前保存场景",
+  "Tolerance for TRUE": "公差为TRUE",
+  "Tolerance for FALSE": "容许误差"
 }

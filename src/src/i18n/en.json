@@ -55,5 +55,7 @@
   "Write to virtual group": "Write to virtual group",
   "Delay (ms)": "Delay (ms)",
   "Stop already started commands": "Stop already started commands",
-  "Save scene before test": "Save scene before test"
+  "Save scene before test": "Save scene before test",
+  "Tolerance for TRUE": "Tolerance for TRUE",
+  "Tolerance for FALSE": "Tolerance for FALSE"
 }
