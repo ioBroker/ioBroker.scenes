@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import * as Sentry from '@sentry/browser';
+import * as SentryIntegrations from '@sentry/integrations';
 import { MuiThemeProvider} from '@material-ui/core/styles';
 import * as serviceWorker from './serviceWorker';
 
@@ -21,6 +23,17 @@ function build() {
             build();
         }}/>
     </MuiThemeProvider>, document.getElementById('root'));
+}
+
+// if not local development
+if (window.location.host !== 'localhost:3000') {
+    Sentry.init({
+        dsn: "https://89fc6260a1af4df68f9db767a603b7e5@sentry.iobroker.net/86",
+        release: 'iobroker.' + window.adapterName + '@' + version,
+        integrations: [
+            new SentryIntegrations.Dedupe()
+        ]
+    });
 }
 
 build();

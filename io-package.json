@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.4",
+        "version": "2.0.5",
         "news": {
-            "2.0.4": {
+            "2.0.5": {
                 "en": "The tolerance is implemented",
                 "de": "Die Toleranz ist implementiert",
                 "ru": "Допуск реализован",
@@ -123,6 +123,11 @@
             },
             "singleton": true,
             "fa-icon": "theaters"
+        },
+        "plugins": {
+            "sentry": {
+                "dsn": "https://a66ab7f27f2744c5a722875d343471ad@sentry.iobroker.net/44"
+            }
         }
     },
     "native": {},

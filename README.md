@@ -107,7 +107,7 @@ sendTo(
 The adapter will read all actual values for IDs defined in this scene and save it as configured ones.
 
 ## Changelog
-### 2.0.4 (2019-06-14)
+### 2.0.5 (2019-06-14)
 * (bluefox) The tolerance is implemented
 
 ### 2.0.3 (2019-06-14)
