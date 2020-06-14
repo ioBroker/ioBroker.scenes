@@ -48,6 +48,12 @@
   "Are you sure for delete this state?": "Weet u zeker dat u deze staat wilt verwijderen?",
   "Are you sure for delete this scene?": "Weet je zeker dat je deze scène wilt verwijderen?",
   "Edit": "Bewerk",
-  "Save changes": "",
-  "Collapse": ""
+  "Save changes": "Wijzigingen opslaan",
+  "Collapse": "Ineenstorting",
+  "Folder": "Map",
+  "Interval between commands": "Interval tussen opdrachten",
+  "Write to virtual group": "Schrijf naar virtuele groep",
+  "Delay (ms)": "Vertraging (ms)",
+  "Stop already started commands": "Stop al gestarte opdrachten",
+  "Save scene before test": "Sla scène op voor test"
 }

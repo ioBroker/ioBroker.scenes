@@ -49,5 +49,11 @@
   "Are you sure for delete this scene?": "Are you sure for delete this scene?",
   "Edit": "Edit",
   "Save changes": "Save changes",
-  "Collapse": "Collapse"
+  "Collapse": "Collapse",
+  "Folder": "Folder",
+  "Interval between commands": "Interval between commands",
+  "Write to virtual group": "Write to virtual group",
+  "Delay (ms)": "Delay (ms)",
+  "Stop already started commands": "Stop already started commands",
+  "Save scene before test": "Save scene before test"
 }

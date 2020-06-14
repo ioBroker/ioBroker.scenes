@@ -49,5 +49,11 @@
   "Are you sure for delete this scene?": "Sind Sie sicher, diese Szene zu löschen?",
   "Edit": "Bearbeiten",
   "Save changes": "Änderungen speichern",
-  "Collapse": "Zumachen"
+  "Collapse": "Zumachen",
+  "Folder": "Verzeichnis",
+  "Interval between commands": "Intervall zwischen Befehlen",
+  "Write to virtual group": "In virtuelle Gruppe schreiben",
+  "Delay (ms)": "Verzögerung (ms)",
+  "Stop already started commands": "Stoppen Sie bereits gestartete Befehle",
+  "Save scene before test": "Szene vor dem Test speichern"
 }

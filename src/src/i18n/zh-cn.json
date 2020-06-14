@@ -48,6 +48,12 @@
   "Are you sure for delete this state?": "您确定要删除此状态吗？",
   "Are you sure for delete this scene?": "您确定要删除此场景吗？",
   "Edit": "编辑",
-  "Save changes": "",
-  "Collapse": ""
+  "Save changes": "保存更改",
+  "Collapse": "坍方",
+  "Folder": "夹",
+  "Interval between commands": "命令间隔",
+  "Write to virtual group": "写入虚拟组",
+  "Delay (ms)": "延迟（毫秒）",
+  "Stop already started commands": "停止已经启动的命令",
+  "Save scene before test": "测试前保存场景"
 }

@@ -48,6 +48,12 @@
   "Are you sure for delete this state?": "Czy na pewno chcesz usunąć ten stan?",
   "Are you sure for delete this scene?": "Czy na pewno chcesz usunąć tę scenę?",
   "Edit": "Edytować",
-  "Save changes": "",
-  "Collapse": ""
+  "Save changes": "Zapisz zmiany",
+  "Collapse": "Zawalić się",
+  "Folder": "Teczka",
+  "Interval between commands": "Interwał między poleceniami",
+  "Write to virtual group": "Napisz do wirtualnej grupy",
+  "Delay (ms)": "Opóźnienie (ms)",
+  "Stop already started commands": "Zatrzymaj już uruchomione polecenia",
+  "Save scene before test": "Zapisz scenę przed testem"
 }

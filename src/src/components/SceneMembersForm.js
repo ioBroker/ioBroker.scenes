@@ -2,6 +2,7 @@ import React from 'react'
 import clsx from 'clsx'
 import {withStyles} from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
@@ -164,7 +165,16 @@ const styles = theme => ({
         position: 'absolute',
         top: 2,
         right: 2,
-    }
+    },
+    width100WithButton: {
+        width: 'calc(100% - 48px)',
+    },
+    width100: {
+        width: '100%',
+    },
+    testButtons: {
+        minHeight: 48,
+    },
 });
 
 class SceneMembersForm extends React.Component {
@@ -188,7 +198,10 @@ class SceneMembersForm extends React.Component {
             deleteDialog: null,
             onFalseEnabled: props.onFalseEnabled,
             virtualGroup: props.virtualGroup,
+            selectedSceneChanged: props.selectedSceneChanged,
         };
+
+        this.onDragEnd = this.onDragEnd.bind(this);
     }
 
     componentDidMount() {
@@ -222,8 +235,24 @@ class SceneMembersForm extends React.Component {
             newState.virtualGroup = props.virtualGroup;
             changed = true;
         }
+        if (props.selectedSceneChanged !== state.selectedSceneChanged) {
+            newState.selectedSceneChanged = props.selectedSceneChanged;
+            changed = true;
+        }
 
         return changed ? newState : null;
+    }
+
+    onDragEnd(result) {
+        // dropped outside the list
+        if (!result.destination) {
+            return;
+        }
+        const members = JSON.parse(JSON.stringify(this.state.members));
+        const [removed] = members.splice(result.source.index, 1);
+        members.splice(result.destination.index, 0, removed);
+
+        this.setStateWithParent({members});
     }
 
     readObjects() {
@@ -289,7 +318,7 @@ class SceneMembersForm extends React.Component {
                                 id,
                                 setIfTrue: null,
                                 setIfFalse: null,
-                                stopAllDelays: false,
+                                stopAllDelays: true,
                                 desc: null,
                                 disabled: false,
                                 delay: 0
@@ -487,27 +516,32 @@ class SceneMembersForm extends React.Component {
                         <Box className={this.props.classes.p}>
                             {this.state.objectTypes[member.id] === 'boolean' ?
                                 <FormControlLabel
-                                    control={<Checkbox checked={member.setIfTrue} onChange={e => {
-                                        const members = JSON.parse(JSON.stringify(this.state.members));
-                                        members[index].setIfTrue = e.target.checked;
-                                        this.setStateWithParent({members});
-                                    }}/>}
-                                    label={I18n.t('Set if TRUE')}
+                                    control={<Checkbox
+                                        checked={ member.setIfTrue }
+                                        onChange={ e => {
+                                            const members = JSON.parse(JSON.stringify(this.state.members));
+                                            members[index].setIfTrue = e.target.checked;
+                                            this.setStateWithParent({members});
+                                        } }/>
+                                    }
+                                    label={ I18n.t('Set if TRUE') }
                                 />
                                 :
-                                <TextField InputLabelProps={{shrink: true}} label={I18n.t('Set if TRUE')}
-                                           value={member.setIfTrue}
-                                           fullWidth
-                                           onChange={ e => {
-                                               const members = JSON.parse(JSON.stringify(this.state.members));
-                                               if (this.state.objectTypes[member.id] === 'number') {
-                                                   members[index].setIfTrue = parseFloat(e.target.value);
-                                               } else {
-                                                   members[index].setIfTrue = e.target.value;
-                                               }
+                                <TextField
+                                    InputLabelProps={ {shrink: true} }
+                                    label={ I18n.t('Set if TRUE') }
+                                    value={ member.setIfTrue || '' }
+                                    fullWidth
+                                    onChange={ e => {
+                                        const members = JSON.parse(JSON.stringify(this.state.members));
+                                        if (this.state.objectTypes[member.id] === 'number') {
+                                            members[index].setIfTrue = parseFloat(e.target.value);
+                                        } else {
+                                            members[index].setIfTrue = e.target.value;
+                                        }
 
-                                               this.setStateWithParent({members});
-                                           } }/>
+                                        this.setStateWithParent({members});
+                                     } }/>
                             }
                         </Box>
                         { this.state.onFalseEnabled ?
@@ -515,11 +549,11 @@ class SceneMembersForm extends React.Component {
                                 {
                                     this.state.objectTypes[member.id] === 'boolean' ?
                                         <FormControlLabel
-                                            control={<Checkbox checked={member.setIfFalse} onChange={e => {
+                                            control={<Checkbox checked={ member.setIfFalse } onChange={ e => {
                                                 const members = JSON.parse(JSON.stringify(this.state.members));
                                                 members[index].setIfFalse = e.target.checked;
                                                 this.setStateWithParent({members});
-                                            }}/>}
+                                            } }/>}
                                             label={ I18n.t('Set if FALSE') }
                                         />
                                         :
@@ -527,7 +561,7 @@ class SceneMembersForm extends React.Component {
                                             fullWidth
                                             InputLabelProps={{shrink: true}} label={I18n.t('Set if FALSE')}
                                             value={ member.setIfFalse || ''}
-                                            onChange={e => {
+                                            onChange={ e => {
                                                 const members = JSON.parse(JSON.stringify(this.state.members));
                                                 if (this.state.objectTypes[member.id] === 'number') {
                                                     members[index].setIfFalse = parseFloat(e.target.value);
@@ -535,7 +569,7 @@ class SceneMembersForm extends React.Component {
                                                     members[index].setIfFalse = e.target.value;
                                                 }
                                                 this.setStateWithParent({members});
-                                            }}
+                                            } }
                                         />
                                 }
                             </Box>
@@ -556,15 +590,20 @@ class SceneMembersForm extends React.Component {
                                             this.setStateWithParent({members});
                                         }}/>
                                 </Grid>
-                                { member.delay ? <Grid item xs={8}>
-                                    <FormControlLabel label={I18n.t('Stop already started commands')} control={
-                                        <Checkbox checked={member.stopAllDelays} onChange={e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].stopAllDelays = e.target.checked;
-                                            this.setStateWithParent({members});
-                                        }}/>
+                                <Grid item xs={8}>
+                                    <FormControlLabel
+                                        label={ I18n.t('Stop already started commands') }
+                                        control={
+                                            <Checkbox
+                                                checked={ member.stopAllDelays }
+                                                onChange={ e => {
+                                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                                    members[index].stopAllDelays = e.target.checked;
+                                                    this.setStateWithParent({members});
+                                                } }
+                                            />
                                     }/>
-                                </Grid> : null }
+                                </Grid>
                             </Grid>
                         </Box>
                     </div> :
@@ -581,9 +620,24 @@ class SceneMembersForm extends React.Component {
         this.props.socket.setState(this.props.sceneId, val);
     }
 
+    getItemStyle = (isDragging, draggableStyle) => ({
+        // some basic styles to make the items look a bit nicer
+        userSelect: 'none',
+        background: isDragging ? 'lightgreen' : 'inherit',
+
+        // styles we need to apply on draggables
+        ...draggableStyle
+    });
+
+    getListStyle = isDraggingOver => ({
+        background: isDraggingOver ? 'lightblue' : 'inherit',
+    });
+
     render = () => {
         let sceneState = this.state.states[this.props.sceneId];
-        if (sceneState === undefined || sceneState === null) {
+        if (this.state.selectedSceneChanged) {
+            sceneState = I18n.t('Save scene before test')
+        } else if (sceneState === undefined || sceneState === null) {
             sceneState = '';
         }
 
@@ -603,28 +657,53 @@ class SceneMembersForm extends React.Component {
                     <IconAdd/>
                 </IconButton>
             </Toolbar>
-            <div className={ this.props.classes.testButtons }>
-                { this.state.virtualGroup ? <TextField
+            <div className={ clsx(this.props.classes.testButtons, this.props.classes.width100) }>
+                {  !this.state.selectedSceneChanged && this.state.virtualGroup ? <TextField
+                    className={ this.props.classes.width100WithButton }
                     label={ I18n.t('Write to virtual group') }
                     defaultValue={ sceneState }
                     onKeyUp={e => e.keyCode === 13 && this.onWriteScene(this.state.writeSceneState)}
                     onChange={e => this.setState({writeSceneState: e.target.value}) }
                 /> : null}
-                { this.state.virtualGroup ? <IconButton
+                { !this.state.selectedSceneChanged && this.state.virtualGroup ? <IconButton
                     onClick={e => this.onWriteScene(this.state.writeSceneState) }
                 ><IconPlay/></IconButton> : null}
-                { !this.state.virtualGroup ? <Button
+                { !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
                     className={ this.props.classes.btnTestTrue }
                     onClick={ () => this.onWriteScene(true) }
                 ><IconPlay/>{ I18n.t('Test TRUE') }</Button> : null }
-                { !this.state.virtualGroup && this.state.onFalseEnabled ? <Button
+                { !this.state.selectedSceneChanged && !this.state.virtualGroup && this.state.onFalseEnabled ? <Button
                     className={ this.props.classes.btnTestFalse }
                     onClick={ () => this.onWriteScene(false) }
                 ><IconPlay/>{ I18n.t('Test FALSE') }</Button> : null }
             </div>
-            <div className={ this.props.classes.scroll }>
-                { this.state.members.map((member, i) => this.renderMember(member, i)) }
-            </div>
+            <DragDropContext onDragEnd={this.onDragEnd}>
+                <Droppable droppableId="droppable">
+                    {(provided, snapshot) => (
+                        <div className={ this.props.classes.scroll }
+                             {...provided.droppableProps}
+                             ref={ provided.innerRef }
+                             style={ this.getListStyle(snapshot.isDraggingOver) }
+                        >
+                            { this.state.members.map((member, i) =>
+                                <Draggable key={ member.id } draggableId={ member.id } index={ i }>
+                                    {(provided, snapshot) =>
+                                        <div
+                                            ref={ provided.innerRef }
+                                            {...provided.draggableProps }
+                                            {...provided.dragHandleProps }
+                                            style={ this.getItemStyle(
+                                                snapshot.isDragging,
+                                                provided.draggableProps.style
+                                            ) }
+                                        >{ this.renderMember(member, i) }</div>}
+                                </Draggable>
+                            )}
+                            { provided.placeholder }
+                        </div>
+                    )}
+                </Droppable>
+            </DragDropContext>
         </div>;
 
         return [
@@ -643,6 +722,7 @@ SceneMembersForm.propTypes = {
     sceneId: PropTypes.string,
     onFalseEnabled: PropTypes.bool,
     virtualGroup: PropTypes.bool,
+    selectedSceneChanged: PropTypes.bool,
 };
 
 export default withStyles(styles)(SceneMembersForm);

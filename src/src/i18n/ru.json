@@ -49,5 +49,11 @@
   "Are you sure for delete this scene?": "Вы уверены, что хотите удалить эту сцену?",
   "Edit": "Редактировать",
   "Save changes": "Сохранить изменения",
-  "Collapse": "Скрыть"
+  "Collapse": "Скрыть",
+  "Folder": "Папка",
+  "Interval between commands": "Интервал между командами",
+  "Write to virtual group": "Написать в виртуальную группу",
+  "Delay (ms)": "Задержка (мс)",
+  "Stop already started commands": "Остановить уже запущенные команды",
+  "Save scene before test": "Сохранить сцену перед тестом"
 }

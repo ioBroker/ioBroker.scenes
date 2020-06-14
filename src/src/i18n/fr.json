@@ -48,6 +48,12 @@
   "Are you sure for delete this state?": "Voulez-vous vraiment supprimer cet état?",
   "Are you sure for delete this scene?": "Voulez-vous vraiment supprimer cette scène?",
   "Edit": "Éditer",
-  "Save changes": "",
-  "Collapse": ""
+  "Save changes": "Sauvegarder les modifications",
+  "Collapse": "Effondrer",
+  "Folder": "Dossier",
+  "Interval between commands": "Intervalle entre les commandes",
+  "Write to virtual group": "Écrire au groupe virtuel",
+  "Delay (ms)": "Retard (ms)",
+  "Stop already started commands": "Arrêter les commandes déjà démarrées",
+  "Save scene before test": "Enregistrer la scène avant le test"
 }

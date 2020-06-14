@@ -7,7 +7,6 @@ import { MuiThemeProvider } from '@material-ui/core/styles';
 
 // MaterialUi
 import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
 import Switch from '@material-ui/core/Switch';
 import Container from '@material-ui/core/Container';
 import IconButton from '@material-ui/core/IconButton';
@@ -23,6 +22,8 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from "@material-ui/core/Typography";
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 
 // Own
 import Utils from '@iobroker/adapter-react/Components/Utils';
@@ -82,6 +83,9 @@ const styles = theme => ({
         fontWeight: 'bold',
         color: theme.palette.type === 'dark' ? '#FFF': '#000',
     },
+    fullWidthContainer: {
+        maxWidth: 'inherit',
+    },
     columnContainer: {
         display: 'flex',
         flexDirection: 'column',
@@ -92,7 +96,7 @@ const styles = theme => ({
         height: '100%',
         width: '100%',
     },
-    buttonsContainer: {
+    buttonsContainer1: {
         '& button': {
             margin: '0 ' + theme.spacing(1) + 'px',
         },
@@ -344,6 +348,7 @@ class App extends GenericApp {
                 newState.changingScene = '';
                 newState.selectedSceneChanged = false;
 
+                // Fill missing data
                 Object.keys(newState.scenes).forEach(id => {
                     const sceneObj = newState.scenes[id];
                     sceneObj.common = sceneObj.common || {};
@@ -357,7 +362,6 @@ class App extends GenericApp {
                     const members = sceneObj.native.members;
                     delete sceneObj.native.members;
                     sceneObj.native.members = members; // place it on the last place
-
                 });
 
                 if (!newState.scenes[this.state.selectedSceneId]) {
@@ -427,13 +431,14 @@ class App extends GenericApp {
             onClose={ () => this.setState({moveDialog: null}) }
         >
             <DialogTitle>{ I18n.t('Move to folder') }</DialogTitle>
-            <Box className={ this.props.classes.p }>
-                <FormControl>
+            <DialogContent>
+                <FormControl classes={ {root: this.props.classes.width100} }>
                     <InputLabel shrink={ true }>{ I18n.t('Folder') }</InputLabel>
                     <Select
+                        className={ this.props.classes.width100 }
                         value={ this.state.newFolder || '__root__' }
                         onChange={e => this.setState({newFolder: e.target.value}) }>
-                        { getFolderList(this.props.folders).map(folder =>
+                        { getFolderList(this.state.folders).map(folder =>
                             <MenuItem
                                 key={ folder.prefix }
                                 value={ folder.prefix || '__root__' }
@@ -443,8 +448,8 @@ class App extends GenericApp {
                         }
                     </Select>
                 </FormControl>
-            </Box>
-            <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+            </DialogContent>
+            <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
                 <Button variant="contained" onClick={ () => this.setState({moveDialog: null}) }>
                     { I18n.t('Cancel') }
                 </Button>
@@ -454,7 +459,7 @@ class App extends GenericApp {
                 >
                     { I18n.t('Move to folder') }
                 </Button>
-            </div>
+            </DialogActions>
         </Dialog>;
     }
 
@@ -529,8 +534,8 @@ class App extends GenericApp {
                     window.localStorage.setItem('Scenes.opened', JSON.stringify(opened));
 
                     this.setState({opened});
-                }} title={ opened ? I18n.t('Expand') : I18n.t('Collapse')}>
-                    { opened ? <IconExpand/> : <IconCollapse/>}
+                }} title={ opened ? I18n.t('Collapse') : I18n.t('Expand')  }>
+                    { opened ? <IconExpand/> : <IconCollapse/> }
                 </IconButton>
             </ListItemSecondaryAction>
         </ListItem>);
@@ -547,7 +552,7 @@ class App extends GenericApp {
                         title={ I18n.t('Create new folder') }
                     ><IconFolderAdd/></IconButton>
 
-                    <IconButton onClick={() => this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id})}
+                    <IconButton onClick={ () => this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id}) }
                                 title={ I18n.t('Edit folder') }
                     ><IconEdit/></IconButton>
                 </ListItemSecondaryAction>
@@ -562,12 +567,12 @@ class App extends GenericApp {
                         classes={ {root: this.props.classes.leftMenuItem} }
                         style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
                     >
-                        { Object.values(parent.scenes).map(scene => this.renderTreeScene(scene, level)) }
+                        { Object.values(parent.scenes).sort((a, b) => a._id > b._id ? 1 : (a._id < b._id ? -1 : 0)).map(scene => this.renderTreeScene(scene, level)) }
                     </List>
                 </ListItem>);
 
             // add sub-folders
-            result.push(Object.values(parent.subFolders).map(subFolder =>
+            result.push(Object.values(parent.subFolders).sort((a, b) => a.id > b.id ? 1 : (a.id < b.id ? -1 : 0)).map(subFolder =>
                 this.renderTree(subFolder, level + 1)));
         }
 
@@ -705,7 +710,7 @@ class App extends GenericApp {
                 this.confirmCb = cb;
                 this.setState({sceneChangeDialog: newId});
             } else {
-                window.localStorage.setItem('Scenes.selectedSceneId', this.state.sceneChangeDialog);
+                window.localStorage.setItem('Scenes.selectedSceneId', newId);
                 this.setState({
                     selectedSceneData: JSON.parse(JSON.stringify(this.state.scenes[newId])),
                     sceneChangeDialog: '',
@@ -719,59 +724,55 @@ class App extends GenericApp {
     }
 
     renderAddDialog() {
-        return this.state.addFolderDialog ? <Dialog open={ !!this.state.addFolderDialog } onClose={() => {
-            this.setState({addFolderDialog: null})
-        }}>
-            <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
-            <Box className={this.props.classes.p}>
-                <TextField label={I18n.t('Title')} value={this.state.addFolderDialogTitle} onChange={(e) => {
-                    this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
-                }}/>
-            </Box>
-            <Box className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                <Button variant="contained" onClick={() => {
-                    this.setState({addFolderDialog: null});
-                }}>
-                    {I18n.t('Cancel')}
-                </Button>
-                <Button variant="contained" onClick={() => {
-                    this.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle);
-                    this.setState({addFolderDialog: null});
-                }} color="primary" autoFocus>
-                    {I18n.t('Create')}
-                </Button>
-            </Box>
-        </Dialog> : null;
+        return this.state.addFolderDialog ?
+            <Dialog
+                open={ !!this.state.addFolderDialog }
+                onClose={ () => this.setState({addFolderDialog: null}) }
+            >
+                <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
+                <DialogContent className={this.props.classes.p}>
+                    <TextField label={I18n.t('Title')} value={this.state.addFolderDialogTitle} onChange={ e =>
+                        this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')}) }/>
+                </DialogContent>
+                <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" onClick={ () => this.setState({addFolderDialog: null}) }>
+                        {I18n.t('Cancel')}
+                    </Button>
+                    <Button variant="contained" onClick={() => {
+                        this.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle);
+                        this.setState({addFolderDialog: null});
+                    }} color="primary" autoFocus>
+                        {I18n.t('Create')}
+                    </Button>
+                </DialogActions>
+            </Dialog> : null;
     }
 
     renderEditFolderDialog() {
-        return this.state.editFolderDialog ? <Dialog open={ !!this.state.editFolderDialog } onClose={() => {
-            this.setState({editFolderDialog: null})
-        }}>
-            <DialogTitle>{I18n.t('Edit folder')}</DialogTitle>
-            <Box className={this.props.classes.p}>
-                <TextField label={I18n.t('Title')} value={this.state.editFolderDialogTitle} onChange={(e) => {
-                    this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')})
-                }}/>
-            </Box>
-            <Box className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                <Button variant="contained" onClick={() => {
-                    this.setState({editFolderDialog: null});
-                }}>
-                    {I18n.t('Cancel')}
+        return this.state.editFolderDialog ? <Dialog open={ !!this.state.editFolderDialog } onClose={ () => this.setState({editFolderDialog: null}) }>
+            <DialogTitle>{ I18n.t('Edit folder') }</DialogTitle>
+            <DialogContent>
+                <TextField
+                    label={ I18n.t('Title') }
+                    value={ this.state.editFolderDialogTitle }
+                    onChange={ e => this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')}) }/>
+            </DialogContent>
+            <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                <Button variant="contained" onClick={ () => this.setState({editFolderDialog: null}) }>
+                    { I18n.t('Cancel') }
                 </Button>
                 <Button
                     variant="contained"
-                    onClick={() => {
-                        this.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle);
-                        this.setState({editFolderDialog: null});
+                    onClick={ () => {
+                        this.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle)
+                            .then(() => this.setState({editFolderDialog: null}));
                     }}
                     color="primary"
                     autoFocus
                 >
                     { I18n.t('edit') }
                 </Button>
-            </Box>
+            </DialogActions>
         </Dialog> : null;
     }
 
@@ -782,7 +783,7 @@ class App extends GenericApp {
             key="sceneChangeDialog"
             onClose={ () => this.setState({sceneChangeDialog: ''}) }>
                 <DialogTitle>{ I18n.t('Are you sure for cancel unsaved changes?') }</DialogTitle>
-                <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
                     <Button variant="contained" onClick={() => {
                         this.confirmCb = null; // cancel callback
                         this.setState({sceneChangeDialog: ''});
@@ -808,7 +809,7 @@ class App extends GenericApp {
                     }}>
                         <IconSave/> { I18n.t('Save changes') }
                     </Button>
-                </div>
+                </DialogActions>
             </Dialog> : null;
     };
 
@@ -819,17 +820,17 @@ class App extends GenericApp {
             onClose={ () => this.setState({deleteDialog: false}) }
         >
             <DialogTitle>{ I18n.t('Are you sure for delete this scene?') }</DialogTitle>
-            <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+            <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
                 <Button variant="contained" onClick={ () => this.setState({deleteDialog: false}) }>
                     {I18n.t('Cancel')}
                 </Button>
                 <Button variant="contained" color="secondary" onClick={e => {
-                    this.props.deleteScene(this.state.selectedSceneId);
+                    this.deleteScene(this.state.selectedSceneId);
                     this.setState({deleteDialog: false});
                 }}>
                     { I18n.t('Delete') }
                 </Button>
-            </div>
+            </DialogActions>
         </Dialog> : null;
     }
 
@@ -843,8 +844,8 @@ class App extends GenericApp {
 
         return (
             <MuiThemeProvider theme={ this.state.theme }>
-                    <div className={ this.props.classes.root }>
-                    <Container className={ this.props.classes.height }>
+                <div className={ this.props.classes.root }>
+                    <Container className={ clsx(this.props.classes.height, this.props.classes.fullWidthContainer) }>
                         <Grid container spacing={ 1 } className={ this.props.classes.height }>
                             <Grid item xs={ 3 } className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
                                 <Toolbar variant="dense">
@@ -921,7 +922,6 @@ class App extends GenericApp {
                                                         updateScene={ (common, native, cb) => component.updateScene(common, native, cb) }
                                                         scene={ this.state.scenes[this.state.selectedSceneId] }
                                                         socket={ this.socket }
-                                                        folders={this.state.folders }
                                                         instances={ this.state.instances }
                                                     />
                                                     : ''}
@@ -934,6 +934,7 @@ class App extends GenericApp {
                                                         <SceneMembersForm
                                                             key={ 'selected' + this.state.selectedSceneId }
                                                             updateSceneMembers={ (members, cb) => component.updateSceneMembers(members, cb) }
+                                                            selectedSceneChanged={ this.state.selectedSceneChanged }
                                                             members={ this.state.selectedSceneData.native.members }
                                                             socket={ this.socket }
                                                             onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
