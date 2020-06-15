@@ -57,5 +57,8 @@
   "Stop already started commands": "停止已经启动的命令",
   "Save scene before test": "测试前保存场景",
   "Tolerance for TRUE": "公差为TRUE",
-  "Tolerance for FALSE": "容许误差"
+  "Tolerance for FALSE": "容许误差",
+  "No scenes created yet": "尚未创建场景",
+  "Export scene": "导出场景",
+  "Copy to clipboard": "复制到剪贴板"
 }

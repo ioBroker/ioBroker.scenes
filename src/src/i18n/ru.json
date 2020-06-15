@@ -57,5 +57,8 @@
   "Stop already started commands": "Остановить уже запущенные команды",
   "Save scene before test": "Сохранить сцену перед тестом",
   "Tolerance for TRUE": "Допуск для TRUE",
-  "Tolerance for FALSE": "Допуск для FALSE"
+  "Tolerance for FALSE": "Допуск для FALSE",
+  "No scenes created yet": "Сцены еще не созданы",
+  "Export scene": "Экспортировать сцену",
+  "Copy to clipboard": "Скопировать в буфер обмена"
 }

@@ -57,5 +57,8 @@
   "Stop already started commands": "Parar comandos já iniciados",
   "Save scene before test": "Salvar cena antes do teste",
   "Tolerance for TRUE": "Tolerância para TRUE",
-  "Tolerance for FALSE": "Tolerância a FALSE"
+  "Tolerance for FALSE": "Tolerância a FALSE",
+  "No scenes created yet": "Nenhuma cena criada ainda",
+  "Export scene": "Exportar cena",
+  "Copy to clipboard": "Copiar para área de transferência"
 }

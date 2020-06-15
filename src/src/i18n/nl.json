@@ -57,5 +57,8 @@
   "Stop already started commands": "Stop al gestarte opdrachten",
   "Save scene before test": "Sla scène op voor test",
   "Tolerance for TRUE": "Tolerantie voor TRUE",
-  "Tolerance for FALSE": "Tolerantie voor FALSE"
+  "Tolerance for FALSE": "Tolerantie voor FALSE",
+  "No scenes created yet": "Nog geen scènes gemaakt",
+  "Export scene": "Scène exporteren",
+  "Copy to clipboard": "Kopieer naar klembord"
 }

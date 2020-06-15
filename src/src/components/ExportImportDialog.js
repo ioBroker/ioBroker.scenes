@@ -37,7 +37,7 @@ class ExportImportDialog extends React.Component {
         super(props);
 
         this.state = {
-            text: JSON.stringify(props.sceneObj, null, 2),
+            text: props.sceneObj ? JSON.stringify(props.sceneObj, null, 2) : '',
             error: false,
             toast: '',
         };
@@ -78,9 +78,14 @@ class ExportImportDialog extends React.Component {
             <DialogContent>
                 <div className={ clsx(this.props.classes.divWithoutTitle, this.state.error && this.props.classes.error) }>
                     <AceEditor
+                        autoFocus
                         mode="json"
                         width="100%"
                         height="100%"
+                        onLoad={editor => {
+                            this.codeEditor = editor;
+                            this.codeEditor.focus();
+                        }}
                         theme={ this.props.themeType === 'dark' ? 'clouds_midnight' : 'chrome' }
                         onChange={ newValue => this.onChange(newValue) }
                         value={ this.state.text }
@@ -92,17 +97,22 @@ class ExportImportDialog extends React.Component {
                 </div>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => this.props.onClose()} autoFocus>
+                <Button onClick={ () => this.props.onClose() } autoFocus={ !this.props.isImport }>
                     { I18n.t('Close') }
                 </Button>
-                {this.props.isImport ?
-                    <Button disabled={!this.state.text || this.state.error} onClick={ this.props.onClose(JSON.parse(this.state.text)) } color="primary" autoFocus>
+                { this.props.isImport ?
+                    <Button
+                        disabled={ !this.state.text || this.state.error }
+                        onClick={ () => this.props.onClose(JSON.parse(this.state.text)) }
+                        color="primary"
+                    >
                         { I18n.t('Import') }
                     </Button>
                     :
                     <Button onClick={ () => {
                         copy(this.state.text);
                         this.setState({ toast: I18n.t('Copied') });
+                        setTimeout(() => this.props.onClose(), 500);
                     } } color="primary" autoFocus>
                         { I18n.t('Copy to clipboard') }
                     </Button>}

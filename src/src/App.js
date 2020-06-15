@@ -332,7 +332,6 @@ class App extends GenericApp {
         let scenes;
         return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state')
             .then(_scenes => {
-                console.log(_scenes);
                 scenes = _scenes;
                 return {scenes, folders: this.buildTree(scenes)};
             });
@@ -367,12 +366,24 @@ class App extends GenericApp {
                     const members = sceneObj.native.members;
                     delete sceneObj.native.members;
                     sceneObj.native.members = members; // place it on the last place
+
+                    delete sceneObj.from;
+                    delete sceneObj.user;
+                    delete sceneObj.ts;
+                    delete sceneObj.acl;
                 });
 
                 if (!newState.scenes[this.state.selectedSceneId]) {
                     newState.selectedSceneId = Object.keys(newState.scenes).shift() || '';
                 }
-                newState.selectedSceneData = JSON.parse(JSON.stringify(newState.scenes[newState.selectedSceneId || that.state.selectedSceneId]));
+
+                if ((newState.selectedSceneId || that.state.selectedSceneId) &&
+                    newState.scenes[newState.selectedSceneId || that.state.selectedSceneId]) {
+                    newState.selectedSceneData = JSON.parse(JSON.stringify(newState.scenes[newState.selectedSceneId || that.state.selectedSceneId]));
+                } else {
+                    newState.selectedSceneData = null;
+                }
+
                 that.setState(newState);
             });
     }
@@ -562,6 +573,9 @@ class App extends GenericApp {
                     ><IconEdit/></IconButton>
                 </ListItemSecondaryAction>
             </ListItem>);
+
+            const values = Object.values(parent.scenes);
+            const subFolders = Object.values(parent.subFolders);
             // Add first scenes
             result.push(<ListItem
                 key={ 'items_' + parent.prefix }
@@ -572,12 +586,16 @@ class App extends GenericApp {
                         classes={ {root: this.props.classes.leftMenuItem} }
                         style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
                     >
-                        { Object.values(parent.scenes).sort((a, b) => a._id > b._id ? 1 : (a._id < b._id ? -1 : 0)).map(scene => this.renderTreeScene(scene, level)) }
+                        { values.length ?
+                            values.sort((a, b) => a._id > b._id ? 1 : (a._id < b._id ? -1 : 0)).map(scene => this.renderTreeScene(scene, level))
+                            :
+                            (!subFolders.length ? <ListItem>{ I18n.t('No scenes created yet')}</ListItem> : '')
+                        }
                     </List>
                 </ListItem>);
 
             // add sub-folders
-            result.push(Object.values(parent.subFolders).sort((a, b) => a.id > b.id ? 1 : (a.id < b.id ? -1 : 0)).map(subFolder =>
+            result.push(subFolders.sort((a, b) => a.id > b.id ? 1 : (a.id < b.id ? -1 : 0)).map(subFolder =>
                 this.renderTree(subFolder, level + 1)));
         }
 
@@ -638,7 +656,11 @@ class App extends GenericApp {
     };
 
     writeScene() {
-        return this.socket.setObject(this.state.selectedSceneId, this.state.selectedSceneData)
+        const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
+        scene.type = 'scene';
+        scene._id = this.state.selectedSceneId;
+
+        return this.socket.setObject(this.state.selectedSceneId, scene)
             .then(() => this.refreshData(this.state.selectedSceneId));
     }
 
@@ -840,15 +862,24 @@ class App extends GenericApp {
     }
 
     renderExportImportDialog() {
-        if (!this.state.exportDialog) {
+        if (!this.state.exportDialog && !this.state.importDialog) {
             return null;
         }
 
         return <ExportImportDialog
-            isImport={ false }
+            isImport={ !!this.state.importDialog }
             themeType={ this.state.themeType }
-            onClose={ text => this.setState({exportDialog: false}) }
-            sceneObj={ this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId] }
+            onClose={ importedScene => {
+                if (this.state.importDialog && importedScene) {
+                    const scene = this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId];
+                    importedScene.common._id = scene._id;
+                    importedScene.common.name = scene.name || importedScene.common.name;
+                    this.setState({selectedSceneData: importedScene,  importDialog: false});
+                } else {
+                    this.setState({exportDialog: false, importDialog: false})
+                }
+            } }
+            sceneObj={ this.state.exportDialog ? this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId] : '' }
         />
     }
 
@@ -908,6 +939,8 @@ class App extends GenericApp {
             <IconButton aria-label="Move to folder" title={ I18n.t('Move to folder') } onClick={ () => this.setState({moveDialog: true, newFolder: getFolderPrefix(this.state.selectedSceneId)}) }><IconMoveToFolder/></IconButton>
 
             <IconButton aria-label="Export" title={ I18n.t('Export scene') } onClick={ () => this.setState({exportDialog: true}) }><IconExport/></IconButton>
+
+            {/*<IconButton aria-label="Import" title={ I18n.t('Import scene') } onClick={ () => this.setState({importDialog: true}) }><IconImport/></IconButton>*/}
         </Toolbar>;
     }
 
