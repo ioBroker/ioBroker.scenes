@@ -657,7 +657,7 @@ class App extends GenericApp {
 
     writeScene() {
         const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
-        scene.type = 'scene';
+        scene.type = 'state';
         scene._id = this.state.selectedSceneId;
 
         return this.socket.setObject(this.state.selectedSceneId, scene)

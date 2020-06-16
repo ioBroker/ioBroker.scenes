@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.7",
+        "version": "2.0.8",
         "news": {
-            "2.0.7": {
+            "2.0.8": {
                 "en": "The tolerance is implemented",
                 "de": "Die Toleranz ist implementiert",
                 "ru": "Допуск реализован",
