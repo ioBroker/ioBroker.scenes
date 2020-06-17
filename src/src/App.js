@@ -60,6 +60,7 @@ const styles = theme => ({
         width: '100%',
         height: 'calc(100% + 4px)',
         backgroundColor: theme.palette.type === 'dark' ? '#000': '#fff',
+        //color1: console.log(JSON.stringify(theme, null, 2)) || '#1234',
     },
     tabContent: {
         padding: 10,
@@ -162,6 +163,9 @@ const styles = theme => ({
     },
     listItemSubTitle: {
         color: theme.palette.type === 'dark' ? '#bababa': '#2a2a2a',
+    },
+    disabled: {
+        opacity: 0.3
     }
 });
 
@@ -330,7 +334,7 @@ class App extends GenericApp {
 
     getData() {
         let scenes;
-        return this.socket.getObjectView('scene.' + this.instance + '.', 'scene.' + this.instance + '.\u9999', 'state')
+        return this.socket.getObjectView('scene.0.', 'scene.\u9999', 'state')
             .then(_scenes => {
                 scenes = _scenes;
                 return {scenes, folders: this.buildTree(scenes)};
@@ -503,7 +507,7 @@ class App extends GenericApp {
             key={ item._id }
             selected={ this.state.selectedSceneId ? this.state.selectedSceneId === scene._id : false }
             button
-            className={ changed ? this.props.classes.changed : ''}
+            className={ clsx(changed && this.props.classes.changed, !scene.common.enabled && this.props.classes.disabled) }
             onClick={ () => this.changeSelectedScene(scene._id) }>
             <ListItemText
                 classes={ {primary: this.props.classes.listItemTitle, secondary: this.props.classes.listItemSubTitle} }
@@ -515,9 +519,9 @@ class App extends GenericApp {
                     <CircularProgress size={ 24 }/>
                     :
                     <Switch
-                        checked={scene.common.enabled}
-                        onChange={this.sceneSwitch}
-                        name={scene._id}
+                        checked={ scene.common.enabled }
+                        onChange={ this.sceneSwitch }
+                        name={ scene._id }
                     />
                 }
             </ListItemSecondaryAction>
@@ -589,7 +593,7 @@ class App extends GenericApp {
                         { values.length ?
                             values.sort((a, b) => a._id > b._id ? 1 : (a._id < b._id ? -1 : 0)).map(scene => this.renderTreeScene(scene, level))
                             :
-                            (!subFolders.length ? <ListItem>{ I18n.t('No scenes created yet')}</ListItem> : '')
+                            (!subFolders.length ? <ListItem><ListItemText className={ this.props.classes.folderItem}>{ I18n.t('No scenes created yet')}</ListItemText></ListItem> : '')
                         }
                     </List>
                 </ListItem>);
@@ -657,7 +661,6 @@ class App extends GenericApp {
 
     writeScene() {
         const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
-        scene.type = 'state';
         scene._id = this.state.selectedSceneId;
 
         return this.socket.setObject(this.state.selectedSceneId, scene)

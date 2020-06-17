@@ -179,7 +179,10 @@ const styles = theme => ({
         width: 'calc(50% - ' + theme.spacing(1) + 'px)',
         minWidth: 100,
         marginRight: theme.spacing(1),
-    }
+    },
+    disabled: {
+        opacity: 0.3
+    },
 });
 
 class SceneMembersForm extends React.Component {
@@ -412,6 +415,7 @@ class SceneMembersForm extends React.Component {
 
     renderMember = (member, index) => {
         let value = null;
+        const classes = this.props.classes;
         if (this.state.states[member.id] !== undefined && this.state.states[member.id] !== null) {
             let _valStr = this.state.states[member.id].toString();
 
@@ -424,23 +428,23 @@ class SceneMembersForm extends React.Component {
             if (member.setIfTrueTolerance && Math.abs(this.state.states[member.id] - member.setIfTrue) <= member.setIfTrueTolerance) {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(this.props.classes.memberTrueFalse, this.props.classes.memberTrue) }>{ _valStr }</div>;
+                    className={ clsx(classes.memberTrueFalse, classes.memberTrue) }>{ _valStr }</div>;
             } else if (this.state.states[member.id] === member.setIfTrue) {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(this.props.classes.memberTrueFalse, this.props.classes.memberTrue) }>{ _valStr }</div>;
+                    className={ clsx(classes.memberTrueFalse, classes.memberTrue) }>{ _valStr }</div>;
             } else if (member.setIfFalse !== undefined && member.setIfFalseTolerance && Math.abs(this.state.states[member.id] - member.setIfFalse) <= member.setIfFalseTolerance) {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(this.props.classes.memberTrueFalse, this.props.classes.memberFalse) }>{ _valStr }</div>;
+                    className={ clsx(classes.memberTrueFalse, classes.memberFalse) }>{ _valStr }</div>;
             } else if (member.setIfFalse !== undefined && this.state.states[member.id] === member.setIfFalse) {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(this.props.classes.memberTrueFalse, this.props.classes.memberFalse) }>{ _valStr }</div>;
+                    className={ clsx(classes.memberTrueFalse, classes.memberFalse) }>{ _valStr }</div>;
             } else {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(this.props.classes.memberTrueFalse, this.props.classes.memberUncertain) }>{ _valStr }</div>;
+                    className={ clsx(classes.memberTrueFalse, classes.memberUncertain) }>{ _valStr }</div>;
             }
         }
 
@@ -480,11 +484,11 @@ class SceneMembersForm extends React.Component {
 
         const opened = this.state.openedMembers.includes(member.id);
 
-        return <Paper key={ member.id } className={ this.props.classes.memberCard }>
-            <div className={ this.props.classes.memberToolbar }>
-                <div className={ this.props.classes.memberTitle }>{ member.id }</div>
-                <div className={ this.props.classes.memberDesc }>{ member.desc || this.state.objectNames[member.id] || '' }</div>
-                <div className={ this.props.classes.memberButtons }>
+        return <Paper key={ member.id } className={ clsx(classes.memberCard, member.disabled && classes.disabled) }>
+            <div className={ classes.memberToolbar }>
+                <div className={ classes.memberTitle }>{ member.id }</div>
+                <div className={ classes.memberDesc }>{ member.desc || this.state.objectNames[member.id] || '' }</div>
+                <div className={ classes.memberButtons }>
                     <IconButton title={ I18n.t('Edit') } onClick={ () => {
                         const openedMembers = [...this.state.openedMembers];
                         const pos = openedMembers.indexOf(member.id);
@@ -522,7 +526,7 @@ class SceneMembersForm extends React.Component {
             {
                 opened ?
                     <div>
-                        {/*<Box className={this.props.classes.p}>
+                        {/*<Box className={classes.p}>
                             <TextField
                                 fullWidth
                                 InputLabelProps={{shrink: true}} label={I18n.t('Description')}
@@ -534,7 +538,7 @@ class SceneMembersForm extends React.Component {
                                 }}
                             />
                         </Box>*/ }
-                        <Box className={ this.props.classes.p }>
+                        <Box className={ classes.p }>
                             { this.state.objectTypes[member.id] === 'boolean' ?
                                 <FormControlLabel
                                     control={<Checkbox
@@ -548,12 +552,12 @@ class SceneMembersForm extends React.Component {
                                     label={ I18n.t('Set if TRUE') }
                                 />
                                 :
-                                <Box className={ this.props.classes.p }>
+                                <Box className={ classes.p }>
                                     <TextField
                                         InputLabelProps={ {shrink: true} }
                                         label={ I18n.t('Set if TRUE') }
                                         value={ member.setIfTrue || '' }
-                                        className={ this.props.classes.setValue }
+                                        className={ classes.setValue }
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
                                             if (this.state.objectTypes[member.id] === 'number') {
@@ -568,7 +572,7 @@ class SceneMembersForm extends React.Component {
                                         InputLabelProps={ {shrink: true} }
                                         label={ '± ' + I18n.t('Tolerance for TRUE') }
                                         value={ member.setIfTrueTolerance || '' }
-                                        className={ this.props.classes.setValue }
+                                        className={ classes.setValue }
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
                                             members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value);
@@ -578,7 +582,7 @@ class SceneMembersForm extends React.Component {
                             }
                         </Box>
                         { this.state.onFalseEnabled ?
-                            <Box className={this.props.classes.p}>
+                            <Box className={classes.p}>
                                 {
                                     this.state.objectTypes[member.id] === 'boolean' ?
                                         <FormControlLabel
@@ -590,13 +594,13 @@ class SceneMembersForm extends React.Component {
                                             label={ I18n.t('Set if FALSE') }
                                         />
                                         :
-                                        <Box className={ this.props.classes.p }>
+                                        <Box className={ classes.p }>
                                             <TextField
                                                 fullWidth
                                                 InputLabelProps={ {shrink: true} }
                                                 label={ I18n.t('Set if FALSE') }
                                                 value={ member.setIfFalse || ''}
-                                                className={ this.props.classes.setValue }
+                                                className={ classes.setValue }
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                                     if (this.state.objectTypes[member.id] === 'number') {
@@ -611,7 +615,7 @@ class SceneMembersForm extends React.Component {
                                                 InputLabelProps={ {shrink: true} }
                                                 label={ '± ' + I18n.t('Tolerance for FALSE') }
                                                 value={ member.setIfFalseTolerance || '' }
-                                                className={ this.props.classes.setValue }
+                                                className={ classes.setValue }
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                                     members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value);
@@ -622,7 +626,7 @@ class SceneMembersForm extends React.Component {
                                 }
                             </Box>
                             : null}
-                        <Box className={this.props.classes.p}>
+                        <Box className={classes.p}>
                             <Grid container spacing={4}>
                                 <Grid item xs={4}>
                                     <TextField
@@ -655,10 +659,10 @@ class SceneMembersForm extends React.Component {
                             </Grid>
                         </Box>
                     </div> :
-                    <div className={ this.props.classes.smallOnTrueFalse}>
-                        { I18n.t('Set if TRUE') + ': ' } <span className={ this.props.classes.stateValueTrue }>{ setIfTrue }</span>
+                    <div className={ classes.smallOnTrueFalse}>
+                        { I18n.t('Set if TRUE') + ': ' } <span className={ classes.stateValueTrue }>{ setIfTrue }</span>
                         { this.state.onFalseEnabled ? ' / ' + I18n.t('Set if FALSE') + ': ' : null}
-                        { this.state.onFalseEnabled ? <span className={ this.props.classes.stateValueFalse }>{ setIfFalse }</span> : null}
+                        { this.state.onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
                     </div>
             }
         </Paper>

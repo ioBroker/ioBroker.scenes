@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.8",
+        "version": "2.0.9",
         "news": {
+            "2.0.9": {
+                "en": "The colors are corrected",
+                "de": "Die Farben werden korrigiert",
+                "ru": "Цвета исправлены",
+                "pt": "As cores são corrigidas",
+                "nl": "De kleuren zijn gecorrigeerd",
+                "fr": "Les couleurs sont corrigées",
+                "it": "I colori sono corretti",
+                "es": "Los colores son corregidos",
+                "pl": "Kolory są poprawione",
+                "zh-cn": "颜色已校正"
+            },
             "2.0.8": {
                 "en": "The tolerance is implemented",
                 "de": "Die Toleranz ist implementiert",

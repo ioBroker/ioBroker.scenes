@@ -10,11 +10,12 @@ import App from './App';
 import { version } from '../package.json';
 
 import theme from '@iobroker/adapter-react/Theme';
+import Utils from '@iobroker/adapter-react/Components/Utils';
 
 window.adapterName = 'scenes';
 
 console.log('iobroker.' + window.adapterName + '@' + version);
-let themeName = window.localStorage ? window.localStorage.getItem('App.themeName') || 'light' : 'light';
+let themeName = Utils.getThemeName();
 
 function build() {
     return ReactDOM.render(<MuiThemeProvider theme={ theme(themeName) }>
