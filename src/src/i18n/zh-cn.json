@@ -12,7 +12,6 @@
   "Create folder": "创建文件夹",
   "Title": "标题",
   "Create": "创建",
-  "Edit folder": "编辑资料夹",
   "edit": "编辑",
   "Are you sure for cancel unsaved changes?": "您确定要取消未保存的更改吗？",
   "Discard": "丢弃",
@@ -60,5 +59,9 @@
   "Tolerance for FALSE": "容许误差",
   "No scenes created yet": "尚未创建场景",
   "Export scene": "导出场景",
-  "Copy to clipboard": "复制到剪贴板"
+  "Copy to clipboard": "复制到剪贴板",
+  "Do not overwrite state if it has the required value": "具有所需值的状态不要覆盖",
+  "Apply": "应用",
+  "Edit folder name": "编辑文件夹名称",
+  "Name is not unique. Please change name before the save.": "名称不是唯一的。请在保存之前更改名称。"
 }

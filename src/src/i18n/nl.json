@@ -12,7 +12,6 @@
   "Create folder": "Map aanmaken",
   "Title": "Titel",
   "Create": "Creëer",
-  "Edit folder": "Map bewerken",
   "edit": "Bewerk",
   "Are you sure for cancel unsaved changes?": "Weet u zeker dat u niet-opgeslagen wijzigingen wilt annuleren?",
   "Discard": "Weggooien",
@@ -60,5 +59,9 @@
   "Tolerance for FALSE": "Tolerantie voor FALSE",
   "No scenes created yet": "Nog geen scènes gemaakt",
   "Export scene": "Scène exporteren",
-  "Copy to clipboard": "Kopieer naar klembord"
+  "Copy to clipboard": "Kopieer naar klembord",
+  "Do not overwrite state if it has the required value": "Overschrijf de status niet als deze de vereiste waarde heeft",
+  "Apply": "Van toepassing zijn",
+  "Edit folder name": "Mapnaam bewerken",
+  "Name is not unique. Please change name before the save.": "Naam is niet uniek. Wijzig de naam voordat u opslaat."
 }

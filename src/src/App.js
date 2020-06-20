@@ -24,6 +24,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from "@material-ui/core/Typography";
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 
 // Own
 import Utils from '@iobroker/adapter-react/Components/Utils';
@@ -42,9 +43,13 @@ import {MdAdd as IconAdd} from 'react-icons/md';
 import {MdModeEdit as IconEdit} from 'react-icons/md';
 import {RiFolderAddLine as IconFolderAdd} from 'react-icons/ri';
 import {MdClose as IconCancel} from 'react-icons/md';
+import {MdCheck as IconCheck} from 'react-icons/md';
 import {MdSave as IconSave} from 'react-icons/md';
 import {MdDelete as IconDelete} from 'react-icons/md';
 import {MdFileDownload as IconExport} from 'react-icons/md';
+import {FaScroll as IconScript} from 'react-icons/all';
+import {FaFolder as IconFolderClosed} from 'react-icons/all';
+import {FaFolderOpen as IconFolderOpened} from 'react-icons/all';
 // import {MdFileUpload as IconImport} from 'react-icons/md';
 import {FaClone as IconClone} from 'react-icons/fa';
 import {BsFolderSymlink as IconMoveToFolder} from 'react-icons/bs';
@@ -85,6 +90,7 @@ const styles = theme => ({
     },
     folderItem: {
         fontWeight: 'bold',
+        cursor: 'pointer',
         color: theme.palette.type === 'dark' ? '#FFF': '#000',
     },
     fullWidthContainer: {
@@ -166,6 +172,16 @@ const styles = theme => ({
     },
     disabled: {
         opacity: 0.3
+    },
+    itemIconRoot: {
+        minWidth: 24 + theme.spacing(1),
+    },
+    itemIcon: {
+        width: 24,
+        height: 24,
+    },
+    itemIconFolder: {
+        color: theme.palette.type === 'dark' ? '#ffca2c' : '#ffca2c'
     }
 });
 
@@ -196,6 +212,8 @@ function getFolderList(folder) {
 
     return result;
 }
+
+const FORBIDDEN_CHARS = /[.\][*,;'"`<>\\?]/g;
 
 class App extends GenericApp {
     constructor(props) {
@@ -445,6 +463,12 @@ class App extends GenericApp {
             return null;
         }
 
+        const newFolder = this.state.newFolder === '__root__' ? '' : this.state.newFolder;
+        const sceneId = this.state.selectedSceneId.split('.').pop();
+        const newId = 'scene.' + this.instance + '.' + newFolder + (newFolder ? '.' : '') + sceneId;
+
+        const isIdUnique = !Object.keys(this.state.scenes).find(id => id === newId);
+
         return <Dialog
             open={ true }
             key="moveDialog"
@@ -473,9 +497,13 @@ class App extends GenericApp {
                 <Button variant="contained" onClick={ () => this.setState({moveDialog: null}) }>
                     { I18n.t('Cancel') }
                 </Button>
-                <Button variant="contained" color="primary" onClick={ e =>
-                    this.setState({moveDialog: null}, () =>
-                        this.addSceneToFolderPrefix(this.state.scenes[this.state.selectedSceneId], this.state.newFolder === '__root__' ? '' : this.state.newFolder)) }
+                <Button
+                    variant="contained"
+                    disabled={ !isIdUnique }
+                    color="primary" onClick={ e =>
+                        this.setState({moveDialog: null}, () =>
+                            this.addSceneToFolderPrefix(this.state.scenes[this.state.selectedSceneId], this.state.newFolder === '__root__' ? '' : this.state.newFolder))
+                    }
                 >
                     { I18n.t('Move to folder') }
                 </Button>
@@ -509,6 +537,7 @@ class App extends GenericApp {
             button
             className={ clsx(changed && this.props.classes.changed, !scene.common.enabled && this.props.classes.disabled) }
             onClick={ () => this.changeSelectedScene(scene._id) }>
+            <ListItemIcon classes={ {root: this.props.classes.itemIconRoot} }><IconScript className={ this.props.classes.itemIcon }/></ListItemIcon>
             <ListItemText
                 classes={ {primary: this.props.classes.listItemTitle, secondary: this.props.classes.listItemSubTitle} }
                 primary={ Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) }
@@ -528,6 +557,20 @@ class App extends GenericApp {
         </ListItem>;
     };
 
+    toggleFolder(prefix) {
+        const opened = [...this.state.opened];
+        const pos = opened.indexOf(prefix);
+        if (pos === -1) {
+            opened.push(prefix);
+        } else {
+            opened.splice(pos, 1);
+        }
+
+        window.localStorage.setItem('Scenes.opened', JSON.stringify(opened));
+
+        this.setState({opened});
+    }
+
     renderTree(parent, level) {
         let result = [];
         level = level || 0;
@@ -540,21 +583,13 @@ class App extends GenericApp {
             className={ clsx(this.props.classes.width100, this.props.classes.folderItem) }
             style={ {paddingLeft: level * LEVEL_PADDING + this.props.theme.spacing(1)} }
         >
-            { parent.id }
+            <ListItemIcon classes={ {root: this.props.classes.itemIconRoot} } onClick={ () => this.toggleFolder(parent.prefix) }>{ opened ?
+                <IconFolderOpened className={ clsx(this.props.classes.itemIcon, this.props.classes.itemIconFolder) }/> :
+                <IconFolderClosed className={ clsx(this.props.classes.itemIcon, this.props.classes.itemIconFolder) }/>
+            }</ListItemIcon>
+            <ListItemText>{ parent.id }</ListItemText>
             <ListItemSecondaryAction>
-                <IconButton onClick={() => {
-                    const opened = [...this.state.opened];
-                    const pos = opened.indexOf(parent.prefix);
-                    if (pos === -1) {
-                        opened.push(parent.prefix);
-                    } else {
-                        opened.splice(pos, 1);
-                    }
-
-                    window.localStorage.setItem('Scenes.opened', JSON.stringify(opened));
-
-                    this.setState({opened});
-                }} title={ opened ? I18n.t('Collapse') : I18n.t('Expand')  }>
+                <IconButton onClick={ () => this.toggleFolder(parent.prefix) } title={ opened ? I18n.t('Collapse') : I18n.t('Expand')  }>
                     { opened ? <IconExpand/> : <IconCollapse/> }
                 </IconButton>
             </ListItemSecondaryAction>
@@ -567,13 +602,13 @@ class App extends GenericApp {
                         onClick={() => this.createScene(this.getNewSceneId(), parent.id) }
                         title={ I18n.t('Create new scene') }
                     ><IconAdd/></IconButton>
-                    <IconButton
+                    { /* <IconButton
                         onClick={() => this.setState({addFolderDialog: parent, addFolderDialogTitle: ''})}
                         title={ I18n.t('Create new folder') }
-                    ><IconFolderAdd/></IconButton>
+                    ><IconFolderAdd/></IconButton> */ }
 
-                    <IconButton onClick={ () => this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id}) }
-                                title={ I18n.t('Edit folder') }
+                    <IconButton onClick={ () => this.setState({editFolderDialog: parent, editFolderDialogTitle: parent.id, editFolderDialogTitleOrigin: parent.id}) }
+                                title={ I18n.t('Edit folder name') }
                     ><IconEdit/></IconButton>
                 </ListItemSecondaryAction>
             </ListItem>);
@@ -663,8 +698,27 @@ class App extends GenericApp {
         const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         scene._id = this.state.selectedSceneId;
 
-        return this.socket.setObject(this.state.selectedSceneId, scene)
-            .then(() => this.refreshData(this.state.selectedSceneId));
+        const folder = getFolderPrefix(scene._id);
+        const newId = 'scene.0.' + (folder ? folder + '.' : '') + scene.common.name.replace(FORBIDDEN_CHARS, '_');
+
+        if (scene._id !== newId) {
+            // check if the scene name is unique
+            if (Object.keys(this.state.scenes).find(id => id === newId)) {
+                return this.showError(I18n.t('Name is not unique. Please change name before the save.'));
+            }
+
+            // delete first the old scene
+            return this.socket.delObject(scene._id)
+                .then(() => {
+                    scene._id = newId;
+                    this.socket.setObject(scene._id, scene);
+                })
+                .then(() => this.refreshData(this.state.selectedSceneId))
+                .then(() => this.changeSelectedScene(newId))
+        } else {
+            return this.socket.setObject(this.state.selectedSceneId, scene)
+                .then(() => this.refreshData(this.state.selectedSceneId));
+        }
     }
 
     updateScene(common, native, cb) {
@@ -761,17 +815,19 @@ class App extends GenericApp {
             >
                 <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
                 <DialogContent className={this.props.classes.p}>
-                    <TextField label={I18n.t('Title')} value={this.state.addFolderDialogTitle} onChange={ e =>
-                        this.setState({addFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')}) }/>
+                    <TextField label={ I18n.t('Title') } value={ this.state.addFolderDialogTitle } onChange={ e =>
+                        this.setState({addFolderDialogTitle: e.target.value.replace(FORBIDDEN_CHARS, '_')}) }/>
                 </DialogContent>
                 <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
                     <Button variant="contained" onClick={ () => this.setState({addFolderDialog: null}) }>
-                        {I18n.t('Cancel')}
+                        <IconCancel className={ this.props.classes.buttonIcon }/>
+                        { I18n.t('Cancel') }
                     </Button>
                     <Button variant="contained" onClick={() => {
                         this.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle);
                         this.setState({addFolderDialog: null});
                     }} color="primary" autoFocus>
+                        <IconCheck className={ this.props.classes.buttonIcon }/>
                         {I18n.t('Create')}
                     </Button>
                 </DialogActions>
@@ -785,14 +841,16 @@ class App extends GenericApp {
                 <TextField
                     label={ I18n.t('Title') }
                     value={ this.state.editFolderDialogTitle }
-                    onChange={ e => this.setState({editFolderDialogTitle: e.target.value.replace(/[\][*,.;'"`<>\\?]/g, '')}) }/>
+                    onChange={ e => this.setState({editFolderDialogTitle: e.target.value.replace(FORBIDDEN_CHARS, '_')}) }/>
             </DialogContent>
             <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
                 <Button variant="contained" onClick={ () => this.setState({editFolderDialog: null}) }>
+                    <IconCancel className={ this.props.classes.buttonIcon }/>
                     { I18n.t('Cancel') }
                 </Button>
                 <Button
                     variant="contained"
+                    disabled={ this.state.editFolderDialogTitleOrigin === this.state.editFolderDialogTitle }
                     onClick={ () => {
                         this.renameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle)
                             .then(() => this.setState({editFolderDialog: null}));
@@ -800,7 +858,8 @@ class App extends GenericApp {
                     color="primary"
                     autoFocus
                 >
-                    { I18n.t('edit') }
+                    <IconCheck className={ this.props.classes.buttonIcon }/>
+                    { I18n.t('Apply') }
                 </Button>
             </DialogActions>
         </Dialog> : null;
@@ -993,6 +1052,7 @@ class App extends GenericApp {
                                                             key={ 'selected' + this.state.selectedSceneId }
                                                             updateSceneMembers={ (members, cb) => component.updateSceneMembers(members, cb) }
                                                             selectedSceneChanged={ this.state.selectedSceneChanged }
+                                                            sceneEnabled={ this.state.selectedSceneData.common.enabled }
                                                             members={ this.state.selectedSceneData.native.members }
                                                             socket={ this.socket }
                                                             onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }

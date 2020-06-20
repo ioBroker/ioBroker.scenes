@@ -468,14 +468,18 @@ function activateSceneState(sceneId, state, isTrue) {
         // Start timeout
         const timer = setTimeout((id, setValue, _tIndex) => {
             adapter.log.debug('Set delayed state for "' + sceneId + '": ' + id + ' = ' + setValue);
-            // execute timeout
-            adapter.getForeignState(id, (err, state) => {
-                // Set new state only if differ from desired state
-                if (!state || state.val !== setValue) {
-                    adapter.setForeignState(id, setValue);
-                }
-            });
 
+            // execute timeout
+            if (stateObj.doNotOverwrite) {
+                adapter.getForeignState(id, (err, state) => {
+                    // Set new state only if differ from desired state
+                    if (!state || state.val !== setValue) {
+                        adapter.setForeignState(id, setValue);
+                    }
+                });
+            } else {
+                adapter.setForeignState(id, setValue);
+            }
 
             if (timers[id]) {
                 // remove timer from the list
@@ -497,13 +501,17 @@ function activateSceneState(sceneId, state, isTrue) {
             }
             timers[stateObj.id] = [];
         }
-        // execute timeout
-        adapter.getForeignState(stateObj.id, (err, state) => {
-            // Set new state only if differ from desired state
-            if (!state || state.val !== desiredValue) {
-                adapter.setForeignState(stateObj.id, desiredValue);
-            }
-        });
+        // Set desired state
+        if (stateObj.doNotOverwrite) {
+            adapter.getForeignState(stateObj.id, (err, state) => {
+                // Set new state only if differ from desired state
+                if (!state || state.val !== desiredValue) {
+                    adapter.setForeignState(stateObj.id, desiredValue);
+                }
+            });
+        } else {
+            adapter.setForeignState(stateObj.id, desiredValue);
+        }
     }
 }
 
@@ -573,7 +581,9 @@ function getState(sceneId, stateNumber, callback) {
     const stateId = scenes[sceneId].native.members[stateNumber].id;
     adapter.getForeignState(stateId, (err, state) => {
         // possible scene was renamed
-        if (!scenes[sceneId]) return;
+        if (!scenes[sceneId]) {
+            return;
+        }
 
         scenes[sceneId].native.members[stateNumber].actual = state ? state.val : null;
         // If processing finshed

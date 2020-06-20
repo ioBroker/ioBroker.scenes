@@ -12,7 +12,6 @@
   "Create folder": "Создать папку",
   "Title": "Название",
   "Create": "Создать",
-  "Edit folder": "Изменить папку",
   "edit": "Редактировать",
   "Are you sure for cancel unsaved changes?": "Вы уверены, что не хотите сохранять изменения?",
   "Discard": "Не сохранять",
@@ -60,5 +59,9 @@
   "Tolerance for FALSE": "Допуск для FALSE",
   "No scenes created yet": "Сцены еще не созданы",
   "Export scene": "Экспортировать сцену",
-  "Copy to clipboard": "Скопировать в буфер обмена"
+  "Copy to clipboard": "Скопировать в буфер обмена",
+  "Do not overwrite state if it has the required value": "Не перезаписывать состояние, если оно имеет требуемое значение",
+  "Apply": "Применить",
+  "Edit folder name": "Изменить имя папки",
+  "Name is not unique. Please change name before the save.": "Имя не уникально. Пожалуйста, измените имя перед сохранением."
 }

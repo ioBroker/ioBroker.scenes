@@ -12,7 +12,6 @@
   "Create folder": "Creare una cartella",
   "Title": "Titolo",
   "Create": "Creare",
-  "Edit folder": "Modifica cartella",
   "edit": "modificare",
   "Are you sure for cancel unsaved changes?": "Sei sicuro di annullare le modifiche non salvate?",
   "Discard": "Scartare",
@@ -60,5 +59,9 @@
   "Tolerance for FALSE": "Tolleranza per FALSO",
   "No scenes created yet": "Nessuna scena ancora creata",
   "Export scene": "Esporta scena",
-  "Copy to clipboard": "Copia negli appunti"
+  "Copy to clipboard": "Copia negli appunti",
+  "Do not overwrite state if it has the required value": "Non sovrascrivere lo stato se ha il valore richiesto",
+  "Apply": "Applicare",
+  "Edit folder name": "Modifica il nome della cartella",
+  "Name is not unique. Please change name before the save.": "Il nome non è univoco. Si prega di cambiare nome prima del salvataggio."
 }

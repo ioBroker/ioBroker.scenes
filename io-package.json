@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.9",
+        "version": "2.0.10",
         "news": {
+            "2.0.10": {
+                "en": "Added \"Do not overwrite state if it has the required value\" option",
+                "de": "Option \"Status nicht überschreiben, wenn er den erforderlichen Wert hat\" hinzugefügt",
+                "ru": "Добавлена опция «Не перезаписывать состояние, если оно имеет требуемое значение»",
+                "pt": "Adicionada a opção \"Não substituir o estado se ele tiver o valor necessário\"",
+                "nl": "\"Overschrijf status niet als het de vereiste waarde heeft\" optie toegevoegd",
+                "fr": "Ajout de l'option \"Ne pas écraser l'état s'il a la valeur requise\"",
+                "it": "Aggiunta l'opzione \"Non sovrascrivere lo stato se ha il valore richiesto\"",
+                "es": "Se agregó la opción \"No sobrescribir estado si tiene el valor requerido\"",
+                "pl": "Dodano opcję „Nie zastępuj stanu, jeśli ma wymaganą wartość”",
+                "zh-cn": "添加了“如果具有必需的值，请勿覆盖状态”选项"
+            },
             "2.0.9": {
                 "en": "The colors are corrected",
                 "de": "Die Farben werden korrigiert",

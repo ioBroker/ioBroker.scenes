@@ -12,7 +12,6 @@
   "Create folder": "Create folder",
   "Title": "Title",
   "Create": "Create",
-  "Edit folder": "Edit folder",
   "edit": "edit",
   "Are you sure for cancel unsaved changes?": "Are you sure for cancel unsaved changes?",
   "Discard": "Discard",
@@ -60,5 +59,9 @@
   "Tolerance for FALSE": "Tolerance for FALSE",
   "No scenes created yet": "No scenes created yet",
   "Export scene": "Export scene",
-  "Copy to clipboard": "Copy to clipboard"
+  "Copy to clipboard": "Copy to clipboard",
+  "Do not overwrite state if it has the required value": "Do not overwrite state if it has the required value",
+  "Apply": "Apply",
+  "Edit folder name": "Edit folder name",
+  "Name is not unique. Please change name before the save.": "Name is not unique. Please change name before the save."
 }

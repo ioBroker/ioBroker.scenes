@@ -16,7 +16,6 @@ import InputLabel from '@material-ui/core/InputLabel';
 
 import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import I18n from '@iobroker/adapter-react/i18n';
-import Utils from '@iobroker/adapter-react/Components/Utils';
 
 const styles = theme => ({
     alignRight: {
@@ -104,7 +103,7 @@ class SceneForm extends React.Component {
                 <h4>{ on === this.state.native.onTrue ? I18n.t('Trigger for TRUE') : I18n.t('Trigger for FALSE') }
                     <span className={ this.props.classes.right }>
                         <Switch checked={ !!on.trigger.id }
-                                onChange={e => {
+                                onChange={ e => {
                                     if (e.target.checked) {
                                         this.setState({
                                             showDialog: id => {
@@ -118,7 +117,7 @@ class SceneForm extends React.Component {
                                         native[name].trigger.id = '';
                                         this.setStateWithParent({native});
                                     }
-                                }}
+                                } }
                         />
                     </span>
                 </h4>
@@ -129,10 +128,10 @@ class SceneForm extends React.Component {
                         <Grid item xs={8}>
                             <TextField
                                 fullWidth
-                                InputLabelProps={{shrink: true}}
+                                InputLabelProps={ {shrink: true} }
                                 label={ I18n.t('Trigger ID') }
                                 value={ on.trigger.id }
-                                onClick={() => {
+                                onClick={ () => {
                                     this.setState({
                                         showDialog: id => {
                                             const native = JSON.parse(JSON.stringify(this.state.native));
@@ -140,19 +139,19 @@ class SceneForm extends React.Component {
                                             this.setStateWithParent({native});
                                         }
                                     });
-                                }}
+                                } }
                             />
                         </Grid>
 
                         <Grid item xs={2}>
                             <FormControl>
-                                <InputLabel shrink={true}>{I18n.t('Condition')}</InputLabel>
-                                <Select value={on.trigger.condition || '=='}
-                                        onChange={e => {
+                                <InputLabel shrink={ true }>{ I18n.t('Condition') }</InputLabel>
+                                <Select value={ on.trigger.condition || '==' }
+                                        onChange={ e => {
                                             const native = JSON.parse(JSON.stringify(this.state.native));
                                             native[name].trigger.condition = e.target.value;
                                             this.setStateWithParent({native});
-                                        }}
+                                        } }
                                 >
                                     <MenuItem value="==">==</MenuItem>
                                     <MenuItem value="!=">!=</MenuItem>
@@ -167,7 +166,7 @@ class SceneForm extends React.Component {
                         <Grid item xs={2}>
                             <TextField
                                 fullWidth
-                                InputLabelProps={{shrink: true}} label={ I18n.t('Value') }
+                                InputLabelProps= {{shrink: true} } label={ I18n.t('Value') }
                                 value={ on.trigger.value || '' }
                                 onChange={ e => {
                                     const native = JSON.parse(JSON.stringify(this.state.native));
@@ -203,20 +202,19 @@ class SceneForm extends React.Component {
                         fullWidth
                         InputLabelProps={ {shrink: true} }
                         label={ I18n.t('Scene name') }
-                        value={ Utils.getObjectNameFromObj({common: this.state.common, _id: this.state.sceneId}, null, {language: I18n.getLanguage()}) }
-                        onChange={e => {
+                        value={ this.state.common.name }
+                        onChange={ e => {
                            const common = JSON.parse(JSON.stringify(this.state.common));
                            common.name = e.target.value;
                            this.setStateWithParent({common});
-                       }}/>
+                       } }/>
                 </Box>
                 <Box className={ this.props.classes.editItem }>
                     <TextField
                         fullWidth
-                        InputLabelProps={{shrink: true}}
-                        label={I18n.t('Scene description')}
-                        value={
-                            Utils.getObjectNameFromObj({common: this.state.common, _id: this.state.sceneId}, null, {language: I18n.getLanguage()}, true) }
+                        InputLabelProps={ {shrink: true} }
+                        label={ I18n.t('Scene description') }
+                        value={ this.state.common.desc }
                         onChange={ e => {
                                const common = JSON.parse(JSON.stringify(this.state.common));
                                common.desc = e.target.value;

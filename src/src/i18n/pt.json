@@ -12,7 +12,6 @@
   "Create folder": "Criar pasta",
   "Title": "Título",
   "Create": "Crio",
-  "Edit folder": "Editar pasta",
   "edit": "editar",
   "Are you sure for cancel unsaved changes?": "Tem certeza de que deseja cancelar alterações não salvas?",
   "Discard": "Descartar",
@@ -60,5 +59,9 @@
   "Tolerance for FALSE": "Tolerância a FALSE",
   "No scenes created yet": "Nenhuma cena criada ainda",
   "Export scene": "Exportar cena",
-  "Copy to clipboard": "Copiar para área de transferência"
+  "Copy to clipboard": "Copiar para área de transferência",
+  "Do not overwrite state if it has the required value": "Não substitua o estado se ele tiver o valor necessário",
+  "Apply": "Aplique",
+  "Edit folder name": "Editar nome da pasta",
+  "Name is not unique. Please change name before the save.": "O nome não é exclusivo. Altere o nome antes de salvar."
 }

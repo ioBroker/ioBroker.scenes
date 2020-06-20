@@ -206,6 +206,7 @@ class SceneMembersForm extends React.Component {
             deleteDialog: null,
             onFalseEnabled: props.onFalseEnabled,
             virtualGroup: props.virtualGroup,
+            sceneEnabled: props.sceneEnabled,
             selectedSceneChanged: props.selectedSceneChanged,
         };
 
@@ -245,6 +246,10 @@ class SceneMembersForm extends React.Component {
         }
         if (props.selectedSceneChanged !== state.selectedSceneChanged) {
             newState.selectedSceneChanged = props.selectedSceneChanged;
+            changed = true;
+        }
+        if (props.sceneEnabled !== state.sceneEnabled) {
+            newState.sceneEnabled = props.sceneEnabled;
             changed = true;
         }
 
@@ -582,7 +587,7 @@ class SceneMembersForm extends React.Component {
                             }
                         </Box>
                         { this.state.onFalseEnabled ?
-                            <Box className={classes.p}>
+                            <Box className={ classes.p }>
                                 {
                                     this.state.objectTypes[member.id] === 'boolean' ?
                                         <FormControlLabel
@@ -626,9 +631,9 @@ class SceneMembersForm extends React.Component {
                                 }
                             </Box>
                             : null}
-                        <Box className={classes.p}>
-                            <Grid container spacing={4}>
-                                <Grid item xs={4}>
+                        <Box className={ classes.p }>
+                            <Grid container spacing={ 4 }>
+                                <Grid item xs={ 4 }>
                                     <TextField
                                         fullWidth
                                         InputLabelProps={{shrink: true}}
@@ -642,7 +647,7 @@ class SceneMembersForm extends React.Component {
                                             this.setStateWithParent({members});
                                         }}/>
                                 </Grid>
-                                <Grid item xs={8}>
+                                <Grid item xs={ 8 }>
                                     <FormControlLabel
                                         label={ I18n.t('Stop already started commands') }
                                         control={
@@ -658,8 +663,22 @@ class SceneMembersForm extends React.Component {
                                 </Grid>
                             </Grid>
                         </Box>
+                        <Box className={ classes.p }>
+                            <FormControlLabel
+                                label={ I18n.t('Do not overwrite state if it has the required value') }
+                                control={
+                                    <Checkbox
+                                        checked={ !!member.doNotOverwrite }
+                                        onChange={ e => {
+                                            const members = JSON.parse(JSON.stringify(this.state.members));
+                                            members[index].doNotOverwrite = e.target.checked;
+                                            this.setStateWithParent({members});
+                                        } }
+                                    />
+                            }/>
+                        </Box>
                     </div> :
-                    <div className={ classes.smallOnTrueFalse}>
+                    <div className={ classes.smallOnTrueFalse }>
                         { I18n.t('Set if TRUE') + ': ' } <span className={ classes.stateValueTrue }>{ setIfTrue }</span>
                         { this.state.onFalseEnabled ? ' / ' + I18n.t('Set if FALSE') + ': ' : null}
                         { this.state.onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
@@ -694,7 +713,7 @@ class SceneMembersForm extends React.Component {
         }
 
         let result = <div key="SceneMembersForm" className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
-            <Toolbar classes={{ gutters: this.props.classes.guttersZero}}>
+            <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
                 <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle) } >
                     {I18n.t('Scene states')}
                     <br/>
@@ -720,16 +739,16 @@ class SceneMembersForm extends React.Component {
                 { !this.state.selectedSceneChanged && this.state.virtualGroup ? <IconButton
                     onClick={e => this.onWriteScene(this.state.writeSceneState) }
                 ><IconPlay/></IconButton> : null}
-                { !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
+                { this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
                     className={ this.props.classes.btnTestTrue }
                     onClick={ () => this.onWriteScene(true) }
                 ><IconPlay/>{ I18n.t('Test TRUE') }</Button> : null }
-                { !this.state.selectedSceneChanged && !this.state.virtualGroup && this.state.onFalseEnabled ? <Button
+                { this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup && this.state.onFalseEnabled ? <Button
                     className={ this.props.classes.btnTestFalse }
                     onClick={ () => this.onWriteScene(false) }
                 ><IconPlay/>{ I18n.t('Test FALSE') }</Button> : null }
             </div>
-            <DragDropContext onDragEnd={this.onDragEnd}>
+            <DragDropContext onDragEnd={ this.onDragEnd }>
                 <Droppable droppableId="droppable">
                     {(provided, snapshot) => (
                         <div className={ this.props.classes.scroll }
@@ -774,6 +793,7 @@ SceneMembersForm.propTypes = {
     sceneId: PropTypes.string,
     onFalseEnabled: PropTypes.bool,
     virtualGroup: PropTypes.bool,
+    sceneEnabled: PropTypes.bool,
     selectedSceneChanged: PropTypes.bool,
 };
 
