@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.10",
+        "version": "2.0.11",
         "news": {
+            "2.0.11": {
+                "en": "GUI error corrected",
+                "de": "GUI-Fehler behoben",
+                "ru": "Исправлена ошибка графического интерфейса",
+                "pt": "Erro na GUI corrigido",
+                "nl": "GUI-fout gecorrigeerd",
+                "fr": "Erreur GUI corrigée",
+                "it": "Errore della GUI corretto",
+                "es": "Error de GUI corregido",
+                "pl": "Poprawiony błąd GUI",
+                "zh-cn": "界面错误已更正"
+            },
             "2.0.10": {
                 "en": "Added \"Do not overwrite state if it has the required value\" option",
                 "de": "Option \"Status nicht überschreiben, wenn er den erforderlichen Wert hat\" hinzugefügt",

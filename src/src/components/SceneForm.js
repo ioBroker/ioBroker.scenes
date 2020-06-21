@@ -109,6 +109,7 @@ class SceneForm extends React.Component {
                                             showDialog: id => {
                                                 const native = JSON.parse(JSON.stringify(this.state.native));
                                                 native[name].trigger.id = id;
+                                                native[name].trigger.condition = native[name].trigger.condition || '==';
                                                 this.setStateWithParent({native});
                                             }
                                         });
@@ -136,6 +137,7 @@ class SceneForm extends React.Component {
                                         showDialog: id => {
                                             const native = JSON.parse(JSON.stringify(this.state.native));
                                             native[name].trigger.id = id;
+                                            native[name].trigger.condition = native[name].trigger.condition || '==';
                                             this.setStateWithParent({native});
                                         }
                                     });

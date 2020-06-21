@@ -380,6 +380,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
         adapter.log.debug('checkTrigger: ' + trigger.id + '(' + state.val + ') ' + trigger.condition + ' ' + val.toString());
 
         switch (trigger.condition) {
+            case undefined:
             case '==':
                 if (val == stateVal) activateScene(sceneId, isTrue);
                 break;
@@ -451,6 +452,8 @@ function activateSceneState(sceneId, state, isTrue) {
     let desiredValue;
     if (!scenes[sceneId].native.virtualGroup) {
         desiredValue = isTrue ? stateObj.setIfTrue : stateObj.setIfFalse;
+    } else {
+        desiredValue = isTrue;
     }
 
     if (stateObj.delay) {
@@ -544,18 +547,20 @@ function activateScene(sceneId, isTrue) {
             activateSceneState(sceneId, state, isTrue);
         }
 
-        if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled) {
-            if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
-                adapter.log.debug('activateScene: new state for "' + sceneId + '" is "' + isTrue + '"');
-                scenes[sceneId].value.val = isTrue;
+        if (!scenes[sceneId].native.virtualGroup) {
+            if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled) {
+                if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
+                    adapter.log.debug('activateScene: new state for "' + sceneId + '" is "' + isTrue + '"');
+                    scenes[sceneId].value.val = isTrue;
+                    scenes[sceneId].value.ack = true;
+                    adapter.setForeignState(sceneId, isTrue, true);
+                }
+            } else if (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack) {
+                adapter.log.debug('activateScene: new state for "' + sceneId + '" is "true"');
+                scenes[sceneId].value.val = true;
                 scenes[sceneId].value.ack = true;
-                adapter.setForeignState(sceneId, isTrue, true);
+                adapter.setForeignState(sceneId, true, true);
             }
-        } else if (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack) {
-            adapter.log.debug('activateScene: new state for "' + sceneId + '" is "true"');
-            scenes[sceneId].value.val = true;
-            scenes[sceneId].value.ack = true;
-            adapter.setForeignState(sceneId, true, true);
         }
     } else {
         // make some interval between commands

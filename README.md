@@ -107,6 +107,9 @@ sendTo(
 The adapter will read all actual values for IDs defined in this scene and save it as configured ones.
 
 ## Changelog
+### 2.0.11 (2020-06-21)
+* (bluefox) GUI error corrected
+
 ### 2.0.10 (2020-06-20)
 * (bluefox) Added "Do not overwrite state if it has the required value" option
 

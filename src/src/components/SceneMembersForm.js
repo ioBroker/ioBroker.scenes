@@ -183,6 +183,12 @@ const styles = theme => ({
     disabled: {
         opacity: 0.3
     },
+    instanceNotActive: {
+        marginLeft: theme.spacing(1),
+        fontSize: 10,
+        fontStyle: 'italic',
+        color: '#FF0000',
+    }
 });
 
 class SceneMembersForm extends React.Component {
@@ -208,7 +214,10 @@ class SceneMembersForm extends React.Component {
             virtualGroup: props.virtualGroup,
             sceneEnabled: props.sceneEnabled,
             selectedSceneChanged: props.selectedSceneChanged,
+            engineId: props.engineId,
         };
+
+        this.engineId = this.state.engineId;
 
         this.onDragEnd = this.onDragEnd.bind(this);
     }
@@ -219,14 +228,17 @@ class SceneMembersForm extends React.Component {
                 this.setState(newState, () => {
                     // subscribe on scene state
                     this.props.socket.subscribeState(this.props.sceneId, this.memberStateChange);
+                    this.state.engineId && this.props.socket.subscribeState(this.state.engineId + '.alive', this.memberStateChange);
+
                     // subscribe on all states
                     this.state.members.forEach(member =>
-                        this.props.socket.subscribeState(member.id, this.memberStateChange))
+                        member.id && this.props.socket.subscribeState(member.id, this.memberStateChange))
                 }));
     }
 
     componentWillUnmount() {
         this.props.socket.unsubscribeState(this.props.sceneId, this.memberStateChange);
+        this.state.engineId && this.props.socket.unsubscribeState(this.state.engineId + '.alive', this.memberStateChange);
 
         this.state.members.forEach(member =>
             this.props.socket.unsubscribeState(member.id, this.memberStateChange));
@@ -250,6 +262,10 @@ class SceneMembersForm extends React.Component {
         }
         if (props.sceneEnabled !== state.sceneEnabled) {
             newState.sceneEnabled = props.sceneEnabled;
+            changed = true;
+        }
+        if (props.engineId !== state.engineId) {
+            newState.engineId = props.engineId;
             changed = true;
         }
 
@@ -290,9 +306,9 @@ class SceneMembersForm extends React.Component {
         }
     }
 
-    memberStateChange = (id, result) => {
+    memberStateChange = (id, state) => {
         const states = JSON.parse(JSON.stringify(this.state.states));
-        states[id] = result ? result.val : null;
+        states[id] = state ? state.val : null;
         const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
 
         if (!objectTypes[id] && states[id] !== null && states[id] !== undefined) {
@@ -543,11 +559,11 @@ class SceneMembersForm extends React.Component {
                                 }}
                             />
                         </Box>*/ }
-                        <Box className={ classes.p }>
+                        { !this.state.virtualGroup ? <Box className={ classes.p }>
                             { this.state.objectTypes[member.id] === 'boolean' ?
                                 <FormControlLabel
                                     control={<Checkbox
-                                        checked={ member.setIfTrue }
+                                        checked={ !!member.setIfTrue }
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
                                             members[index].setIfTrue = e.target.checked;
@@ -561,12 +577,12 @@ class SceneMembersForm extends React.Component {
                                     <TextField
                                         InputLabelProps={ {shrink: true} }
                                         label={ I18n.t('Set if TRUE') }
-                                        value={ member.setIfTrue || '' }
+                                        value={ member.setIfTrue === undefined ? '' : member.setIfTrue }
                                         className={ classes.setValue }
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
                                             if (this.state.objectTypes[member.id] === 'number') {
-                                                members[index].setIfTrue = parseFloat(e.target.value);
+                                                members[index].setIfTrue = parseFloat(e.target.value.replace(',', '.'));
                                             } else {
                                                 members[index].setIfTrue = e.target.value;
                                             }
@@ -576,22 +592,22 @@ class SceneMembersForm extends React.Component {
                                     <TextField
                                         InputLabelProps={ {shrink: true} }
                                         label={ '± ' + I18n.t('Tolerance for TRUE') }
-                                        value={ member.setIfTrueTolerance || '' }
+                                        value={ member.setIfTrueTolerance === undefined ? '' : member.setIfTrueTolerance }
                                         className={ classes.setValue }
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value);
+                                            members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
                                             this.setStateWithParent({members});
                                         } }/>
                                 </Box>
                             }
-                        </Box>
-                        { this.state.onFalseEnabled ?
+                        </Box> : null }
+                        { !this.state.virtualGroup && this.state.onFalseEnabled ?
                             <Box className={ classes.p }>
                                 {
                                     this.state.objectTypes[member.id] === 'boolean' ?
                                         <FormControlLabel
-                                            control={<Checkbox checked={ member.setIfFalse } onChange={ e => {
+                                            control={<Checkbox checked={ !!member.setIfFalse } onChange={ e => {
                                                 const members = JSON.parse(JSON.stringify(this.state.members));
                                                 members[index].setIfFalse = e.target.checked;
                                                 this.setStateWithParent({members});
@@ -604,12 +620,12 @@ class SceneMembersForm extends React.Component {
                                                 fullWidth
                                                 InputLabelProps={ {shrink: true} }
                                                 label={ I18n.t('Set if FALSE') }
-                                                value={ member.setIfFalse || ''}
+                                                value={ member.setIfFalse === undefined ? '' : member.setIfFalse }
                                                 className={ classes.setValue }
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                                     if (this.state.objectTypes[member.id] === 'number') {
-                                                        members[index].setIfFalse = parseFloat(e.target.value);
+                                                        members[index].setIfFalse = parseFloat(e.target.value.replace(',', '.'));
                                                     } else {
                                                         members[index].setIfFalse = e.target.value;
                                                     }
@@ -619,11 +635,11 @@ class SceneMembersForm extends React.Component {
                                             <TextField
                                                 InputLabelProps={ {shrink: true} }
                                                 label={ '± ' + I18n.t('Tolerance for FALSE') }
-                                                value={ member.setIfFalseTolerance || '' }
+                                                value={ member.setIfFalseTolerance === undefined ? '' : member.setIfFalseTolerance }
                                                 className={ classes.setValue }
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
-                                                    members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value);
+                                                    members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
                                                     this.setStateWithParent({members});
                                                 } }
                                             />
@@ -678,16 +694,24 @@ class SceneMembersForm extends React.Component {
                             }/>
                         </Box>
                     </div> :
-                    <div className={ classes.smallOnTrueFalse }>
+                    (!this.state.virtualGroup ? <div className={ classes.smallOnTrueFalse }>
                         { I18n.t('Set if TRUE') + ': ' } <span className={ classes.stateValueTrue }>{ setIfTrue }</span>
                         { this.state.onFalseEnabled ? ' / ' + I18n.t('Set if FALSE') + ': ' : null}
                         { this.state.onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
-                    </div>
+                    </div> : <div style={{height: 8}}/>)
             }
         </Paper>
     };
 
     onWriteScene(val) {
+        if (val === 'true') {
+            val = true;
+        } else if (val === 'false') {
+            val = false;
+        } else if (parseFloat(val.replace(',', '.')).toString() === val) {
+            val = parseFloat(val.replace(',', '.'));
+        }
+
         this.props.socket.setState(this.props.sceneId, val);
     }
 
@@ -707,15 +731,21 @@ class SceneMembersForm extends React.Component {
     render = () => {
         let sceneState = this.state.states[this.props.sceneId];
         if (this.state.selectedSceneChanged) {
-            sceneState = I18n.t('Save scene before test')
+            sceneState = I18n.t('Save scene before test');
         } else if (sceneState === undefined || sceneState === null) {
             sceneState = '';
+        }
+
+        if (this.engineId !== this.state.engineId) {
+            this.engineId && this.props.socket.unsubscribeState(this.engineId + '.alive', this.memberStateChange);
+            this.state.engineId && this.props.socket.subscribeState(this.state.engineId + '.alive', this.memberStateChange);
+            this.engineId = this.state.engineId;
         }
 
         let result = <div key="SceneMembersForm" className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
                 <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle) } >
-                    {I18n.t('Scene states')}
+                    { I18n.t('Scene states') }{ !this.state.states[this.state.engineId + '.alive'] ? <span className={ this.props.classes.instanceNotActive }>{ I18n.t('Instance not active') }</span> : ''}
                     <br/>
                     <span className={ clsx(
                         this.props.classes.sceneSubTitle,
@@ -795,6 +825,7 @@ SceneMembersForm.propTypes = {
     virtualGroup: PropTypes.bool,
     sceneEnabled: PropTypes.bool,
     selectedSceneChanged: PropTypes.bool,
+    engineId: PropTypes.string,
 };
 
 export default withStyles(styles)(SceneMembersForm);
