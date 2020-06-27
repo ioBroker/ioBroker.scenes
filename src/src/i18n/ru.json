@@ -83,5 +83,16 @@
   "filter_role": "Роль",
   "filter_room": "Номер",
   "filter_func": "функция",
-  "filter_customs": "настройки"
+  "filter_customs": "настройки",
+  "virtual_group_tooltip": "Виртуальные группы представляют собой набор состояний и могут иметь любые значения: числа, строки и т. Д. Например. Вы можете создать виртуальную группу для управления всеми жалюзи в гостиной. При записи 40% в виртуальную группу все жалюзи будут установлены на 40%.",
+  "Trigger": "Курок",
+  "Setpoint": "Желаемое значние",
+  "Tolerance": "Допуск",
+  "Absolute value, not percent": "Абсолютное значение, а не проценты",
+  "Delay from start of scene (ms)": "Задержка со старта сцены (мс)",
+  "Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start": "Дополнительно к интервалу между командами. Например. если интервал %s, это состояние будет установлено после %s мс от начала сцены",
+  "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Например, если значение уже находится в «%s», а «%s» является заданным значением, то значение не будет записано, если этот флажок активирован.",
+  "from scene start": "с начала сцены",
+  "Test": "Тест",
+  "Open list": "Открытый список"
 }

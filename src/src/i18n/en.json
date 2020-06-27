@@ -83,5 +83,16 @@
   "filter_role": "Role",
   "filter_room": "Room",
   "filter_func": "Function",
-  "filter_customs": "Settings"
+  "filter_customs": "Settings",
+  "virtual_group_tooltip": "Virtual groups are the collection of states and can have any kind of values: numbers, strings and so on. E.g. you can create virtual group to control all shutters in living room. By writing 40% into virtual group all shutters will be set to 40%.",
+  "Trigger": "Trigger",
+  "Setpoint": "Setpoint",
+  "Tolerance": "Tolerance",
+  "Absolute value, not percent": "Absolute value, not percent",
+  "Delay from start of scene (ms)": "Delay from start of scene (ms)",
+  "Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start": "Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start",
+  "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then value will not be written if this checkbox is activated.",
+  "from scene start": "from scene start",
+  "Test": "Test",
+  "Open list": "Open list"
 }

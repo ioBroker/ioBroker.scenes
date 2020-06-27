@@ -83,5 +83,16 @@
   "filter_role": "Ruolo",
   "filter_room": "Camera",
   "filter_func": "Funzione",
-  "filter_customs": "impostazioni"
+  "filter_customs": "impostazioni",
+  "virtual_group_tooltip": "I gruppi virtuali sono la raccolta di stati e possono avere qualsiasi tipo di valore: numeri, stringhe e così via. Per esempio. puoi creare un gruppo virtuale per controllare tutte le persiane in salotto. Scrivendo il 40% nel gruppo virtuale, tutte le persiane saranno impostate sul 40%.",
+  "Trigger": "grilletto",
+  "Setpoint": "setpoint",
+  "Tolerance": "Tolleranza",
+  "Absolute value, not percent": "Valore assoluto, non percentuale",
+  "Delay from start of scene (ms)": "Ritardo dall'inizio della scena (ms)",
+  "Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start": "In aggiunta all'intervallo tra i comandi. Per esempio. se l'intervallo %s, questo stato verrà impostato dopo %s ms dall'inizio della scena",
+  "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Ad esempio, se il valore è già su \"%s\" e \"%s\" è il setpoint, il valore non verrà scritto se questa casella di controllo è attivata.",
+  "from scene start": "dall'inizio della scena",
+  "Test": "Test",
+  "Open list": "Apri l'elenco"
 }

@@ -83,5 +83,16 @@
   "filter_role": "Função",
   "filter_room": "Sala",
   "filter_func": "Função",
-  "filter_customs": "Definições"
+  "filter_customs": "Definições",
+  "virtual_group_tooltip": "Grupos virtuais são a coleção de estados e podem ter qualquer tipo de valor: números, seqüências de caracteres e assim por diante. Por exemplo. você pode criar um grupo virtual para controlar todas as persianas na sala de estar. Ao escrever 40% no grupo virtual, todos os obturadores serão configurados para 40%.",
+  "Trigger": "Desencadear",
+  "Setpoint": "Ponto de ajuste",
+  "Tolerance": "Tolerância",
+  "Absolute value, not percent": "Valor absoluto, não percentual",
+  "Delay from start of scene (ms)": "Atraso no início da cena (ms)",
+  "Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start": "Além do intervalo entre os comandos. Por exemplo. se o intervalo %s, esse estado será definido após %s ms desde o início da cena",
+  "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Por exemplo, se o valor já estiver em \"%s\" e \"%s\" for o ponto de ajuste, o valor não será gravado se esta caixa de seleção estiver ativada.",
+  "from scene start": "desde o início da cena",
+  "Test": "Teste",
+  "Open list": "Abrir lista"
 }

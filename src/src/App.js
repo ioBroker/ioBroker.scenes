@@ -4,10 +4,12 @@ import {withStyles} from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { withTheme } from '@material-ui/core/styles';
 import { MuiThemeProvider } from '@material-ui/core/styles';
+import withWidth from "@material-ui/core/withWidth";
 
 // MaterialUi
 import Grid from '@material-ui/core/Grid';
 import Switch from '@material-ui/core/Switch';
+import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -21,10 +23,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from "@material-ui/core/Typography";
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Drawer from '@material-ui/core/Drawer';
 
 // Own
 import Utils from '@iobroker/adapter-react/Components/Utils';
@@ -52,6 +54,7 @@ import {FaFolder as IconFolderClosed} from 'react-icons/all';
 import {FaFolderOpen as IconFolderOpened} from 'react-icons/all';
 // import {MdFileUpload as IconImport} from 'react-icons/md';
 import {FaClone as IconClone} from 'react-icons/fa';
+import {FaBars as IconMenu} from 'react-icons/fa';
 import {BsFolderSymlink as IconMoveToFolder} from 'react-icons/bs';
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -59,13 +62,17 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 
 const LEVEL_PADDING = 16;
+const MARGIN_MEMBERS = 20;
 
 const styles = theme => ({
     root: {
         width: '100%',
         height: 'calc(100% + 4px)',
         backgroundColor: theme.palette.type === 'dark' ? '#000': '#fff',
-        //color1: console.log(JSON.stringify(theme, null, 2)) || '#1234',
+        overflowX: 'hidden',
+    },
+    mainToolbar: {
+        background: theme.palette.primary.main,
     },
     tabContent: {
         padding: 10,
@@ -88,6 +95,12 @@ const styles = theme => ({
     heightMinusToolbar: {
         height: 'calc(100% - 48px)',
     },
+    heightMinus2Toolbars: {
+        height: 'calc(100% - 96px)',
+    },
+    heightMinusMargin: {
+        height: 'calc(100% - ' + MARGIN_MEMBERS + 'px)',
+    },
     folderItem: {
         fontWeight: 'bold',
         cursor: 'pointer',
@@ -95,6 +108,11 @@ const styles = theme => ({
     },
     fullWidthContainer: {
         maxWidth: 'inherit',
+        paddingTop: 2,
+        paddingBottom: 2,
+        paddingLeft: 2,
+        paddingRight: 2,
+        overflow: 'hidden'
     },
     columnContainer: {
         display: 'flex',
@@ -123,11 +141,16 @@ const styles = theme => ({
     },
     membersCell: {
         backgroundColor: theme.palette.type === 'dark' ? '#566770': '#ADD8E6',
-        padding: '0px 10px',
-        borderRadius: '4px',
-        paddingBottom: '10px',
-        minHeight: 'calc(100% - 40px)',
-        marginBottom: '10px',
+        marginTop: MARGIN_MEMBERS,
+        marginRight: theme.spacing(1),
+        marginBottom: theme.spacing(2),
+        paddingTop: 0,
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingBottom: 10,
+
+        borderRadius: 4,
+        height: 'calc(100% - ' + theme.spacing(1) + 'px)',
     },
     leftMenuItem: {
         display: 'block',
@@ -182,7 +205,13 @@ const styles = theme => ({
     },
     itemIconFolder: {
         color: theme.palette.type === 'dark' ? '#ffca2c' : '#ffca2c'
-    }
+    },
+    noHeight: {
+        height: 'inherit',
+    },
+    drawer: {
+        overflow: 'hidden'
+    },
 });
 
 function getUrlQuery() {
@@ -273,6 +302,7 @@ class App extends GenericApp {
             selectedSceneData: null,
             exportDialog: false,
             importDialog: false,
+            menuOpened: false,
         };
 
         this.socket.getSystemConfig()
@@ -585,7 +615,16 @@ class App extends GenericApp {
 
             // If active scene is inside this folder select the first scene
             if (Object.keys(folder.scenes).includes(this.state.selectedSceneId)) {
-                this.setState({selectedSceneId: ''});
+                // To do ask question
+                if (this.state.selectedSceneChanged) {
+                    this.confirmCb = () => {
+                        this.setState({selectedSceneId: '', selectedSceneData: null, selectedSceneChanged: false, opened});
+                        window.localStorage.setItem('Scenes.opened', JSON.stringify(opened));
+                    };
+                    return this.setState({sceneChangeDialog: 'empty'});
+                }
+
+                this.setState({selectedSceneId: '', selectedSceneData: null, selectedSceneChanged: false});
             }
         }
 
@@ -821,10 +860,11 @@ class App extends GenericApp {
             } else {
                 window.localStorage.setItem('Scenes.selectedSceneId', newId);
                 this.setState({
-                    selectedSceneData: JSON.parse(JSON.stringify(this.state.scenes[newId])),
+                    selectedSceneData: this.state.scenes[newId] ? JSON.parse(JSON.stringify(this.state.scenes[newId])) : null,
                     sceneChangeDialog: '',
-                    selectedSceneId: newId,
+                    selectedSceneId: newId || '',
                     selectedSceneChanged: false,
+                    menuOpened: false,
                 }, () => cb && cb());
             }
         } else {
@@ -917,7 +957,7 @@ class App extends GenericApp {
                     <Button variant="contained" color="secondary" onClick={e => {
                         // save scene
                         this.writeScene()
-                            .then(() => that.changeSelectedScene(that.state.sceneChangeDialog, true, () => {
+                            .then(() => that.changeSelectedScene(that.state.sceneChangeDialog === 'empty' ? '' : that.state.sceneChangeDialog, true, () => {
                                 const cb = this.confirmCb;
                                 this.confirmCb = null;
                                 cb && cb();
@@ -973,38 +1013,54 @@ class App extends GenericApp {
     }
 
     renderListToolbar() {
-        return <Toolbar variant="dense">
-            <IconButton
-                onClick={ () => this.createScene(this.getNewSceneId()) }
-                title={ I18n.t('Create new scene') }
-            ><IconAdd/></IconButton>
+        return <Toolbar key="toolbar" variant="dense" className={ this.props.classes.mainToolbar }>
+                <IconButton
+                    onClick={ () => this.createScene(this.getNewSceneId()) }
+                    title={ I18n.t('Create new scene') }
+                ><IconAdd/></IconButton>
 
-            <IconButton
-                onClick={ () => this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''}) }
-                title={ I18n.t('Create new folder') }
-            ><IconFolderAdd/></IconButton>
+                <IconButton
+                    onClick={ () => this.setState({addFolderDialog: this.state.folders, addFolderDialogTitle: ''}) }
+                    title={ I18n.t('Create new folder') }
+                ><IconFolderAdd/></IconButton>
 
-            <span className={this.props.classes.right}>
-                                        <IconButton onClick={() => this.setState({showSearch: !this.state.showSearch}) }>
-                                            <SearchIcon/>
-                                        </IconButton>
-                                    </span>
-            {this.state.showSearch ?
-                <TextField
-                    value={ this.state.search }
-                    className={ this.props.classes.textInput }
-                    onChange={ e => this.setState({search: e.target.value}) }/> : null
-            }
+                <span className={this.props.classes.right}>
+                                            <IconButton onClick={() => this.setState({showSearch: !this.state.showSearch}) }>
+                                                <SearchIcon/>
+                                            </IconButton>
+                                        </span>
+                {this.state.showSearch ?
+                    <TextField
+                        value={ this.state.search }
+                        className={ this.props.classes.textInput }
+                        onChange={ e => this.setState({search: e.target.value}) }/> : null
+                }
+            </Toolbar>;
+    }
+
+    renderSceneTopToolbar(showDrawer) {
+        return <Toolbar variant="dense" key="topToolbar" classes={ {gutters: this.props.classes.noGutters} }>
+            { this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? <Typography variant="h6" className={ this.props.classes.sceneTitle }>
+                { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
+                <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, {language: I18n.getLanguage()}, true) }</span>
+            </Typography> : null }
+
+            { showDrawer ? <IconButton aria-label="Open list" title={ I18n.t('Open list') } onClick={ () => this.setState({menuOpened: true}) }><IconMenu/></IconButton> : null }
+            <IconButton aria-label="Clone" title={ I18n.t('Clone') } onClick={ () => this.cloneScene(this.state.selectedSceneId) }><IconClone/></IconButton>
+
+            <IconButton aria-label="Delete" title={ I18n.t('Delete') } onClick={ () => this.setState({deleteDialog: true}) }><IconDelete/></IconButton>
+
+            <IconButton aria-label="Move to folder" title={ I18n.t('Move to folder') } onClick={ () => this.setState({moveDialog: true, newFolder: getFolderPrefix(this.state.selectedSceneId)}) }><IconMoveToFolder/></IconButton>
+
+            <IconButton aria-label="Export" title={ I18n.t('Export scene') } onClick={ () => this.setState({exportDialog: true}) }><IconExport/></IconButton>
+
+            {/*<IconButton aria-label="Import" title={ I18n.t('Import scene') } onClick={ () => this.setState({importDialog: true}) }><IconImport/></IconButton>*/}
         </Toolbar>;
     }
 
-    renderSceneToolbar() {
-        return <Toolbar variant="dense" classes={ {gutters: this.props.classes.noGutters} }>
-            <Typography variant="h6" className={ this.props.classes.sceneTitle }>
-                { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
-                <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, {language: I18n.getLanguage()}, true) }</span>
-            </Typography>
-
+    renderSceneBottomToolbar() {
+        return <Toolbar variant="dense" key="bottomToolbar" classes={ {gutters: this.props.classes.noGutters} }>
+            <div style={{flexGrow: 1}}/>
             { this.state.selectedSceneChanged ? <Button
                 className={ this.props.classes.toolbarButtons }
                 variant="contained"
@@ -1021,82 +1077,133 @@ class App extends GenericApp {
             >
                 { I18n.t('Cancel') }
             </Button> : null }
-            <IconButton aria-label="Clone" title={ I18n.t('Clone') } onClick={ () => this.cloneScene(this.state.selectedSceneId) }><IconClone/></IconButton>
-
-            <IconButton aria-label="Delete" title={ I18n.t('Delete') } onClick={ () => this.setState({deleteDialog: true}) }><IconDelete/></IconButton>
-
-            <IconButton aria-label="Move to folder" title={ I18n.t('Move to folder') } onClick={ () => this.setState({moveDialog: true, newFolder: getFolderPrefix(this.state.selectedSceneId)}) }><IconMoveToFolder/></IconButton>
-
-            <IconButton aria-label="Export" title={ I18n.t('Export scene') } onClick={ () => this.setState({exportDialog: true}) }><IconExport/></IconButton>
-
-            {/*<IconButton aria-label="Import" title={ I18n.t('Import scene') } onClick={ () => this.setState({importDialog: true}) }><IconImport/></IconButton>*/}
         </Toolbar>;
     }
 
+    renderDrawerContent() {
+        return [
+            this.renderListToolbar(),
+            <div key="list" className={ this.props.classes.heightMinusToolbar }>
+                <List className={ this.props.classes.scroll }>
+                    { this.renderTree(this.state.folders) }
+                </List>
+            </div>
+        ];
+    }
+
+    renderSceneMembers(oneColumn) {
+        return <SceneMembersForm
+            key={ 'selected' + this.state.selectedSceneId }
+            oneColumn={ oneColumn }
+            updateSceneMembers={ (members, cb) => this.updateSceneMembers(members, cb) }
+            selectedSceneChanged={ this.state.selectedSceneChanged }
+            sceneEnabled={ this.state.selectedSceneData.common.enabled }
+            members={ this.state.selectedSceneData.native.members }
+            socket={ this.socket }
+            onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
+            virtualGroup={ this.state.selectedSceneData.native.virtualGroup }
+            sceneId={ this.state.selectedSceneId }
+            engineId={ this.state.selectedSceneData.common.engine }
+            intervalBetweenCommands={ this.state.selectedSceneData.native.burstIntervall || 0 }
+        />;
+    }
+
+    renderSceneSettings(oneColumn) {
+        if (!this.state.selectedSceneData) {
+            this.state.selectedSceneData = JSON.parse(JSON.stringify(this.state.scenes[this.state.selectedSceneId]));
+        }
+
+        return <SceneForm
+            key={ this.state.selectedSceneId }
+            oneColumn={ oneColumn }
+            updateScene={ (common, native, cb) => this.updateScene(common, native, cb) }
+            scene={ this.state.selectedSceneData }
+            socket={ this.socket }
+            instances={ this.state.instances }
+        />;
+    }
+
+    renderInOneColumn() {
+        return [
+            <Drawer
+                key="drawer"
+                anchor="left"
+                open={ this.state.menuOpened }
+                onClose={() => this.setState({menuOpened: false}) }
+                classes={ {paper: this.props.classes.drawer }}
+            >
+                { this.renderDrawerContent() }
+            </Drawer>,
+            this.renderSceneTopToolbar(true),
+            this.state.selectedSceneId ? <div
+                    key="main"
+                    className={ this.props.classes.heightMinus2Toolbars }
+                    style={{ overflowY: 'auto', overflowX: 'hidden'}}
+                >
+                    { this.renderSceneSettings(true) }
+                    { this.renderSceneMembers(true) }
+                </div> : null,
+            this.renderSceneBottomToolbar(),
+        ]
+    }
+
+    renderInMoreThanOneColumn() {
+        const showDrawer = this.props.width === 'sm' || this.props.width === 'xs';
+
+        return <Container className={ clsx(this.props.classes.height, this.props.classes.fullWidthContainer) }>
+            <Grid container spacing={ 1 } className={ this.props.classes.height }>
+                { showDrawer ?
+                    <Drawer anchor="left" open={ this.state.menuOpened } onClose={() => this.setState({menuOpened: false}) }>
+                        { this.renderDrawerContent() }
+                    </Drawer> :
+                    <Grid item xs={ 3 } className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
+                        { this.renderDrawerContent() }
+                    </Grid>
+                }
+                { this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
+                    <Grid item xs={ showDrawer ? 12 : 9 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
+                        <Grid container spacing={ 1 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
+                            <Grid item xs={ this.props.width === 'xs' ? 12 : 5 } className={ this.props.classes.heightMinus2Toolbars }>
+                                { this.renderSceneTopToolbar(showDrawer) }
+                                <div className={this.props.classes.height}>
+                                    {this.state.selectedSceneId ? this.renderSceneSettings() : null}
+                                </div>
+                                { this.renderSceneBottomToolbar() }
+                            </Grid>
+                            <Grid item xs={ this.props.width === 'xs' ? 12 : 7 } className={ clsx(this.props.classes.height) }>
+                                <div className={ clsx(this.props.classes.heightMinusMargin) }>
+                                    { this.state.selectedSceneId ?
+                                        <div className={ clsx(this.props.classes.membersCell, this.props.classes.height) }>
+                                            { this.renderSceneMembers() }
+                                        </div>
+                                        : null}
+                                </div>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    : null
+                }
+            </Grid>
+        </Container>
+    }
+
     render() {
-        const component = this;
         if (!this.state.ready) {
             return <MuiThemeProvider theme={ this.state.theme }>
                 <Loader theme={ this.state.themeName }/>
             </MuiThemeProvider>;
         }
 
+        const oneColumn = this.props.width === 'xs';
+
         return (
             <MuiThemeProvider theme={ this.state.theme }>
                 <div className={ this.props.classes.root }>
-                    <Container className={ clsx(this.props.classes.height, this.props.classes.fullWidthContainer) }>
-                        <Grid container spacing={ 1 } className={ this.props.classes.height }>
-                            <Grid item xs={ 3 } className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
-                                { this.renderListToolbar() }
-                                <div className={ this.props.classes.heightMinusToolbar }>
-                                    <List className={ this.props.classes.scroll }>
-                                        { this.renderTree(this.state.folders) }
-                                    </List>
-                                </div>
-                            </Grid>
-                            { this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
-                                <Grid item xs={ 9 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
-                                    { this.renderSceneToolbar() }
-                                    <Grid container spacing={ 1 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
-                                        <Grid item xs={5} className={ this.props.classes.heightMinusToolbar }>
-                                            <div className={this.props.classes.height}>
-                                                {this.state.selectedSceneId ?
-                                                    <SceneForm
-                                                        key={ this.state.selectedSceneId }
-                                                        updateScene={ (common, native, cb) => component.updateScene(common, native, cb) }
-                                                        scene={ this.state.scenes[this.state.selectedSceneId] }
-                                                        socket={ this.socket }
-                                                        instances={ this.state.instances }
-                                                    />
-                                                    : ''}
-                                            </div>
-                                        </Grid>
-                                        <Grid item xs={7} className={ this.props.classes.heightMinusToolbar }>
-                                            <div className={this.props.classes.height}>
-                                                { this.state.selectedSceneId ?
-                                                    <div className={ clsx(this.props.classes.membersCell, this.props.classes.height) }>
-                                                        <SceneMembersForm
-                                                            key={ 'selected' + this.state.selectedSceneId }
-                                                            updateSceneMembers={ (members, cb) => component.updateSceneMembers(members, cb) }
-                                                            selectedSceneChanged={ this.state.selectedSceneChanged }
-                                                            sceneEnabled={ this.state.selectedSceneData.common.enabled }
-                                                            members={ this.state.selectedSceneData.native.members }
-                                                            socket={ this.socket }
-                                                            onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
-                                                            virtualGroup={ this.state.selectedSceneData.native.virtualGroup }
-                                                            sceneId={ this.state.selectedSceneId }
-                                                            engineId={ this.state.selectedSceneData.common.engine }
-                                                        />
-                                                    </div>
-                                                    : ''}
-                                            </div>
-                                        </Grid>
-                                    </Grid>
-                                </Grid>
-                                : null
-                            }
-                        </Grid>
-                    </Container>
+                    { oneColumn ?
+                        this.renderInOneColumn() :
+                        this.renderInMoreThanOneColumn()
+                    }
+
                     { this.renderSceneChangeDialog() }
                     { this.renderEditFolderDialog() }
                     { this.renderMoveDialog() }
@@ -1110,4 +1217,4 @@ class App extends GenericApp {
     }
 }
 
-export default withStyles(styles)(withTheme(App));
+export default withWidth()(withStyles(styles)(withTheme(App)));

@@ -83,5 +83,16 @@
   "filter_role": "Rol",
   "filter_room": "Kamer",
   "filter_func": "Functie",
-  "filter_customs": "Instellingen"
+  "filter_customs": "Instellingen",
+  "virtual_group_tooltip": "Virtuele groepen zijn de verzameling staten en kunnen elk soort waarden hebben: getallen, tekenreeksen enzovoort. Bijv. u kunt een virtuele groep maken om alle luiken in de woonkamer te bedienen. Door 40% in virtuele groep te schrijven, worden alle luiken ingesteld op 40%.",
+  "Trigger": "Trekker",
+  "Setpoint": "Setpunt",
+  "Tolerance": "Tolerantie",
+  "Absolute value, not percent": "Absolute waarde, geen procent",
+  "Delay from start of scene (ms)": "Vertraging vanaf het begin van de scène (ms)",
+  "Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start": "Naast het interval tussen opdrachten. Bijv. als het interval %s is, wordt deze toestand ingesteld na %s ms vanaf het begin van de scène",
+  "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Als de waarde bijvoorbeeld al op \"%s\" staat en \"%s\" het instelpunt is, wordt de waarde niet geschreven als dit selectievakje is geactiveerd.",
+  "from scene start": "vanaf het begin van de scène",
+  "Test": "Test",
+  "Open list": "Open lijst"
 }

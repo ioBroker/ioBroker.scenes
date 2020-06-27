@@ -78,6 +78,19 @@ class SceneForm extends React.Component {
         };
     }
 
+    static getDerivedStateFromProps(props, state) {
+        const sceneObj = props.scene ? JSON.parse(JSON.stringify(props.scene)) : {};
+
+        delete sceneObj.native.members;
+
+        if (JSON.stringify(sceneObj.common) !== JSON.stringify(state.common) || JSON.stringify(sceneObj.native) !== JSON.stringify(state.native)) {
+            return {
+                common: sceneObj.common,
+                native: sceneObj.native,
+            }
+        }
+    }
+
     setStateWithParent = (newState, cb) => {
         this.setState(newState, () =>
             this.props.updateScene(newState.common, newState.native, cb));
@@ -100,7 +113,7 @@ class SceneForm extends React.Component {
 
         return [
             <div key="switch" className={ this.props.classes.editItem }>
-                <h4>{ on === this.state.native.onTrue ? I18n.t('Trigger for TRUE') : I18n.t('Trigger for FALSE') }
+                <h4>{ on === this.state.native.onTrue ? (this.state.native.onFalse.enabled ? I18n.t('Trigger for TRUE') : I18n.t('Trigger')) : I18n.t('Trigger for FALSE') }
                     <span className={ this.props.classes.right }>
                         <Switch checked={ !!on.trigger.id }
                                 onChange={ e => {
@@ -197,7 +210,8 @@ class SceneForm extends React.Component {
     }
 
     render() {
-        let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
+        console.log(this.props.width);
+        let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, !this.props.oneColumn && this.props.classes.height) }>
             <Box className={ this.props.classes.scroll }>
                 <Box className={ this.props.classes.editItem }>
                     <TextField
@@ -225,8 +239,8 @@ class SceneForm extends React.Component {
                         }/>
                 </Box>
                 <Box className={ this.props.classes.editItem }>
-                    <Grid container spacing={1}>
-                        <Grid item xs={6}>
+                    <Grid container spacing={ 1 }>
+                        <Grid item xs={ 12 } sm={ 6 }>
                             <FormControl className={this.props.classes.width100}>
                                 <InputLabel shrink={true}>{ I18n.t('Instance') }</InputLabel>
                                 <Select
@@ -241,7 +255,7 @@ class SceneForm extends React.Component {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={ 12 } sm={ 6 }>
                             <TextField
                                 fullWidth
                                 InputLabelProps={ {shrink: true} }
@@ -261,8 +275,11 @@ class SceneForm extends React.Component {
                 </Box>
                 <Box className={ this.props.classes.editItem }>
                     <Grid container spacing={1}>
-                        <Grid item xs={6}>
-                            <FormControlLabel style={{paddingTop: 10}} label={I18n.t('Virtual group')} control={
+                        <Grid item xs={ 12 } sm={ 6 }>
+                            <FormControlLabel
+                                style={{paddingTop: 10}}
+                                title={ I18n.t('virtual_group_tooltip') }
+                                label={ I18n.t('Virtual group') } control={
                                 <Checkbox checked={this.state.native.virtualGroup}
                                           onChange={e => {
                                               const native = JSON.parse(JSON.stringify(this.state.native));
@@ -271,7 +288,7 @@ class SceneForm extends React.Component {
                                           }}/>
                             }/>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={ 12 } sm={ 6 }>
                             { !this.state.native.virtualGroup ?
                                 <FormControlLabel
                                     style={{paddingTop: 10}}
@@ -307,6 +324,7 @@ SceneForm.propTypes = {
     scene: PropTypes.object,
     updateScene: PropTypes.func.isRequired,
     instances: PropTypes.array,
+    oneColumn: PropTypes.bool,
 };
 
 export default withStyles(styles)(SceneForm);

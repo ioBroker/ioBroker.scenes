@@ -83,5 +83,16 @@
   "filter_role": "Rola",
   "filter_room": "Pokój",
   "filter_func": "Funkcjonować",
-  "filter_customs": "Ustawienia"
+  "filter_customs": "Ustawienia",
+  "virtual_group_tooltip": "Grupy wirtualne to zbiór stanów i mogą mieć dowolne wartości: liczby, ciągi znaków i tak dalej. Na przykład. możesz utworzyć wirtualną grupę do sterowania wszystkimi okiennicami w salonie. Po zapisaniu 40% w grupie wirtualnej wszystkie żaluzje zostaną ustawione na 40%.",
+  "Trigger": "Wyzwalacz",
+  "Setpoint": "Wartość zadana",
+  "Tolerance": "Tolerancja",
+  "Absolute value, not percent": "Wartość bezwzględna, a nie procent",
+  "Delay from start of scene (ms)": "Opóźnienie od początku sceny (ms)",
+  "Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start": "Oprócz odstępu między poleceniami. Na przykład. jeśli interwał %s, stan ten zostanie ustawiony po %s ms od początku sceny",
+  "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Na przykład, jeśli wartość jest już w „%s”, a „%s” jest wartością zadaną, to wartość nie zostanie zapisana, jeśli to pole wyboru jest aktywowane.",
+  "from scene start": "od początku sceny",
+  "Test": "Test",
+  "Open list": "Otwórz listę"
 }

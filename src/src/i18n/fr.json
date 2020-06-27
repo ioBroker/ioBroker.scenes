@@ -83,5 +83,16 @@
   "filter_role": "Rôle",
   "filter_room": "Chambre",
   "filter_func": "Une fonction",
-  "filter_customs": "Réglages"
+  "filter_customs": "Réglages",
+  "virtual_group_tooltip": "Les groupes virtuels sont la collection d'états et peuvent avoir n'importe quel type de valeurs: nombres, chaînes, etc. Par exemple. vous pouvez créer un groupe virtuel pour contrôler tous les volets du salon. En écrivant 40% dans le groupe virtuel, tous les volets seront définis sur 40%.",
+  "Trigger": "Déclencheur",
+  "Setpoint": "Consigne",
+  "Tolerance": "Tolérance",
+  "Absolute value, not percent": "Valeur absolue, pas pourcentage",
+  "Delay from start of scene (ms)": "Retard depuis le début de la scène (ms)",
+  "Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start": "En plus de l'intervalle entre les commandes. Par exemple. si l'intervalle %s, cet état sera défini après %s ms depuis le début de la scène",
+  "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Par exemple, si la valeur est déjà à \"%s\" et \"%s\" est le point de consigne, alors la valeur ne sera pas écrite si cette case est cochée.",
+  "from scene start": "depuis le début de la scène",
+  "Test": "Tester",
+  "Open list": "Ouvrir la liste"
 }

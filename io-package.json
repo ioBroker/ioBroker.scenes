@@ -1,9 +1,21 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.11",
+        "version": "2.0.13",
         "news": {
-            "2.0.11": {
+            "2.0.13": {
+                "en": "Mobile view added",
+                "de": "Mobile Ansicht hinzugefügt",
+                "ru": "Добавлено мобильное представление",
+                "pt": "Visualização para dispositivos móveis adicionada",
+                "nl": "Mobiele weergave toegevoegd",
+                "fr": "Vue mobile ajoutée",
+                "it": "Visualizzazione mobile aggiunta",
+                "es": "Vista móvil agregada",
+                "pl": "Dodano widok mobilny",
+                "zh-cn": "添加了移动视图"
+            },
+            "2.0.12": {
                 "en": "GUI error corrected",
                 "de": "GUI-Fehler behoben",
                 "ru": "Исправлена ошибка графического интерфейса",

@@ -17,6 +17,10 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
 
 // own components
 import I18n from '@iobroker/adapter-react/i18n';
@@ -31,11 +35,11 @@ import {IoMdClose as IconClose} from 'react-icons/io';
 import {MdAdd as IconAdd} from 'react-icons/md';
 import {MdPlayArrow as IconPlay} from 'react-icons/md';
 
-const TRUE_COLOR      = '#90ee90';
-const FALSE_COLOR     = '#ff9999';
-const TRUE_DARK_COLOR      = '#528952';
-const FALSE_DARK_COLOR     = '#774747';
-const UNCERTAIN_COLOR = '#bfb7be';
+const TRUE_COLOR       = '#90ee90';
+const FALSE_COLOR      = '#ff9999';
+const TRUE_DARK_COLOR  = '#528952';
+const FALSE_DARK_COLOR = '#774747';
+const UNCERTAIN_COLOR  = '#bfb7be';
 
 const styles = theme => ({
     memberTrueFalse: {
@@ -45,7 +49,10 @@ const styles = theme => ({
         fontWeight: 'initial',
         margin: '0 ' + theme.spacing(1) + 'px',
         textAlign: 'right',
-        //float: 'right'
+        whiteSpace: 'nowrap',
+        maxWidth: 300,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
     },
     memberTrue: {
         backgroundColor: theme.palette.type === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
@@ -504,6 +511,7 @@ class SceneMembersForm extends React.Component {
         }
 
         const opened = this.state.openedMembers.includes(member.id);
+        const onFalseEnabled = !this.state.virtualGroup && this.state.onFalseEnabled;
 
         return <Paper key={ member.id } className={ clsx(classes.memberCard, member.disabled && classes.disabled) }>
             <div className={ classes.memberToolbar }>
@@ -542,8 +550,8 @@ class SceneMembersForm extends React.Component {
                     { value }
                 </div>
             </div>
-            <div>{ member.desc } { !opened && member.delay ?
-                <span> <IconClock/> {member.delay + I18n.t('ms')}</span> : null }</div>
+            <div>{ member.desc } { !opened && (this.props.intervalBetweenCommands || member.delay) ?
+                <span> <IconClock/> { this.props.intervalBetweenCommands * index + (member.delay || 0) + I18n.t('ms') + ' ' + I18n.t('from scene start')}</span> : null }</div>
             {
                 opened ?
                     <div>
@@ -561,23 +569,26 @@ class SceneMembersForm extends React.Component {
                         </Box>*/ }
                         { !this.state.virtualGroup ? <Box className={ classes.p }>
                             { this.state.objectTypes[member.id] === 'boolean' ?
-                                <FormControlLabel
-                                    control={<Checkbox
-                                        checked={ !!member.setIfTrue }
+                                <FormControl className={classes.formControl}>
+                                    <InputLabel>{ onFalseEnabled ? I18n.t('Setpoint by TRUE') : I18n.t('Setpoint') }</InputLabel>
+                                    <Select
+                                        value={ member.setIfTrue === true || member.setIfTrue === 'true' ? 'true' : 'false'}
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].setIfTrue = e.target.checked;
+                                            members[index].setIfTrue = e.target.value === 'true';
                                             this.setStateWithParent({members});
-                                        } }/>
-                                    }
-                                    label={ I18n.t('Set if TRUE') }
-                                />
+                                        } }
+                                    >
+                                        <MenuItem value="false">false</MenuItem>
+                                        <MenuItem value="true">true</MenuItem>
+                                    </Select>
+                                </FormControl>
                                 :
                                 <Box className={ classes.p }>
                                     <TextField
                                         InputLabelProps={ {shrink: true} }
-                                        label={ I18n.t('Set if TRUE') }
-                                        value={ member.setIfTrue === undefined ? '' : member.setIfTrue }
+                                        label={ onFalseEnabled ? I18n.t('Setpoint by TRUE') : I18n.t('Setpoint') }
+                                        value={ member.setIfTrue === undefined || member.setIfTrue === null ? '' : member.setIfTrue }
                                         className={ classes.setValue }
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
@@ -591,8 +602,9 @@ class SceneMembersForm extends React.Component {
                                          } }/>
                                     <TextField
                                         InputLabelProps={ {shrink: true} }
-                                        label={ '± ' + I18n.t('Tolerance for TRUE') }
-                                        value={ member.setIfTrueTolerance === undefined ? '' : member.setIfTrueTolerance }
+                                        label={ '± ' + (onFalseEnabled ? I18n.t('Tolerance by TRUE') : I18n.t('Tolerance')) }
+                                        value={ member.setIfTrueTolerance === undefined || member.setIfTrueTolerance === null ? '' : member.setIfTrueTolerance }
+                                        title={ I18n.t('Absolute value, not percent') }
                                         className={ classes.setValue }
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
@@ -606,21 +618,27 @@ class SceneMembersForm extends React.Component {
                             <Box className={ classes.p }>
                                 {
                                     this.state.objectTypes[member.id] === 'boolean' ?
-                                        <FormControlLabel
-                                            control={<Checkbox checked={ !!member.setIfFalse } onChange={ e => {
-                                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                                members[index].setIfFalse = e.target.checked;
-                                                this.setStateWithParent({members});
-                                            } }/>}
-                                            label={ I18n.t('Set if FALSE') }
-                                        />
+                                        <FormControl className={classes.formControl}>
+                                            <InputLabel>{ I18n.t('Setpoint by FALSE') }</InputLabel>
+                                            <Select
+                                                value={ member.setIfFalse === true || member.setIfFalse === 'true' ? 'true' : 'false'}
+                                                onChange={ e => {
+                                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                                    members[index].setIfFalse = e.target.value === 'true';
+                                                    this.setStateWithParent({members});
+                                                } }
+                                            >
+                                                <MenuItem value="false">false</MenuItem>
+                                                <MenuItem value="true">true</MenuItem>
+                                            </Select>
+                                        </FormControl>
                                         :
                                         <Box className={ classes.p }>
                                             <TextField
                                                 fullWidth
                                                 InputLabelProps={ {shrink: true} }
-                                                label={ I18n.t('Set if FALSE') }
-                                                value={ member.setIfFalse === undefined ? '' : member.setIfFalse }
+                                                label={ I18n.t('Setpoint by FALSE') }
+                                                value={ member.setIfFalse === undefined || member.setIfFalse === null ? '' : member.setIfFalse }
                                                 className={ classes.setValue }
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
@@ -634,8 +652,9 @@ class SceneMembersForm extends React.Component {
                                             />
                                             <TextField
                                                 InputLabelProps={ {shrink: true} }
-                                                label={ '± ' + I18n.t('Tolerance for FALSE') }
-                                                value={ member.setIfFalseTolerance === undefined ? '' : member.setIfFalseTolerance }
+                                                label={ '± ' + I18n.t('Tolerance by FALSE') }
+                                                title={ I18n.t('Absolute value, not percent') }
+                                                value={ member.setIfFalseTolerance === undefined || member.setIfFalseTolerance === null ? '' : member.setIfFalseTolerance }
                                                 className={ classes.setValue }
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
@@ -649,11 +668,16 @@ class SceneMembersForm extends React.Component {
                             : null}
                         <Box className={ classes.p }>
                             <Grid container spacing={ 4 }>
-                                <Grid item xs={ 4 }>
+                                <Grid item xs={ 12 } sm={ 6 }>
                                     <TextField
                                         fullWidth
                                         InputLabelProps={{shrink: true}}
-                                        label={I18n.t('Delay (ms)')}
+                                        label={ I18n.t('Delay from start of scene (ms)')}
+                                        title={ I18n.t(
+                                            'Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start',
+                                            this.props.intervalBetweenCommands,
+                                            this.props.intervalBetweenCommands * index + (member.delay || 0)
+                                        )}
                                         value={ member.delay || 0}
                                         min={ 0 }
                                         type="number"
@@ -663,7 +687,7 @@ class SceneMembersForm extends React.Component {
                                             this.setStateWithParent({members});
                                         }}/>
                                 </Grid>
-                                <Grid item xs={ 8 }>
+                                <Grid item xs={ 12 } sm={ 6 }>
                                     <FormControlLabel
                                         label={ I18n.t('Stop already started commands') }
                                         control={
@@ -682,6 +706,11 @@ class SceneMembersForm extends React.Component {
                         <Box className={ classes.p }>
                             <FormControlLabel
                                 label={ I18n.t('Do not overwrite state if it has the required value') }
+                                title={
+                                    I18n.t('For example, if the value is already at "%s" and "%s" is the setpoint, then write the value anyway if this checkbox is activated.',
+                                        member.setIfTrue === undefined || member.setIfTrue === null ? 'null' : member.setIfTrue.toString(),
+                                        member.setIfTrue === undefined || member.setIfTrue === null ? 'null' : member.setIfTrue.toString())
+                                }
                                 control={
                                     <Checkbox
                                         checked={ !!member.doNotOverwrite }
@@ -708,7 +737,7 @@ class SceneMembersForm extends React.Component {
             val = true;
         } else if (val === 'false') {
             val = false;
-        } else if (parseFloat(val.replace(',', '.')).toString() === val) {
+        } else if (typeof val === 'string' && parseFloat(val.replace(',', '.')).toString() === val) {
             val = parseFloat(val.replace(',', '.'));
         }
 
@@ -742,6 +771,8 @@ class SceneMembersForm extends React.Component {
             this.engineId = this.state.engineId;
         }
 
+        const onFalseEnabled =!this.state.virtualGroup && this.state.onFalseEnabled;
+
         let result = <div key="SceneMembersForm" className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
                 <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle) } >
@@ -772,8 +803,8 @@ class SceneMembersForm extends React.Component {
                 { this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
                     className={ this.props.classes.btnTestTrue }
                     onClick={ () => this.onWriteScene(true) }
-                ><IconPlay/>{ I18n.t('Test TRUE') }</Button> : null }
-                { this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup && this.state.onFalseEnabled ? <Button
+                ><IconPlay/>{ !onFalseEnabled ? I18n.t('Test') : I18n.t('Test TRUE') }</Button> : null }
+                { this.state.sceneEnabled && !this.state.selectedSceneChanged && onFalseEnabled ? <Button
                     className={ this.props.classes.btnTestFalse }
                     onClick={ () => this.onWriteScene(false) }
                 ><IconPlay/>{ I18n.t('Test FALSE') }</Button> : null }
@@ -825,7 +856,9 @@ SceneMembersForm.propTypes = {
     virtualGroup: PropTypes.bool,
     sceneEnabled: PropTypes.bool,
     selectedSceneChanged: PropTypes.bool,
+    intervalBetweenCommands: PropTypes.number,
     engineId: PropTypes.string,
+    oneColumn: PropTypes.bool,
 };
 
 export default withStyles(styles)(SceneMembersForm);
