@@ -727,7 +727,7 @@ class SceneMembersForm extends React.Component {
                         { I18n.t('Set if TRUE') + ': ' } <span className={ classes.stateValueTrue }>{ setIfTrue }</span>
                         { this.state.onFalseEnabled ? ' / ' + I18n.t('Set if FALSE') + ': ' : null}
                         { this.state.onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
-                    </div> : <div style={{height: 8}}/>)
+                    </div> : <div style={ {height: 8} }/>)
             }
         </Paper>
     };
@@ -773,7 +773,7 @@ class SceneMembersForm extends React.Component {
 
         const onFalseEnabled =!this.state.virtualGroup && this.state.onFalseEnabled;
 
-        let result = <div key="SceneMembersForm" className={ clsx(this.props.classes.height, this.props.classes.columnContainer) }>
+        let result = <div key="SceneMembersForm" className={ clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
                 <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle) } >
                     { I18n.t('Scene states') }{ !this.state.states[this.state.engineId + '.alive'] ? <span className={ this.props.classes.instanceNotActive }>{ I18n.t('Instance not active') }</span> : ''}
