@@ -382,18 +382,24 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
         switch (trigger.condition) {
             case undefined:
             case '==':
-                if (val == stateVal) activateScene(sceneId, isTrue);
+                if (val == stateVal) {
+                    activateScene(sceneId, isTrue);
+                }
                 break;
 
             case '!=':
-                if (val != stateVal) activateScene(sceneId, isTrue);
+                if (val != stateVal) {
+                    activateScene(sceneId, isTrue);
+                }
                 break;
 
             case '>':
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
                 if (fVal.toString() == val && stateVal === aVal.toString()) {
-                    if (aVal > fVal) activateScene(sceneId, isTrue);
+                    if (aVal > fVal) {
+                        activateScene(sceneId, isTrue);
+                    }
                 } else
                 if (val > state.val.toString()) {
                     activateScene(sceneId, isTrue);
@@ -404,7 +410,9 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
                 if (fVal.toString() == val && stateVal === aVal.toString()) {
-                    if (aVal < fVal) activateScene(sceneId, isTrue);
+                    if (aVal < fVal) {
+                        activateScene(sceneId, isTrue);
+                    }
                 } else
                 if (val < state.val.toString()) {
                     activateScene(sceneId, isTrue);
@@ -415,7 +423,9 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
                 if (fVal.toString() == val && stateVal === aVal.toString()) {
-                    if (aVal >= fVal) activateScene(sceneId, isTrue);
+                    if (aVal >= fVal) {
+                        activateScene(sceneId, isTrue);
+                    }
                 } else
                 if (val >= state.val.toString()) {
                     activateScene(sceneId, isTrue);
@@ -426,7 +436,9 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                 fVal = parseFloat(val);
                 aVal = parseFloat(state.val);
                 if (fVal.toString() == val && stateVal === aVal.toString()) {
-                    if (aVal <= fVal) activateScene(sceneId, isTrue);
+                    if (aVal <= fVal) {
+                        activateScene(sceneId, isTrue);
+                    }
                 } else
                 if (val <= state.val.toString()) {
                     activateScene(sceneId, isTrue);
@@ -461,9 +473,7 @@ function activateSceneState(sceneId, state, isTrue) {
 
         if (stateObj.stopAllDelays && timers[stateObj.id].length) {
             adapter.log.debug('Cancel running timers (' + timers[stateObj.id].length + ' for ' + stateObj.id);
-            for (let tt = 0; tt < timers[stateObj.id].length; tt++) {
-                clearTimeout(timers[stateObj.id][tt].timer);
-            }
+            timers[stateObj.id].forEach(item => clearTimeout(item.timer));
             timers[stateObj.id] = [];
         }
         tIndex++;
@@ -499,9 +509,7 @@ function activateSceneState(sceneId, state, isTrue) {
     } else {
         if (stateObj.stopAllDelays && timers[stateObj.id] && timers[stateObj.id].length) {
             adapter.log.debug(`Cancel running timers for "${stateObj.id}" (${timers[stateObj.id].length})`);
-            for (let t = 0; t < timers[stateObj.id].length; t++) {
-                clearTimeout(timers[stateObj.id][t].timer);
-            }
+            timers[stateObj.id].forEach(item => clearTimeout(item.timer));
             timers[stateObj.id] = [];
         }
         // Set desired state
@@ -615,11 +623,12 @@ function initTrueFalse(sceneId, isTrue) {
     }
     // initiate cron tasks
     if (sStruct.cron) {
-        if (!schedule) schedule = require('node-schedule');
+        schedule = schedule || require('node-schedule');
 
-        adapter.log.debug('Initiate cron task for ' + sceneId + '(' + isTrue + ') : ' + sStruct.cron);
+        adapter.log.debug(`Initiate cron task for ${sceneId}(${isTrue}): ${sStruct.cron}`);
+
         cronTasks[sceneId] = schedule.scheduleJob(sStruct.cron, () => {
-            adapter.log.debug('cron for ' + sceneId + '(' + isTrue + ') : ' + sStruct.cron);
+            adapter.log.debug(`cron for ${sceneId}(${isTrue}): ${sStruct.cron}`);
             activateScene(sceneId, isTrue);
         });
     }
@@ -632,7 +641,9 @@ function initScenes() {
 
     // list all scenes in Object
     for (const sceneId in scenes) {
-        if (!scenes.hasOwnProperty(sceneId)) continue;
+        if (!scenes.hasOwnProperty(sceneId)) {
+            continue;
+        }
 
         scenes[sceneId].count = 0;
         scenes[sceneId].value = {val: null, ack: true}; // default state
@@ -641,7 +652,9 @@ function initScenes() {
         for (let state = 0; state < scenes[sceneId].native.members.length; state++) {
             const stateId = scenes[sceneId].native.members[state].id;
             // calculate subscriptions
-            if (countIds.indexOf(stateId) === -1) countIds.push(stateId);
+            if (!countIds.includes(stateId)) {
+                countIds.push(stateId);
+            }
 
             // remember which scenes uses this state
             ids[stateId] = ids[stateId] || [];
@@ -651,7 +664,7 @@ function initScenes() {
             if (scenes[sceneId].native.members[state].delay) {
                 const delay =  parseInt(scenes[sceneId].native.members[state].delay, 10);
                 if (scenes[sceneId].native.members[state].delay != delay.toString()) {
-                    adapter.log.error('Invalid delay for scene "' + sceneId + '": ' + scenes[sceneId].native.members[state].delay);
+                    adapter.log.error(`Invalid delay for scene "${sceneId}": ${scenes[sceneId].native.members[state].delay}`);
                     scenes[sceneId].native.members[state].delay = 0;
                 } else {
                     scenes[sceneId].native.members[state].delay = delay;
@@ -671,6 +684,7 @@ function initScenes() {
             // read actual state
             getState(sceneId, state);
         }
+
         if (scenes[sceneId].native.onTrue  && scenes[sceneId].native.onTrue.trigger)  {
             if (scenes[sceneId].native.onTrue.trigger.value === null || scenes[sceneId].native.onTrue.trigger.value === undefined) {
                 scenes[sceneId].native.onTrue.trigger.value  = '';
@@ -678,6 +692,7 @@ function initScenes() {
                 scenes[sceneId].native.onTrue.trigger.value  = scenes[sceneId].native.onTrue.trigger.value.toString();
             }
         }
+
         if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.trigger) {
             if (scenes[sceneId].native.onFalse.trigger.value === null || scenes[sceneId].native.onFalse.trigger.value === undefined) {
                 scenes[sceneId].native.onFalse.trigger.value  = '';
@@ -685,21 +700,14 @@ function initScenes() {
                 scenes[sceneId].native.onFalse.trigger.value  = scenes[sceneId].native.onFalse.trigger.value.toString();
             }
         }
+
         // Init trigger, cron and astro for onTrue
         let usedIds = initTrueFalse(sceneId, true);
-        if (usedIds) {
-            for (let k = 0; k < usedIds.length; k++) {
-                if (countIds.indexOf(usedIds[k]) === -1) countIds.push(usedIds[k]);
-            }
-        }
+        usedIds && usedIds.forEach(id => !countIds.includes(id) && countIds.push(id));
 
         // Init trigger, cron and astro for onFalse
         usedIds = initTrueFalse(sceneId, false);
-        if (usedIds) {
-            for (let k = 0; k < usedIds.length; k++) {
-                if (countIds.indexOf(usedIds[k]) === -1) countIds.push(usedIds[k]);
-            }
-        }
+        usedIds && usedIds.forEach(id => !countIds.includes(id) && countIds.push(id));
     }
 
     // If requested more than 20 ids => get all of them
@@ -738,6 +746,12 @@ function main() {
                 }
 
                 scenes[id] = states[id];
+
+                // rename attribute
+                if (scenes[id].native.burstIntervall !== undefined) {
+                    scenes[id].native.burstInterval = scenes[id].native.burstIntervall;
+                    delete scenes[id].native.burstIntervall;
+                }
 
                 // Remove all disabled scenes
                 for (let m = states[id].native.members.length - 1; m >= 0; m--) {

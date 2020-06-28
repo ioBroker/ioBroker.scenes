@@ -52,7 +52,7 @@ class ExportImportDialog extends React.Component {
             }
 
             this.setState(newState);
-        } catch(e) {
+        } catch (e) {
             newState.error = true;
             this.setState(newState);
         }
@@ -88,7 +88,7 @@ class ExportImportDialog extends React.Component {
                         }}
                         theme={ this.props.themeType === 'dark' ? 'clouds_midnight' : 'chrome' }
                         onChange={ newValue => this.onChange(newValue) }
-                        value={ this.state.text }
+                        value={ this.state.text || '' }
                         name="UNIQUE_ID_OF_DIV"
                         fontSize={ 14 }
                         readOnly={ !this.props.isImport }

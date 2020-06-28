@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.13",
+        "version": "2.0.14",
         "news": {
+            "2.0.14": {
+                "en": "GUI error corrected",
+                "de": "GUI-Fehler behoben",
+                "ru": "Исправлена ошибка графического интерфейса",
+                "pt": "Erro na GUI corrigido",
+                "nl": "GUI-fout gecorrigeerd",
+                "fr": "Erreur GUI corrigée",
+                "it": "Errore della GUI corretto",
+                "es": "Error de GUI corregido",
+                "pl": "Poprawiony błąd GUI",
+                "zh-cn": "界面错误已更正"
+            },
             "2.0.13": {
                 "en": "Mobile view added",
                 "de": "Mobile Ansicht hinzugefügt",
@@ -86,37 +98,6 @@
                 "es": "Agregado almacenamiento de valores reales en escena a través del mensaje.",
                 "pl": "Dodano zapisywanie rzeczywistych wartości w scenie za pomocą wiadomości",
                 "zh-cn": "添加了通过消息在场景中存储实际值"
-            },
-            "1.1.0": {
-                "en": "Works now with Admin3",
-                "de": "Funktioniert jetzt mit Admin3",
-                "ru": "Работает теперь с Admin3",
-                "pt": "Funciona agora com o Admin3",
-                "nl": "Werkt nu met Admin3",
-                "fr": "Fonctionne maintenant avec Admin3",
-                "it": "Funziona ora con Admin3",
-                "es": "Funciona ahora con Admin3",
-                "pl": "Działa teraz z Admin3"
-            },
-            "1.0.2": {
-                "en": "use new select ID dialog",
-                "de": "Benutze neues Select ID Dialog",
-                "ru": "Используется новый диалог выбора объектов"
-            },
-            "1.0.0": {
-                "en": "fix false scenes",
-                "de": "Korrigiere false Szenen",
-                "ru": "Исправлены false сцены"
-            },
-            "0.2.7": {
-                "en": "Support of iobroker.pro",
-                "de": "Unterstützung von iobroker.pro",
-                "ru": "Поддержка iobroker.pro"
-            },
-            "0.2.6": {
-                "en": "add read/write settings to scene object",
-                "de": "add read/write settings to scene object",
-                "ru": "add read/write settings to scene object"
             }
         },
         "title": "Scenes",

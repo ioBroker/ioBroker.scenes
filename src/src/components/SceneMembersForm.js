@@ -302,12 +302,13 @@ class SceneMembersForm extends React.Component {
                     results.forEach(obj => {
                         if (obj && obj.common && obj.common.type) {
                             objectTypes[obj._id] = obj.common.type;
-                            objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, true);
+                            objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, false);
                         }
                     });
 
                     return {objectTypes, objectNames};
-                });
+                })
+                .catch(e => this.props.showError(e));
         } else {
             return Promise.resolve({});
         }
@@ -383,9 +384,11 @@ class SceneMembersForm extends React.Component {
                             ids.forEach(id => this.props.socket.subscribeState(id, this.memberStateChange)))
                         )
                     )
-                );
+                )
+                    .catch(e => this.props.showError(e));
             } else {
                 // Show alert
+                this.props.showError(I18n.t('Unknown error!'));
             }
         });
     };
@@ -741,7 +744,8 @@ class SceneMembersForm extends React.Component {
             val = parseFloat(val.replace(',', '.'));
         }
 
-        this.props.socket.setState(this.props.sceneId, val);
+        this.props.socket.setState(this.props.sceneId, val)
+            .catch(e => this.props.showError(e));
     }
 
     getItemStyle = (isDragging, draggableStyle) => ({
@@ -859,6 +863,7 @@ SceneMembersForm.propTypes = {
     intervalBetweenCommands: PropTypes.number,
     engineId: PropTypes.string,
     oneColumn: PropTypes.bool,
+    showError: PropTypes.func,
 };
 
 export default withStyles(styles)(SceneMembersForm);

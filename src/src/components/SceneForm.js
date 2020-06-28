@@ -261,12 +261,12 @@ class SceneForm extends React.Component {
                                 InputLabelProps={ {shrink: true} }
                                 label={ I18n.t('Interval between commands') }
                                 min={ 0 }
-                                value={ this.state.native.burstIntervall || 0 }
+                                value={ this.state.native.burstInterval || 0 }
                                 helperText="ms"
                                 type="number"
                                 onChange={e => {
                                     const native = JSON.parse(JSON.stringify(this.state.native));
-                                    native.burstIntervall = parseInt(e.target.value, 10);
+                                    native.burstInterval = parseInt(e.target.value, 10);
                                     this.setStateWithParent({native});
                                 }}
                             />
@@ -325,6 +325,7 @@ SceneForm.propTypes = {
     updateScene: PropTypes.func.isRequired,
     instances: PropTypes.array,
     oneColumn: PropTypes.bool,
+    showError: PropTypes.func,
 };
 
 export default withStyles(styles)(SceneForm);

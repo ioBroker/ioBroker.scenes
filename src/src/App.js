@@ -331,7 +331,8 @@ class App extends GenericApp {
         scenes[id].common.enabled = event.target.checked;
 
         this.socket.setObject(id, scenes[id])
-            .then(() => this.refreshData(id));
+            .then(() => this.refreshData(id))
+            .catch(e => this.showError(e));
     };
 
     buildTree(scenes) {
@@ -386,7 +387,8 @@ class App extends GenericApp {
             .then(_scenes => {
                 scenes = _scenes;
                 return {scenes, folders: this.buildTree(scenes)};
-            });
+            })
+            .catch(e => this.showError(e));
     }
 
     refreshData(changingScene) {
@@ -409,7 +411,14 @@ class App extends GenericApp {
                     const sceneObj = newState.scenes[id];
                     sceneObj.common = sceneObj.common || {};
                     sceneObj.native = sceneObj.native || {};
-                    sceneObj.native.burstIntervall = parseInt(sceneObj.native.burstIntervall || 0, 10);
+
+                    // rename attribute
+                    if (sceneObj.native.burstIntervall !== undefined) {
+                        sceneObj.native.burstInterval = sceneObj.native.burstIntervall;
+                        delete sceneObj.native.burstIntervall;
+                    }
+
+                    sceneObj.native.burstInterval = parseInt(sceneObj.native.burstInterval || 0, 10);
                     sceneObj.native.onFalse = sceneObj.native.onFalse || {};
                     sceneObj.native.onTrue  = sceneObj.native.onTrue  || {};
                     sceneObj.native.onFalse.trigger = sceneObj.native.onFalse.trigger || {condition: '=='};
@@ -472,7 +481,8 @@ class App extends GenericApp {
                 console.log('Set new ID: ' + scene._id);
                 return !noRefresh && this.refreshData(sceneId)
                     .then(() => this.changeSelectedScene(scene._id))
-            });
+            })
+            .catch(e => this.showError(e));
     };
 
     renameFolder(folder, newName) {
@@ -741,7 +751,8 @@ class App extends GenericApp {
         this.setState({changingScene: id}, () =>
             this.socket.setObject(id, template)
                 .then(() => this.refreshData(id))
-                .then(() => this.changeSelectedScene(id)));
+                .then(() => this.changeSelectedScene(id)))
+                .catch(e => this.showError(e));
     };
 
     cloneScene(id) {
@@ -755,7 +766,8 @@ class App extends GenericApp {
         this.setState({changingScene: scene._id}, () =>
             this.socket.setObject(scene._id, scene)
                 .then(() => this.refreshData(scene._id))
-                .then(() => this.changeSelectedScene( scene._id)));
+                .then(() => this.changeSelectedScene( scene._id)))
+                .catch(e => this.showError(e));
     };
 
     writeScene() {
@@ -775,13 +787,15 @@ class App extends GenericApp {
             return this.socket.delObject(scene._id)
                 .then(() => {
                     scene._id = newId;
-                    this.socket.setObject(scene._id, scene);
+                    return this.socket.setObject(scene._id, scene);
                 })
                 .then(() => this.refreshData(this.state.selectedSceneId))
                 .then(() => this.changeSelectedScene(newId))
+                .catch(e => this.showError(e));
         } else {
             return this.socket.setObject(this.state.selectedSceneId, scene)
-                .then(() => this.refreshData(this.state.selectedSceneId));
+                .then(() => this.refreshData(this.state.selectedSceneId))
+                .catch(e => this.showError(e));
         }
     }
 
@@ -827,7 +841,8 @@ class App extends GenericApp {
                 } else {
                     return this.refreshData(id);
                 }
-            });
+            })
+            .catch(e => this.showError(e));
     };
 
     getNewSceneId() {
@@ -1095,6 +1110,7 @@ class App extends GenericApp {
         return <SceneMembersForm
             key={ 'selected' + this.state.selectedSceneId }
             oneColumn={ oneColumn }
+            showError={ e => this.showError(e) }
             updateSceneMembers={ (members, cb) => this.updateSceneMembers(members, cb) }
             selectedSceneChanged={ this.state.selectedSceneChanged }
             sceneEnabled={ this.state.selectedSceneData.common.enabled }
@@ -1104,7 +1120,7 @@ class App extends GenericApp {
             virtualGroup={ this.state.selectedSceneData.native.virtualGroup }
             sceneId={ this.state.selectedSceneId }
             engineId={ this.state.selectedSceneData.common.engine }
-            intervalBetweenCommands={ this.state.selectedSceneData.native.burstIntervall || 0 }
+            intervalBetweenCommands={ this.state.selectedSceneData.native.burstInterval || 0 }
         />;
     }
 
@@ -1115,6 +1131,7 @@ class App extends GenericApp {
 
         return <SceneForm
             key={ this.state.selectedSceneId }
+            showError={ e => this.showError(e) }
             oneColumn={ oneColumn }
             updateScene={ (common, native, cb) => this.updateScene(common, native, cb) }
             scene={ this.state.selectedSceneData }

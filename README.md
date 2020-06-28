@@ -106,14 +106,14 @@ sendTo(
 ```
 The adapter will read all actual values for IDs defined in this scene and save it as configured ones.
 
-TODO: 
-Bereits gestartetet Befehle anhalten: ??
-Verzügereung ab Szenenstart (ms):
-
-Virtuelle Gruppe: Tooltip from Readme.md
-Update selectID
+## TODO: 
+- Change tooltip for "Bereits gestartetet Befehle anhalten": ??
+- Update selectID dialog
 
 ## Changelog
+### 2.0.14 (2020-06-28)
+* (bluefox) GUI error corrected
+
 ### 2.0.13 (2020-06-27)
 * (bluefox) Mobile view added
 
