@@ -29,7 +29,7 @@ function build() {
 // if not local development
 if (window.location.host !== 'localhost:3000') {
     Sentry.init({
-        dsn: "https://89fc6260a1af4df68f9db767a603b7e5@sentry.iobroker.net/86",
+        dsn: 'https://89fc6260a1af4df68f9db767a603b7e5@sentry.iobroker.net/86',
         release: 'iobroker.' + window.adapterName + '@' + version,
         integrations: [
             new SentryIntegrations.Dedupe()
