@@ -767,8 +767,9 @@ class App extends GenericApp {
         this.setState({changingScene: scene._id}, () =>
             this.socket.setObject(scene._id, scene)
                 .then(() => this.refreshData(scene._id))
-                .then(() => this.changeSelectedScene( scene._id)))
-                .catch(e => this.showError(e));
+                .then(() => this.changeSelectedScene( scene._id))
+                .catch(e => this.showError(e))
+        );
     };
 
     writeScene() {
