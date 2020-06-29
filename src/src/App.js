@@ -355,9 +355,9 @@ class App extends GenericApp {
                 prefix = prefix + parts[i];
                 if (!currentFolder.subFolders[parts[i]]) {
                     currentFolder.subFolders[parts[i]] = {
-                        subFolders: {}, 
-                        scenes: {}, 
-                        id: parts[i], 
+                        subFolders: {},
+                        scenes: {},
+                        id: parts[i],
                         prefix,
                     }
                 }
@@ -751,8 +751,9 @@ class App extends GenericApp {
         this.setState({changingScene: id}, () =>
             this.socket.setObject(id, template)
                 .then(() => this.refreshData(id))
-                .then(() => this.changeSelectedScene(id)))
-                .catch(e => this.showError(e));
+                .then(() => this.changeSelectedScene(id))
+                .catch(e => this.showError(e))
+        );
     };
 
     cloneScene(id) {

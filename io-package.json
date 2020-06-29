@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.0.15",
+        "version": "2.0.16",
         "news": {
-            "2.0.15": {
+            "2.0.16": {
                 "en": "GUI error corrected",
                 "de": "GUI-Fehler behoben",
                 "ru": "Исправлена ошибка графического интерфейса",
