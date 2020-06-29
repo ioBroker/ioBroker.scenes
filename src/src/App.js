@@ -594,7 +594,9 @@ class App extends GenericApp {
             selected={ this.state.selectedSceneId ? this.state.selectedSceneId === scene._id : false }
             button
             className={ clsx(changed && this.props.classes.changed, !scene.common.enabled && this.props.classes.disabled) }
-            onClick={ () => this.changeSelectedScene(scene._id) }>
+            onClick={ () =>
+                this.changeSelectedScene(scene._id)
+                    .catch(() => console.log('ignore')) }>
             <ListItemIcon classes={ {root: this.props.classes.itemIconRoot} }><IconScript className={ this.props.classes.itemIcon }/></ListItemIcon>
             <ListItemText
                 classes={ {primary: this.props.classes.listItemTitle, secondary: this.props.classes.listItemSubTitle} }
@@ -767,7 +769,7 @@ class App extends GenericApp {
         this.setState({changingScene: scene._id}, () =>
             this.socket.setObject(scene._id, scene)
                 .then(() => this.refreshData(scene._id))
-                .then(() => this.changeSelectedScene( scene._id))
+                .then(() => this.changeSelectedScene(scene._id))
                 .catch(e => this.showError(e))
         );
     };
@@ -838,7 +840,7 @@ class App extends GenericApp {
                                 nextId = ids.shift();
                             }
 
-                            this.changeSelectedScene(nextId);
+                            return this.changeSelectedScene(nextId);
                         });
                 } else {
                     return this.refreshData(id);
@@ -870,23 +872,29 @@ class App extends GenericApp {
     };
 
     changeSelectedScene(newId, ignoreUnsaved, cb) {
-        if (this.state.selectedSceneId !== newId) {
-            if (this.state.selectedSceneChanged && !ignoreUnsaved) {
-                this.confirmCb = cb;
-                this.setState({sceneChangeDialog: newId});
+        return new Promise(resolve => {
+            if (this.state.selectedSceneId !== newId) {
+                if (this.state.selectedSceneChanged && !ignoreUnsaved) {
+                    this.confirmCb = cb;
+                    this.setState({sceneChangeDialog: newId}, () => resolve());
+                } else {
+                    window.localStorage.setItem('Scenes.selectedSceneId', newId);
+                    this.setState({
+                        selectedSceneData: this.state.scenes[newId] ? JSON.parse(JSON.stringify(this.state.scenes[newId])) : null,
+                        sceneChangeDialog: '',
+                        selectedSceneId: newId || '',
+                        selectedSceneChanged: false,
+                        menuOpened: false,
+                    }, () => {
+                        resolve();
+                        cb && cb();
+                    });
+                }
             } else {
-                window.localStorage.setItem('Scenes.selectedSceneId', newId);
-                this.setState({
-                    selectedSceneData: this.state.scenes[newId] ? JSON.parse(JSON.stringify(this.state.scenes[newId])) : null,
-                    sceneChangeDialog: '',
-                    selectedSceneId: newId || '',
-                    selectedSceneChanged: false,
-                    menuOpened: false,
-                }, () => cb && cb());
+                resolve();
+                cb && cb();
             }
-        } else {
-            cb && cb();
-        }
+        });
     }
 
     renderAddFolderDialog() {
@@ -896,7 +904,7 @@ class App extends GenericApp {
                 onClose={ () => this.setState({addFolderDialog: null}) }
             >
                 <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
-                <DialogContent className={this.props.classes.p}>
+                <DialogContent className={ this.props.classes.p }>
                     <TextField label={ I18n.t('Title') } value={ this.state.addFolderDialogTitle } onChange={ e =>
                         this.setState({addFolderDialogTitle: e.target.value.replace(FORBIDDEN_CHARS, '_')}) }/>
                 </DialogContent>
@@ -905,7 +913,7 @@ class App extends GenericApp {
                         <IconCancel className={ this.props.classes.buttonIcon }/>
                         { I18n.t('Cancel') }
                     </Button>
-                    <Button variant="contained" onClick={() => {
+                    <Button variant="contained" disabled={!this.state.addFolderDialogTitle || Object.keys(this.state.folders.subFolders).find(name => name === this.state.addFolderDialogTitle)} onClick={() => {
                         this.addFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle);
                         this.setState({addFolderDialog: null});
                     }} color="primary" autoFocus>
@@ -963,12 +971,13 @@ class App extends GenericApp {
                     }}>
                         <IconCancel/> { I18n.t('Cancel') }
                     </Button>
-                    <Button variant="contained" color="secondary" onClick={e =>
+                    <Button variant="contained" color="secondary" onClick={ () =>
                         this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
                             const cb = this.confirmCb;
                             this.confirmCb = null;
                             cb && cb();
-                        }) }>
+                        })
+                            .catch(() => console.log('ignore')) }>
                         { I18n.t('Discard') }
                     </Button>
                     <Button variant="contained" color="secondary" onClick={e => {
@@ -979,6 +988,7 @@ class App extends GenericApp {
                                 this.confirmCb = null;
                                 cb && cb();
                             }))
+                            .catch(() => console.log('ignore'))
                     }}>
                         <IconSave/> { I18n.t('Save changes') }
                     </Button>
