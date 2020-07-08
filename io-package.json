@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.1.0",
+        "version": "2.1.1",
         "news": {
-            "2.1.0": {
+            "2.1.1": {
                 "en": "Interval between states was corrected",
                 "de": "Das Intervall zwischen den Zuständen wurde korrigiert",
                 "ru": "Интервал между состояниями был исправлен",
