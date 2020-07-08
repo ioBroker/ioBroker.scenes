@@ -748,9 +748,9 @@ class SceneMembersForm extends React.Component {
                         </Box>
                     </div> :
                     (!this.state.virtualGroup ? <div className={ classes.smallOnTrueFalse }>
-                        { I18n.t('Set if TRUE') + ': ' } <span className={ classes.stateValueTrue }>{ setIfTrue }</span>
-                        { this.state.onFalseEnabled ? ' / ' + I18n.t('Set if FALSE') + ': ' : null}
-                        { this.state.onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
+                        { (onFalseEnabled ? I18n.t('Set if TRUE') : I18n.t('Setpoint')) + ': ' } <span className={ classes.stateValueTrue }>{ setIfTrue }</span>
+                        { onFalseEnabled ? ' / ' + I18n.t('Set if FALSE') + ': ' : null}
+                        { onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
                     </div> : <div style={ {height: 8} }/>)
             }
         </Paper>
