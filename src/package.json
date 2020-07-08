@@ -1,9 +1,9 @@
 {
   "name": "scenes-react",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "private": true,
   "dependencies": {
-    "@iobroker/adapter-react": "^1.0.16",
+    "@iobroker/adapter-react": "^1.0.17",
     "@material-ui/core": "^4.10.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.56",
