@@ -111,6 +111,9 @@ The adapter will read all actual values for IDs defined in this scene and save i
 - Update selectID dialog
 
 ## Changelog
+### 2.1.0 (2020-07-08)
+* (bluefox) Interval between states was corrected
+
 ### 2.0.17 (2020-06-29)
 * (bluefox) GUI error corrected
 

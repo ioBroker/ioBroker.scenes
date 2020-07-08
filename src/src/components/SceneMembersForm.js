@@ -21,6 +21,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import DialogActions from '@material-ui/core/DialogActions';
 
 // own components
 import I18n from '@iobroker/adapter-react/i18n';
@@ -250,7 +251,7 @@ class SceneMembersForm extends React.Component {
         this.state.members.forEach(member =>
             this.props.socket.unsubscribeState(member.id, this.memberStateChange));
     }
-    
+
     static getDerivedStateFromProps(props, state) {
         const newState = {};
         let changed = false;
@@ -336,7 +337,7 @@ class SceneMembersForm extends React.Component {
 
         this.setState({states, objectTypes});
     };
-    
+
     createSceneMembers = ids => {
         this.setState({showDialog: false}, () => {
             // filter out yet existing IDs
@@ -351,6 +352,10 @@ class SceneMembersForm extends React.Component {
                     // Read type of state
                     this.props.socket.getObject(id)
                         .then(obj => {
+                            if (!obj) {
+                                return;
+                            }
+
                             const template = {
                                 id,
                                 setIfTrue: null,
@@ -361,7 +366,10 @@ class SceneMembersForm extends React.Component {
                                 delay: 0
                             };
 
-                            objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, true);
+                            if (obj) {
+                                objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, true);
+                            }
+
 
                             if (obj && obj.common && obj.common.type) {
                                 objectTypes[id] = obj.common.type;
@@ -393,11 +401,15 @@ class SceneMembersForm extends React.Component {
         });
     };
 
-    deleteSceneMember = index => {
+    deleteSceneMember = id => {
         let members = JSON.parse(JSON.stringify(this.state.members));
-        const id = members[index].id;
-        members.splice(index, 1);
-        
+
+        for (let i = 0; i < members.length; i++) {
+            if (members[i].id === id) {
+                members.splice(i, 1);
+            }
+        }
+
         this.setStateWithParent({members, deleteDialog: null}, () =>
             this.props.socket.unsubscribeState(id, this.memberStateChange));
     };
@@ -420,7 +432,7 @@ class SceneMembersForm extends React.Component {
             onClose={ () => this.setState({showDialog: false}) }
         /> : null;
     }
-    
+
     renderDeleteDialog() {
         if (this.state.deleteDialog === null) {
             return;
@@ -433,14 +445,15 @@ class SceneMembersForm extends React.Component {
                 this.setState({deleteDialog: null}) }
             >
                 <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
-                <div className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+
+                <DialogActions>
                     <Button variant="contained" onClick={ () => this.setState({deleteDialog: null}) }>
                         {I18n.t('Cancel')}
                     </Button>
                     <Button variant="contained" color="secondary" onClick={ e => this.deleteSceneMember(this.state.deleteDialog) }>
                         { I18n.t('Delete') }
                     </Button>
-                </div>
+                </DialogActions>
             </Dialog>;
     };
 
@@ -516,6 +529,14 @@ class SceneMembersForm extends React.Component {
         const opened = this.state.openedMembers.includes(member.id);
         const onFalseEnabled = !this.state.virtualGroup && this.state.onFalseEnabled;
 
+        // calculate enabled states
+        let countEnabled = 0;
+        for (let u = 0; u < index; u++) {
+            if (!this.state.members[u].disabled) {
+                countEnabled++;
+            }
+        }
+
         return <Paper key={ member.id } className={ clsx(classes.memberCard, member.disabled && classes.disabled) }>
             <div className={ classes.memberToolbar }>
                 <div className={ classes.memberTitle }>{ member.id }</div>
@@ -538,7 +559,7 @@ class SceneMembersForm extends React.Component {
                     <IconButton
                         size="small"
                         style={{ marginLeft: 5 }} aria-label="Delete" title={I18n.t('Delete')}
-                        onClick={ () => this.setState({deleteDialog: index}) }>
+                        onClick={ () => this.setState({deleteDialog: member.id}) }>
                         <IconDelete/>
                     </IconButton>
                     <Switch
@@ -553,8 +574,8 @@ class SceneMembersForm extends React.Component {
                     { value }
                 </div>
             </div>
-            <div>{ member.desc } { !opened && (this.props.intervalBetweenCommands || member.delay) ?
-                <span> <IconClock/> { this.props.intervalBetweenCommands * index + (member.delay || 0) + I18n.t('ms') + ' ' + I18n.t('from scene start')}</span> : null }</div>
+            <div>{ member.desc } { !opened && !member.disabled && (this.props.intervalBetweenCommands || member.delay) ?
+                <span> <IconClock/> { this.props.intervalBetweenCommands * countEnabled + (member.delay || 0) + I18n.t('ms') + ' ' + I18n.t('from scene start')}</span> : null }</div>
             {
                 opened ?
                     <div>
@@ -572,7 +593,7 @@ class SceneMembersForm extends React.Component {
                         </Box>*/ }
                         { !this.state.virtualGroup ? <Box className={ classes.p }>
                             { this.state.objectTypes[member.id] === 'boolean' ?
-                                <FormControl className={classes.formControl}>
+                                <FormControl className={ classes.setValue }>
                                     <InputLabel>{ onFalseEnabled ? I18n.t('Setpoint by TRUE') : I18n.t('Setpoint') }</InputLabel>
                                     <Select
                                         value={ member.setIfTrue === true || member.setIfTrue === 'true' ? 'true' : 'false'}
@@ -582,8 +603,8 @@ class SceneMembersForm extends React.Component {
                                             this.setStateWithParent({members});
                                         } }
                                     >
-                                        <MenuItem value="false">false</MenuItem>
-                                        <MenuItem value="true">true</MenuItem>
+                                        <MenuItem value="false">FALSE</MenuItem>
+                                        <MenuItem value="true">TRUE</MenuItem>
                                     </Select>
                                 </FormControl>
                                 :
@@ -621,7 +642,7 @@ class SceneMembersForm extends React.Component {
                             <Box className={ classes.p }>
                                 {
                                     this.state.objectTypes[member.id] === 'boolean' ?
-                                        <FormControl className={classes.formControl}>
+                                        <FormControl className={ classes.setValue }>
                                             <InputLabel>{ I18n.t('Setpoint by FALSE') }</InputLabel>
                                             <Select
                                                 value={ member.setIfFalse === true || member.setIfFalse === 'true' ? 'true' : 'false'}
@@ -631,8 +652,8 @@ class SceneMembersForm extends React.Component {
                                                     this.setStateWithParent({members});
                                                 } }
                                             >
-                                                <MenuItem value="false">false</MenuItem>
-                                                <MenuItem value="true">true</MenuItem>
+                                                <MenuItem value="false">FALSE</MenuItem>
+                                                <MenuItem value="true">TRUE</MenuItem>
                                             </Select>
                                         </FormControl>
                                         :
@@ -787,7 +808,7 @@ class SceneMembersForm extends React.Component {
                         !this.state.virtualGroup && sceneState === true && this.props.classes.sceneTrue,
                         !this.state.virtualGroup && sceneState === false && this.props.classes.sceneFalse,
                         !this.state.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
-                    ) }>{ I18n.t('Scene state:') } { sceneState.toString() }</span>
+                    ) }>{ I18n.t('Scene state:') } { sceneState === true ? 'TRUE' : (sceneState === false ? 'FALSE' : sceneState.toString()) }</span>
                 </Typography>
                 <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({showDialog: true})}>
                     <IconAdd/>
@@ -801,14 +822,14 @@ class SceneMembersForm extends React.Component {
                     onKeyUp={e => e.keyCode === 13 && this.onWriteScene(this.state.writeSceneState)}
                     onChange={e => this.setState({writeSceneState: e.target.value}) }
                 /> : null}
-                { !this.state.selectedSceneChanged && this.state.virtualGroup ? <IconButton
+                { !this.state.selectedSceneChanged && this.state.virtualGroup && this.state.members.length ? <IconButton
                     onClick={e => this.onWriteScene(this.state.writeSceneState) }
                 ><IconPlay/></IconButton> : null}
                 { this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
                     className={ this.props.classes.btnTestTrue }
                     onClick={ () => this.onWriteScene(true) }
                 ><IconPlay/>{ !onFalseEnabled ? I18n.t('Test') : I18n.t('Test TRUE') }</Button> : null }
-                { this.state.sceneEnabled && !this.state.selectedSceneChanged && onFalseEnabled ? <Button
+                { this.state.sceneEnabled && !this.state.selectedSceneChanged && onFalseEnabled && this.state.members.length ? <Button
                     className={ this.props.classes.btnTestFalse }
                     onClick={ () => this.onWriteScene(false) }
                 ><IconPlay/>{ I18n.t('Test FALSE') }</Button> : null }

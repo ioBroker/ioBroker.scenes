@@ -221,6 +221,7 @@ gulp.task('6-patch', () => new Promise(resolve => {
 
         fs.writeFileSync(__dirname + '/src/build/index.html', code);
     }
+
     resolve();
 }));
 

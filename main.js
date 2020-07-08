@@ -12,7 +12,7 @@
 //         "engine": "system.adapter.scenes.0"
 //     },
 //     "native": {
-//         "burstIntervall": 0,
+//         "burstInterval": 0,
 //         "members": [
 //             {
 //                 "id": "system.adapter.hm-rega.0.alive",
@@ -376,7 +376,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
         const stateVal = (state && state.val !== undefined && state.val !== null) ? state.val.toString() : '';
 
         val = trigger.value;
-        
+
         adapter.log.debug('checkTrigger: ' + trigger.id + '(' + state.val + ') ' + trigger.condition + ' ' + val.toString());
 
         switch (trigger.condition) {
@@ -429,7 +429,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                 } else
                 if (val >= state.val.toString()) {
                     activateScene(sceneId, isTrue);
-                }                    
+                }
                 break;
 
             case '<=':
@@ -550,7 +550,7 @@ function activateScene(sceneId, isTrue) {
     adapter.log.debug('activateScene: execute for "' + sceneId + '" (' + isTrue + ')');
 
     // all commands must be executed without interval
-    if (!scenes[sceneId].native.burstIntervall) {
+    if (!scenes[sceneId].native.burstInterval) {
         for (let state = 0; state < scenes[sceneId].native.members.length; state++) {
             activateSceneState(sceneId, state, isTrue);
         }
@@ -572,7 +572,7 @@ function activateScene(sceneId, isTrue) {
         }
     } else {
         // make some interval between commands
-        activateSceneStates(sceneId, 0, isTrue, scenes[sceneId].native.burstIntervall, () => {
+        activateSceneStates(sceneId, 0, isTrue, scenes[sceneId].native.burstInterval, () => {
             if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled) {
                 if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
                     adapter.log.debug('activateScene: new state for "' + sceneId + '" is "' + isTrue + '"');
