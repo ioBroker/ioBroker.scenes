@@ -477,12 +477,13 @@ class App extends GenericApp {
                 console.log('Deleted ' + oldId);
                 return this.socket.setObject(scene._id, scene)
             })
+            .catch(e => this.showError(e))
             .then(() => {
                 console.log('Set new ID: ' + scene._id);
                 return !noRefresh && this.refreshData(sceneId)
                     .then(() => this.changeSelectedScene(scene._id))
-            })
-            .catch(e => this.showError(e));
+                    .catch(e => this.showError(e));
+            });
     };
 
     renameFolder(folder, newName) {

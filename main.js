@@ -460,6 +460,10 @@ let tIndex = 1; // never ending counter
 
 // Set one state of the scene
 function activateSceneState(sceneId, state, isTrue) {
+    if (!scenes[sceneId]) {
+        return adapter.log.error(`Unexpected error: Scene "${sceneId}" does not exist!`);
+    }
+
     const stateObj = scenes[sceneId].native.members[state];
     let desiredValue;
     if (!scenes[sceneId].native.virtualGroup) {
