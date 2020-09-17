@@ -169,6 +169,9 @@
             "sentry": {
                 "dsn": "https://a66ab7f27f2744c5a722875d343471ad@sentry.iobroker.net/44"
             }
+        },
+        "dependencies": {
+            "js-controller": ">=1.5.8"
         }
     },
     "native": {},

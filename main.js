@@ -395,52 +395,52 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
 
             case '>':
                 fVal = parseFloat(val);
-                aVal = parseFloat(state.val);
+                aVal = parseFloat(stateVal);
                 if (fVal.toString() == val && stateVal === aVal.toString()) {
                     if (aVal > fVal) {
                         activateScene(sceneId, isTrue);
                     }
                 } else
-                if (val > state.val.toString()) {
+                if (val > stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
 
             case '<':
                 fVal = parseFloat(val);
-                aVal = parseFloat(state.val);
+                aVal = parseFloat(stateVal);
                 if (fVal.toString() == val && stateVal === aVal.toString()) {
                     if (aVal < fVal) {
                         activateScene(sceneId, isTrue);
                     }
                 } else
-                if (val < state.val.toString()) {
+                if (val < stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
 
             case '>=':
                 fVal = parseFloat(val);
-                aVal = parseFloat(state.val);
+                aVal = parseFloat(stateVal);
                 if (fVal.toString() == val && stateVal === aVal.toString()) {
                     if (aVal >= fVal) {
                         activateScene(sceneId, isTrue);
                     }
                 } else
-                if (val >= state.val.toString()) {
+                if (val >= stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
 
             case '<=':
                 fVal = parseFloat(val);
-                aVal = parseFloat(state.val);
+                aVal = parseFloat(stateVal);
                 if (fVal.toString() == val && stateVal === aVal.toString()) {
                     if (aVal <= fVal) {
                         activateScene(sceneId, isTrue);
                     }
                 } else
-                if (val <= state.val.toString()) {
+                if (val <= stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -532,6 +532,10 @@ function activateSceneState(sceneId, state, isTrue) {
 
 // Set all states of the state with interval
 function activateSceneStates(sceneId, state, isTrue, interval, callback) {
+    if (!scenes[sceneId]) {
+        adapter.log.error(`Unexpected error: Scene "${sceneId}" does not exist!`);
+        return callback();
+    }
     if (!scenes[sceneId].native.members[state]) {
         return callback();
     }
@@ -750,6 +754,7 @@ function main() {
                 }
 
                 scenes[id] = states[id];
+                scenes[id].native = scenes[id].native || {};
 
                 // rename attribute
                 if (scenes[id].native.burstIntervall !== undefined) {
