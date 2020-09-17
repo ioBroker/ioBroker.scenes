@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.1.2",
+        "version": "2.1.3",
         "news": {
+            "2.1.3": {
+                "en": "Prevent crash cases (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "de": "Verhindern Sie Absturzfälle (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "ru": "Предотвращение сбоев (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "pt": "Evite casos de travamento (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "nl": "Voorkom crashgevallen (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "it": "Prevenire i casi di crash (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "es": "Prevenir casos de accidentes (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-B，IOBROKER-SCENES-8，IOBROKER-SCENES-D）"
+            },
             "2.1.2": {
                 "en": "Interval between states was corrected",
                 "de": "Das Intervall zwischen den Zuständen wurde korrigiert",

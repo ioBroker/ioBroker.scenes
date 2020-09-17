@@ -114,7 +114,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.1.3 (2020-09-18)
 * (Apollon77) Prevent crash cases (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)
 
 ### 2.1.2 (2020-07-08)
