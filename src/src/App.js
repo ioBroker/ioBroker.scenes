@@ -246,8 +246,8 @@ const FORBIDDEN_CHARS = /[.\][*,;'"`<>\\?]/g;
 
 class App extends GenericApp {
     constructor(props) {
-        super(props);
-        this.translations = {
+        const extendedProps = {...props};
+        extendedProps.translations = {
             'en': require('./i18n/en'),
             'de': require('./i18n/de'),
             'ru': require('./i18n/ru'),
@@ -260,9 +260,7 @@ class App extends GenericApp {
             'zh-cn': require('./i18n/zh-cn'),
         };
 
-        // init translations
-        I18n.setTranslations(this.translations);
-        I18n.setLanguage((navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase());
+        super(props, extendedProps);
 
         const query = getUrlQuery();
 

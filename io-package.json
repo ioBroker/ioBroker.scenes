@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.1.4",
+        "version": "2.1.5",
         "news": {
-            "2.1.4": {
+            "2.1.5": {
                 "en": "Updated the select ID dialog.",
                 "de": "Das Dialogfeld \"ID auswählen\" wurde aktualisiert.",
                 "ru": "Обновлен диалог выбора идентификатора.",
@@ -86,54 +86,6 @@
                 "es": "Se agregó la opción \"No sobrescribir estado si tiene el valor requerido\"",
                 "pl": "Dodano opcję „Nie zastępuj stanu, jeśli ma wymaganą wartość”",
                 "zh-cn": "添加了“如果具有必需的值，请勿覆盖状态”选项"
-            },
-            "2.0.9": {
-                "en": "The colors are corrected",
-                "de": "Die Farben werden korrigiert",
-                "ru": "Цвета исправлены",
-                "pt": "As cores são corrigidas",
-                "nl": "De kleuren zijn gecorrigeerd",
-                "fr": "Les couleurs sont corrigées",
-                "it": "I colori sono corretti",
-                "es": "Los colores son corregidos",
-                "pl": "Kolory są poprawione",
-                "zh-cn": "颜色已校正"
-            },
-            "2.0.8": {
-                "en": "The tolerance is implemented",
-                "de": "Die Toleranz ist implementiert",
-                "ru": "Допуск реализован",
-                "pt": "A tolerância é implementada",
-                "nl": "De tolerantie is geïmplementeerd",
-                "fr": "La tolérance est mise en œuvre",
-                "it": "La tolleranza è implementata",
-                "es": "Se implementa la tolerancia.",
-                "pl": "Tolerancja jest realizowana",
-                "zh-cn": "公差已实现"
-            },
-            "2.0.3": {
-                "en": "New GUI based on react",
-                "de": "Neue GUI basierend auf react",
-                "ru": "Новый графический интерфейс, основанный на react",
-                "pt": "Nova GUI baseada em react",
-                "nl": "Nieuwe GUI gebaseerd op react",
-                "fr": "Nouvelle interface graphique basée sur react",
-                "it": "Nuova interfaccia grafica basata su react",
-                "es": "Nueva GUI basada en react",
-                "pl": "Nowy GUI oparty na react",
-                "zh-cn": "基于react的新GUI"
-            },
-            "1.1.1": {
-                "en": "Added storing of actual values in scene via message",
-                "de": "Speicherung von Istwerten in Szene per Meldung hinzugefügt",
-                "ru": "Добавлено сохранение фактических значений в сцене через сообщение",
-                "pt": "Adicionado armazenamento de valores reais em cena via mensagem",
-                "nl": "Toegevoegd opslag van actuele waarden in scene via bericht",
-                "fr": "Ajout du stockage des valeurs réelles dans la scène via un message",
-                "it": "Aggiunta la memorizzazione di valori reali nella scena tramite messaggio",
-                "es": "Agregado almacenamiento de valores reales en escena a través del mensaje.",
-                "pl": "Dodano zapisywanie rzeczywistych wartości w scenie za pomocą wiadomości",
-                "zh-cn": "添加了通过消息在场景中存储实际值"
             }
         },
         "title": "Scenes",
