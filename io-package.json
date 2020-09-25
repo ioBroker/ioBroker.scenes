@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.1.5",
+        "version": "2.1.6",
         "news": {
-            "2.1.5": {
+            "2.1.6": {
                 "en": "Updated the select ID dialog.",
                 "de": "Das Dialogfeld \"ID auswählen\" wurde aktualisiert.",
                 "ru": "Обновлен диалог выбора идентификатора.",

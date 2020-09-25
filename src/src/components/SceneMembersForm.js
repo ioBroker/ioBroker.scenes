@@ -422,6 +422,7 @@ class SceneMembersForm extends React.Component {
 
     renderSelectIdDialog() {
         return this.state.showDialog ? <DialogSelectID
+            imagePrefix={'../..'}
             key="selectDialogMembers"
             socket={ this.props.socket }
             dialogName="memberEdit"

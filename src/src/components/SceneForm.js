@@ -99,6 +99,7 @@ class SceneForm extends React.Component {
     renderSelectIdDialog() {
         return this.state.showDialog ? <DialogSelectID
                 key="selectDialog"
+                imagePrefix={'../..'}
                 socket={ this.props.socket }
                 dialogName="memberEdit"
                 title={ I18n.t('Select for ') }
