@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.1.6",
+        "version": "2.1.7",
         "news": {
+            "2.1.7": {
+                "en": "Prevent crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "de": "Absturzfall verhindern (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "ru": "Предотвращение сбоя (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "pt": "Evitar caso de travamento (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "es": "Caso de prevención de accidentes (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "pl": "Zapobiegaj przypadkowi awarii (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-E，IOBROKER-SCENES-G，IOBROKER-SCENES-A）"
+            },
             "2.1.6": {
                 "en": "Updated the select ID dialog.",
                 "de": "Das Dialogfeld \"ID auswählen\" wurde aktualisiert.",
