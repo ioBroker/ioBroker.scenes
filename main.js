@@ -557,6 +557,11 @@ function activateSceneStates(sceneId, state, isTrue, interval, callback) {
 function activateScene(sceneId, isTrue) {
     adapter.log.debug('activateScene: execute for "' + sceneId + '" (' + isTrue + ')');
 
+    if (!scenes[sceneId]) {
+        adapter.log.error(`Unexpected error: Scene "${sceneId}" does not exist!`);
+        return callback();
+    }
+
     // all commands must be executed without interval
     if (!scenes[sceneId].native.burstInterval) {
         for (let state = 0; state < scenes[sceneId].native.members.length; state++) {
@@ -581,6 +586,10 @@ function activateScene(sceneId, isTrue) {
     } else {
         // make some interval between commands
         activateSceneStates(sceneId, 0, isTrue, scenes[sceneId].native.burstInterval, () => {
+            // possible scene was renamed
+            if (!scenes[sceneId]) {
+                return;
+            }
             if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled) {
                 if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
                     adapter.log.debug('activateScene: new state for "' + sceneId + '" is "' + isTrue + '"');
@@ -602,7 +611,7 @@ function getState(sceneId, stateNumber, callback) {
     const stateId = scenes[sceneId].native.members[stateNumber].id;
     adapter.getForeignState(stateId, (err, state) => {
         // possible scene was renamed
-        if (!scenes[sceneId]) {
+        if (!scenes[sceneId] || !scenes[sceneId].native || !scenes[sceneId].native.members || !scenes[sceneId].native.members[stateNumber]) {
             return;
         }
 
