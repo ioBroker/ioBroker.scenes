@@ -94,5 +94,11 @@
   "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "例如，如果该值已经位于“％s”并且“％s”是设定值，则如果激活此复选框，则不会写入该值。",
   "from scene start": "从场景开始",
   "Test": "测试",
-  "Open list": "打开清单"
+  "Open list": "打开清单",
+  "Expand all": "展开全部",
+  "Collapse all": "全部收缩",
+  "Setpoint by TRUE": "设定值TRUE",
+  "Tolerance by TRUE": "TRUE的公差",
+  "Setpoint by FALSE": "设定值为FALSE",
+  "Tolerance by FALSE": "公差为FALSE"
 }

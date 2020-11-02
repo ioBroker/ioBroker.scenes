@@ -94,5 +94,11 @@
   "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Например, если значение уже находится в «%s», а «%s» является заданным значением, то значение не будет записано, если этот флажок активирован.",
   "from scene start": "с начала сцены",
   "Test": "Тест",
-  "Open list": "Открытый список"
+  "Open list": "Открытый список",
+  "Expand all": "Расширить все",
+  "Collapse all": "Свернуть все",
+  "Setpoint by TRUE": "Значение при TRUE",
+  "Tolerance by TRUE": "Допуск при TRUE",
+  "Setpoint by FALSE": "Значение при FALSE",
+  "Tolerance by FALSE": "Допуск при FALSE"
 }

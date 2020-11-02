@@ -94,5 +94,11 @@
   "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Ad esempio, se il valore è già su \"%s\" e \"%s\" è il setpoint, il valore non verrà scritto se questa casella di controllo è attivata.",
   "from scene start": "dall'inizio della scena",
   "Test": "Test",
-  "Open list": "Apri l'elenco"
+  "Open list": "Apri l'elenco",
+  "Expand all": "Espandi tutto",
+  "Collapse all": "Comprimi tutto",
+  "Setpoint by TRUE": "Setpoint da TRUE",
+  "Tolerance by TRUE": "Tolleranza da TRUE",
+  "Setpoint by FALSE": "Setpoint di FALSE",
+  "Tolerance by FALSE": "Tolleranza di FALSE"
 }

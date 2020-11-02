@@ -94,5 +94,11 @@
   "For example, if the value is already at \"%s\" and \"%s\" is the setpoint, then write the value anyway if this checkbox is activated.": "Par exemple, si la valeur est déjà à \"%s\" et \"%s\" est le point de consigne, alors la valeur ne sera pas écrite si cette case est cochée.",
   "from scene start": "depuis le début de la scène",
   "Test": "Tester",
-  "Open list": "Ouvrir la liste"
+  "Open list": "Ouvrir la liste",
+  "Expand all": "Développer tout",
+  "Collapse all": "Tout réduire",
+  "Setpoint by TRUE": "Consigne par TRUE",
+  "Tolerance by TRUE": "Tolérance par TRUE",
+  "Setpoint by FALSE": "Consigne par FALSE",
+  "Tolerance by FALSE": "Tolérance par FALSE"
 }
