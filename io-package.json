@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.1.7",
+        "version": "2.3.0",
         "news": {
+            "2.3.0": {
+                "en": "Fixed GUI errors",
+                "de": "GUI-Fehler behoben",
+                "ru": "Исправлены ошибки графического интерфейса",
+                "pt": "Erros de GUI corrigidos",
+                "nl": "GUI-fouten opgelost",
+                "fr": "Correction des erreurs d'interface graphique",
+                "it": "Risolti errori della GUI",
+                "es": "Errores de GUI fijos",
+                "pl": "Naprawiono błędy GUI",
+                "zh-cn": "修复了GUI错误"
+            },
             "2.1.7": {
                 "en": "Prevent crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
                 "de": "Absturzfall verhindern (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",

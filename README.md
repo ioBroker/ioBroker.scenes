@@ -117,7 +117,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 -->
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 2.3.0 (2020-11-02)
 * (bluefox) Fixed GUI errors
 
 ### 2.1.7 (2020-10-30)
