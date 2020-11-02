@@ -175,7 +175,7 @@ function saveScene(sceneID, isForTrue, cb) {
                     console.log('ID ' + member.id + '=' + state.val);
                     count--;
                     if (isForTrue) {
-                        obj.native.members[i].setIfTrue = state.val;
+                        obj.native.members[i].setIfTrue  = state.val;
                     } else {
                         obj.native.members[i].setIfFalse = state.val;
                     }
@@ -292,22 +292,26 @@ function checkScene(sceneId, stateId, state) {
                     activeValue = 'uncertain';
                 }
             } else {
-                if (sceneObjNative.members[i].setIfTrueTolerance) {
-                    if (Math.abs(sceneObjNative.members[i].setIfTrue - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfTrueTolerance) {
-                        activeTrue = false;
-                    }
-                } else {
-                    if (sceneObjNative.members[i].setIfTrue != sceneObjNative.members[i].actual) {
-                        activeTrue = false;
+                const setIfTrue  = sceneObjNative.members[i].setIfTrue;
+                const setIfFalse = sceneObjNative.members[i].setIfFalse;
+                if (setIfTrue !== null && setIfTrue !== undefined) {
+                    if (sceneObjNative.members[i].setIfTrueTolerance) {
+                        if (Math.abs(setIfTrue - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfTrueTolerance) {
+                            activeTrue = false;
+                        }
+                    } else {
+                        if (setIfTrue != sceneObjNative.members[i].actual) {
+                            activeTrue = false;
+                        }
                     }
                 }
 
-                if (isWithFalse) {
+                if (isWithFalse && setIfFalse !== null && setIfFalse !== undefined) {
                     if (sceneObjNative.members[i].setIfFalseTolerance) {
-                        if (Math.abs(sceneObjNative.members[i].setIfFalse - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfFalseTolerance) {
+                        if (Math.abs(setIfFalse - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfFalseTolerance) {
                             activeFalse = false;
                         }
-                    } else if (sceneObjNative.members[i].setIfFalse != sceneObjNative.members[i].actual) {
+                    } else if (setIfFalse != sceneObjNative.members[i].actual) {
                         activeFalse = false;
                     }
                 }
@@ -470,6 +474,10 @@ function activateSceneState(sceneId, state, isTrue) {
         desiredValue = isTrue ? stateObj.setIfTrue : stateObj.setIfFalse;
     } else {
         desiredValue = isTrue;
+    }
+
+    if (desiredValue === null || desiredValue === undefined) {
+        return adapter.log.debug(`Ignore in "${sceneId}" the ${state} by ${isTrue}, as defined as NULL.`);
     }
 
     if (stateObj.delay) {
@@ -690,12 +698,13 @@ function initScenes() {
                 scenes[sceneId].native.members[state].delay = 0;
             }
 
+            /*
             if (scenes[sceneId].native.members[state].setIfTrue === undefined || scenes[sceneId].native.members[state].setIfTrue === null) {
                 scenes[sceneId].native.members[state].setIfTrue = false;
             }
             if (scenes[sceneId].native.members[state].setIfFalse === undefined || scenes[sceneId].native.members[state].setIfFalse === null) {
                 scenes[sceneId].native.members[state].setIfFalse = false;
-            }
+            }*/
 
             scenes[sceneId].count++;
             // read actual state

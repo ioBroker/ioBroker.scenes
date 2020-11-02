@@ -31,10 +31,13 @@ import Utils from '@iobroker/adapter-react/Components/Utils';
 // icons
 import {AiOutlineClockCircle as IconClock} from 'react-icons/ai';
 import {MdDelete as IconDelete} from 'react-icons/md';
-import {MdModeEdit as IconEdit} from 'react-icons/md';
-import {IoMdClose as IconClose} from 'react-icons/io';
 import {MdAdd as IconAdd} from 'react-icons/md';
 import {MdPlayArrow as IconPlay} from 'react-icons/md';
+import {FaFolder as IconFolderClosed} from 'react-icons/fa';
+import {FaFolderOpen as IconFolderOpened} from 'react-icons/fa';
+import ClearIcon from '@material-ui/icons/Close';
+import IconExpandAll from '@material-ui/icons/ExpandMore';
+import IconCollapseAll from '@material-ui/icons/ExpandLess';
 
 const TRUE_COLOR       = '#90ee90';
 const FALSE_COLOR      = '#ff9999';
@@ -68,6 +71,11 @@ const styles = theme => ({
     memberCard: {
         padding: 4,
         margin: theme.spacing(1) + 'px 0',
+    },
+    memberFolder: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
     },
     right: {
         float: 'right',
@@ -127,6 +135,12 @@ const styles = theme => ({
         background: theme.palette.type === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
         marginBottom: theme.spacing(0.5),
     },
+    btnExpandAll: {
+        float: 'right'
+    },
+    btnCollapseAll: {
+        float: 'right'
+    },
     smallOnTrueFalse: {
         fontSize: 'small',
         textAlign: 'right',
@@ -158,10 +172,12 @@ const styles = theme => ({
         display: 'inline-block',
         fontSize: 10,
         fontStyle: 'italic',
+        marginLeft: 50,
     },
     memberTitle: {
         fontSize: 14,
         fontWeight: 'bold',
+        marginLeft: 50,
     },
     memberToolbar: {
         width: '100%',
@@ -340,8 +356,6 @@ class SceneMembersForm extends React.Component {
 
     createSceneMembers = ids => {
         this.setState({showDialog: false}, () => {
-            // filter out yet existing IDs
-            ids = ids.filter(id => !this.state.members.find(item => item.id === id));
             if (ids.length) {
                 const openedMembers = [...this.state.openedMembers];
                 const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
@@ -493,9 +507,14 @@ class SceneMembersForm extends React.Component {
             }
         }
 
+        const opened = this.state.openedMembers.includes(member.id);
+        const onFalseEnabled = !this.state.virtualGroup && this.state.onFalseEnabled;
+        let setIfTrueVisible = true;
+
         let setIfTrue = member.setIfTrue;
         if (setIfTrue === undefined || setIfTrue === null) {
             setIfTrue = '';
+            setIfTrueVisible = false;
         } else {
             if (setIfTrue === true) {
                 setIfTrue = 'TRUE';
@@ -510,9 +529,17 @@ class SceneMembersForm extends React.Component {
             }
         }
 
+        const varType =  this.state.objectTypes[member.id];
+
+        if (onFalseEnabled && setIfTrueVisible && setIfTrue === '' && (varType === 'number' || varType === 'boolean')) {
+            setIfTrueVisible = false;
+        }
+
         let setIfFalse = member.setIfFalse;
+        let setIfFalseVisible = onFalseEnabled;
         if (setIfFalse === undefined || setIfFalse === null) {
             setIfFalse = '';
+            setIfFalseVisible = false;
         } else {
             if (setIfFalse === true) {
                 setIfFalse = 'TRUE';
@@ -527,8 +554,9 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        const opened = this.state.openedMembers.includes(member.id);
-        const onFalseEnabled = !this.state.virtualGroup && this.state.onFalseEnabled;
+        if (setIfFalseVisible && setIfFalse === '' && (varType === 'number' || varType === 'boolean')) {
+            setIfFalseVisible = false;
+        }
 
         // calculate enabled states
         let countEnabled = 0;
@@ -538,25 +566,25 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        return <Paper key={ member.id } className={ clsx(classes.memberCard, member.disabled && classes.disabled) }>
+        return <Paper key={ member.id + '_' + index } className={ clsx(classes.memberCard, member.disabled && classes.disabled) }>
             <div className={ classes.memberToolbar }>
+                <IconButton className={ classes.memberFolder} title={ I18n.t('Edit') } onClick={ () => {
+                    const openedMembers = [...this.state.openedMembers];
+                    const pos = openedMembers.indexOf(member.id);
+                    if (pos !== -1) {
+                        openedMembers.splice(pos, 1);
+                    } else {
+                        openedMembers.push(member.id);
+                        openedMembers.sort();
+                    }
+                    window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
+                    this.setState({openedMembers});
+                }}>
+                    { opened ? <IconFolderOpened/> : <IconFolderClosed/> }
+                </IconButton>
                 <div className={ classes.memberTitle }>{ member.id }</div>
                 <div className={ classes.memberDesc }>{ member.desc || this.state.objectNames[member.id] || '' }</div>
                 <div className={ classes.memberButtons }>
-                    <IconButton title={ I18n.t('Edit') } onClick={ () => {
-                        const openedMembers = [...this.state.openedMembers];
-                        const pos = openedMembers.indexOf(member.id);
-                        if (pos !== -1) {
-                            openedMembers.splice(pos, 1);
-                        } else {
-                            openedMembers.push(member.id);
-                            openedMembers.sort();
-                        }
-                        window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
-                        this.setState({openedMembers});
-                    }}>
-                        { opened ? <IconClose/> : <IconEdit/> }
-                    </IconButton>
                     <IconButton
                         size="small"
                         style={{ marginLeft: 5 }} aria-label="Delete" title={I18n.t('Delete')}
@@ -597,15 +625,16 @@ class SceneMembersForm extends React.Component {
                                 <FormControl className={ classes.setValue }>
                                     <InputLabel>{ onFalseEnabled ? I18n.t('Setpoint by TRUE') : I18n.t('Setpoint') }</InputLabel>
                                     <Select
-                                        value={ member.setIfTrue === true || member.setIfTrue === 'true' ? 'true' : 'false'}
+                                        value={ member.setIfTrue === true || member.setIfTrue === 'true' ? 'true' : (member.setIfTrue === false || member.setIfTrue === 'false' ? 'false' : 'null')}
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].setIfTrue = e.target.value === 'true';
+                                            members[index].setIfTrue = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
                                             this.setStateWithParent({members});
                                         } }
                                     >
                                         <MenuItem value="false">FALSE</MenuItem>
                                         <MenuItem value="true">TRUE</MenuItem>
+                                        <MenuItem value="null">{I18n.t('NOT CHANGE')}</MenuItem>
                                     </Select>
                                 </FormControl>
                                 :
@@ -615,6 +644,19 @@ class SceneMembersForm extends React.Component {
                                         label={ onFalseEnabled ? I18n.t('Setpoint by TRUE') : I18n.t('Setpoint') }
                                         value={ member.setIfTrue === undefined || member.setIfTrue === null ? '' : member.setIfTrue }
                                         className={ classes.setValue }
+                                        InputProps={{
+                                            endAdornment: member.setIfTrue ?
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => {
+                                                        const members = JSON.parse(JSON.stringify(this.state.members));
+                                                        members[index].setIfTrue = null;
+                                                        this.setStateWithParent({members});
+                                                    }}>
+                                                    <ClearIcon />
+                                                </IconButton>
+                                                : undefined,
+                                        }}
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
                                             if (this.state.objectTypes[member.id] === 'number') {
@@ -631,6 +673,19 @@ class SceneMembersForm extends React.Component {
                                         value={ member.setIfTrueTolerance === undefined || member.setIfTrueTolerance === null ? '' : member.setIfTrueTolerance }
                                         title={ I18n.t('Absolute value, not percent') }
                                         className={ classes.setValue }
+                                        InputProps={{
+                                            endAdornment: member.setIfTrueTolerance ?
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => {
+                                                        const members = JSON.parse(JSON.stringify(this.state.members));
+                                                        members[index].setIfTrueTolerance = null;
+                                                        this.setStateWithParent({members});
+                                                    }}>
+                                                    <ClearIcon />
+                                                </IconButton>
+                                                : undefined,
+                                        }}
                                         onChange={ e => {
                                             const members = JSON.parse(JSON.stringify(this.state.members));
                                             members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
@@ -646,15 +701,16 @@ class SceneMembersForm extends React.Component {
                                         <FormControl className={ classes.setValue }>
                                             <InputLabel>{ I18n.t('Setpoint by FALSE') }</InputLabel>
                                             <Select
-                                                value={ member.setIfFalse === true || member.setIfFalse === 'true' ? 'true' : 'false'}
+                                                value={ member.setIfFalse === true || member.setIfFalse === 'true' ? 'true' : (member.setIfFalse === false || member.setIfFalse === 'false' ? 'false' : 'null')}
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
-                                                    members[index].setIfFalse = e.target.value === 'true';
+                                                    members[index].setIfFalse = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
                                                     this.setStateWithParent({members});
                                                 } }
                                             >
                                                 <MenuItem value="false">FALSE</MenuItem>
                                                 <MenuItem value="true">TRUE</MenuItem>
+                                                <MenuItem value="null">{I18n.t('NOT CHANGE')}</MenuItem>
                                             </Select>
                                         </FormControl>
                                         :
@@ -665,6 +721,19 @@ class SceneMembersForm extends React.Component {
                                                 label={ I18n.t('Setpoint by FALSE') }
                                                 value={ member.setIfFalse === undefined || member.setIfFalse === null ? '' : member.setIfFalse }
                                                 className={ classes.setValue }
+                                                InputProps={{
+                                                    endAdornment: member.setIfFalse ?
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => {
+                                                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                                                members[index].setIfFalse = null;
+                                                                this.setStateWithParent({members});
+                                                            }}>
+                                                            <ClearIcon />
+                                                        </IconButton>
+                                                        : undefined,
+                                                }}
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                                     if (this.state.objectTypes[member.id] === 'number') {
@@ -681,6 +750,19 @@ class SceneMembersForm extends React.Component {
                                                 title={ I18n.t('Absolute value, not percent') }
                                                 value={ member.setIfFalseTolerance === undefined || member.setIfFalseTolerance === null ? '' : member.setIfFalseTolerance }
                                                 className={ classes.setValue }
+                                                InputProps={{
+                                                    endAdornment: member.setIfFalseTolerance ?
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => {
+                                                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                                                members[index].setIfFalseTolerance = null;
+                                                                this.setStateWithParent({members});
+                                                            }}>
+                                                            <ClearIcon />
+                                                        </IconButton>
+                                                        : undefined,
+                                                }}
                                                 onChange={ e => {
                                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                                     members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
@@ -749,9 +831,10 @@ class SceneMembersForm extends React.Component {
                         </Box>
                     </div> :
                     (!this.state.virtualGroup ? <div className={ classes.smallOnTrueFalse }>
-                        { (onFalseEnabled ? I18n.t('Set if TRUE') : I18n.t('Setpoint')) + ': ' } <span className={ classes.stateValueTrue }>{ setIfTrue }</span>
-                        { onFalseEnabled ? ' / ' + I18n.t('Set if FALSE') + ': ' : null}
-                        { onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
+                        { setIfTrueVisible ? `${onFalseEnabled ? I18n.t('Set if TRUE') : I18n.t('Setpoint')}: ` : ''}
+                        { setIfTrueVisible ? <span className={ classes.stateValueTrue }>{ setIfTrue }</span> : null }
+                        { setIfFalseVisible && onFalseEnabled ? `${setIfTrueVisible ? ' / ' : ''}${I18n.t('Set if FALSE')}: ` : null}
+                        { setIfFalseVisible && onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
                     </div> : <div style={ {height: 8} }/>)
             }
         </Paper>
@@ -834,6 +917,23 @@ class SceneMembersForm extends React.Component {
                     className={ this.props.classes.btnTestFalse }
                     onClick={ () => this.onWriteScene(false) }
                 ><IconPlay/>{ I18n.t('Test FALSE') }</Button> : null }
+                {this.state.members.length > 1 && this.state.openedMembers.length ? <IconButton
+                    title={I18n.t('Collapse all')}
+                    className={ this.props.classes.btnCollapseAll }
+                    onClick={ () => {
+                        window.localStorage.setItem('Scenes.openedMembers', '[]');
+                        this.setState({openedMembers: []});
+                    } }
+                ><IconCollapseAll/></IconButton> : null }
+                {this.state.members.length > 1 && this.state.openedMembers.length !== this.state.members.length ? <IconButton
+                    title={I18n.t('Expand all')}
+                    className={ this.props.classes.btnExpandAll }
+                    onClick={ () => {
+                        const openedMembers = this.state.members.map(member => member.id);
+                        window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
+                        this.setState({openedMembers});
+                    } }
+                ><IconExpandAll/></IconButton> : null }
             </div>
             <DragDropContext onDragEnd={ this.onDragEnd }>
                 <Droppable droppableId="droppable">
@@ -844,7 +944,7 @@ class SceneMembersForm extends React.Component {
                              style={ this.getListStyle(snapshot.isDraggingOver) }
                         >
                             { this.state.members.map((member, i) =>
-                                <Draggable key={ member.id } draggableId={ member.id } index={ i }>
+                                <Draggable key={ member.id + '_' + i } draggableId={ member.id + '_' + i } index={ i }>
                                     {(provided, snapshot) =>
                                         <div
                                             ref={ provided.innerRef }

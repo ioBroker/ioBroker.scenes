@@ -87,7 +87,9 @@ class SceneForm extends React.Component {
             return {
                 common: sceneObj.common,
                 native: sceneObj.native,
-            }
+            };
+        } else {
+            return null;
         }
     }
 
@@ -211,7 +213,7 @@ class SceneForm extends React.Component {
     }
 
     render() {
-        console.log(this.props.width);
+        // console.log(this.props.width);
         let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, !this.props.oneColumn && this.props.classes.height) }>
             <Box className={ this.props.classes.scroll }>
                 <Box className={ this.props.classes.editItem }>
