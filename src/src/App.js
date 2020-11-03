@@ -43,7 +43,7 @@ import {MdExpandLess as IconCollapse} from 'react-icons/md';
 import {MdExpandMore as IconExpand} from 'react-icons/md';
 import {MdAdd as IconAdd} from 'react-icons/md';
 import {MdModeEdit as IconEdit} from 'react-icons/md';
-import {RiFolderAddLine as IconFolderAdd} from 'react-icons/ri';
+import {MdCreateNewFolder as IconFolderAdd} from 'react-icons/md';
 import {MdClose as IconCancel} from 'react-icons/md';
 import {MdCheck as IconCheck} from 'react-icons/md';
 import {MdSave as IconSave} from 'react-icons/md';
