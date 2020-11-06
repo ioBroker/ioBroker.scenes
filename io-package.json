@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.3.0",
+        "version": "2.3.1",
         "news": {
+            "2.3.1": {
+                "en": "Prevent crash case (Sentry IOBROKER-SCENES-M)",
+                "de": "Absturz verhindern (Sentry IOBROKER-SCENES-M)",
+                "ru": "Предотвращение аварии (Sentry IOBROKER-SCENES-M)",
+                "pt": "Evitar caso de travamento (Sentry IOBROKER-SCENES-M)",
+                "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-M)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-M)",
+                "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-M)",
+                "es": "Prevenir caso de accidente (Sentry IOBROKER-SCENES-M)",
+                "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-M)",
+                "zh-cn": "防止发生崩溃情况（Sentry IOBROKER-SCENES-M）"
+            },
             "2.3.0": {
                 "en": "Fixed GUI errors",
                 "de": "GUI-Fehler behoben",
