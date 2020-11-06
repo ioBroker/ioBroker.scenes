@@ -567,7 +567,7 @@ function activateScene(sceneId, isTrue) {
 
     if (!scenes[sceneId]) {
         adapter.log.error(`Unexpected error: Scene "${sceneId}" does not exist!`);
-        return callback();
+        return;
     }
 
     // all commands must be executed without interval
