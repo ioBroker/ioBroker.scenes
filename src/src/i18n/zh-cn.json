@@ -100,5 +100,7 @@
   "Setpoint by TRUE": "设定值TRUE",
   "Tolerance by TRUE": "TRUE的公差",
   "Setpoint by FALSE": "设定值为FALSE",
-  "Tolerance by FALSE": "公差为FALSE"
+  "Tolerance by FALSE": "公差为FALSE",
+  "NOT CHANGE": "没变",
+  "Edit folder": "编辑资料夹"
 }

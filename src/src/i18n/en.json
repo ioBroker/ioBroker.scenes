@@ -100,5 +100,7 @@
   "Setpoint by TRUE": "Setpoint by TRUE",
   "Tolerance by TRUE": "Tolerance by TRUE",
   "Setpoint by FALSE": "Setpoint by FALSE",
-  "Tolerance by FALSE": "Tolerance by FALSE"
+  "Tolerance by FALSE": "Tolerance by FALSE",
+  "NOT CHANGE": "NOT CHANGE",
+  "Edit folder": "Edit folder"
 }

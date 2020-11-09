@@ -100,5 +100,7 @@
   "Setpoint by TRUE": "Sollwert bei WAHR",
   "Tolerance by TRUE": "Toleranz für WAHR",
   "Setpoint by FALSE": "Sollwert bei FALSE",
-  "Tolerance by FALSE": "Toleranz für FALSCH"
+  "Tolerance by FALSE": "Toleranz für FALSCH",
+  "NOT CHANGE": "NICHT ÄNDERN",
+  "Edit folder": "Ordner bearbeiten"
 }

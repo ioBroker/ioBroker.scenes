@@ -263,9 +263,9 @@ function checkScene(sceneId, stateId, state) {
         let activeFalse = null;
         let activeValue = null;
 
-        const sceneObj = scenes[_sceneId];
+        const sceneObj       = scenes[_sceneId];
         const sceneObjNative = sceneObj.native;
-        const isWithFalse = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
+        const isWithFalse    = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
 
         for (let i = 0; i < sceneObjNative.members.length; i++) {
             // Do not check states with big delays
@@ -624,7 +624,8 @@ function getState(sceneId, stateNumber, callback) {
         }
 
         scenes[sceneId].native.members[stateNumber].actual = state ? state.val : null;
-        // If processing finshed
+
+        // If processing finished
         if (!--scenes[sceneId].count) {
             delete scenes[sceneId].count;
             checkScene(sceneId);

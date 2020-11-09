@@ -100,5 +100,7 @@
   "Setpoint by TRUE": "Consigne par TRUE",
   "Tolerance by TRUE": "Tolérance par TRUE",
   "Setpoint by FALSE": "Consigne par FALSE",
-  "Tolerance by FALSE": "Tolérance par FALSE"
+  "Tolerance by FALSE": "Tolérance par FALSE",
+  "NOT CHANGE": "PAS CHANGER",
+  "Edit folder": "Modifier le dossier"
 }

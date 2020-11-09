@@ -100,5 +100,7 @@
   "Setpoint by TRUE": "Ponto de ajuste por TRUE",
   "Tolerance by TRUE": "Tolerância por TRUE",
   "Setpoint by FALSE": "Setpoint por FALSE",
-  "Tolerance by FALSE": "Tolerância por FALSE"
+  "Tolerance by FALSE": "Tolerância por FALSE",
+  "NOT CHANGE": "NÃO MUDAR",
+  "Edit folder": "Editar pasta"
 }

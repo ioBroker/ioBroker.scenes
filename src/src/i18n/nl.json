@@ -100,5 +100,7 @@
   "Setpoint by TRUE": "Instelpunt door TRUE",
   "Tolerance by TRUE": "Tolerantie door TRUE",
   "Setpoint by FALSE": "Instelpunt door FALSE",
-  "Tolerance by FALSE": "Tolerantie door FALSE"
+  "Tolerance by FALSE": "Tolerantie door FALSE",
+  "NOT CHANGE": "NIET VERANDEREN",
+  "Edit folder": "Bewerk map"
 }
