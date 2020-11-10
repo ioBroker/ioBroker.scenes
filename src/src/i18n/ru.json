@@ -102,5 +102,6 @@
   "Setpoint by FALSE": "Значение при FALSE",
   "Tolerance by FALSE": "Допуск при FALSE",
   "NOT CHANGE": "НЕ ИЗМЕНЯТЬ",
-  "Edit folder": "Редактировать папку"
+  "Edit folder": "Редактировать папку",
+  "Reorder scenes in folders": "Изменить порядок сцен в папках"
 }

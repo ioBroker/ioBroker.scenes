@@ -16,12 +16,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import Toolbar from '@material-ui/core/Toolbar';
 import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
 import Drawer from '@material-ui/core/Drawer';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
 
 // Own
 import Utils from '@iobroker/adapter-react/Components/Utils';
@@ -42,8 +37,6 @@ import {MdFileDownload as IconExport} from 'react-icons/md';
 // import {MdFileUpload as IconImport} from 'react-icons/md';
 import {FaClone as IconClone} from 'react-icons/fa';
 import {FaBars as IconMenu} from 'react-icons/fa';
-import {BsFolderSymlink as IconMoveToFolder} from 'react-icons/bs';
-
 
 const MARGIN_MEMBERS = 20;
 
@@ -142,17 +135,6 @@ function getFolderPrefix(sceneId) {
     return result;
 }
 
-function getFolderList(folder) {
-    let result = [];
-    result.push(folder);
-    Object.values(folder.subFolders).forEach(subFolder =>
-        result = result.concat(getFolderList(subFolder)));
-
-    return result;
-}
-
-const FORBIDDEN_CHARS = /[.\][*,;'"`<>\\?]/g;
-
 class App extends GenericApp {
     constructor(props) {
         const extendedProps = {...props};
@@ -190,8 +172,6 @@ class App extends GenericApp {
             instances: [],
             selectedSceneChanged: false,
             deleteDialog: null,
-            moveDialog: null,
-            newFolder: '',
             selectedSceneData: null,
             exportDialog: false,
             importDialog: false,
@@ -373,6 +353,28 @@ class App extends GenericApp {
             });
     };
 
+    moveScript(oldId, newId) {
+        const scene = this.state.scenes[oldId];
+        if (this.state.selectedSceneId === oldId) {
+            return this.setState({selectedSceneId: newId}, () => this.moveScript(oldId, newId));
+        }
+
+        scene._id = newId;
+
+        return this.socket.delObject(oldId)
+            .then(() => {
+                console.log('Deleted ' + oldId);
+                return this.socket.setObject(scene._id, scene)
+            })
+            .catch(e => this.showError(e))
+            .then(() => {
+                console.log('Set new ID: ' + scene._id);
+                return this.refreshData(newId)
+                    .then(() => this.changeSelectedScene(scene._id))
+                    .catch(e => this.showError(e));
+            });
+    };
+
     renameFolder(folder, newName) {
         return new Promise(resolve => this.setState({changingScene: folder}, () => resolve()))
             .then(() => {
@@ -393,59 +395,6 @@ class App extends GenericApp {
                     .then(() => this.refreshData(folder))
                     .then(() => newSelectedId && this.setState({selectedSceneId: newSelectedId}));
             });
-    }
-
-    renderMoveDialog() {
-        if (!this.state.moveDialog) {
-            return null;
-        }
-
-        const newFolder = this.state.newFolder === '__root__' ? '' : this.state.newFolder;
-        const sceneId = this.state.selectedSceneId.split('.').pop();
-        const newId = 'scene.0.' + newFolder + (newFolder ? '.' : '') + sceneId;
-
-        const isIdUnique = !Object.keys(this.state.scenes).find(id => id === newId);
-
-        return <Dialog
-            open={ true }
-            key="moveDialog"
-            onClose={ () => this.setState({moveDialog: null}) }
-        >
-            <DialogTitle>{ I18n.t('Move to folder') }</DialogTitle>
-            <DialogContent>
-                <FormControl classes={ {root: this.props.classes.width100} }>
-                    <InputLabel shrink={ true }>{ I18n.t('Folder') }</InputLabel>
-                    <Select
-                        className={ this.props.classes.width100 }
-                        value={ this.state.newFolder || '__root__' }
-                        onChange={e => this.setState({newFolder: e.target.value}) }>
-                        { getFolderList(this.state.folders).map(folder =>
-                            <MenuItem
-                                key={ folder.prefix }
-                                value={ folder.prefix || '__root__' }
-                            >
-                                { folder.prefix ? folder.prefix.replace('.', ' > ') : I18n.t('Root') }
-                            </MenuItem>)
-                        }
-                    </Select>
-                </FormControl>
-            </DialogContent>
-            <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                <Button variant="contained" onClick={ () => this.setState({moveDialog: null}) }>
-                    { I18n.t('Cancel') }
-                </Button>
-                <Button
-                    variant="contained"
-                    disabled={ !isIdUnique }
-                    color="primary" onClick={ e =>
-                        this.setState({moveDialog: null}, () =>
-                            this.addSceneToFolderPrefix(this.state.scenes[this.state.selectedSceneId], this.state.newFolder === '__root__' ? '' : this.state.newFolder))
-                    }
-                >
-                    { I18n.t('Move to folder') }
-                </Button>
-            </DialogActions>
-        </Dialog>;
     }
 
     createScene(name, parentId) {
@@ -510,7 +459,7 @@ class App extends GenericApp {
         scene._id = this.state.selectedSceneId;
 
         const folder = getFolderPrefix(scene._id);
-        const newId = 'scene.0.' + (folder ? folder + '.' : '') + scene.common.name.replace(FORBIDDEN_CHARS, '_').replace(/\s/g, '_');
+        const newId = 'scene.0.' + (folder ? folder + '.' : '') + scene.common.name.replace(Utils.FORBIDDEN_CHARS, '_').replace(/\./g, '_').replace(/\s/g, '_');
 
         if (scene._id !== newId) {
             // check if the scene name is unique
@@ -549,7 +498,7 @@ class App extends GenericApp {
         this.setState({selectedSceneChanged, selectedSceneData: scene}, () => cb && cb());
     };
 
-    deleteScene = (id) => {
+    deleteScene(id) {
         return this.socket.delObject(id)
             .then(() => {
                 if (this.state.selectedSceneId === id) {
@@ -678,10 +627,14 @@ class App extends GenericApp {
                 <Button variant="contained" onClick={ () => this.setState({deleteDialog: false}) }>
                     {I18n.t('Cancel')}
                 </Button>
-                <Button variant="contained" color="secondary" onClick={e => {
-                    this.deleteScene(this.state.selectedSceneId);
-                    this.setState({deleteDialog: false});
-                }}>
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={e =>
+                        this.setState({deleteDialog: false}, () =>
+                            this.deleteScene(this.state.selectedSceneId))
+                    }
+                >
                     { I18n.t('Delete') }
                 </Button>
             </DialogActions>
@@ -721,8 +674,6 @@ class App extends GenericApp {
             <IconButton aria-label="Clone" title={ I18n.t('Clone') } onClick={ () => this.cloneScene(this.state.selectedSceneId) }><IconClone/></IconButton>
 
             <IconButton aria-label="Delete" title={ I18n.t('Delete') } onClick={ () => this.setState({deleteDialog: true}) }><IconDelete/></IconButton>
-
-            <IconButton aria-label="Move to folder" title={ I18n.t('Move to folder') } onClick={ () => this.setState({moveDialog: true, newFolder: getFolderPrefix(this.state.selectedSceneId)}) }><IconMoveToFolder/></IconButton>
 
             <IconButton aria-label="Export" title={ I18n.t('Export scene') } onClick={ () => this.setState({exportDialog: true}) }><IconExport/></IconButton>
 
@@ -766,6 +717,7 @@ class App extends GenericApp {
             onCreateFolder={(parent, id) => this.addFolder(parent, id)}
             onCreateScene={parentId => this.createScene(this.getNewSceneId(), parentId)}
             onRenameFolder={(folder, newId) => this.renameFolder(folder, newId)}
+            onMoveScene={(oldId, newId) => this.moveScript(oldId, newId)}
             />;
     }
 
@@ -885,7 +837,6 @@ class App extends GenericApp {
                     }
 
                     { this.renderSceneChangeDialog() }
-                    { this.renderMoveDialog() }
                     { this.renderDeleteDialog() }
                     { this.renderExportImportDialog() }
                     { this.renderError() }

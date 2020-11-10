@@ -102,5 +102,6 @@
   "Setpoint by FALSE": "Sollwert bei FALSE",
   "Tolerance by FALSE": "Toleranz für FALSCH",
   "NOT CHANGE": "NICHT ÄNDERN",
-  "Edit folder": "Ordner bearbeiten"
+  "Edit folder": "Ordner bearbeiten",
+  "Reorder scenes in folders": "Szenen verschieben"
 }

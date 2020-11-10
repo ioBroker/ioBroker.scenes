@@ -102,5 +102,6 @@
   "Setpoint by FALSE": "设定值为FALSE",
   "Tolerance by FALSE": "公差为FALSE",
   "NOT CHANGE": "没变",
-  "Edit folder": "编辑资料夹"
+  "Edit folder": "编辑资料夹",
+  "Reorder scenes in folders": "重新排序文件夹中的场景"
 }

@@ -102,5 +102,6 @@
   "Setpoint by FALSE": "Wartość zadana przez FALSE",
   "Tolerance by FALSE": "Tolerancja przez FAŁSZ",
   "NOT CHANGE": "NIE ZMIENIAĆ",
-  "Edit folder": "Edytuj folder"
+  "Edit folder": "Edytuj folder",
+  "Reorder scenes in folders": "Zmień kolejność scen w folderach"
 }
