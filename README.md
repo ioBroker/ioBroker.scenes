@@ -117,7 +117,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 -->
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 2.3.2 (2020-12-06)
 * (bluefox) Implemented drag&drop for the reorder of scenes in folders
 * (bluefox) Implemented Easy mode
 * (bluefox) Possibility to use set point from other state

@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.3.1",
+        "version": "2.3.2",
         "news": {
+            "2.3.2": {
+                "en": "Implemented drag&drop for the reorder of scenes in folders\nImplemented Easy mode\nPossibility to use set point from other state",
+                "de": "Drag & Drop für die Neuordnung von Szenen in Ordnern implementiert\nEinfacher Modus implementiert\nMöglichkeit, Sollwert aus einem anderen Zustand zu verwenden",
+                "ru": "Реализовано перетаскивание для изменения порядка сцен в папках\nРеализован легкий режим\nВозможность использовать уставку из другого состояния",
+                "pt": "Arrastar e soltar implementado para a reordenação de cenas em pastas\nModo fácil implementado\nPossibilidade de usar ponto de ajuste de outro estado",
+                "nl": "Drag & drop geïmplementeerd voor het herschikken van scènes in mappen\nGeïmplementeerde Easy-modus\nMogelijkheid om het instelpunt uit een andere staat te gebruiken",
+                "fr": "Implémentation du glisser-déposer pour la réorganisation des scènes dans les dossiers\nMode facile implémenté\nPossibilité d'utiliser le point de consigne d'un autre état",
+                "it": "Implementato il drag & drop per il riordino delle scene nelle cartelle\nModalità facile implementata\nPossibilità di utilizzare set point da un altro stato",
+                "es": "Implementado arrastrar y soltar para reordenar escenas en carpetas\nModo fácil implementado\nPosibilidad de usar set point de otro estado",
+                "pl": "Zaimplementowano przeciągnij i upuść w celu zmiany kolejności scen w folderach\nZaimplementowano tryb łatwy\nMożliwość wykorzystania wartości zadanej z innego stanu",
+                "zh-cn": "实现了拖放操作以对文件夹中的场景进行重新排序\n实施简易模式\n可以使用其他状态下的设定点"
+            },
             "2.3.1": {
                 "en": "Prevent crash case (Sentry IOBROKER-SCENES-M)",
                 "de": "Absturz verhindern (Sentry IOBROKER-SCENES-M)",
