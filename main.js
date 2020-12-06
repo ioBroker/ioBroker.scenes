@@ -246,7 +246,7 @@ let scenesTimeout = {};
 // Check if actual states are exactly as desired in the scene
 function checkScene(sceneId, stateId, state) {
     // calculate stacked delay
-    let delay = 0;
+    let delay = 0; // not used actually
     let stacked = false;
     const burstInterval = scenes[sceneId].native.burstInterval;
 
@@ -256,7 +256,7 @@ function checkScene(sceneId, stateId, state) {
         }
 
         // Do not check states with big delays
-        if (delay + scenes[sceneId].native.members[i].delay > 1000) {
+        if (/*delay + */scenes[sceneId].native.members[i].delay > 1000) {
             if (stacked) {
                 delay += scenes[sceneId].native.members[i].delay;
             }
@@ -282,11 +282,23 @@ function checkScene(sceneId, stateId, state) {
         const sceneObj       = scenes[_sceneId];
         const sceneObjNative = sceneObj.native;
         const isWithFalse    = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
+        let stacked = false;
+        let delay = 0; // not used actually
+        const burstInterval = sceneObjNative.burstInterval;
 
         for (let i = 0; i < sceneObjNative.members.length; i++) {
+            if (sceneObjNative.members[i].stackNextDelays) {
+                stacked = true;
+            }
             // Do not check states with big delays
-            if (sceneObjNative.members[i].delay > 1000) {
+            if (/*delay + */sceneObjNative.members[i].delay > 1000) {
+                if (stacked) {
+                    delay += sceneObjNative.members[i].delay;
+                }
                 continue;
+            } else if (stacked) {
+                delay += sceneObjNative.members[i].delay;
+                delay += burstInterval;
             }
 
             // There are some states
@@ -487,7 +499,7 @@ function getSetValue(value) {
             .then(state =>
                 state ? state.val : Promise.reject(`State ${m[1]} is empty`));
     } else {
-        Promise.resolve(value);
+        return Promise.resolve(value);
     }
 }
 

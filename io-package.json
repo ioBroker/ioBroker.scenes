@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.3.2",
+        "version": "2.3.3",
         "news": {
-            "2.3.2": {
+            "2.3.3": {
                 "en": "Implemented drag&drop for the reorder of scenes in folders\nImplemented Easy mode\nPossibility to use set point from other state",
                 "de": "Drag & Drop für die Neuordnung von Szenen in Ordnern implementiert\nEinfacher Modus implementiert\nMöglichkeit, Sollwert aus einem anderen Zustand zu verwenden",
                 "ru": "Реализовано перетаскивание для изменения порядка сцен в папках\nРеализован легкий режим\nВозможность использовать уставку из другого состояния",
