@@ -103,5 +103,13 @@
   "Tolerance by FALSE": "Допуск при FALSE",
   "NOT CHANGE": "НЕ ИЗМЕНЯТЬ",
   "Edit folder": "Редактировать папку",
-  "Reorder scenes in folders": "Изменить порядок сцен в папках"
+  "Reorder scenes in folders": "Изменить порядок сцен в папках",
+  "Suppress confirmation for next 5 minutes": "Отключить подтверждение в течение следующих 5 минут",
+  "Delay": "Задержка",
+  "from start of scene": "с начала сцены",
+  "Stack next delays": "Сложить следующие задержки",
+  "From ID": "Из ID",
+  "Easy mode": "Простой режим",
+  "From ID by TRUE": "Из ID при TRUE",
+  "From ID by FALSE": "Из ID при FALSE"
 }

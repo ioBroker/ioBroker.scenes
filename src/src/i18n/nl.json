@@ -103,5 +103,13 @@
   "Tolerance by FALSE": "Tolerantie door FALSE",
   "NOT CHANGE": "NIET VERANDEREN",
   "Edit folder": "Bewerk map",
-  "Reorder scenes in folders": "Herschik scènes in mappen"
+  "Reorder scenes in folders": "Herschik scènes in mappen",
+  "Suppress confirmation for next 5 minutes": "Onderdruk de bevestiging voor de volgende 5 minuten",
+  "Delay": "Vertraging",
+  "from start of scene": "vanaf het begin van de scène",
+  "Stack next delays": "Stapel de volgende vertragingen",
+  "From ID": "Van ID",
+  "Easy mode": "Gemakkelijke modus",
+  "From ID by TRUE": "Van ID door TRUE",
+  "From ID by FALSE": "Van ID door FALSE"
 }

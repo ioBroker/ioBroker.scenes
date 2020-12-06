@@ -22,6 +22,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 
 // own components
 import I18n from '@iobroker/adapter-react/i18n';
@@ -38,6 +39,7 @@ import {FaFolderOpen as IconFolderOpened} from 'react-icons/fa';
 import ClearIcon from '@material-ui/icons/Close';
 import IconExpandAll from '@material-ui/icons/ExpandMore';
 import IconCollapseAll from '@material-ui/icons/ExpandLess';
+import ListIcon from '@material-ui/icons/Menu';
 
 const TRUE_COLOR       = '#90ee90';
 const FALSE_COLOR      = '#ff9999';
@@ -200,7 +202,12 @@ const styles = theme => ({
         minHeight: 48,
     },
     setValue: {
-        width: 'calc(50% - ' + theme.spacing(1) + 'px)',
+        width: 'calc(70% - ' + (70 + theme.spacing(1)) + 'px)',
+        minWidth: 100,
+        marginRight: theme.spacing(1),
+    },
+    setTolerance: {
+        width: 'calc(30% - ' + (70 + theme.spacing(1)) + 'px)',
         minWidth: 100,
         marginRight: theme.spacing(1),
     },
@@ -212,7 +219,10 @@ const styles = theme => ({
         fontSize: 10,
         fontStyle: 'italic',
         color: '#FF0000',
-    }
+    },
+    fromId: {
+        marginTop: 8,
+    },
 });
 
 class SceneMembersForm extends React.Component {
@@ -232,6 +242,7 @@ class SceneMembersForm extends React.Component {
             objectTypes: {},
             objectNames: {},
             members: JSON.parse(JSON.stringify(props.members)),
+            easy: props.easy,
             writeSceneState: '',
             deleteDialog: null,
             onFalseEnabled: props.onFalseEnabled,
@@ -239,7 +250,12 @@ class SceneMembersForm extends React.Component {
             sceneEnabled: props.sceneEnabled,
             selectedSceneChanged: props.selectedSceneChanged,
             engineId: props.engineId,
+            suppressDeleteConfirm: false,
+            showSelectValueIdDialog: false,
+            showSelectValueIdDialogFor: null,
         };
+
+        this.delButtonRef = React.createRef();
 
         this.engineId = this.state.engineId;
 
@@ -290,6 +306,10 @@ class SceneMembersForm extends React.Component {
         }
         if (props.engineId !== state.engineId) {
             newState.engineId = props.engineId;
+            changed = true;
+        }
+        if (props.easy !== state.easy) {
+            newState.easy = props.easy;
             changed = true;
         }
 
@@ -448,6 +468,14 @@ class SceneMembersForm extends React.Component {
         /> : null;
     }
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.state.deleteDialog && setTimeout(() => {
+            if (this.delButtonRef.current) {
+                this.delButtonRef.current.focus();
+            }
+        }, 50);
+    }
+
     renderDeleteDialog() {
         if (this.state.deleteDialog === null) {
             return;
@@ -460,17 +488,251 @@ class SceneMembersForm extends React.Component {
                 this.setState({deleteDialog: null}) }
             >
                 <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
-
+                <DialogContent>
+                    <FormControlLabel
+                        control={<Checkbox checked={this.state.suppressDeleteConfirm} onChange={() => this.setState({suppressDeleteConfirm: !this.state.suppressDeleteConfirm})} />}
+                        label={I18n.t('Suppress confirmation for next 5 minutes')}
+                    />
+                </DialogContent>
                 <DialogActions>
                     <Button variant="contained" onClick={ () => this.setState({deleteDialog: null}) }>
                         {I18n.t('Cancel')}
                     </Button>
-                    <Button variant="contained" color="secondary" onClick={ e => this.deleteSceneMember(this.state.deleteDialog) }>
+                    <Button variant="contained" color="secondary" ref={this.delButtonRef} onClick={ e => {
+                        if (this.state.suppressDeleteConfirm) {
+                            window.localStorage.setItem('scenes.suppressDeleteConfirm', Date.now().toString());
+                        }
+                        this.deleteSceneMember(this.state.deleteDialog);
+                    } }>
                         { I18n.t('Delete') }
                     </Button>
                 </DialogActions>
             </Dialog>;
     };
+
+    renderSelectStateIdDialog() {
+        if (!this.state.showSelectValueIdDialog) {
+            return null;
+        } else {
+            let setValue;
+            if (this.state.showSelectValueIdDialog === 'true') {
+                setValue = this.state.members[this.state.showSelectValueIdDialogFor].setIfTrue;
+            } else {
+                setValue = this.state.members[this.state.showSelectValueIdDialogFor].setIfFalse;
+            }
+            const m = typeof setValue === 'string' && setValue.match(/^{{([^}]*)}}$/);
+            if (m) {
+                setValue = m[1];
+            }
+
+            return <DialogSelectID
+                imagePrefix={'../..'}
+                key="selectDialogMember"
+                socket={ this.props.socket }
+                dialogName="memberEdit"
+                multiSelect={ false }
+                title={ I18n.t('Select for ') + (this.state.showSelectValueIdDialog === 'true' ? 'TRUE' : 'FALSE') }
+                selected={ setValue }
+                onOk={ id => {
+                    if (id) {
+                        const index = this.state.showSelectValueIdDialogFor;
+                        const members = JSON.parse(JSON.stringify(this.state.members));
+                        if (this.state.showSelectValueIdDialog === 'true') {
+                            members[index].setIfTrue = '{{' + id + '}}';
+                        } else {
+                            members[index].setIfFalse = '{{' + id + '}}';
+                        }
+
+                        this.setState({showSelectValueIdDialog: false, showSelectValueIdDialogFor: null}, () =>
+                            this.setStateWithParent({members}));
+                    }
+                }}
+                onClose={ () => this.setState({showSelectValueIdDialog: false, showSelectValueIdDialogFor: null}) }
+            />;
+        }
+    }
+
+    renderSetValue(classes, index, member, onFalseEnabled, isTrue) {
+        let labelSetValue;
+        let labelTolerance;
+        let setValue;
+        let setValueTolerance;
+        if (isTrue) {
+            setValue = member.setIfTrue;
+        } else {
+            setValue = member.setIfFalse;
+        }
+
+        const m = typeof setValue === 'string' && setValue.match(/^{{([^}]*)}}$/);
+        let fromState = false;
+        if (m) {
+            setValue = m[1];
+            fromState = true;
+        }
+
+        if (isTrue) {
+            if (fromState) {
+                labelSetValue = onFalseEnabled ? I18n.t('From ID by TRUE') : I18n.t('From ID');
+            } else {
+                labelSetValue = onFalseEnabled ? I18n.t('Setpoint by TRUE') : I18n.t('Setpoint');
+            }
+            labelTolerance = (onFalseEnabled ? I18n.t('Tolerance by TRUE') : I18n.t('Tolerance'));
+            setValueTolerance = member.setIfTrueTolerance;
+        } else {
+            labelSetValue = fromState ? I18n.t('From ID by FALSE') :I18n.t('Setpoint by FALSE');
+            labelTolerance = I18n.t('Tolerance by FALSE');
+            setValueTolerance = member.setIfFalseTolerance;
+        }
+
+
+        return <Box className={ classes.p }>
+            {!this.state.easy || fromState ? <FormControlLabel
+                classes={{root: classes.fromId}}
+                control={
+                    <Switch
+                        checked={fromState}
+                        onChange={e => {
+                            const members = JSON.parse(JSON.stringify(this.state.members));
+                            if (e.target.checked) {
+                                if (isTrue) {
+                                    members[index].setIfTrue = '{{}}';
+                                } else {
+                                    members[index].setIfFalse = '{{}}';
+                                }
+                            } else {
+                                if (isTrue) {
+                                    members[index].setIfTrue = null;
+                                } else {
+                                    members[index].setIfFalse = null;
+                                }
+                            }
+                            this.setStateWithParent({members});
+                        }}
+                    />
+                }
+                label="From ID"
+            /> : null }
+            { !fromState && this.state.objectTypes[member.id] === 'boolean' ?
+                <FormControl className={ classes.setValue }>
+                    <InputLabel>{ labelSetValue }</InputLabel>
+                    <Select
+                        value={ setValue === true || setValue === 'true' ? 'true' : (setValue === false || setValue === 'false' ? 'false' : 'null')}
+                        onChange={ e => {
+                            const members = JSON.parse(JSON.stringify(this.state.members));
+                            if (isTrue) {
+                                members[index].setIfTrue = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
+                            } else {
+                                members[index].setIfFalse = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
+                            }
+
+                            this.setStateWithParent({members});
+                        } }
+                    >
+                        <MenuItem value="false">FALSE</MenuItem>
+                        <MenuItem value="true">TRUE</MenuItem>
+                        <MenuItem value="null">{I18n.t('NOT CHANGE')}</MenuItem>
+                    </Select>
+                </FormControl>
+                :
+                <React.Fragment>
+                    {fromState ?
+                        <TextField
+                            fullWidth
+                            InputLabelProps={{shrink: true}}
+                            label={labelSetValue}
+                            value={setValue || ''}
+                            readOnly
+                            className={classes.setValue}
+                            InputProps={{
+                                endAdornment:
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => this.setState({showSelectValueIdDialog: isTrue ? 'true' : 'false', showSelectValueIdDialogFor: index})}>
+                                        <ListIcon/>
+                                    </IconButton>,
+                            }}
+                        />
+                        :
+                        <TextField
+                            fullWidth
+                            InputLabelProps={{shrink: true}}
+                            label={labelSetValue}
+                            value={setValue === undefined || setValue === null ? '' : setValue}
+                            className={classes.setValue}
+                            InputProps={{
+                                endAdornment: setValue ?
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => {
+                                            const members = JSON.parse(JSON.stringify(this.state.members));
+                                            if (isTrue) {
+                                                members[index].setIfTrue = null;
+                                            } else {
+                                                members[index].setIfFalse = null;
+                                            }
+                                            this.setStateWithParent({members});
+                                        }}>
+                                        <ClearIcon/>
+                                    </IconButton>
+                                    : undefined,
+                            }}
+                            onChange={e => {
+                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                if (this.state.objectTypes[member.id] === 'number') {
+                                    if (isTrue) {
+                                        members[index].setIfTrue = parseFloat(e.target.value.replace(',', '.'));
+                                    } else {
+                                        members[index].setIfFalse = parseFloat(e.target.value.replace(',', '.'));
+                                    }
+                                } else {
+                                    if (isTrue) {
+                                        members[index].setIfTrue = e.target.value;
+                                    } else {
+                                        members[index].setIfFalse = e.target.value;
+                                    }
+                                }
+
+                                this.setStateWithParent({members});
+                            }}
+                        />
+                    }
+
+                    {!this.state.easy && this.state.objectTypes[member.id] !== 'boolean' ? <TextField
+                        InputLabelProps={ {shrink: true} }
+                        label={ '± ' + labelTolerance }
+                        value={ setValueTolerance === undefined || setValueTolerance === null ? '' : setValueTolerance }
+                        title={ I18n.t('Absolute value, not percent') }
+                        className={ classes.setTolerance }
+                        InputProps={{
+                            endAdornment: setValueTolerance ?
+                                <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                        const members = JSON.parse(JSON.stringify(this.state.members));
+                                        if (isTrue) {
+                                            members[index].setIfTrueTolerance = null;
+                                        } else {
+                                            members[index].setIfFalseTolerance = null;
+                                        }
+                                        this.setStateWithParent({members});
+                                    }}>
+                                    <ClearIcon />
+                                </IconButton>
+                                : undefined,
+                        }}
+                        onChange={ e => {
+                            const members = JSON.parse(JSON.stringify(this.state.members));
+                            if (isTrue) {
+                                members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
+                            } else {
+                                members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
+                            }
+                            this.setStateWithParent({members});
+                        } }/> : null}
+                </React.Fragment>
+            }
+        </Box>;
+    }
 
     renderMember = (member, index) => {
         let value = null;
@@ -559,12 +821,21 @@ class SceneMembersForm extends React.Component {
         }
 
         // calculate enabled states
-        let countEnabled = 0;
+        let delay = 0;
+        let stacked = false;
         for (let u = 0; u < index; u++) {
             if (!this.state.members[u].disabled) {
-                countEnabled++;
+                if (this.state.members[u].stackNextDelays) {
+                    stacked = true;
+                }
+                if (stacked) {
+                    delay += (this.state.members[u].delay || 0);
+                }
+                delay += this.props.intervalBetweenCommands;
             }
         }
+
+        delay += (member.delay || 0);
 
         return <Paper key={ member.id + '_' + index } className={ clsx(classes.memberCard, member.disabled && classes.disabled) }>
             <div className={ classes.memberToolbar }>
@@ -588,7 +859,19 @@ class SceneMembersForm extends React.Component {
                     <IconButton
                         size="small"
                         style={{ marginLeft: 5 }} aria-label="Delete" title={I18n.t('Delete')}
-                        onClick={ () => this.setState({deleteDialog: member.id}) }>
+                        onClick={ () => {
+                            const suppressDeleteConfirm = window.localStorage.getItem('scenes.suppressDeleteConfirm');
+                            if (suppressDeleteConfirm) {
+                                if (Date.now() - parseInt(suppressDeleteConfirm, 10) < 300000) {
+                                    this.deleteSceneMember(member.id);
+                                } else {
+                                    window.localStorage.removeItem('scenes.suppressDeleteConfirm');
+                                    this.setState({deleteDialog: member.id});
+                                }
+                            } else {
+                                this.setState({deleteDialog: member.id, suppressDeleteConfirm: false});
+                            }
+                        } }>
                         <IconDelete/>
                     </IconButton>
                     <Switch
@@ -603,8 +886,9 @@ class SceneMembersForm extends React.Component {
                     { value }
                 </div>
             </div>
-            <div>{ member.desc } { !opened && !member.disabled && (this.props.intervalBetweenCommands || member.delay) ?
-                <span> <IconClock/> { this.props.intervalBetweenCommands * countEnabled + (member.delay || 0) + I18n.t('ms') + ' ' + I18n.t('from scene start')}</span> : null }</div>
+            <div>{ member.desc } { !member.disabled && (this.props.intervalBetweenCommands || member.delay) ?
+                <span> <IconClock/> { delay + I18n.t('ms') + ' ' + I18n.t('from scene start')}</span> : null }
+            </div>
             {
                 opened ?
                     <div>
@@ -620,215 +904,83 @@ class SceneMembersForm extends React.Component {
                                 }}
                             />
                         </Box>*/ }
-                        { !this.state.virtualGroup ? <Box className={ classes.p }>
-                            { this.state.objectTypes[member.id] === 'boolean' ?
-                                <FormControl className={ classes.setValue }>
-                                    <InputLabel>{ onFalseEnabled ? I18n.t('Setpoint by TRUE') : I18n.t('Setpoint') }</InputLabel>
-                                    <Select
-                                        value={ member.setIfTrue === true || member.setIfTrue === 'true' ? 'true' : (member.setIfTrue === false || member.setIfTrue === 'false' ? 'false' : 'null')}
-                                        onChange={ e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].setIfTrue = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
-                                            this.setStateWithParent({members});
-                                        } }
-                                    >
-                                        <MenuItem value="false">FALSE</MenuItem>
-                                        <MenuItem value="true">TRUE</MenuItem>
-                                        <MenuItem value="null">{I18n.t('NOT CHANGE')}</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                :
-                                <Box className={ classes.p }>
-                                    <TextField
-                                        InputLabelProps={ {shrink: true} }
-                                        label={ onFalseEnabled ? I18n.t('Setpoint by TRUE') : I18n.t('Setpoint') }
-                                        value={ member.setIfTrue === undefined || member.setIfTrue === null ? '' : member.setIfTrue }
-                                        className={ classes.setValue }
-                                        InputProps={{
-                                            endAdornment: member.setIfTrue ?
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => {
+                        { !this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null }
+                        { !this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}
+                        {!this.state.easy ?
+                            <Box className={classes.p}>
+                                <Grid container spacing={4}>
+                                    <Grid item xs={12} sm={4}>
+                                        <TextField
+                                            fullWidth
+                                            InputLabelProps={{shrink: true}}
+                                            label={I18n.t('Delay (ms)')}
+                                            title={I18n.t(
+                                                'Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start',
+                                                this.props.intervalBetweenCommands,
+                                                this.props.intervalBetweenCommands * index + (member.delay || 0)
+                                            )}
+                                            helperText={stacked ? I18n.t('from previous state') : I18n.t('from start of scene')}
+                                            value={member.delay || 0}
+                                            min={0}
+                                            type="number"
+                                            onChange={e => {
+                                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                                members[index].delay = parseInt(e.target.value, 10);
+                                                this.setStateWithParent({members});
+                                            }}/>
+                                    </Grid>
+                                    <Grid item xs={12} sm={4}>
+                                        {!stacked ? <FormControlLabel
+                                            label={I18n.t('Stack next delays')}
+                                            control={
+                                                <Checkbox
+                                                    checked={!!member.stackNextDelays}
+                                                    onChange={e => {
                                                         const members = JSON.parse(JSON.stringify(this.state.members));
-                                                        members[index].setIfTrue = null;
+                                                        members[index].stackNextDelays = e.target.checked;
                                                         this.setStateWithParent({members});
-                                                    }}>
-                                                    <ClearIcon />
-                                                </IconButton>
-                                                : undefined,
-                                        }}
-                                        onChange={ e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            if (this.state.objectTypes[member.id] === 'number') {
-                                                members[index].setIfTrue = parseFloat(e.target.value.replace(',', '.'));
-                                            } else {
-                                                members[index].setIfTrue = e.target.value;
-                                            }
-
-                                            this.setStateWithParent({members});
-                                         } }/>
-                                    <TextField
-                                        InputLabelProps={ {shrink: true} }
-                                        label={ '± ' + (onFalseEnabled ? I18n.t('Tolerance by TRUE') : I18n.t('Tolerance')) }
-                                        value={ member.setIfTrueTolerance === undefined || member.setIfTrueTolerance === null ? '' : member.setIfTrueTolerance }
-                                        title={ I18n.t('Absolute value, not percent') }
-                                        className={ classes.setValue }
-                                        InputProps={{
-                                            endAdornment: member.setIfTrueTolerance ?
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => {
+                                                    }}
+                                                />
+                                            }/> : null}
+                                    </Grid>
+                                    <Grid item xs={12} sm={4}>
+                                        <FormControlLabel
+                                            label={I18n.t('Stop already started commands')}
+                                            control={
+                                                <Checkbox
+                                                    checked={member.stopAllDelays}
+                                                    onChange={e => {
                                                         const members = JSON.parse(JSON.stringify(this.state.members));
-                                                        members[index].setIfTrueTolerance = null;
+                                                        members[index].stopAllDelays = e.target.checked;
                                                         this.setStateWithParent({members});
-                                                    }}>
-                                                    <ClearIcon />
-                                                </IconButton>
-                                                : undefined,
-                                        }}
-                                        onChange={ e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
-                                            this.setStateWithParent({members});
-                                        } }/>
-                                </Box>
-                            }
-                        </Box> : null }
-                        { !this.state.virtualGroup && this.state.onFalseEnabled ?
-                            <Box className={ classes.p }>
-                                {
-                                    this.state.objectTypes[member.id] === 'boolean' ?
-                                        <FormControl className={ classes.setValue }>
-                                            <InputLabel>{ I18n.t('Setpoint by FALSE') }</InputLabel>
-                                            <Select
-                                                value={ member.setIfFalse === true || member.setIfFalse === 'true' ? 'true' : (member.setIfFalse === false || member.setIfFalse === 'false' ? 'false' : 'null')}
-                                                onChange={ e => {
-                                                    const members = JSON.parse(JSON.stringify(this.state.members));
-                                                    members[index].setIfFalse = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
-                                                    this.setStateWithParent({members});
-                                                } }
-                                            >
-                                                <MenuItem value="false">FALSE</MenuItem>
-                                                <MenuItem value="true">TRUE</MenuItem>
-                                                <MenuItem value="null">{I18n.t('NOT CHANGE')}</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                        :
-                                        <Box className={ classes.p }>
-                                            <TextField
-                                                fullWidth
-                                                InputLabelProps={ {shrink: true} }
-                                                label={ I18n.t('Setpoint by FALSE') }
-                                                value={ member.setIfFalse === undefined || member.setIfFalse === null ? '' : member.setIfFalse }
-                                                className={ classes.setValue }
-                                                InputProps={{
-                                                    endAdornment: member.setIfFalse ?
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => {
-                                                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                                                members[index].setIfFalse = null;
-                                                                this.setStateWithParent({members});
-                                                            }}>
-                                                            <ClearIcon />
-                                                        </IconButton>
-                                                        : undefined,
-                                                }}
-                                                onChange={ e => {
-                                                    const members = JSON.parse(JSON.stringify(this.state.members));
-                                                    if (this.state.objectTypes[member.id] === 'number') {
-                                                        members[index].setIfFalse = parseFloat(e.target.value.replace(',', '.'));
-                                                    } else {
-                                                        members[index].setIfFalse = e.target.value;
-                                                    }
-                                                    this.setStateWithParent({members});
-                                                } }
-                                            />
-                                            <TextField
-                                                InputLabelProps={ {shrink: true} }
-                                                label={ '± ' + I18n.t('Tolerance by FALSE') }
-                                                title={ I18n.t('Absolute value, not percent') }
-                                                value={ member.setIfFalseTolerance === undefined || member.setIfFalseTolerance === null ? '' : member.setIfFalseTolerance }
-                                                className={ classes.setValue }
-                                                InputProps={{
-                                                    endAdornment: member.setIfFalseTolerance ?
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => {
-                                                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                                                members[index].setIfFalseTolerance = null;
-                                                                this.setStateWithParent({members});
-                                                            }}>
-                                                            <ClearIcon />
-                                                        </IconButton>
-                                                        : undefined,
-                                                }}
-                                                onChange={ e => {
-                                                    const members = JSON.parse(JSON.stringify(this.state.members));
-                                                    members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
-                                                    this.setStateWithParent({members});
-                                                } }
-                                            />
-                                        </Box>
-                                }
-                            </Box>
-                            : null}
-                        <Box className={ classes.p }>
-                            <Grid container spacing={ 4 }>
-                                <Grid item xs={ 12 } sm={ 6 }>
-                                    <TextField
-                                        fullWidth
-                                        InputLabelProps={{shrink: true}}
-                                        label={ I18n.t('Delay from start of scene (ms)')}
-                                        title={ I18n.t(
-                                            'Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start',
-                                            this.props.intervalBetweenCommands,
-                                            this.props.intervalBetweenCommands * index + (member.delay || 0)
-                                        )}
-                                        value={ member.delay || 0}
-                                        min={ 0 }
-                                        type="number"
-                                        onChange={e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].delay = parseInt(e.target.value, 10);
-                                            this.setStateWithParent({members});
-                                        }}/>
+                                                    }}
+                                                />
+                                            }/>
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={ 12 } sm={ 6 }>
-                                    <FormControlLabel
-                                        label={ I18n.t('Stop already started commands') }
-                                        control={
-                                            <Checkbox
-                                                checked={ member.stopAllDelays }
-                                                onChange={ e => {
-                                                    const members = JSON.parse(JSON.stringify(this.state.members));
-                                                    members[index].stopAllDelays = e.target.checked;
-                                                    this.setStateWithParent({members});
-                                                } }
-                                            />
+                            </Box> : null
+                        }
+                        {!this.state.easy ?
+                            <Box className={classes.p}>
+                                <FormControlLabel
+                                    label={I18n.t('Do not overwrite state if it has the required value')}
+                                    title={
+                                        I18n.t('For example, if the value is already at "%s" and "%s" is the setpoint, then write the value anyway if this checkbox is activated.',
+                                            member.setIfTrue === undefined || member.setIfTrue === null ? 'null' : member.setIfTrue.toString(),
+                                            member.setIfTrue === undefined || member.setIfTrue === null ? 'null' : member.setIfTrue.toString())
+                                    }
+                                    control={
+                                        <Checkbox
+                                            checked={!!member.doNotOverwrite}
+                                            onChange={e => {
+                                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                                members[index].doNotOverwrite = e.target.checked;
+                                                this.setStateWithParent({members});
+                                            }}
+                                        />
                                     }/>
-                                </Grid>
-                            </Grid>
-                        </Box>
-                        <Box className={ classes.p }>
-                            <FormControlLabel
-                                label={ I18n.t('Do not overwrite state if it has the required value') }
-                                title={
-                                    I18n.t('For example, if the value is already at "%s" and "%s" is the setpoint, then write the value anyway if this checkbox is activated.',
-                                        member.setIfTrue === undefined || member.setIfTrue === null ? 'null' : member.setIfTrue.toString(),
-                                        member.setIfTrue === undefined || member.setIfTrue === null ? 'null' : member.setIfTrue.toString())
-                                }
-                                control={
-                                    <Checkbox
-                                        checked={ !!member.doNotOverwrite }
-                                        onChange={ e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].doNotOverwrite = e.target.checked;
-                                            this.setStateWithParent({members});
-                                        } }
-                                    />
-                            }/>
-                        </Box>
+                            </Box> : null
+                        }
                     </div> :
                     (!this.state.virtualGroup ? <div className={ classes.smallOnTrueFalse }>
                         { setIfTrueVisible ? `${onFalseEnabled ? I18n.t('Set if TRUE') : I18n.t('Setpoint')}: ` : ''}
@@ -862,9 +1014,7 @@ class SceneMembersForm extends React.Component {
         ...draggableStyle
     });
 
-    getListStyle = isDraggingOver => ({
-        background: isDraggingOver ? 'lightblue' : 'inherit',
-    });
+    getListStyle = isDraggingOver => ({background: isDraggingOver ? 'lightblue' : 'inherit'});
 
     render = () => {
         let sceneState = this.state.states[this.props.sceneId];
@@ -967,7 +1117,8 @@ class SceneMembersForm extends React.Component {
         return [
             result,
             this.renderDeleteDialog(),
-            this.renderSelectIdDialog()
+            this.renderSelectIdDialog(),
+            this.renderSelectStateIdDialog(),
         ];
     }
 }
@@ -980,6 +1131,8 @@ SceneMembersForm.propTypes = {
     sceneId: PropTypes.string,
     onFalseEnabled: PropTypes.bool,
     virtualGroup: PropTypes.bool,
+    members: PropTypes.array,
+    easy: PropTypes.bool,
     sceneEnabled: PropTypes.bool,
     selectedSceneChanged: PropTypes.bool,
     intervalBetweenCommands: PropTypes.number,

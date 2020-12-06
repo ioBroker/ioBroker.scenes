@@ -422,6 +422,7 @@ class App extends GenericApp {
                     cron: null,
                     astro: null
                 },
+                easy: true,
                 members: []
             },
             type: 'state'
@@ -730,6 +731,7 @@ class App extends GenericApp {
             selectedSceneChanged={ this.state.selectedSceneChanged }
             sceneEnabled={ this.state.selectedSceneData.common.enabled }
             members={ this.state.selectedSceneData.native.members }
+            easy={ !!this.state.selectedSceneData.native.easy }
             socket={ this.socket }
             onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
             virtualGroup={ this.state.selectedSceneData.native.virtualGroup }

@@ -103,5 +103,13 @@
   "Tolerance by FALSE": "公差为FALSE",
   "NOT CHANGE": "没变",
   "Edit folder": "编辑资料夹",
-  "Reorder scenes in folders": "重新排序文件夹中的场景"
+  "Reorder scenes in folders": "重新排序文件夹中的场景",
+  "Suppress confirmation for next 5 minutes": "取消确认接下来的5分钟",
+  "Delay": "延迟",
+  "from start of scene": "从场景开始",
+  "Stack next delays": "堆叠下一个延迟",
+  "From ID": "来自ID",
+  "Easy mode": "简易模式",
+  "From ID by TRUE": "从ID按TRUE",
+  "From ID by FALSE": "从ID（按FALSE）"
 }

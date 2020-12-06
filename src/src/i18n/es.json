@@ -103,5 +103,13 @@
   "Tolerance by FALSE": "Tolerancia por FALSO",
   "NOT CHANGE": "SIN CAMBIO",
   "Edit folder": "Editar carpeta",
-  "Reorder scenes in folders": "Reordenar escenas en carpetas"
+  "Reorder scenes in folders": "Reordenar escenas en carpetas",
+  "Suppress confirmation for next 5 minutes": "Suprime la confirmación durante los próximos 5 minutos",
+  "Delay": "Retrasar",
+  "from start of scene": "desde el inicio de la escena",
+  "Stack next delays": "Apilar próximos retrasos",
+  "From ID": "Desde ID",
+  "Easy mode": "Modo fácil",
+  "From ID by TRUE": "De ID por TRUE",
+  "From ID by FALSE": "De ID por FALSE"
 }

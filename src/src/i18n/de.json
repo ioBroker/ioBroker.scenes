@@ -25,7 +25,7 @@
   "Instance": "Instanz",
   "Interval between commands (ms)": "Intervall zwischen Befehlen (ms)",
   "Virtual group": "Virtuelle Gruppe",
-  "Set value if false": "Setzen den Wert bei FALSE",
+  "Set value if false": "Werte bei FALSE",
   "Trigger for TRUE": "Trigger für TRUE",
   "Trigger ID": "Trigger ID",
   "Condition": "Bedingung",
@@ -75,7 +75,7 @@
   "tooltip_editObject": "Objekt bearbeiten",
   "tooltip_deleteObject": "Objekt löschen",
   "tooltip_customConfig": "die Einstellungen",
-  "tooltip_copyState": "Kopieren Sie den Statuswert in die Zwischenablage",
+  "tooltip_copyState": "Den Statuswert in die Zwischenablage kopieren",
   "tooltip_editState": "Statuswert ändern",
   "filter_id": "ID",
   "filter_name": "Name",
@@ -103,5 +103,13 @@
   "Tolerance by FALSE": "Toleranz für FALSCH",
   "NOT CHANGE": "NICHT ÄNDERN",
   "Edit folder": "Ordner bearbeiten",
-  "Reorder scenes in folders": "Szenen verschieben"
+  "Reorder scenes in folders": "Szenen verschieben",
+  "Suppress confirmation for next 5 minutes": "Die Bestätigung für die nächsten 5 Minuten unterdrücken ",
+  "Delay": "Verzögern",
+  "from start of scene": "vom Beginn der Szene",
+  "Stack next delays": "Stapeln nächste Verzögerungen",
+  "From ID": "Aus ID",
+  "Easy mode": "Einfacher Modus",
+  "From ID by TRUE": "Aus ID bei TRUE",
+  "From ID by FALSE": "Aus ID bei FALSE"
 }

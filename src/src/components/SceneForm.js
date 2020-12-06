@@ -76,6 +76,14 @@ class SceneForm extends React.Component {
             showDialog: null,
             sceneId: props.scene._id,
         };
+
+        const inputs = ['Trigger', 'Value', 'Cron', 'Name', 'Description'];
+        this.inputs = {};
+        inputs.map(name => this.inputs[name] = {
+            ref:   React.createRef(),
+            start: 0,
+            end:   0,
+        });
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -144,10 +152,16 @@ class SceneForm extends React.Component {
                     <Grid container spacing={1}>
                         <Grid item xs={8}>
                             <TextField
+                                inputRef={this.inputs.Trigger.ref}
                                 fullWidth
                                 InputLabelProps={ {shrink: true} }
                                 label={ I18n.t('Trigger ID') }
                                 value={ on.trigger.id }
+
+                                onFocus={() => this.saveCursorPosition('Trigger')}
+                                onKeyDown={() => this.saveCursorPosition('Trigger')}
+                                onChange={() => this.saveCursorPosition('Trigger')}
+
                                 onClick={ () => {
                                     this.setState({
                                         showDialog: id => {
@@ -157,7 +171,7 @@ class SceneForm extends React.Component {
                                             this.setStateWithParent({native});
                                         }
                                     });
-                                } }
+                                }}
                             />
                         </Grid>
 
@@ -183,10 +197,16 @@ class SceneForm extends React.Component {
                         </Grid>
                         <Grid item xs={2}>
                             <TextField
+                                inputRef={this.inputs.Value.ref}
                                 fullWidth
                                 InputLabelProps= {{shrink: true} } label={ I18n.t('Value') }
                                 value={ on.trigger.value || '' }
+
+                                onFocus={() => this.saveCursorPosition('Value')}
+                                onKeyDown={() => this.saveCursorPosition('Value')}
+
                                 onChange={ e => {
+                                    this.saveCursorPosition('Value');
                                     const native = JSON.parse(JSON.stringify(this.state.native));
                                     native[name].trigger.value = e.target.value;
                                     this.setStateWithParent({native});
@@ -198,11 +218,17 @@ class SceneForm extends React.Component {
             </div>,
             <div key="cron" className={ this.props.classes.editItem }>
                 <TextField
+                    inputRef={this.inputs.Cron.ref}
                     fullWidth
                     InputLabelProps={{shrink: true}}
                     label={ name === 'onTrue' ? I18n.t('On time (CRON expression)') : I18n.t('Off time (CRON expression)')}
                     value={ on.cron || '' }
+
+                    onFocus={() => this.saveCursorPosition('Cron')}
+                    onKeyDown={() => this.saveCursorPosition('Cron')}
+
                     onChange={e => {
+                        this.saveCursorPosition('Cron');
                         const native = JSON.parse(JSON.stringify(this.state.native));
                         native[name].cron = e.target.value;
                         this.setStateWithParent({native});
@@ -212,34 +238,65 @@ class SceneForm extends React.Component {
         ];
     }
 
+    saveCursorPosition = name => {
+        this.inputs[name].start = this.inputs[name].ref.current.selectionStart;
+        this.inputs[name].end   = this.inputs[name].ref.current.selectionEnd;
+    }
+
+    componentDidUpdate() {
+        // If there was a request to update the selection via setState...
+        // Update the selection.
+        Object.keys(this.inputs).forEach(name => {
+            if (this.inputs[name].ref.current) {
+                if (this.inputs[name].ref.current.selectionStart !== this.inputs[name].start) {
+                    this.inputs[name].ref.current.selectionStart = this.inputs[name].start;
+                }
+                if (this.inputs[name].ref.current.selectionEnd   !== this.inputs[name].end) {
+                    this.inputs[name].ref.current.selectionEnd   = this.inputs[name].end;
+                }
+            }
+        });
+    }
+
     render() {
-        // console.log(this.props.width);
         let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, !this.props.oneColumn && this.props.classes.height) }>
             <Box className={ this.props.classes.scroll }>
                 <Box className={ this.props.classes.editItem }>
                     <TextField
+                        inputRef={this.inputs.Name.ref}
                         fullWidth
                         InputLabelProps={ {shrink: true} }
                         label={ I18n.t('Scene name') }
                         value={ this.state.common.name }
+
+                        onFocus={() => this.saveCursorPosition('Name')}
+                        onKeyDown={() => this.saveCursorPosition('Name')}
+
                         onChange={ e => {
-                           const common = JSON.parse(JSON.stringify(this.state.common));
-                           common.name = e.target.value;
-                           this.setStateWithParent({common});
-                       } }/>
+                            this.saveCursorPosition('Name');
+                            const common = JSON.parse(JSON.stringify(this.state.common));
+                            common.name = e.target.value;
+                            this.setStateWithParent({common});
+                        }}/>
                 </Box>
                 <Box className={ this.props.classes.editItem }>
                     <TextField
+                        inputRef={this.inputs.Description.ref}
                         fullWidth
                         InputLabelProps={ {shrink: true} }
                         label={ I18n.t('Scene description') }
                         value={ this.state.common.desc }
+
+                        onFocus={() => this.saveCursorPosition('Description')}
+                        onKeyDown={() => this.saveCursorPosition('Description')}
+
                         onChange={ e => {
-                               const common = JSON.parse(JSON.stringify(this.state.common));
-                               common.desc = e.target.value;
-                               this.setStateWithParent({common});
-                           }
-                        }/>
+                            this.saveCursorPosition('Description');
+                            const common = JSON.parse(JSON.stringify(this.state.common));
+                            common.desc = e.target.value;
+                            this.setStateWithParent({common});
+                        }}
+                    />
                 </Box>
                 <Box className={ this.props.classes.editItem }>
                     <Grid container spacing={ 1 }>
@@ -283,12 +340,14 @@ class SceneForm extends React.Component {
                                 style={{paddingTop: 10}}
                                 title={ I18n.t('virtual_group_tooltip') }
                                 label={ I18n.t('Virtual group') } control={
-                                <Checkbox checked={this.state.native.virtualGroup}
-                                          onChange={e => {
-                                              const native = JSON.parse(JSON.stringify(this.state.native));
-                                              native.virtualGroup = e.target.checked;
-                                              this.setStateWithParent({native});
-                                          }}/>
+                                <Checkbox
+                                    checked={this.state.native.virtualGroup}
+                                      onChange={e => {
+                                          const native = JSON.parse(JSON.stringify(this.state.native));
+                                          native.virtualGroup = e.target.checked;
+                                          this.setStateWithParent({native});
+                                      }}
+                                />
                             }/>
                         </Grid>
                         <Grid item xs={ 12 } sm={ 6 }>
@@ -299,13 +358,32 @@ class SceneForm extends React.Component {
                                     control={
                                           <Checkbox
                                               checked={ this.state.native.onFalse.enabled }
-                                                    onChange={e => {
-                                                        const native = JSON.parse(JSON.stringify(this.state.native));
-                                                        native.onFalse.enabled = e.target.checked;
-                                                        this.setStateWithParent({native});
-                                                    }}/>}
+                                                onChange={e => {
+                                                    const native = JSON.parse(JSON.stringify(this.state.native));
+                                                    native.onFalse.enabled = e.target.checked;
+                                                    this.setStateWithParent({native});
+                                                }}
+                                          />}
                                 />
                                 : null}
+                        </Grid>
+                    </Grid>
+                </Box>
+                <Box className={ this.props.classes.editItem }>
+                    <Grid container spacing={1}>
+                        <Grid item xs={ 12 } sm={ 6 }>
+                            <FormControlLabel
+                                style={{paddingTop: 10}}
+                                label={ I18n.t('Easy mode') } control={
+                                <Checkbox
+                                    checked={this.state.native.easy}
+                                      onChange={e => {
+                                          const native = JSON.parse(JSON.stringify(this.state.native));
+                                          native.easy = e.target.checked;
+                                          this.setStateWithParent({native});
+                                      }}
+                                />
+                            }/>
                         </Grid>
                     </Grid>
                 </Box>
