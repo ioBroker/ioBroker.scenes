@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.3.3",
+        "version": "2.3.4",
         "news": {
+            "2.3.4": {
+                "en": "Prevent crash case (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "de": "Absturz verhindern (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "ru": "Случай предотвращения сбоя (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "pt": "Evitar caso de falha (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "es": "Caso de prevención de accidentes (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-X，IOBROKER-SCENES-V）"
+            },
             "2.3.3": {
                 "en": "Implemented drag&drop for the reorder of scenes in folders\nImplemented Easy mode\nPossibility to use set point from other state",
                 "de": "Drag & Drop für die Neuordnung von Szenen in Ordnern implementiert\nEinfacher Modus implementiert\nMöglichkeit, Sollwert aus einem anderen Zustand zu verwenden",
