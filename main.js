@@ -320,8 +320,14 @@ function checkScene(sceneId, stateId, state) {
                     activeValue = 'uncertain';
                 }
             } else {
-                const setIfTrue  = await getSetValue(sceneObjNative.members[i].setIfTrue);
-                const setIfFalse = await getSetValue(sceneObjNative.members[i].setIfFalse);
+                let setIfTrue;
+                let setIfFalse;
+                try {
+                    setIfTrue = await getSetValue(sceneObjNative.members[i].setIfTrue);
+                    setIfFalse = await getSetValue(sceneObjNative.members[i].setIfFalse);
+                } catch (e) {
+                    adapter.log.warn('Error while getting True/False states: ' +  e);
+                }
 
                 if (setIfTrue !== null && setIfTrue !== undefined) {
                     if (sceneObjNative.members[i].setIfTrueTolerance) {
@@ -512,13 +518,15 @@ function activateSceneState(sceneId, state, isTrue) {
     const stateObj = scenes[sceneId].native.members[state];
     let desiredValue;
     if (!scenes[sceneId].native.virtualGroup) {
-        desiredValue = isTrue ? stateObj.setIfTrue : stateObj.setIfFalse;
+        if (stateObj) {
+            desiredValue = isTrue ? stateObj.setIfTrue : stateObj.setIfFalse;
+        }
     } else {
         desiredValue = isTrue;
     }
 
     if (desiredValue === null || desiredValue === undefined) {
-        return adapter.log.debug(`Ignore in "${sceneId}" the ${state} by ${isTrue}, as defined as NULL.`);
+        return adapter.log.debug(`Ignore in "${sceneId}" the ${state} by ${isTrue}, is defined as NULL.`);
     }
 
     // calculate stacked delay
