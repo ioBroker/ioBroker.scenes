@@ -353,49 +353,53 @@ function checkScene(sceneId, stateId, state) {
             }
         }
 
-        if (sceneObjNative.virtualGroup) {
-            if (activeValue !== null) {
-                if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
-                    sceneObj.value.val = activeValue;
-                    sceneObj.value.ack = true;
-
-                    adapter.setForeignState(_sceneId, activeValue, true);
-                }
-            }
-        } else {
-            if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
-                if (activeTrue) {
-                    if (sceneObj.value.val !== true || !sceneObj.value.ack) {
-                        sceneObj.value.val = true;
+        try {
+            if (sceneObjNative.virtualGroup) {
+                if (activeValue !== null) {
+                    if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
+                        sceneObj.value.val = activeValue;
                         sceneObj.value.ack = true;
 
-                        adapter.setForeignState(_sceneId, true, true);
-                    }
-                } else if (activeFalse) {
-                    if (sceneObj.value.val !== false || !sceneObj.value.ack) {
-                        sceneObj.value.val = false;
-                        sceneObj.value.ack = true;
-
-                        adapter.setForeignState(_sceneId, false, true);
-                    }
-                } else {
-                    if (sceneObj.value.val !== 'uncertain' || !sceneObj.value.ack) {
-                        sceneObj.value.val = 'uncertain';
-                        sceneObj.value.ack = true;
-
-                        adapter.setForeignState(_sceneId, 'uncertain', true);
+                        await adapter.setForeignStateAsync(_sceneId, activeValue, true);
                     }
                 }
             } else {
-                if (activeTrue !== null) {
-                    if (sceneObj.value.val !== activeTrue || !sceneObj.value.ack) {
-                        sceneObj.value.val = activeTrue;
-                        sceneObj.value.ack = true;
+                if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
+                    if (activeTrue) {
+                        if (sceneObj.value.val !== true || !sceneObj.value.ack) {
+                            sceneObj.value.val = true;
+                            sceneObj.value.ack = true;
 
-                        adapter.setForeignState(_sceneId, activeTrue, true);
+                            await adapter.setForeignStateAsync(_sceneId, true, true);
+                        }
+                    } else if (activeFalse) {
+                        if (sceneObj.value.val !== false || !sceneObj.value.ack) {
+                            sceneObj.value.val = false;
+                            sceneObj.value.ack = true;
+
+                            await adapter.setForeignStateAsync(_sceneId, false, true);
+                        }
+                    } else {
+                        if (sceneObj.value.val !== 'uncertain' || !sceneObj.value.ack) {
+                            sceneObj.value.val = 'uncertain';
+                            sceneObj.value.ack = true;
+
+                            await adapter.setForeignStateAsync(_sceneId, 'uncertain', true);
+                        }
+                    }
+                } else {
+                    if (activeTrue !== null) {
+                        if (sceneObj.value.val !== activeTrue || !sceneObj.value.ack) {
+                            sceneObj.value.val = activeTrue;
+                            sceneObj.value.ack = true;
+
+                            await adapter.setForeignStateAsync(_sceneId, activeTrue, true);
+                        }
                     }
                 }
             }
+        } catch (err) {
+            adapter.log.error(`Can not set requested state ${_sceneId}: ${err.message}`);
         }
     }, 200, sceneId);
 }
