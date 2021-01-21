@@ -504,6 +504,9 @@ let tIndex = 1; // never ending counter
 function getSetValue(value) {
     const m = typeof value === 'string' && value.match(/^\s*{{([^}]*)}}\s*$/);
     if (m) {
+        if (!m[1]) {
+            return Promise.reject(`Value did not contain a state ID: ${value}`);
+        }
         // try to read setValue from other stateId
         return adapter.getForeignStateAsync(m[1])
             .then(state =>
