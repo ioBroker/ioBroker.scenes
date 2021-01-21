@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.3.5",
+        "version": "2.3.6",
         "news": {
+            "2.3.6": {
+                "en": "Check state id before getting value (Sentry IOBROKER-SCENES-F)",
+                "de": "Überprüfen Sie die Status-ID, bevor Sie den Wert erhalten (Sentry IOBROKER-SCENES-F).",
+                "ru": "Перед получением значения проверьте идентификатор состояния (Sentry IOBROKER-SCENES-F)",
+                "pt": "Verifique o id do estado antes de obter o valor (Sentry IOBROKER-SCENES-F)",
+                "nl": "Controleer de status-ID voordat u de waarde ophaalt (Sentry IOBROKER-SCENES-F)",
+                "fr": "Vérifiez l'identifiant de l'état avant d'obtenir la valeur (Sentry IOBROKER-SCENES-F)",
+                "it": "Controlla l'id di stato prima di ottenere il valore (Sentry IOBROKER-SCENES-F)",
+                "es": "Verifique la identificación del estado antes de obtener el valor (Sentry IOBROKER-SCENES-F)",
+                "pl": "Sprawdź identyfikator stanu przed uzyskaniem wartości (Sentry IOBROKER-SCENES-F)",
+                "zh-cn": "在获取值之前检查状态ID（Sentry IOBROKER-SCENES-F）"
+            },
             "2.3.5": {
                 "en": "Add error logging if invalid ids are configured for scenes (Sentry IOBROKER-SCENES-Y)",
                 "de": "Fehlerprotokollierung hinzufügen, wenn ungültige IDs für Szenen konfiguriert sind (Sentry IOBROKER-SCENES-Y)",
