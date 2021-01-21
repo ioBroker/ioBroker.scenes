@@ -115,7 +115,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.3.5 (2021-01-22)
 * (Apollon77) Add error logging if invalid ids are configured for scenes (Sentry IOBROKER-SCENES-Y)
 
 ### 2.3.4 (2021-01-16)

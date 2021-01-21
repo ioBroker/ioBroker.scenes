@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "scenes",
-        "version": "2.3.4",
+        "version": "2.3.5",
         "news": {
+            "2.3.5": {
+                "en": "Add error logging if invalid ids are configured for scenes (Sentry IOBROKER-SCENES-Y)",
+                "de": "Fehlerprotokollierung hinzufügen, wenn ungültige IDs für Szenen konfiguriert sind (Sentry IOBROKER-SCENES-Y)",
+                "ru": "Добавить журнал ошибок, если для сцен настроены недопустимые идентификаторы (Sentry IOBROKER-SCENES-Y)",
+                "pt": "Adicionar registro de erro se ids inválidos forem configurados para cenas (Sentry IOBROKER-SCENES-Y)",
+                "nl": "Voeg foutregistratie toe als ongeldige id's zijn geconfigureerd voor scènes (Sentry IOBROKER-SCENES-Y)",
+                "fr": "Ajouter une journalisation des erreurs si des identifiants invalides sont configurés pour les scènes (Sentry IOBROKER-SCENES-Y)",
+                "it": "Aggiungi la registrazione degli errori se gli ID non validi sono configurati per le scene (Sentry IOBROKER-SCENES-Y)",
+                "es": "Agregue el registro de errores si se configuran identificadores no válidos para las escenas (Sentry IOBROKER-SCENES-Y)",
+                "pl": "Dodaj rejestrowanie błędów, jeśli skonfigurowano nieprawidłowe identyfikatory dla scen (Sentry IOBROKER-SCENES-Y)",
+                "zh-cn": "如果为场景配置了无效的ID，则添加错误日志记录（Sentry IOBROKER-SCENES-Y）"
+            },
             "2.3.4": {
                 "en": "Prevent crash case (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
                 "de": "Absturz verhindern (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
