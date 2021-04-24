@@ -25,6 +25,7 @@
   "Instance": "Voorbeeld",
   "Interval between commands (ms)": "Interval tussen opdrachten (ms)",
   "Virtual group": "Virtuele groep",
+  "Aggregation": "Aggregatie",
   "Set value if false": "Stel de waarde in als false",
   "Trigger for TRUE": "Trigger voor TRUE",
   "Trigger ID": "Trigger-ID",

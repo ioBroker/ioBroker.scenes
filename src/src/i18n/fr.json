@@ -25,6 +25,7 @@
   "Instance": "Exemple",
   "Interval between commands (ms)": "Intervalle entre les commandes (ms)",
   "Virtual group": "Groupe virtuel",
+  "Aggregation": "Agrégation",
   "Set value if false": "Définir la valeur si faux",
   "Trigger for TRUE": "Déclencheur pour VRAI",
   "Trigger ID": "ID de déclenchement",
