@@ -735,7 +735,7 @@ class App extends GenericApp {
             socket={ this.socket }
             onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
             virtualGroup={ this.state.selectedSceneData.native.virtualGroup }
-			aggregation={ this.state.selectedSceneData.native.aggregation }
+            aggregation={ this.state.selectedSceneData.native.aggregation }
             sceneId={ this.state.selectedSceneId }
             engineId={ this.state.selectedSceneData.common.engine }
             intervalBetweenCommands={ this.state.selectedSceneData.native.burstInterval || 0 }

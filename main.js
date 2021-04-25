@@ -317,22 +317,22 @@ function checkScene(sceneId, stateId, state) {
                 if (activeValue === null) {
                     activeValue = sceneObjNative.members[i].actual;
                 } else {
-					if (activeValue != sceneObjNative.members[i].actual && (sceneObjNative.aggregation === undefined || sceneObjNative.aggregation === "uncertain")) {
-						activeValue = 'uncertain';	
-					} else {
-						if (sceneObjNative.aggregation == "any") {
-							activeValue = activeValue || sceneObjNative.members[i].actual	
-						} else if (sceneObjNative.aggregation == "all") {
-							activeValue = activeValue && sceneObjNative.members[i].actual
-						} else if (sceneObjNative.aggregation == "min") {
-							activeValue = Math.min(activeValue,sceneObjNative.members[i].actual)
-						} else if (sceneObjNative.aggregation == "max") {
-							activeValue = Math.max(activeValue, sceneObjNative.members[i].actual)
-						} else if (sceneObjNative.aggregation == "avg") {
-							activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual)
-						}
-					}
-				}
+                	if (activeValue != sceneObjNative.members[i].actual && (sceneObjNative.aggregation === undefined || sceneObjNative.aggregation === "uncertain")) {
+                		activeValue = 'uncertain';	
+                	} else {
+                		if (sceneObjNative.aggregation == "any") {
+                			activeValue = activeValue || sceneObjNative.members[i].actual	
+                		} else if (sceneObjNative.aggregation == "all") {
+                			activeValue = activeValue && sceneObjNative.members[i].actual
+                		} else if (sceneObjNative.aggregation == "min") {
+                			activeValue = Math.min(activeValue,sceneObjNative.members[i].actual)
+                		} else if (sceneObjNative.aggregation == "max") {
+                			activeValue = Math.max(activeValue, sceneObjNative.members[i].actual)
+                		} else if (sceneObjNative.aggregation == "avg") {
+                			activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual)
+                		}
+                	}
+                }
             } else {
                 let setIfTrue;
                 let setIfFalse;
