@@ -1,6 +1,6 @@
 // Common
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { withTheme } from '@material-ui/core/styles';
 import { MuiThemeProvider } from '@material-ui/core/styles';
@@ -30,13 +30,13 @@ import ExportImportDialog from './components/ExportImportDialog';
 import ScenesList from './components/ScenesList';
 
 // icons
-import { MdClose as IconCancel } from 'react-icons/md';
-import { MdSave as IconSave } from 'react-icons/md';
-import { MdDelete as IconDelete } from 'react-icons/md';
-import { MdFileDownload as IconExport } from 'react-icons/md';
+import {MdClose as IconCancel} from 'react-icons/md';
+import {MdSave as IconSave} from 'react-icons/md';
+import {MdDelete as IconDelete} from 'react-icons/md';
+import {MdFileDownload as IconExport} from 'react-icons/md';
 // import {MdFileUpload as IconImport} from 'react-icons/md';
-import { FaClone as IconClone } from 'react-icons/fa';
-import { FaBars as IconMenu } from 'react-icons/fa';
+import {FaClone as IconClone} from 'react-icons/fa';
+import {FaBars as IconMenu} from 'react-icons/fa';
 
 const MARGIN_MEMBERS = 20;
 
@@ -44,7 +44,7 @@ const styles = theme => ({
     root: {
         width: '100%',
         height: 'calc(100% + 4px)',
-        backgroundColor: theme.palette.type === 'dark' ? '#000' : '#fff',
+        backgroundColor: theme.palette.type === 'dark' ? '#000': '#fff',
         overflowX: 'hidden',
     },
     width100: {
@@ -84,7 +84,7 @@ const styles = theme => ({
         textAlign: 'right',
     },
     membersCell: {
-        backgroundColor: theme.palette.type === 'dark' ? '#566770' : '#ADD8E6',
+        backgroundColor: theme.palette.type === 'dark' ? '#566770': '#ADD8E6',
         marginTop: MARGIN_MEMBERS,
         marginRight: theme.spacing(1),
         marginBottom: theme.spacing(2),
@@ -97,7 +97,7 @@ const styles = theme => ({
         height: 'calc(100% - ' + theme.spacing(1) + 'px)',
     },
     sceneTitle: {
-        color: theme.palette.type === 'dark' ? '#FFF' : '#000',
+        color: theme.palette.type === 'dark' ? '#FFF': '#000',
         flexGrow: 1,
         paddingLeft: theme.spacing(1),
     },
@@ -109,7 +109,7 @@ const styles = theme => ({
         marginRight: theme.spacing(1),
     },
     settingsBackground: {
-        background: theme.palette.type === 'dark' ? '#3a3a3a' : '#eeeeee',
+        background: theme.palette.type === 'dark' ? '#3a3a3a': '#eeeeee',
     },
     drawer: {
         overflow: 'hidden'
@@ -137,7 +137,7 @@ function getFolderPrefix(sceneId) {
 
 class App extends GenericApp {
     constructor(props) {
-        const extendedProps = { ...props };
+        const extendedProps = {...props};
         extendedProps.translations = {
             'en': require('./i18n/en'),
             'de': require('./i18n/de'),
@@ -209,7 +209,7 @@ class App extends GenericApp {
     buildTree(scenes) {
         scenes = Object.values(scenes);
 
-        let folders = { subFolders: {}, scenes: {}, id: '', prefix: '' };
+        let folders = {subFolders: {}, scenes: {}, id: '', prefix: ''};
 
         // create missing folders
         scenes.forEach((scene) => {
@@ -257,7 +257,7 @@ class App extends GenericApp {
         return this.socket.getObjectView('scene.0.', 'scene.\u9999', 'state')
             .then(_scenes => {
                 scenes = _scenes;
-                return { scenes, folders: this.buildTree(scenes) };
+                return {scenes, folders: this.buildTree(scenes)};
             })
             .catch(e => this.showError(e));
     }
@@ -266,9 +266,9 @@ class App extends GenericApp {
         const that = this;
         return new Promise(resolve => {
             if (changingScene) {
-                this.setState({ changingScene }, () => resolve());
+                this.setState({changingScene}, () => resolve());
             } else {
-                this.setState({ ready: false }, () => resolve());
+                this.setState({ready: false}, () => resolve());
             }
         })
             .then(() => this.getData())
@@ -291,9 +291,9 @@ class App extends GenericApp {
 
                     sceneObj.native.burstInterval = parseInt(sceneObj.native.burstInterval || 0, 10);
                     sceneObj.native.onFalse = sceneObj.native.onFalse || {};
-                    sceneObj.native.onTrue = sceneObj.native.onTrue || {};
-                    sceneObj.native.onFalse.trigger = sceneObj.native.onFalse.trigger || { condition: '==' };
-                    sceneObj.native.onTrue.trigger = sceneObj.native.onTrue.trigger || { condition: '==' };
+                    sceneObj.native.onTrue  = sceneObj.native.onTrue  || {};
+                    sceneObj.native.onFalse.trigger = sceneObj.native.onFalse.trigger || {condition: '=='};
+                    sceneObj.native.onTrue.trigger  = sceneObj.native.onTrue.trigger  || {condition: '=='};
                     sceneObj.native.members = sceneObj.native.members || [];
                     const members = sceneObj.native.members;
                     delete sceneObj.native.members;
@@ -331,7 +331,7 @@ class App extends GenericApp {
             prefix: _parentFolder.prefix ? _parentFolder.prefix + '.' + id : id
         };
 
-        this.setState({ folders });
+        this.setState({folders});
     }
 
     addSceneToFolderPrefix = (scene, folderPrefix, noRefresh) => {
@@ -356,7 +356,7 @@ class App extends GenericApp {
     moveScript(oldId, newId) {
         const scene = this.state.scenes[oldId];
         if (this.state.selectedSceneId === oldId) {
-            return this.setState({ selectedSceneId: newId }, () => this.moveScript(oldId, newId));
+            return this.setState({selectedSceneId: newId}, () => this.moveScript(oldId, newId));
         }
 
         scene._id = newId;
@@ -376,7 +376,7 @@ class App extends GenericApp {
     };
 
     renameFolder(folder, newName) {
-        return new Promise(resolve => this.setState({ changingScene: folder }, () => resolve()))
+        return new Promise(resolve => this.setState({changingScene: folder}, () => resolve()))
             .then(() => {
                 let newSelectedId;
 
@@ -393,7 +393,7 @@ class App extends GenericApp {
 
                 return Promise.all(promises)
                     .then(() => this.refreshData(folder))
-                    .then(() => newSelectedId && this.setState({ selectedSceneId: newSelectedId }));
+                    .then(() => newSelectedId && this.setState({selectedSceneId: newSelectedId}));
             });
     }
 
@@ -431,7 +431,7 @@ class App extends GenericApp {
         template.common.name = name;
         let id = 'scene.0.' + (parentId ? parentId + '.' : '') + template.common.name;
 
-        this.setState({ changingScene: id }, () =>
+        this.setState({changingScene: id}, () =>
             this.socket.setObject(id, template)
                 .then(() => this.refreshData(id))
                 .then(() => this.changeSelectedScene(id))
@@ -447,7 +447,7 @@ class App extends GenericApp {
         scene._id = scene._id.join('.');
         scene.common.name = scene.common.name + ' ' + I18n.t('copy');
 
-        this.setState({ changingScene: scene._id }, () =>
+        this.setState({changingScene: scene._id}, () =>
             this.socket.setObject(scene._id, scene)
                 .then(() => this.refreshData(scene._id))
                 .then(() => this.changeSelectedScene(scene._id))
@@ -496,7 +496,7 @@ class App extends GenericApp {
         }
 
         let selectedSceneChanged = JSON.stringify(this.state.scenes[this.state.selectedSceneId]) !== JSON.stringify(scene);
-        this.setState({ selectedSceneChanged, selectedSceneData: scene }, () => cb && cb());
+        this.setState({selectedSceneChanged, selectedSceneData: scene}, () => cb && cb());
     };
 
     deleteScene(id) {
@@ -549,7 +549,7 @@ class App extends GenericApp {
         scene.native.members = JSON.parse(JSON.stringify(members));
 
         let selectedSceneChanged = JSON.stringify(this.state.scenes[this.state.selectedSceneId]) !== JSON.stringify(scene);
-        this.setState({ selectedSceneChanged, selectedSceneData: scene }, () => cb && cb());
+        this.setState({selectedSceneChanged, selectedSceneData: scene}, () => cb && cb());
     };
 
     changeSelectedScene(newId, ignoreUnsaved, cb) {
@@ -557,7 +557,7 @@ class App extends GenericApp {
             if (this.state.selectedSceneId !== newId) {
                 if (this.state.selectedSceneChanged && !ignoreUnsaved) {
                     this.confirmCb = cb;
-                    this.setState({ sceneChangeDialog: newId }, () => resolve());
+                    this.setState({sceneChangeDialog: newId}, () => resolve());
                 } else {
                     window.localStorage.setItem('Scenes.selectedSceneId', newId);
                     this.setState({
@@ -581,62 +581,62 @@ class App extends GenericApp {
     renderSceneChangeDialog() {
         const that = this;
         return this.state.sceneChangeDialog ? <Dialog
-            open={true}
+            open={ true }
             key="sceneChangeDialog"
-            onClose={() => this.setState({ sceneChangeDialog: '' })}>
-            <DialogTitle>{I18n.t('Are you sure for cancel unsaved changes?')}</DialogTitle>
-            <DialogActions className={clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
-                <Button variant="contained" onClick={() => {
-                    this.confirmCb = null; // cancel callback
-                    this.setState({ sceneChangeDialog: '' });
-                }}>
-                    <IconCancel /> {I18n.t('Cancel')}
-                </Button>
-                <Button variant="contained" color="secondary" onClick={() =>
-                    this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
-                        const cb = this.confirmCb;
-                        this.confirmCb = null;
-                        cb && cb();
-                    })
-                        .catch(() => console.log('ignore'))}>
-                    {I18n.t('Discard')}
-                </Button>
-                <Button variant="contained" color="secondary" onClick={e => {
-                    // save scene
-                    this.writeScene()
-                        .then(() => that.changeSelectedScene(that.state.sceneChangeDialog === 'empty' ? '' : that.state.sceneChangeDialog, true, () => {
+            onClose={ () => this.setState({sceneChangeDialog: ''}) }>
+                <DialogTitle>{ I18n.t('Are you sure for cancel unsaved changes?') }</DialogTitle>
+                <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button variant="contained" onClick={() => {
+                        this.confirmCb = null; // cancel callback
+                        this.setState({sceneChangeDialog: ''});
+                    }}>
+                        <IconCancel/> { I18n.t('Cancel') }
+                    </Button>
+                    <Button variant="contained" color="secondary" onClick={ () =>
+                        this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
                             const cb = this.confirmCb;
                             this.confirmCb = null;
                             cb && cb();
-                        }))
-                        .catch(() => console.log('ignore'))
-                }}>
-                    <IconSave /> {I18n.t('Save changes')}
-                </Button>
-            </DialogActions>
-        </Dialog> : null;
+                        })
+                            .catch(() => console.log('ignore')) }>
+                        { I18n.t('Discard') }
+                    </Button>
+                    <Button variant="contained" color="secondary" onClick={e => {
+                        // save scene
+                        this.writeScene()
+                            .then(() => that.changeSelectedScene(that.state.sceneChangeDialog === 'empty' ? '' : that.state.sceneChangeDialog, true, () => {
+                                const cb = this.confirmCb;
+                                this.confirmCb = null;
+                                cb && cb();
+                            }))
+                            .catch(() => console.log('ignore'))
+                    }}>
+                        <IconSave/> { I18n.t('Save changes') }
+                    </Button>
+                </DialogActions>
+            </Dialog> : null;
     };
 
     renderDeleteDialog() {
         return this.state.deleteDialog ? <Dialog
-            open={true}
+            open={ true }
             key="deleteDialog"
-            onClose={() => this.setState({ deleteDialog: false })}
+            onClose={ () => this.setState({deleteDialog: false}) }
         >
-            <DialogTitle>{I18n.t('Are you sure for delete this scene?')}</DialogTitle>
-            <DialogActions className={clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
-                <Button variant="contained" onClick={() => this.setState({ deleteDialog: false })}>
+            <DialogTitle>{ I18n.t('Are you sure for delete this scene?') }</DialogTitle>
+            <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                <Button variant="contained" onClick={ () => this.setState({deleteDialog: false}) }>
                     {I18n.t('Cancel')}
                 </Button>
                 <Button
                     variant="contained"
                     color="secondary"
                     onClick={e =>
-                        this.setState({ deleteDialog: false }, () =>
+                        this.setState({deleteDialog: false}, () =>
                             this.deleteScene(this.state.selectedSceneId))
                     }
                 >
-                    {I18n.t('Delete')}
+                    { I18n.t('Delete') }
                 </Button>
             </DialogActions>
         </Dialog> : null;
@@ -648,59 +648,59 @@ class App extends GenericApp {
         }
 
         return <ExportImportDialog
-            isImport={!!this.state.importDialog}
-            themeType={this.state.themeType}
-            onClose={importedScene => {
+            isImport={ !!this.state.importDialog }
+            themeType={ this.state.themeType }
+            onClose={ importedScene => {
                 if (this.state.importDialog && importedScene) {
                     const scene = this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId];
                     importedScene.common._id = scene._id;
                     importedScene.common.name = scene.name || importedScene.common.name;
-                    this.setState({ selectedSceneData: importedScene, importDialog: false });
+                    this.setState({selectedSceneData: importedScene,  importDialog: false});
                 } else {
-                    this.setState({ exportDialog: false, importDialog: false })
+                    this.setState({exportDialog: false, importDialog: false})
                 }
-            }}
-            sceneObj={this.state.exportDialog ? this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId] : ''}
+            } }
+            sceneObj={ this.state.exportDialog ? this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId] : '' }
         />
     }
 
     renderSceneTopToolbar(showDrawer) {
-        return <Toolbar variant="dense" key="topToolbar" classes={{ gutters: this.props.classes.noGutters }}>
-            {this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? <Typography variant="h6" className={this.props.classes.sceneTitle}>
-                {I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
-                <span className={this.props.classes.sceneSubTitle}>{Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, { language: I18n.getLanguage() }, true)}</span>
-            </Typography> : null}
+        return <Toolbar variant="dense" key="topToolbar" classes={ {gutters: this.props.classes.noGutters} }>
+            { this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? <Typography variant="h6" className={ this.props.classes.sceneTitle }>
+                { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
+                <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, {language: I18n.getLanguage()}, true) }</span>
+            </Typography> : null }
 
-            {showDrawer ? <IconButton aria-label="Open list" title={I18n.t('Open list')} onClick={() => this.setState({ menuOpened: true })}><IconMenu /></IconButton> : null}
-            <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={() => this.cloneScene(this.state.selectedSceneId)}><IconClone /></IconButton>
+            { showDrawer ? <IconButton aria-label="Open list" title={ I18n.t('Open list') } onClick={ () => this.setState({menuOpened: true}) }><IconMenu/></IconButton> : null }
+            <IconButton aria-label="Clone" title={ I18n.t('Clone') } onClick={ () => this.cloneScene(this.state.selectedSceneId) }><IconClone/></IconButton>
 
-            <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => this.setState({ deleteDialog: true })}><IconDelete /></IconButton>
+            <IconButton aria-label="Delete" title={ I18n.t('Delete') } onClick={ () => this.setState({deleteDialog: true}) }><IconDelete/></IconButton>
 
-            <IconButton aria-label="Export" title={I18n.t('Export scene')} onClick={() => this.setState({ exportDialog: true })}><IconExport /></IconButton>
+            <IconButton aria-label="Export" title={ I18n.t('Export scene') } onClick={ () => this.setState({exportDialog: true}) }><IconExport/></IconButton>
 
             {/*<IconButton aria-label="Import" title={ I18n.t('Import scene') } onClick={ () => this.setState({importDialog: true}) }><IconImport/></IconButton>*/}
         </Toolbar>;
     }
 
     renderSceneBottomToolbar() {
-        return <Toolbar variant="dense" key="bottomToolbar" classes={{ gutters: this.props.classes.noGutters }}>
-            <div style={{ flexGrow: 1 }} />
-            {this.state.selectedSceneChanged ? <Button
-                className={this.props.classes.toolbarButtons}
+        return <Toolbar variant="dense" key="bottomToolbar" classes={ {gutters: this.props.classes.noGutters} }>
+            <div style={{flexGrow: 1}}/>
+            { this.state.selectedSceneChanged ? <Button
+                className={ this.props.classes.toolbarButtons }
                 variant="contained"
                 color="secondary"
                 onClick={() => this.writeScene()}
             >
-                {I18n.t('Save')}
-            </Button> : null}
+                { I18n.t('Save') }
+            </Button> : null }
 
-            {this.state.selectedSceneChanged ? <Button
-                className={this.props.classes.toolbarButtons}
+            { this.state.selectedSceneChanged ? <Button
+                className={ this.props.classes.toolbarButtons }
                 variant="contained"
-                onClick={() => this.refreshData(this.state.selectedSceneId)}
+                onClick={ () => this.refreshData(this.state.selectedSceneId) }
             >
-                {I18n.t('Cancel')}
-            </Button> : null}
+                { I18n.t('Cancel') }
+            </Button> : null }
         </Toolbar>;
     }
 
@@ -719,26 +719,26 @@ class App extends GenericApp {
             onCreateScene={parentId => this.createScene(this.getNewSceneId(), parentId)}
             onRenameFolder={(folder, newId) => this.renameFolder(folder, newId)}
             onMoveScene={(oldId, newId) => this.moveScript(oldId, newId)}
-        />;
+            />;
     }
 
     renderSceneMembers(oneColumn) {
         return <SceneMembersForm
-            key={'selected' + this.state.selectedSceneId}
-            oneColumn={oneColumn}
-            showError={e => this.showError(e)}
-            updateSceneMembers={(members, cb) => this.updateSceneMembers(members, cb)}
-            selectedSceneChanged={this.state.selectedSceneChanged}
-            sceneEnabled={this.state.selectedSceneData.common.enabled}
-            members={this.state.selectedSceneData.native.members}
-            easy={!!this.state.selectedSceneData.native.easy}
-            socket={this.socket}
-            onFalseEnabled={this.state.selectedSceneData.native.onFalse.enabled}
-            virtualGroup={this.state.selectedSceneData.native.virtualGroup}
-            aggregation={this.state.selectedSceneData.native.aggregation}
-            sceneId={this.state.selectedSceneId}
-            engineId={this.state.selectedSceneData.common.engine}
-            intervalBetweenCommands={this.state.selectedSceneData.native.burstInterval || 0}
+            key={ 'selected' + this.state.selectedSceneId }
+            oneColumn={ oneColumn }
+            showError={ e => this.showError(e) }
+            updateSceneMembers={ (members, cb) => this.updateSceneMembers(members, cb) }
+            selectedSceneChanged={ this.state.selectedSceneChanged }
+            sceneEnabled={ this.state.selectedSceneData.common.enabled }
+            members={ this.state.selectedSceneData.native.members }
+            easy={ !!this.state.selectedSceneData.native.easy }
+            socket={ this.socket }
+            onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
+            virtualGroup={ this.state.selectedSceneData.native.virtualGroup }
+			aggregation={ this.state.selectedSceneData.native.aggregation }
+            sceneId={ this.state.selectedSceneId }
+            engineId={ this.state.selectedSceneData.common.engine }
+            intervalBetweenCommands={ this.state.selectedSceneData.native.burstInterval || 0 }
         />;
     }
 
@@ -748,13 +748,13 @@ class App extends GenericApp {
         }
 
         return <SceneForm
-            key={this.state.selectedSceneId}
-            showError={e => this.showError(e)}
-            oneColumn={oneColumn}
-            updateScene={(common, native, cb) => this.updateScene(common, native, cb)}
-            scene={this.state.selectedSceneData}
-            socket={this.socket}
-            instances={this.state.instances}
+            key={ this.state.selectedSceneId }
+            showError={ e => this.showError(e) }
+            oneColumn={ oneColumn }
+            updateScene={ (common, native, cb) => this.updateScene(common, native, cb) }
+            scene={ this.state.selectedSceneData }
+            socket={ this.socket }
+            instances={ this.state.instances }
         />;
     }
 
@@ -763,21 +763,21 @@ class App extends GenericApp {
             <Drawer
                 key="drawer"
                 anchor="left"
-                open={this.state.menuOpened}
-                onClose={() => this.setState({ menuOpened: false })}
-                classes={{ paper: this.props.classes.drawer }}
+                open={ this.state.menuOpened }
+                onClose={() => this.setState({menuOpened: false}) }
+                classes={ {paper: this.props.classes.drawer }}
             >
-                {this.renderDrawerContent()}
+                { this.renderDrawerContent() }
             </Drawer>,
             this.renderSceneTopToolbar(true),
             this.state.selectedSceneId ? <div
-                key="main"
-                className={this.props.classes.heightMinus2Toolbars}
-                style={{ overflowY: 'auto', overflowX: 'hidden' }}
-            >
-                {this.renderSceneSettings(true)}
-                {this.renderSceneMembers(true)}
-            </div> : null,
+                    key="main"
+                    className={ this.props.classes.heightMinus2Toolbars }
+                    style={{ overflowY: 'auto', overflowX: 'hidden'}}
+                >
+                    { this.renderSceneSettings(true) }
+                    { this.renderSceneMembers(true) }
+                </div> : null,
             this.renderSceneBottomToolbar(),
         ]
     }
@@ -785,31 +785,31 @@ class App extends GenericApp {
     renderInMoreThanOneColumn() {
         const showDrawer = this.props.width === 'sm' || this.props.width === 'xs';
 
-        return <Container className={clsx(this.props.classes.height, this.props.classes.fullWidthContainer)}>
-            <Grid container spacing={1} className={this.props.classes.height}>
-                {showDrawer ?
-                    <Drawer anchor="left" open={this.state.menuOpened} onClose={() => this.setState({ menuOpened: false })}>
-                        {this.renderDrawerContent()}
+        return <Container className={ clsx(this.props.classes.height, this.props.classes.fullWidthContainer) }>
+            <Grid container spacing={ 1 } className={ this.props.classes.height }>
+                { showDrawer ?
+                    <Drawer anchor="left" open={ this.state.menuOpened } onClose={() => this.setState({menuOpened: false}) }>
+                        { this.renderDrawerContent() }
                     </Drawer> :
-                    <Grid item xs={3} className={clsx(this.props.classes.columnContainer, this.props.classes.height)}>
-                        {this.renderDrawerContent()}
+                    <Grid item xs={ 3 } className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
+                        { this.renderDrawerContent() }
                     </Grid>
                 }
-                {this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
-                    <Grid item xs={showDrawer ? 12 : 9} className={clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
-                        <Grid container spacing={1} className={clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
-                            <Grid item xs={this.props.width === 'xs' ? 12 : 5} className={this.props.classes.heightMinus2Toolbars}>
-                                {this.renderSceneTopToolbar(showDrawer)}
+                { this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
+                    <Grid item xs={ showDrawer ? 12 : 9 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
+                        <Grid container spacing={ 1 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
+                            <Grid item xs={ this.props.width === 'xs' ? 12 : 5 } className={ this.props.classes.heightMinus2Toolbars }>
+                                { this.renderSceneTopToolbar(showDrawer) }
                                 <div className={this.props.classes.height}>
                                     {this.state.selectedSceneId ? this.renderSceneSettings() : null}
                                 </div>
-                                {this.renderSceneBottomToolbar()}
+                                { this.renderSceneBottomToolbar() }
                             </Grid>
-                            <Grid item xs={this.props.width === 'xs' ? 12 : 7} className={clsx(this.props.classes.height)}>
-                                <div className={clsx(this.props.classes.heightMinusMargin)}>
-                                    {this.state.selectedSceneId ?
-                                        <div className={clsx(this.props.classes.membersCell, this.props.classes.height)}>
-                                            {this.renderSceneMembers()}
+                            <Grid item xs={ this.props.width === 'xs' ? 12 : 7 } className={ clsx(this.props.classes.height) }>
+                                <div className={ clsx(this.props.classes.heightMinusMargin) }>
+                                    { this.state.selectedSceneId ?
+                                        <div className={ clsx(this.props.classes.membersCell, this.props.classes.height) }>
+                                            { this.renderSceneMembers() }
                                         </div>
                                         : null}
                                 </div>
@@ -824,25 +824,25 @@ class App extends GenericApp {
 
     render() {
         if (!this.state.ready) {
-            return <MuiThemeProvider theme={this.state.theme}>
-                <Loader theme={this.state.themeName} />
+            return <MuiThemeProvider theme={ this.state.theme }>
+                <Loader theme={ this.state.themeName }/>
             </MuiThemeProvider>;
         }
 
         const oneColumn = this.props.width === 'xs';
 
         return (
-            <MuiThemeProvider theme={this.state.theme}>
-                <div className={this.props.classes.root}>
-                    {oneColumn ?
+            <MuiThemeProvider theme={ this.state.theme }>
+                <div className={ this.props.classes.root }>
+                    { oneColumn ?
                         this.renderInOneColumn() :
                         this.renderInMoreThanOneColumn()
                     }
 
-                    {this.renderSceneChangeDialog()}
-                    {this.renderDeleteDialog()}
-                    {this.renderExportImportDialog()}
-                    {this.renderError()}
+                    { this.renderSceneChangeDialog() }
+                    { this.renderDeleteDialog() }
+                    { this.renderExportImportDialog() }
+                    { this.renderError() }
                 </div>
             </MuiThemeProvider>
         );

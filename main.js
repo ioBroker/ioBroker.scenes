@@ -63,7 +63,7 @@ let adapter;
 function startAdapter(options) {
     options = options || {};
     Object.assign(options, {
-        name: adapterName, // adapter name
+        name:    adapterName, // adapter name
         dirname: __dirname,   // say own position
         unload: cb => {
             Object.keys(scenesTimeout).forEach(id => scenesTimeout[id] && clearTimeout(scenesTimeout[id]));
@@ -85,9 +85,9 @@ function startAdapter(options) {
                         activateScene(id, state.val);
                     } else {
                         let val = state.val;
-                        if (val === 'true') val = true;
+                        if (val === 'true')  val = true;
                         if (val === 'false') val = false;
-                        if (val === '0') val = 0;
+                        if (val === '0')     val = 0;
 
                         if (val) {
                             // activate scene
@@ -142,13 +142,13 @@ function startAdapter(options) {
                     obj.message = JSON.parse(obj.message)
                 } catch (e) {
                     adapter.log.error('Cannot parse message: ' + obj.message);
-                    adapter.sendTo(obj.from, obj.command, { error: 'Cannot parse message' }, obj.callback);
+                    adapter.sendTo(obj.from, obj.command, {error: 'Cannot parse message'}, obj.callback);
                     return true;
                 }
             }
 
             saveScene(obj.message.sceneId, obj.message.isForTrue, err => {
-                adapter.sendTo(obj.from, obj.command, { error: err }, obj.callback);
+                adapter.sendTo(obj.from, obj.command, {error: err}, obj.callback);
             });
         }
 
@@ -175,7 +175,7 @@ function saveScene(sceneID, isForTrue, cb) {
                     console.log('ID ' + member.id + '=' + state.val);
                     count--;
                     if (isForTrue) {
-                        obj.native.members[i].setIfTrue = state.val;
+                        obj.native.members[i].setIfTrue  = state.val;
                     } else {
                         obj.native.members[i].setIfFalse = state.val;
                     }
@@ -223,24 +223,24 @@ function restartAdapter() {
             adapter.unsubscribeForeignStates(pattern));
     }
     subscription = null;
-    scenes = {};
-    ids = {};
-    triggers = {};
-    timers = {};
-    tIndex = 1;
-    checkTimers = {};
-    cronTasks = {};
+    scenes       = {};
+    ids          = {};
+    triggers     = {};
+    timers       = {};
+    tIndex       = 1;
+    checkTimers  = {};
+    cronTasks    = {};
 
     main();
 }
 
-let subscription = null;
-let scenes = {};
-let ids = {};
-let triggers = {};
-let timers = {};
-let checkTimers = {};
-let cronTasks = {};
+let subscription  = null;
+let scenes        = {};
+let ids           = {};
+let triggers      = {};
+let timers        = {};
+let checkTimers   = {};
+let cronTasks     = {};
 let scenesTimeout = {};
 
 // Check if actual states are exactly as desired in the scene
@@ -275,13 +275,13 @@ function checkScene(sceneId, stateId, state) {
 
     checkTimers[sceneId] = checkTimers[sceneId] || setTimeout(async _sceneId => {
         checkTimers[_sceneId] = null;
-        let activeTrue = null;
+        let activeTrue  = null;
         let activeFalse = null;
         let activeValue = null;
 
-        const sceneObj = scenes[_sceneId];
+        const sceneObj       = scenes[_sceneId];
         const sceneObjNative = sceneObj.native;
-        const isWithFalse = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
+        const isWithFalse    = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
         let stacked = false;
         let delay = 0; // not used actually
         const burstInterval = sceneObjNative.burstInterval;
@@ -302,8 +302,8 @@ function checkScene(sceneId, stateId, state) {
             }
 
             // There are some states
-            if (activeTrue === null) {
-                activeTrue = true;
+            if (activeTrue  === null) {
+                activeTrue  = true;
             }
             if (activeFalse === null) {
                 activeFalse = true;
@@ -317,22 +317,22 @@ function checkScene(sceneId, stateId, state) {
                 if (activeValue === null) {
                     activeValue = sceneObjNative.members[i].actual;
                 } else {
-                    if (activeValue != sceneObjNative.members[i].actual && (sceneObjNative.aggregation === undefined || sceneObjNative.aggregation === "uncertain")) {
-                        activeValue = 'uncertain';
-                    } else {
-                        if (sceneObjNative.aggregation == "any") {
-                            activeValue = activeValue || sceneObjNative.members[i].actual
-                        } else if (sceneObjNative.aggregation == "all") {
-                            activeValue = activeValue && sceneObjNative.members[i].actual
-                        } else if (sceneObjNative.aggregation == "min") {
-                            activeValue = Math.min(activeValue, sceneObjNative.members[i].actual)
-                        } else if (sceneObjNative.aggregation == "max") {
-                            activeValue = Math.max(activeValue, sceneObjNative.members[i].actual)
-                        } else if (sceneObjNative.aggregation == "avg") {
-                            activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual)
-                        }
-                    }
-                }
+					if (activeValue != sceneObjNative.members[i].actual && (sceneObjNative.aggregation === undefined || sceneObjNative.aggregation === "uncertain")) {
+						activeValue = 'uncertain';	
+					} else {
+						if (sceneObjNative.aggregation == "any") {
+							activeValue = activeValue || sceneObjNative.members[i].actual	
+						} else if (sceneObjNative.aggregation == "all") {
+							activeValue = activeValue && sceneObjNative.members[i].actual
+						} else if (sceneObjNative.aggregation == "min") {
+							activeValue = Math.min(activeValue,sceneObjNative.members[i].actual)
+						} else if (sceneObjNative.aggregation == "max") {
+							activeValue = Math.max(activeValue, sceneObjNative.members[i].actual)
+						} else if (sceneObjNative.aggregation == "avg") {
+							activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual)
+						}
+					}
+				}
             } else {
                 let setIfTrue;
                 let setIfFalse;
@@ -340,7 +340,7 @@ function checkScene(sceneId, stateId, state) {
                     setIfTrue = await getSetValue(sceneObjNative.members[i].setIfTrue);
                     setIfFalse = await getSetValue(sceneObjNative.members[i].setIfFalse);
                 } catch (e) {
-                    adapter.log.warn('Error while getting True/False states: ' + e);
+                    adapter.log.warn('Error while getting True/False states: ' +  e);
                 }
 
                 if (setIfTrue !== null && setIfTrue !== undefined) {
@@ -369,9 +369,9 @@ function checkScene(sceneId, stateId, state) {
 
         try {
             if (sceneObjNative.virtualGroup) {
-                if (sceneObjNative.aggregation == "avg") {
-                    activeValue = activeValue / sceneObjNative.members.length
-                }
+				if (sceneObjNative.aggregation == "avg") {
+					activeValue = activeValue / sceneObjNative.members.length
+				}
                 if (activeValue !== null) {
                     if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
                         sceneObj.value.val = activeValue;
@@ -461,9 +461,9 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                         activateScene(sceneId, isTrue);
                     }
                 } else
-                    if (val > stateVal) {
-                        activateScene(sceneId, isTrue);
-                    }
+                if (val > stateVal) {
+                    activateScene(sceneId, isTrue);
+                }
                 break;
 
             case '<':
@@ -474,9 +474,9 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                         activateScene(sceneId, isTrue);
                     }
                 } else
-                    if (val < stateVal) {
-                        activateScene(sceneId, isTrue);
-                    }
+                if (val < stateVal) {
+                    activateScene(sceneId, isTrue);
+                }
                 break;
 
             case '>=':
@@ -487,9 +487,9 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                         activateScene(sceneId, isTrue);
                     }
                 } else
-                    if (val >= stateVal) {
-                        activateScene(sceneId, isTrue);
-                    }
+                if (val >= stateVal) {
+                    activateScene(sceneId, isTrue);
+                }
                 break;
 
             case '<=':
@@ -500,9 +500,9 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                         activateScene(sceneId, isTrue);
                     }
                 } else
-                    if (val <= stateVal) {
-                        activateScene(sceneId, isTrue);
-                    }
+                if (val <= stateVal) {
+                    activateScene(sceneId, isTrue);
+                }
                 break;
 
             case 'update':
@@ -606,7 +606,7 @@ function activateSceneState(sceneId, state, isTrue) {
                     }
                 }, delay, stateObj.id, desiredValue, tIndex);
 
-                timers[stateObj.id].push({ timer, tIndex });
+                timers[stateObj.id].push({timer, tIndex});
             } else {
                 if (stateObj.stopAllDelays && timers[stateObj.id] && timers[stateObj.id].length) {
                     adapter.log.debug(`Cancel running timers for "${stateObj.id}" (${timers[stateObj.id].length})`);
@@ -766,7 +766,7 @@ function initScenes() {
         }
 
         scenes[sceneId].count = 0;
-        scenes[sceneId].value = { val: null, ack: true }; // default state
+        scenes[sceneId].value = {val: null, ack: true}; // default state
 
         // Go through all states in Array
         for (let state = 0; state < scenes[sceneId].native.members.length; state++) {
@@ -806,19 +806,19 @@ function initScenes() {
             getState(sceneId, state);
         }
 
-        if (scenes[sceneId].native.onTrue && scenes[sceneId].native.onTrue.trigger) {
+        if (scenes[sceneId].native.onTrue  && scenes[sceneId].native.onTrue.trigger)  {
             if (scenes[sceneId].native.onTrue.trigger.value === null || scenes[sceneId].native.onTrue.trigger.value === undefined) {
-                scenes[sceneId].native.onTrue.trigger.value = '';
+                scenes[sceneId].native.onTrue.trigger.value  = '';
             } else {
-                scenes[sceneId].native.onTrue.trigger.value = scenes[sceneId].native.onTrue.trigger.value.toString();
+                scenes[sceneId].native.onTrue.trigger.value  = scenes[sceneId].native.onTrue.trigger.value.toString();
             }
         }
 
         if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.trigger) {
             if (scenes[sceneId].native.onFalse.trigger.value === null || scenes[sceneId].native.onFalse.trigger.value === undefined) {
-                scenes[sceneId].native.onFalse.trigger.value = '';
+                scenes[sceneId].native.onFalse.trigger.value  = '';
             } else {
-                scenes[sceneId].native.onFalse.trigger.value = scenes[sceneId].native.onFalse.trigger.value.toString();
+                scenes[sceneId].native.onFalse.trigger.value  = scenes[sceneId].native.onFalse.trigger.value.toString();
             }
         }
 
