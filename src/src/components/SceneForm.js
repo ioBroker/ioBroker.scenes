@@ -304,7 +304,7 @@ class SceneForm extends React.Component {
                             <FormControl className={this.props.classes.width100}>
                                 <InputLabel shrink={true}>{ I18n.t('Instance') }</InputLabel>
                                 <Select
-                                    value={ this.state.common.engine }
+                                    value={this.state.common.engine }
                                     onChange={e => {
                                         const common = JSON.parse(JSON.stringify(this.state.common));
                                         common.engine = e.target.value;

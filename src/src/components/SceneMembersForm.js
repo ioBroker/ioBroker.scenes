@@ -1,6 +1,6 @@
 import React from 'react'
 import clsx from 'clsx'
-import {withStyles} from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
@@ -30,22 +30,22 @@ import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 
 // icons
-import {AiOutlineClockCircle as IconClock} from 'react-icons/ai';
-import {MdDelete as IconDelete} from 'react-icons/md';
-import {MdAdd as IconAdd} from 'react-icons/md';
-import {MdPlayArrow as IconPlay} from 'react-icons/md';
-import {FaFolder as IconFolderClosed} from 'react-icons/fa';
-import {FaFolderOpen as IconFolderOpened} from 'react-icons/fa';
+import { AiOutlineClockCircle as IconClock } from 'react-icons/ai';
+import { MdDelete as IconDelete } from 'react-icons/md';
+import { MdAdd as IconAdd } from 'react-icons/md';
+import { MdPlayArrow as IconPlay } from 'react-icons/md';
+import { FaFolder as IconFolderClosed } from 'react-icons/fa';
+import { FaFolderOpen as IconFolderOpened } from 'react-icons/fa';
 import ClearIcon from '@material-ui/icons/Close';
 import IconExpandAll from '@material-ui/icons/ExpandMore';
 import IconCollapseAll from '@material-ui/icons/ExpandLess';
 import ListIcon from '@material-ui/icons/Menu';
 
-const TRUE_COLOR       = '#90ee90';
-const FALSE_COLOR      = '#ff9999';
-const TRUE_DARK_COLOR  = '#528952';
+const TRUE_COLOR = '#90ee90';
+const FALSE_COLOR = '#ff9999';
+const TRUE_DARK_COLOR = '#528952';
 const FALSE_DARK_COLOR = '#774747';
-const UNCERTAIN_COLOR  = '#bfb7be';
+const UNCERTAIN_COLOR = '#bfb7be';
 
 const styles = theme => ({
     memberTrueFalse: {
@@ -112,7 +112,7 @@ const styles = theme => ({
     },
     sceneTitle: {
         flexGrow: 1,
-        color: theme.palette.type === 'dark' ? '#FFF': '#000',
+        color: theme.palette.type === 'dark' ? '#FFF' : '#000',
     },
     sceneSubTitle: {
         fontSize: 'small',
@@ -247,7 +247,7 @@ class SceneMembersForm extends React.Component {
             deleteDialog: null,
             onFalseEnabled: props.onFalseEnabled,
             virtualGroup: props.virtualGroup,
-			aggregation: props.aggregation,
+            aggregation: props.aggregation,
             sceneEnabled: props.sceneEnabled,
             selectedSceneChanged: props.selectedSceneChanged,
             engineId: props.engineId,
@@ -330,7 +330,7 @@ class SceneMembersForm extends React.Component {
         const [removed] = members.splice(result.source.index, 1);
         members.splice(result.destination.index, 0, removed);
 
-        this.setStateWithParent({members});
+        this.setStateWithParent({ members });
     }
 
     readObjects() {
@@ -344,11 +344,11 @@ class SceneMembersForm extends React.Component {
                     results.forEach(obj => {
                         if (obj && obj.common && obj.common.type) {
                             objectTypes[obj._id] = obj.common.type;
-                            objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, false);
+                            objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, { language: I18n.getLanguage() }, false);
                         }
                     });
 
-                    return {objectTypes, objectNames};
+                    return { objectTypes, objectNames };
                 })
                 .catch(e => this.props.showError(e));
         } else {
@@ -376,16 +376,16 @@ class SceneMembersForm extends React.Component {
             states[id] = parseFloat(states[id]);
         }
 
-        this.setState({states, objectTypes});
+        this.setState({ states, objectTypes });
     };
 
     createSceneMembers = ids => {
-        this.setState({showDialog: false}, () => {
+        this.setState({ showDialog: false }, () => {
             if (ids.length) {
                 const openedMembers = [...this.state.openedMembers];
                 const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
                 const objectNames = JSON.parse(JSON.stringify(this.state.objectNames));
-                const members     = JSON.parse(JSON.stringify(this.state.members));
+                const members = JSON.parse(JSON.stringify(this.state.members));
 
                 Promise.all(ids.map(id =>
                     // Read type of state
@@ -406,7 +406,7 @@ class SceneMembersForm extends React.Component {
                             };
 
                             if (obj) {
-                                objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, true);
+                                objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, { language: I18n.getLanguage() }, true);
                             }
 
 
@@ -426,11 +426,11 @@ class SceneMembersForm extends React.Component {
                             // open added state
                             openedMembers.push(id);
                         })
-                        .then(() => this.setStateWithParent({objectTypes, objectNames, members, openedMembers}, () =>
+                        .then(() => this.setStateWithParent({ objectTypes, objectNames, members, openedMembers }, () =>
                             // Subscribe on all new members
                             ids.forEach(id => this.props.socket.subscribeState(id, this.memberStateChange)))
                         )
-                    )
+                )
                 )
                     .catch(e => this.props.showError(e));
             } else {
@@ -449,7 +449,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        this.setStateWithParent({members, deleteDialog: null}, () =>
+        this.setStateWithParent({ members, deleteDialog: null }, () =>
             this.props.socket.unsubscribeState(id, this.memberStateChange));
     };
 
@@ -463,13 +463,13 @@ class SceneMembersForm extends React.Component {
         return this.state.showDialog ? <DialogSelectID
             imagePrefix={'../..'}
             key="selectDialogMembers"
-            socket={ this.props.socket }
+            socket={this.props.socket}
             dialogName="memberEdit"
-            multiSelect={ true }
-            title={ I18n.t('Select for ') }
-            selected={ null }
-            onOk={ id => this.createSceneMembers(id) }
-            onClose={ () => this.setState({showDialog: false}) }
+            multiSelect={true}
+            title={I18n.t('Select for ')}
+            selected={null}
+            onOk={id => this.createSceneMembers(id)}
+            onClose={() => this.setState({ showDialog: false })}
         /> : null;
     }
 
@@ -487,32 +487,32 @@ class SceneMembersForm extends React.Component {
         }
 
         return <Dialog
-            open={ true }
+            open={true}
             key="deleteDialog"
-            onClose={ () =>
-                this.setState({deleteDialog: null}) }
-            >
-                <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
-                <DialogContent>
-                    <FormControlLabel
-                        control={<Checkbox checked={this.state.suppressDeleteConfirm} onChange={() => this.setState({suppressDeleteConfirm: !this.state.suppressDeleteConfirm})} />}
-                        label={I18n.t('Suppress confirmation for next 5 minutes')}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button variant="contained" onClick={ () => this.setState({deleteDialog: null}) }>
-                        {I18n.t('Cancel')}
-                    </Button>
-                    <Button variant="contained" color="secondary" ref={this.delButtonRef} onClick={ e => {
-                        if (this.state.suppressDeleteConfirm) {
-                            window.localStorage.setItem('scenes.suppressDeleteConfirm', Date.now().toString());
-                        }
-                        this.deleteSceneMember(this.state.deleteDialog);
-                    } }>
-                        { I18n.t('Delete') }
-                    </Button>
-                </DialogActions>
-            </Dialog>;
+            onClose={() =>
+                this.setState({ deleteDialog: null })}
+        >
+            <DialogTitle>{I18n.t('Are you sure for delete this state?')}</DialogTitle>
+            <DialogContent>
+                <FormControlLabel
+                    control={<Checkbox checked={this.state.suppressDeleteConfirm} onChange={() => this.setState({ suppressDeleteConfirm: !this.state.suppressDeleteConfirm })} />}
+                    label={I18n.t('Suppress confirmation for next 5 minutes')}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button variant="contained" onClick={() => this.setState({ deleteDialog: null })}>
+                    {I18n.t('Cancel')}
+                </Button>
+                <Button variant="contained" color="secondary" ref={this.delButtonRef} onClick={e => {
+                    if (this.state.suppressDeleteConfirm) {
+                        window.localStorage.setItem('scenes.suppressDeleteConfirm', Date.now().toString());
+                    }
+                    this.deleteSceneMember(this.state.deleteDialog);
+                }}>
+                    {I18n.t('Delete')}
+                </Button>
+            </DialogActions>
+        </Dialog>;
     };
 
     renderSelectStateIdDialog() {
@@ -533,12 +533,12 @@ class SceneMembersForm extends React.Component {
             return <DialogSelectID
                 imagePrefix={'../..'}
                 key="selectDialogMember"
-                socket={ this.props.socket }
+                socket={this.props.socket}
                 dialogName="memberEdit"
-                multiSelect={ false }
-                title={ I18n.t('Select for ') + (this.state.showSelectValueIdDialog === 'true' ? 'TRUE' : 'FALSE') }
-                selected={ setValue }
-                onOk={ id => {
+                multiSelect={false}
+                title={I18n.t('Select for ') + (this.state.showSelectValueIdDialog === 'true' ? 'TRUE' : 'FALSE')}
+                selected={setValue}
+                onOk={id => {
                     if (id) {
                         const index = this.state.showSelectValueIdDialogFor;
                         const members = JSON.parse(JSON.stringify(this.state.members));
@@ -548,11 +548,11 @@ class SceneMembersForm extends React.Component {
                             members[index].setIfFalse = '{{' + id + '}}';
                         }
 
-                        this.setState({showSelectValueIdDialog: false, showSelectValueIdDialogFor: null}, () =>
-                            this.setStateWithParent({members}));
+                        this.setState({ showSelectValueIdDialog: false, showSelectValueIdDialogFor: null }, () =>
+                            this.setStateWithParent({ members }));
                     }
                 }}
-                onClose={ () => this.setState({showSelectValueIdDialog: false, showSelectValueIdDialogFor: null}) }
+                onClose={() => this.setState({ showSelectValueIdDialog: false, showSelectValueIdDialogFor: null })}
             />;
         }
     }
@@ -584,15 +584,15 @@ class SceneMembersForm extends React.Component {
             labelTolerance = (onFalseEnabled ? I18n.t('Tolerance by TRUE') : I18n.t('Tolerance'));
             setValueTolerance = member.setIfTrueTolerance;
         } else {
-            labelSetValue = fromState ? I18n.t('From ID by FALSE') :I18n.t('Setpoint by FALSE');
+            labelSetValue = fromState ? I18n.t('From ID by FALSE') : I18n.t('Setpoint by FALSE');
             labelTolerance = I18n.t('Tolerance by FALSE');
             setValueTolerance = member.setIfFalseTolerance;
         }
 
 
-        return <Box className={ classes.p }>
+        return <Box className={classes.p}>
             {!this.state.easy || fromState ? <FormControlLabel
-                classes={{root: classes.fromId}}
+                classes={{ root: classes.fromId }}
                 control={
                     <Switch
                         checked={fromState}
@@ -611,18 +611,18 @@ class SceneMembersForm extends React.Component {
                                     members[index].setIfFalse = null;
                                 }
                             }
-                            this.setStateWithParent({members});
+                            this.setStateWithParent({ members });
                         }}
                     />
                 }
                 label="From ID"
-            /> : null }
-            { !fromState && this.state.objectTypes[member.id] === 'boolean' ?
-                <FormControl className={ classes.setValue }>
-                    <InputLabel>{ labelSetValue }</InputLabel>
+            /> : null}
+            {!fromState && this.state.objectTypes[member.id] === 'boolean' ?
+                <FormControl className={classes.setValue}>
+                    <InputLabel>{labelSetValue}</InputLabel>
                     <Select
-                        value={ setValue === true || setValue === 'true' ? 'true' : (setValue === false || setValue === 'false' ? 'false' : 'null')}
-                        onChange={ e => {
+                        value={setValue === true || setValue === 'true' ? 'true' : (setValue === false || setValue === 'false' ? 'false' : 'null')}
+                        onChange={e => {
                             const members = JSON.parse(JSON.stringify(this.state.members));
                             if (isTrue) {
                                 members[index].setIfTrue = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
@@ -630,8 +630,8 @@ class SceneMembersForm extends React.Component {
                                 members[index].setIfFalse = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
                             }
 
-                            this.setStateWithParent({members});
-                        } }
+                            this.setStateWithParent({ members });
+                        }}
                     >
                         <MenuItem value="false">FALSE</MenuItem>
                         <MenuItem value="true">TRUE</MenuItem>
@@ -643,7 +643,7 @@ class SceneMembersForm extends React.Component {
                     {fromState ?
                         <TextField
                             fullWidth
-                            InputLabelProps={{shrink: true}}
+                            InputLabelProps={{ shrink: true }}
                             label={labelSetValue}
                             value={setValue || ''}
                             readOnly
@@ -652,15 +652,15 @@ class SceneMembersForm extends React.Component {
                                 endAdornment:
                                     <IconButton
                                         size="small"
-                                        onClick={() => this.setState({showSelectValueIdDialog: isTrue ? 'true' : 'false', showSelectValueIdDialogFor: index})}>
-                                        <ListIcon/>
+                                        onClick={() => this.setState({ showSelectValueIdDialog: isTrue ? 'true' : 'false', showSelectValueIdDialogFor: index })}>
+                                        <ListIcon />
                                     </IconButton>,
                             }}
                         />
                         :
                         <TextField
                             fullWidth
-                            InputLabelProps={{shrink: true}}
+                            InputLabelProps={{ shrink: true }}
                             label={labelSetValue}
                             value={setValue === undefined || setValue === null ? '' : setValue}
                             className={classes.setValue}
@@ -675,9 +675,9 @@ class SceneMembersForm extends React.Component {
                                             } else {
                                                 members[index].setIfFalse = null;
                                             }
-                                            this.setStateWithParent({members});
+                                            this.setStateWithParent({ members });
                                         }}>
-                                        <ClearIcon/>
+                                        <ClearIcon />
                                     </IconButton>
                                     : undefined,
                             }}
@@ -697,17 +697,17 @@ class SceneMembersForm extends React.Component {
                                     }
                                 }
 
-                                this.setStateWithParent({members});
+                                this.setStateWithParent({ members });
                             }}
                         />
                     }
 
                     {!this.state.easy && this.state.objectTypes[member.id] !== 'boolean' ? <TextField
-                        InputLabelProps={ {shrink: true} }
-                        label={ '± ' + labelTolerance }
-                        value={ setValueTolerance === undefined || setValueTolerance === null ? '' : setValueTolerance }
-                        title={ I18n.t('Absolute value, not percent') }
-                        className={ classes.setTolerance }
+                        InputLabelProps={{ shrink: true }}
+                        label={'± ' + labelTolerance}
+                        value={setValueTolerance === undefined || setValueTolerance === null ? '' : setValueTolerance}
+                        title={I18n.t('Absolute value, not percent')}
+                        className={classes.setTolerance}
                         InputProps={{
                             endAdornment: setValueTolerance ?
                                 <IconButton
@@ -719,21 +719,21 @@ class SceneMembersForm extends React.Component {
                                         } else {
                                             members[index].setIfFalseTolerance = null;
                                         }
-                                        this.setStateWithParent({members});
+                                        this.setStateWithParent({ members });
                                     }}>
                                     <ClearIcon />
                                 </IconButton>
                                 : undefined,
                         }}
-                        onChange={ e => {
+                        onChange={e => {
                             const members = JSON.parse(JSON.stringify(this.state.members));
                             if (isTrue) {
                                 members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
                             } else {
                                 members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
                             }
-                            this.setStateWithParent({members});
-                        } }/> : null}
+                            this.setStateWithParent({ members });
+                        }} /> : null}
                 </React.Fragment>
             }
         </Box>;
@@ -753,24 +753,24 @@ class SceneMembersForm extends React.Component {
 
             if (member.setIfTrueTolerance && Math.abs(this.state.states[member.id] - member.setIfTrue) <= member.setIfTrueTolerance) {
                 value = <div
-                    title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberTrue) }>{ _valStr }</div>;
+                    title={I18n.t('Actual state value')}
+                    className={clsx(classes.memberTrueFalse, classes.memberTrue)}>{_valStr}</div>;
             } else if (this.state.states[member.id] === member.setIfTrue) {
                 value = <div
-                    title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberTrue) }>{ _valStr }</div>;
+                    title={I18n.t('Actual state value')}
+                    className={clsx(classes.memberTrueFalse, classes.memberTrue)}>{_valStr}</div>;
             } else if (member.setIfFalse !== undefined && member.setIfFalseTolerance && Math.abs(this.state.states[member.id] - member.setIfFalse) <= member.setIfFalseTolerance) {
                 value = <div
-                    title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberFalse) }>{ _valStr }</div>;
+                    title={I18n.t('Actual state value')}
+                    className={clsx(classes.memberTrueFalse, classes.memberFalse)}>{_valStr}</div>;
             } else if (member.setIfFalse !== undefined && this.state.states[member.id] === member.setIfFalse) {
                 value = <div
-                    title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberFalse) }>{ _valStr }</div>;
+                    title={I18n.t('Actual state value')}
+                    className={clsx(classes.memberTrueFalse, classes.memberFalse)}>{_valStr}</div>;
             } else {
                 value = <div
-                    title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberUncertain) }>{ _valStr }</div>;
+                    title={I18n.t('Actual state value')}
+                    className={clsx(classes.memberTrueFalse, classes.memberUncertain)}>{_valStr}</div>;
             }
         }
 
@@ -796,7 +796,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        const varType =  this.state.objectTypes[member.id];
+        const varType = this.state.objectTypes[member.id];
 
         if (onFalseEnabled && setIfTrueVisible && setIfTrue === '' && (varType === 'number' || varType === 'boolean')) {
             setIfTrueVisible = false;
@@ -842,9 +842,9 @@ class SceneMembersForm extends React.Component {
 
         delay += (member.delay || 0);
 
-        return <Paper key={ member.id + '_' + index } className={ clsx(classes.memberCard, member.disabled && classes.disabled) }>
-            <div className={ classes.memberToolbar }>
-                <IconButton className={ classes.memberFolder} title={ I18n.t('Edit') } onClick={ () => {
+        return <Paper key={member.id + '_' + index} className={clsx(classes.memberCard, member.disabled && classes.disabled)}>
+            <div className={classes.memberToolbar}>
+                <IconButton className={classes.memberFolder} title={I18n.t('Edit')} onClick={() => {
                     const openedMembers = [...this.state.openedMembers];
                     const pos = openedMembers.indexOf(member.id);
                     if (pos !== -1) {
@@ -854,45 +854,45 @@ class SceneMembersForm extends React.Component {
                         openedMembers.sort();
                     }
                     window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
-                    this.setState({openedMembers});
+                    this.setState({ openedMembers });
                 }}>
-                    { opened ? <IconFolderOpened/> : <IconFolderClosed/> }
+                    {opened ? <IconFolderOpened /> : <IconFolderClosed />}
                 </IconButton>
-                <div className={ classes.memberTitle }>{ member.id }</div>
-                <div className={ classes.memberDesc }>{ member.desc || this.state.objectNames[member.id] || '' }</div>
-                <div className={ classes.memberButtons }>
+                <div className={classes.memberTitle}>{member.id}</div>
+                <div className={classes.memberDesc}>{member.desc || this.state.objectNames[member.id] || ''}</div>
+                <div className={classes.memberButtons}>
                     <IconButton
                         size="small"
                         style={{ marginLeft: 5 }} aria-label="Delete" title={I18n.t('Delete')}
-                        onClick={ () => {
+                        onClick={() => {
                             const suppressDeleteConfirm = window.localStorage.getItem('scenes.suppressDeleteConfirm');
                             if (suppressDeleteConfirm) {
                                 if (Date.now() - parseInt(suppressDeleteConfirm, 10) < 300000) {
                                     this.deleteSceneMember(member.id);
                                 } else {
                                     window.localStorage.removeItem('scenes.suppressDeleteConfirm');
-                                    this.setState({deleteDialog: member.id});
+                                    this.setState({ deleteDialog: member.id });
                                 }
                             } else {
-                                this.setState({deleteDialog: member.id, suppressDeleteConfirm: false});
+                                this.setState({ deleteDialog: member.id, suppressDeleteConfirm: false });
                             }
-                        } }>
-                        <IconDelete/>
+                        }}>
+                        <IconDelete />
                     </IconButton>
                     <Switch
-                        checked={ !member.disabled }
-                        onChange={ e => {
+                        checked={!member.disabled}
+                        onChange={e => {
                             const members = JSON.parse(JSON.stringify(this.state.members));
                             members[index].disabled = !e.target.checked;
-                            this.setStateWithParent({members});
+                            this.setStateWithParent({ members });
                         }}
-                        name={ member.id }
+                        name={member.id}
                     />
-                    { value }
+                    {value}
                 </div>
             </div>
-            <div>{ member.desc } { !member.disabled && (this.props.intervalBetweenCommands || member.delay) ?
-                <span> <IconClock/> { delay + I18n.t('ms') + ' ' + I18n.t('from scene start')}</span> : null }
+            <div>{member.desc} {!member.disabled && (this.props.intervalBetweenCommands || member.delay) ?
+                <span> <IconClock /> {delay + I18n.t('ms') + ' ' + I18n.t('from scene start')}</span> : null}
             </div>
             {
                 opened ?
@@ -909,15 +909,15 @@ class SceneMembersForm extends React.Component {
                                 }}
                             />
                         </Box>*/ }
-                        { !this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null }
-                        { !this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}
+                        {!this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null}
+                        {!this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}
                         {!this.state.easy ?
                             <Box className={classes.p}>
                                 <Grid container spacing={4}>
                                     <Grid item xs={12} sm={4}>
                                         <TextField
                                             fullWidth
-                                            InputLabelProps={{shrink: true}}
+                                            InputLabelProps={{ shrink: true }}
                                             label={I18n.t('Delay (ms)')}
                                             title={I18n.t(
                                                 'Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start',
@@ -931,8 +931,8 @@ class SceneMembersForm extends React.Component {
                                             onChange={e => {
                                                 const members = JSON.parse(JSON.stringify(this.state.members));
                                                 members[index].delay = parseInt(e.target.value, 10);
-                                                this.setStateWithParent({members});
-                                            }}/>
+                                                this.setStateWithParent({ members });
+                                            }} />
                                     </Grid>
                                     <Grid item xs={12} sm={4}>
                                         {!stacked ? <FormControlLabel
@@ -943,10 +943,10 @@ class SceneMembersForm extends React.Component {
                                                     onChange={e => {
                                                         const members = JSON.parse(JSON.stringify(this.state.members));
                                                         members[index].stackNextDelays = e.target.checked;
-                                                        this.setStateWithParent({members});
+                                                        this.setStateWithParent({ members });
                                                     }}
                                                 />
-                                            }/> : null}
+                                            } /> : null}
                                     </Grid>
                                     <Grid item xs={12} sm={4}>
                                         <FormControlLabel
@@ -957,10 +957,10 @@ class SceneMembersForm extends React.Component {
                                                     onChange={e => {
                                                         const members = JSON.parse(JSON.stringify(this.state.members));
                                                         members[index].stopAllDelays = e.target.checked;
-                                                        this.setStateWithParent({members});
+                                                        this.setStateWithParent({ members });
                                                     }}
                                                 />
-                                            }/>
+                                            } />
                                     </Grid>
                                 </Grid>
                             </Box> : null
@@ -980,19 +980,19 @@ class SceneMembersForm extends React.Component {
                                             onChange={e => {
                                                 const members = JSON.parse(JSON.stringify(this.state.members));
                                                 members[index].doNotOverwrite = e.target.checked;
-                                                this.setStateWithParent({members});
+                                                this.setStateWithParent({ members });
                                             }}
                                         />
-                                    }/>
+                                    } />
                             </Box> : null
                         }
                     </div> :
-                    (!this.state.virtualGroup ? <div className={ classes.smallOnTrueFalse }>
-                        { setIfTrueVisible ? `${onFalseEnabled ? I18n.t('Set if TRUE') : I18n.t('Setpoint')}: ` : ''}
-                        { setIfTrueVisible ? <span className={ classes.stateValueTrue }>{ setIfTrue }</span> : null }
-                        { setIfFalseVisible && onFalseEnabled ? `${setIfTrueVisible ? ' / ' : ''}${I18n.t('Set if FALSE')}: ` : null}
-                        { setIfFalseVisible && onFalseEnabled ? <span className={ classes.stateValueFalse }>{ setIfFalse }</span> : null}
-                    </div> : <div style={ {height: 8} }/>)
+                    (!this.state.virtualGroup ? <div className={classes.smallOnTrueFalse}>
+                        {setIfTrueVisible ? `${onFalseEnabled ? I18n.t('Set if TRUE') : I18n.t('Setpoint')}: ` : ''}
+                        {setIfTrueVisible ? <span className={classes.stateValueTrue}>{setIfTrue}</span> : null}
+                        {setIfFalseVisible && onFalseEnabled ? `${setIfTrueVisible ? ' / ' : ''}${I18n.t('Set if FALSE')}: ` : null}
+                        {setIfFalseVisible && onFalseEnabled ? <span className={classes.stateValueFalse}>{setIfFalse}</span> : null}
+                    </div> : <div style={{ height: 8 }} />)
             }
         </Paper>
     };
@@ -1019,7 +1019,7 @@ class SceneMembersForm extends React.Component {
         ...draggableStyle
     });
 
-    getListStyle = isDraggingOver => ({background: isDraggingOver ? 'lightblue' : 'inherit'});
+    getListStyle = isDraggingOver => ({ background: isDraggingOver ? 'lightblue' : 'inherit' });
 
     render = () => {
         let sceneState = this.state.states[this.props.sceneId];
@@ -1035,84 +1035,84 @@ class SceneMembersForm extends React.Component {
             this.engineId = this.state.engineId;
         }
 
-        const onFalseEnabled =!this.state.virtualGroup && this.state.onFalseEnabled;
+        const onFalseEnabled = !this.state.virtualGroup && this.state.onFalseEnabled;
 
-        let result = <div key="SceneMembersForm" className={ clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer) }>
+        let result = <div key="SceneMembersForm" className={clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer)}>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
-                <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle) } >
-                    { I18n.t('Scene states') }{ !this.state.states[this.state.engineId + '.alive'] ? <span className={ this.props.classes.instanceNotActive }>{ I18n.t('Instance not active') }</span> : ''}
-                    <br/>
-                    <span className={ clsx(
+                <Typography variant="h6" className={clsx(this.props.classes.sceneTitle)} >
+                    {I18n.t('Scene states')}{!this.state.states[this.state.engineId + '.alive'] ? <span className={this.props.classes.instanceNotActive}>{I18n.t('Instance not active')}</span> : ''}
+                    <br />
+                    <span className={clsx(
                         this.props.classes.sceneSubTitle,
                         !this.state.virtualGroup && sceneState === true && this.props.classes.sceneTrue,
                         !this.state.virtualGroup && sceneState === false && this.props.classes.sceneFalse,
                         !this.state.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
-                    ) }>{ I18n.t('Scene state:') } { sceneState === true ? 'TRUE' : (sceneState === false ? 'FALSE' : sceneState.toString()) }</span>
+                    )}>{I18n.t('Scene state:')} {sceneState === true ? 'TRUE' : (sceneState === false ? 'FALSE' : sceneState.toString())}</span>
                 </Typography>
-                <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({showDialog: true})}>
-                    <IconAdd/>
+                <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({ showDialog: true })}>
+                    <IconAdd />
                 </IconButton>
             </Toolbar>
-            <div className={ clsx(this.props.classes.testButtons, this.props.classes.width100) }>
-                {  !this.state.selectedSceneChanged && this.state.virtualGroup ? <TextField
-                    className={ this.props.classes.width100WithButton }
-                    label={ I18n.t('Write to virtual group') }
-                    defaultValue={ sceneState }
+            <div className={clsx(this.props.classes.testButtons, this.props.classes.width100)}>
+                {!this.state.selectedSceneChanged && this.state.virtualGroup ? <TextField
+                    className={this.props.classes.width100WithButton}
+                    label={I18n.t('Write to virtual group')}
+                    defaultValue={sceneState}
                     onKeyUp={e => e.keyCode === 13 && this.onWriteScene(this.state.writeSceneState)}
-                    onChange={e => this.setState({writeSceneState: e.target.value}) }
+                    onChange={e => this.setState({ writeSceneState: e.target.value })}
                 /> : null}
-                { !this.state.selectedSceneChanged && this.state.virtualGroup && this.state.members.length ? <IconButton
-                    onClick={e => this.onWriteScene(this.state.writeSceneState) }
-                ><IconPlay/></IconButton> : null}
-                { this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
-                    className={ this.props.classes.btnTestTrue }
-                    onClick={ () => this.onWriteScene(true) }
-                ><IconPlay/>{ !onFalseEnabled ? I18n.t('Test') : I18n.t('Test TRUE') }</Button> : null }
-                { this.state.sceneEnabled && !this.state.selectedSceneChanged && onFalseEnabled && this.state.members.length ? <Button
-                    className={ this.props.classes.btnTestFalse }
-                    onClick={ () => this.onWriteScene(false) }
-                ><IconPlay/>{ I18n.t('Test FALSE') }</Button> : null }
+                {!this.state.selectedSceneChanged && this.state.virtualGroup && this.state.members.length ? <IconButton
+                    onClick={e => this.onWriteScene(this.state.writeSceneState)}
+                ><IconPlay /></IconButton> : null}
+                {this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
+                    className={this.props.classes.btnTestTrue}
+                    onClick={() => this.onWriteScene(true)}
+                ><IconPlay />{!onFalseEnabled ? I18n.t('Test') : I18n.t('Test TRUE')}</Button> : null}
+                {this.state.sceneEnabled && !this.state.selectedSceneChanged && onFalseEnabled && this.state.members.length ? <Button
+                    className={this.props.classes.btnTestFalse}
+                    onClick={() => this.onWriteScene(false)}
+                ><IconPlay />{I18n.t('Test FALSE')}</Button> : null}
                 {this.state.members.length > 1 && this.state.openedMembers.length ? <IconButton
                     title={I18n.t('Collapse all')}
-                    className={ this.props.classes.btnCollapseAll }
-                    onClick={ () => {
+                    className={this.props.classes.btnCollapseAll}
+                    onClick={() => {
                         window.localStorage.setItem('Scenes.openedMembers', '[]');
-                        this.setState({openedMembers: []});
-                    } }
-                ><IconCollapseAll/></IconButton> : null }
+                        this.setState({ openedMembers: [] });
+                    }}
+                ><IconCollapseAll /></IconButton> : null}
                 {this.state.members.length > 1 && this.state.openedMembers.length !== this.state.members.length ? <IconButton
                     title={I18n.t('Expand all')}
-                    className={ this.props.classes.btnExpandAll }
-                    onClick={ () => {
+                    className={this.props.classes.btnExpandAll}
+                    onClick={() => {
                         const openedMembers = this.state.members.map(member => member.id);
                         window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
-                        this.setState({openedMembers});
-                    } }
-                ><IconExpandAll/></IconButton> : null }
+                        this.setState({ openedMembers });
+                    }}
+                ><IconExpandAll /></IconButton> : null}
             </div>
-            <DragDropContext onDragEnd={ this.onDragEnd }>
+            <DragDropContext onDragEnd={this.onDragEnd}>
                 <Droppable droppableId="droppable">
                     {(provided, snapshot) => (
-                        <div className={ this.props.classes.scroll }
-                             {...provided.droppableProps}
-                             ref={ provided.innerRef }
-                             style={ this.getListStyle(snapshot.isDraggingOver) }
+                        <div className={this.props.classes.scroll}
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            style={this.getListStyle(snapshot.isDraggingOver)}
                         >
                             { this.state.members.map((member, i) =>
-                                <Draggable key={ member.id + '_' + i } draggableId={ member.id + '_' + i } index={ i }>
+                                <Draggable key={member.id + '_' + i} draggableId={member.id + '_' + i} index={i}>
                                     {(provided, snapshot) =>
                                         <div
-                                            ref={ provided.innerRef }
-                                            {...provided.draggableProps }
-                                            {...provided.dragHandleProps }
-                                            style={ this.getItemStyle(
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            style={this.getItemStyle(
                                                 snapshot.isDragging,
                                                 provided.draggableProps.style
-                                            ) }
-                                        >{ this.renderMember(member, i) }</div>}
+                                            )}
+                                        >{this.renderMember(member, i)}</div>}
                                 </Draggable>
                             )}
-                            { provided.placeholder }
+                            { provided.placeholder}
                         </div>
                     )}
                 </Droppable>
@@ -1136,7 +1136,7 @@ SceneMembersForm.propTypes = {
     sceneId: PropTypes.string,
     onFalseEnabled: PropTypes.bool,
     virtualGroup: PropTypes.bool,
-	aggregation: PropTypes.string,
+    aggregation: PropTypes.string,
     members: PropTypes.array,
     easy: PropTypes.bool,
     sceneEnabled: PropTypes.bool,
