@@ -369,9 +369,9 @@ function checkScene(sceneId, stateId, state) {
 
         try {
             if (sceneObjNative.virtualGroup) {
-				if (sceneObjNative.aggregation == "avg") {
-					activeValue = activeValue / sceneObjNative.members.length
-				}
+                if (sceneObjNative.aggregation == "avg") {
+                	activeValue = activeValue / sceneObjNative.members.length
+                }
                 if (activeValue !== null) {
                     if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
                         sceneObj.value.val = activeValue;
