@@ -1,240 +1,239 @@
 {
-  "common": {
-    "name": "scenes",
-    "version": "2.3.6",
-    "news": {
-      "2.3.6": {
-        "en": "Check state id before getting value (Sentry IOBROKER-SCENES-F)",
-        "de": "Überprüfen Sie die Status-ID, bevor Sie den Wert erhalten (Sentry IOBROKER-SCENES-F).",
-        "ru": "Перед получением значения проверьте идентификатор состояния (Sentry IOBROKER-SCENES-F)",
-        "pt": "Verifique o id do estado antes de obter o valor (Sentry IOBROKER-SCENES-F)",
-        "nl": "Controleer de status-ID voordat u de waarde ophaalt (Sentry IOBROKER-SCENES-F)",
-        "fr": "Vérifiez l'identifiant de l'état avant d'obtenir la valeur (Sentry IOBROKER-SCENES-F)",
-        "it": "Controlla l'id di stato prima di ottenere il valore (Sentry IOBROKER-SCENES-F)",
-        "es": "Verifique la identificación del estado antes de obtener el valor (Sentry IOBROKER-SCENES-F)",
-        "pl": "Sprawdź identyfikator stanu przed uzyskaniem wartości (Sentry IOBROKER-SCENES-F)",
-        "zh-cn": "在获取值之前检查状态ID（Sentry IOBROKER-SCENES-F）"
-      },
-      "2.3.5": {
-        "en": "Add error logging if invalid ids are configured for scenes (Sentry IOBROKER-SCENES-Y)",
-        "de": "Fehlerprotokollierung hinzufügen, wenn ungültige IDs für Szenen konfiguriert sind (Sentry IOBROKER-SCENES-Y)",
-        "ru": "Добавить журнал ошибок, если для сцен настроены недопустимые идентификаторы (Sentry IOBROKER-SCENES-Y)",
-        "pt": "Adicionar registro de erro se ids inválidos forem configurados para cenas (Sentry IOBROKER-SCENES-Y)",
-        "nl": "Voeg foutregistratie toe als ongeldige id's zijn geconfigureerd voor scènes (Sentry IOBROKER-SCENES-Y)",
-        "fr": "Ajouter une journalisation des erreurs si des identifiants invalides sont configurés pour les scènes (Sentry IOBROKER-SCENES-Y)",
-        "it": "Aggiungi la registrazione degli errori se gli ID non validi sono configurati per le scene (Sentry IOBROKER-SCENES-Y)",
-        "es": "Agregue el registro de errores si se configuran identificadores no válidos para las escenas (Sentry IOBROKER-SCENES-Y)",
-        "pl": "Dodaj rejestrowanie błędów, jeśli skonfigurowano nieprawidłowe identyfikatory dla scen (Sentry IOBROKER-SCENES-Y)",
-        "zh-cn": "如果为场景配置了无效的ID，则添加错误日志记录（Sentry IOBROKER-SCENES-Y）"
-      },
-      "2.3.4": {
-        "en": "Prevent crash case (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "de": "Absturz verhindern (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "ru": "Случай предотвращения сбоя (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "pt": "Evitar caso de falha (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "es": "Caso de prevención de accidentes (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
-        "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-X，IOBROKER-SCENES-V）"
-      },
-      "2.3.3": {
-        "en": "Implemented drag&drop for the reorder of scenes in folders\nImplemented Easy mode\nPossibility to use set point from other state",
-        "de": "Drag & Drop für die Neuordnung von Szenen in Ordnern implementiert\nEinfacher Modus implementiert\nMöglichkeit, Sollwert aus einem anderen Zustand zu verwenden",
-        "ru": "Реализовано перетаскивание для изменения порядка сцен в папках\nРеализован легкий режим\nВозможность использовать уставку из другого состояния",
-        "pt": "Arrastar e soltar implementado para a reordenação de cenas em pastas\nModo fácil implementado\nPossibilidade de usar ponto de ajuste de outro estado",
-        "nl": "Drag & drop geïmplementeerd voor het herschikken van scènes in mappen\nGeïmplementeerde Easy-modus\nMogelijkheid om het instelpunt uit een andere staat te gebruiken",
-        "fr": "Implémentation du glisser-déposer pour la réorganisation des scènes dans les dossiers\nMode facile implémenté\nPossibilité d'utiliser le point de consigne d'un autre état",
-        "it": "Implementato il drag & drop per il riordino delle scene nelle cartelle\nModalità facile implementata\nPossibilità di utilizzare set point da un altro stato",
-        "es": "Implementado arrastrar y soltar para reordenar escenas en carpetas\nModo fácil implementado\nPosibilidad de usar set point de otro estado",
-        "pl": "Zaimplementowano przeciągnij i upuść w celu zmiany kolejności scen w folderach\nZaimplementowano tryb łatwy\nMożliwość wykorzystania wartości zadanej z innego stanu",
-        "zh-cn": "实现了拖放操作以对文件夹中的场景进行重新排序\n实施简易模式\n可以使用其他状态下的设定点"
-      },
-      "2.3.1": {
-        "en": "Prevent crash case (Sentry IOBROKER-SCENES-M)",
-        "de": "Absturz verhindern (Sentry IOBROKER-SCENES-M)",
-        "ru": "Предотвращение аварии (Sentry IOBROKER-SCENES-M)",
-        "pt": "Evitar caso de travamento (Sentry IOBROKER-SCENES-M)",
-        "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-M)",
-        "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-M)",
-        "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-M)",
-        "es": "Prevenir caso de accidente (Sentry IOBROKER-SCENES-M)",
-        "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-M)",
-        "zh-cn": "防止发生崩溃情况（Sentry IOBROKER-SCENES-M）"
-      },
-      "2.3.0": {
-        "en": "Fixed GUI errors",
-        "de": "GUI-Fehler behoben",
-        "ru": "Исправлены ошибки графического интерфейса",
-        "pt": "Erros de GUI corrigidos",
-        "nl": "GUI-fouten opgelost",
-        "fr": "Correction des erreurs d'interface graphique",
-        "it": "Risolti errori della GUI",
-        "es": "Errores de GUI fijos",
-        "pl": "Naprawiono błędy GUI",
-        "zh-cn": "修复了GUI错误"
-      },
-      "2.1.7": {
-        "en": "Prevent crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "de": "Absturzfall verhindern (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "ru": "Предотвращение сбоя (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "pt": "Evitar caso de travamento (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "es": "Caso de prevención de accidentes (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "pl": "Zapobiegaj przypadkowi awarii (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
-        "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-E，IOBROKER-SCENES-G，IOBROKER-SCENES-A）"
-      },
-      "2.1.6": {
-        "en": "Updated the select ID dialog.",
-        "de": "Das Dialogfeld \"ID auswählen\" wurde aktualisiert.",
-        "ru": "Обновлен диалог выбора идентификатора.",
-        "pt": "Atualizado a caixa de diálogo de seleção de ID.",
-        "nl": "Het dialoogvenster ID selecteren bijgewerkt.",
-        "fr": "Mise à jour de la boîte de dialogue de sélection d'ID.",
-        "it": "Aggiornata la finestra di dialogo Seleziona ID.",
-        "es": "Se actualizó el cuadro de diálogo Seleccionar ID.",
-        "pl": "Zaktualizowano okno dialogowe wyboru identyfikatora.",
-        "zh-cn": "更新了选择ID对话框。"
-      },
-      "2.1.3": {
-        "en": "Prevent crash cases (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "de": "Verhindern Sie Absturzfälle (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "ru": "Предотвращение сбоев (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "pt": "Evite casos de travamento (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "nl": "Voorkom crashgevallen (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "it": "Prevenire i casi di crash (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "es": "Prevenir casos de accidentes (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
-        "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-B，IOBROKER-SCENES-8，IOBROKER-SCENES-D）"
-      },
-      "2.1.2": {
-        "en": "Interval between states was corrected",
-        "de": "Das Intervall zwischen den Zuständen wurde korrigiert",
-        "ru": "Интервал между состояниями был исправлен",
-        "pt": "O intervalo entre estados foi corrigido",
-        "nl": "Interval tussen staten is gecorrigeerd",
-        "fr": "L'intervalle entre les états a été corrigé",
-        "it": "L'intervallo tra gli stati è stato corretto",
-        "es": "Se corrigió el intervalo entre estados",
-        "pl": "Odstęp między stanami został poprawiony",
-        "zh-cn": "状态之间的时间间隔已更正"
-      },
-      "2.0.17": {
-        "en": "GUI error corrected",
-        "de": "GUI-Fehler behoben",
-        "ru": "Исправлена ошибка графического интерфейса",
-        "pt": "Erro na GUI corrigido",
-        "nl": "GUI-fout gecorrigeerd",
-        "fr": "Erreur GUI corrigée",
-        "it": "Errore della GUI corretto",
-        "es": "Error de GUI corregido",
-        "pl": "Poprawiony błąd GUI",
-        "zh-cn": "界面错误已更正"
-      },
-      "2.0.13": {
-        "en": "Mobile view added",
-        "de": "Mobile Ansicht hinzugefügt",
-        "ru": "Добавлено мобильное представление",
-        "pt": "Visualização para dispositivos móveis adicionada",
-        "nl": "Mobiele weergave toegevoegd",
-        "fr": "Vue mobile ajoutée",
-        "it": "Visualizzazione mobile aggiunta",
-        "es": "Vista móvil agregada",
-        "pl": "Dodano widok mobilny",
-        "zh-cn": "添加了移动视图"
-      },
-      "2.0.12": {
-        "en": "GUI error corrected",
-        "de": "GUI-Fehler behoben",
-        "ru": "Исправлена ошибка графического интерфейса",
-        "pt": "Erro na GUI corrigido",
-        "nl": "GUI-fout gecorrigeerd",
-        "fr": "Erreur GUI corrigée",
-        "it": "Errore della GUI corretto",
-        "es": "Error de GUI corregido",
-        "pl": "Poprawiony błąd GUI",
-        "zh-cn": "界面错误已更正"
-      },
-      "2.0.10": {
-        "en": "Added \"Do not overwrite state if it has the required value\" option",
-        "de": "Option \"Status nicht überschreiben, wenn er den erforderlichen Wert hat\" hinzugefügt",
-        "ru": "Добавлена опция «Не перезаписывать состояние, если оно имеет требуемое значение»",
-        "pt": "Adicionada a opção \"Não substituir o estado se ele tiver o valor necessário\"",
-        "nl": "\"Overschrijf status niet als het de vereiste waarde heeft\" optie toegevoegd",
-        "fr": "Ajout de l'option \"Ne pas écraser l'état s'il a la valeur requise\"",
-        "it": "Aggiunta l'opzione \"Non sovrascrivere lo stato se ha il valore richiesto\"",
-        "es": "Se agregó la opción \"No sobrescribir estado si tiene el valor requerido\"",
-        "pl": "Dodano opcję „Nie zastępuj stanu, jeśli ma wymaganą wartość”",
-        "zh-cn": "添加了“如果具有必需的值，请勿覆盖状态”选项"
-      }
+    "common": {
+        "name": "scenes",
+        "version": "2.3.6",
+        "news": {
+            "2.3.6": {
+                "en": "Check state id before getting value (Sentry IOBROKER-SCENES-F)",
+                "de": "Überprüfen Sie die Status-ID, bevor Sie den Wert erhalten (Sentry IOBROKER-SCENES-F).",
+                "ru": "Перед получением значения проверьте идентификатор состояния (Sentry IOBROKER-SCENES-F)",
+                "pt": "Verifique o id do estado antes de obter o valor (Sentry IOBROKER-SCENES-F)",
+                "nl": "Controleer de status-ID voordat u de waarde ophaalt (Sentry IOBROKER-SCENES-F)",
+                "fr": "Vérifiez l'identifiant de l'état avant d'obtenir la valeur (Sentry IOBROKER-SCENES-F)",
+                "it": "Controlla l'id di stato prima di ottenere il valore (Sentry IOBROKER-SCENES-F)",
+                "es": "Verifique la identificación del estado antes de obtener el valor (Sentry IOBROKER-SCENES-F)",
+                "pl": "Sprawdź identyfikator stanu przed uzyskaniem wartości (Sentry IOBROKER-SCENES-F)",
+                "zh-cn": "在获取值之前检查状态ID（Sentry IOBROKER-SCENES-F）"
+            },
+            "2.3.5": {
+                "en": "Add error logging if invalid ids are configured for scenes (Sentry IOBROKER-SCENES-Y)",
+                "de": "Fehlerprotokollierung hinzufügen, wenn ungültige IDs für Szenen konfiguriert sind (Sentry IOBROKER-SCENES-Y)",
+                "ru": "Добавить журнал ошибок, если для сцен настроены недопустимые идентификаторы (Sentry IOBROKER-SCENES-Y)",
+                "pt": "Adicionar registro de erro se ids inválidos forem configurados para cenas (Sentry IOBROKER-SCENES-Y)",
+                "nl": "Voeg foutregistratie toe als ongeldige id's zijn geconfigureerd voor scènes (Sentry IOBROKER-SCENES-Y)",
+                "fr": "Ajouter une journalisation des erreurs si des identifiants invalides sont configurés pour les scènes (Sentry IOBROKER-SCENES-Y)",
+                "it": "Aggiungi la registrazione degli errori se gli ID non validi sono configurati per le scene (Sentry IOBROKER-SCENES-Y)",
+                "es": "Agregue el registro de errores si se configuran identificadores no válidos para las escenas (Sentry IOBROKER-SCENES-Y)",
+                "pl": "Dodaj rejestrowanie błędów, jeśli skonfigurowano nieprawidłowe identyfikatory dla scen (Sentry IOBROKER-SCENES-Y)",
+                "zh-cn": "如果为场景配置了无效的ID，则添加错误日志记录（Sentry IOBROKER-SCENES-Y）"
+            },
+            "2.3.4": {
+                "en": "Prevent crash case (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "de": "Absturz verhindern (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "ru": "Случай предотвращения сбоя (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "pt": "Evitar caso de falha (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "es": "Caso de prevención de accidentes (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
+                "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-X，IOBROKER-SCENES-V）"
+            },
+            "2.3.3": {
+                "en": "Implemented drag&drop for the reorder of scenes in folders\nImplemented Easy mode\nPossibility to use set point from other state",
+                "de": "Drag & Drop für die Neuordnung von Szenen in Ordnern implementiert\nEinfacher Modus implementiert\nMöglichkeit, Sollwert aus einem anderen Zustand zu verwenden",
+                "ru": "Реализовано перетаскивание для изменения порядка сцен в папках\nРеализован легкий режим\nВозможность использовать уставку из другого состояния",
+                "pt": "Arrastar e soltar implementado para a reordenação de cenas em pastas\nModo fácil implementado\nPossibilidade de usar ponto de ajuste de outro estado",
+                "nl": "Drag & drop geïmplementeerd voor het herschikken van scènes in mappen\nGeïmplementeerde Easy-modus\nMogelijkheid om het instelpunt uit een andere staat te gebruiken",
+                "fr": "Implémentation du glisser-déposer pour la réorganisation des scènes dans les dossiers\nMode facile implémenté\nPossibilité d'utiliser le point de consigne d'un autre état",
+                "it": "Implementato il drag & drop per il riordino delle scene nelle cartelle\nModalità facile implementata\nPossibilità di utilizzare set point da un altro stato",
+                "es": "Implementado arrastrar y soltar para reordenar escenas en carpetas\nModo fácil implementado\nPosibilidad de usar set point de otro estado",
+                "pl": "Zaimplementowano przeciągnij i upuść w celu zmiany kolejności scen w folderach\nZaimplementowano tryb łatwy\nMożliwość wykorzystania wartości zadanej z innego stanu",
+                "zh-cn": "实现了拖放操作以对文件夹中的场景进行重新排序\n实施简易模式\n可以使用其他状态下的设定点"
+            },
+            "2.3.1": {
+                "en": "Prevent crash case (Sentry IOBROKER-SCENES-M)",
+                "de": "Absturz verhindern (Sentry IOBROKER-SCENES-M)",
+                "ru": "Предотвращение аварии (Sentry IOBROKER-SCENES-M)",
+                "pt": "Evitar caso de travamento (Sentry IOBROKER-SCENES-M)",
+                "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-M)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-M)",
+                "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-M)",
+                "es": "Prevenir caso de accidente (Sentry IOBROKER-SCENES-M)",
+                "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-M)",
+                "zh-cn": "防止发生崩溃情况（Sentry IOBROKER-SCENES-M）"
+            },
+            "2.3.0": {
+                "en": "Fixed GUI errors",
+                "de": "GUI-Fehler behoben",
+                "ru": "Исправлены ошибки графического интерфейса",
+                "pt": "Erros de GUI corrigidos",
+                "nl": "GUI-fouten opgelost",
+                "fr": "Correction des erreurs d'interface graphique",
+                "it": "Risolti errori della GUI",
+                "es": "Errores de GUI fijos",
+                "pl": "Naprawiono błędy GUI",
+                "zh-cn": "修复了GUI错误"
+            },
+            "2.1.7": {
+                "en": "Prevent crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "de": "Absturzfall verhindern (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "ru": "Предотвращение сбоя (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "pt": "Evitar caso de travamento (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "nl": "Voorkom een crashgeval (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "it": "Prevenire il crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "es": "Caso de prevención de accidentes (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "pl": "Zapobiegaj przypadkowi awarii (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)",
+                "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-E，IOBROKER-SCENES-G，IOBROKER-SCENES-A）"
+            },
+            "2.1.6": {
+                "en": "Updated the select ID dialog.",
+                "de": "Das Dialogfeld \"ID auswählen\" wurde aktualisiert.",
+                "ru": "Обновлен диалог выбора идентификатора.",
+                "pt": "Atualizado a caixa de diálogo de seleção de ID.",
+                "nl": "Het dialoogvenster ID selecteren bijgewerkt.",
+                "fr": "Mise à jour de la boîte de dialogue de sélection d'ID.",
+                "it": "Aggiornata la finestra di dialogo Seleziona ID.",
+                "es": "Se actualizó el cuadro de diálogo Seleccionar ID.",
+                "pl": "Zaktualizowano okno dialogowe wyboru identyfikatora.",
+                "zh-cn": "更新了选择ID对话框。"
+            },
+            "2.1.3": {
+                "en": "Prevent crash cases (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "de": "Verhindern Sie Absturzfälle (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "ru": "Предотвращение сбоев (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "pt": "Evite casos de travamento (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "nl": "Voorkom crashgevallen (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "it": "Prevenire i casi di crash (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "es": "Prevenir casos de accidentes (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-B, IOBROKER-SCENES-8, IOBROKER-SCENES-D)",
+                "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-B，IOBROKER-SCENES-8，IOBROKER-SCENES-D）"
+            },
+            "2.1.2": {
+                "en": "Interval between states was corrected",
+                "de": "Das Intervall zwischen den Zuständen wurde korrigiert",
+                "ru": "Интервал между состояниями был исправлен",
+                "pt": "O intervalo entre estados foi corrigido",
+                "nl": "Interval tussen staten is gecorrigeerd",
+                "fr": "L'intervalle entre les états a été corrigé",
+                "it": "L'intervallo tra gli stati è stato corretto",
+                "es": "Se corrigió el intervalo entre estados",
+                "pl": "Odstęp między stanami został poprawiony",
+                "zh-cn": "状态之间的时间间隔已更正"
+            },
+            "2.0.17": {
+                "en": "GUI error corrected",
+                "de": "GUI-Fehler behoben",
+                "ru": "Исправлена ошибка графического интерфейса",
+                "pt": "Erro na GUI corrigido",
+                "nl": "GUI-fout gecorrigeerd",
+                "fr": "Erreur GUI corrigée",
+                "it": "Errore della GUI corretto",
+                "es": "Error de GUI corregido",
+                "pl": "Poprawiony błąd GUI",
+                "zh-cn": "界面错误已更正"
+            },
+            "2.0.13": {
+                "en": "Mobile view added",
+                "de": "Mobile Ansicht hinzugefügt",
+                "ru": "Добавлено мобильное представление",
+                "pt": "Visualização para dispositivos móveis adicionada",
+                "nl": "Mobiele weergave toegevoegd",
+                "fr": "Vue mobile ajoutée",
+                "it": "Visualizzazione mobile aggiunta",
+                "es": "Vista móvil agregada",
+                "pl": "Dodano widok mobilny",
+                "zh-cn": "添加了移动视图"
+            },
+            "2.0.12": {
+                "en": "GUI error corrected",
+                "de": "GUI-Fehler behoben",
+                "ru": "Исправлена ошибка графического интерфейса",
+                "pt": "Erro na GUI corrigido",
+                "nl": "GUI-fout gecorrigeerd",
+                "fr": "Erreur GUI corrigée",
+                "it": "Errore della GUI corretto",
+                "es": "Error de GUI corregido",
+                "pl": "Poprawiony błąd GUI",
+                "zh-cn": "界面错误已更正"
+            },
+            "2.0.10": {
+                "en": "Added \"Do not overwrite state if it has the required value\" option",
+                "de": "Option \"Status nicht überschreiben, wenn er den erforderlichen Wert hat\" hinzugefügt",
+                "ru": "Добавлена опция «Не перезаписывать состояние, если оно имеет требуемое значение»",
+                "pt": "Adicionada a opção \"Não substituir o estado se ele tiver o valor necessário\"",
+                "nl": "\"Overschrijf status niet als het de vereiste waarde heeft\" optie toegevoegd",
+                "fr": "Ajout de l'option \"Ne pas écraser l'état s'il a la valeur requise\"",
+                "it": "Aggiunta l'opzione \"Non sovrascrivere lo stato se ha il valore richiesto\"",
+                "es": "Se agregó la opción \"No sobrescribir estado si tiene el valor requerido\"",
+                "pl": "Dodano opcję „Nie zastępuj stanu, jeśli ma wymaganą wartość”",
+                "zh-cn": "添加了“如果具有必需的值，请勿覆盖状态”选项"
+            }
+        },
+        "title": "Scenes",
+        "titleLang": {
+            "en": "Scenes",
+            "de": "Szenen",
+            "ru": "Сцены",
+            "pt": "Cenários",
+            "nl": "scenario's",
+            "fr": "Scénarios",
+            "it": "scenari",
+            "es": "Escenarios",
+            "pl": "Scenariusze"
+        },
+        "desc": {
+            "en": "This adapter allows to create scenes from several datapoints.",
+            "de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
+            "ru": "Позволяет создавать и активировать cцены.",
+            "pt": "Este adaptador permite criar cenas de vários pontos de dados",
+            "nl": "Met deze adapter kunnen scènes van verschillende datapunten worden gemaakt",
+            "fr": "Cet adaptateur permet de créer des scènes à partir de plusieurs points de données",
+            "it": "Questo adattatore consente di creare scene da diversi datapoint",
+            "es": "Este adaptador permite crear escenas desde varios puntos de datos",
+            "pl": "Ten adapter umożliwia tworzenie scen z kilku punktów danych"
+        },
+        "authors": [
+            "bluefox <dogafox@gmail.com>"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "mode": "daemon",
+        "readme": "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
+        "loglevel": "info",
+        "icon": "scenes.png",
+        "enabled": true,
+        "messagebox": true,
+        "keywords": [
+            "Scenes",
+            "Szenen",
+            "Сцены"
+        ],
+        "compact": true,
+        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
+        "localLink": "/adapter/scenes/tab.html",
+        "noConfig": true,
+        "type": "logic",
+        "adminTab": {
+            "name": {
+                "en": "Scenes",
+                "de": "Szenen",
+                "ru": "Cцeны"
+            },
+            "singleton": true,
+            "fa-icon": "theaters"
+        },
+        "plugins": {
+            "sentry": {
+                "dsn": "https://a66ab7f27f2744c5a722875d343471ad@sentry.iobroker.net/44"
+            }
+        },
+        "dependencies": {
+            "js-controller": ">=2.0.0"
+        }
     },
-    "title": "Scenes",
-    "titleLang": {
-      "en": "Scenes",
-      "de": "Szenen",
-      "ru": "Сцены",
-      "pt": "Cenários",
-      "nl": "scenario's",
-      "fr": "Scénarios",
-      "it": "scenari",
-      "es": "Escenarios",
-      "pl": "Scenariusze"
-    },
-    "desc": {
-      "en": "This adapter allows to create scenes from several datapoints.",
-      "de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
-      "ru": "Позволяет создавать и активировать cцены.",
-      "pt": "Este adaptador permite criar cenas de vários pontos de dados",
-      "nl": "Met deze adapter kunnen scènes van verschillende datapunten worden gemaakt",
-      "fr": "Cet adaptateur permet de créer des scènes à partir de plusieurs points de données",
-      "it": "Questo adattatore consente di creare scene da diversi datapoint",
-      "es": "Este adaptador permite crear escenas desde varios puntos de datos",
-      "pl": "Ten adapter umożliwia tworzenie scen z kilku punktów danych"
-    },
-    "authors": [
-      "bluefox <dogafox@gmail.com>"
-    ],
-    "license": "MIT",
-    "platform": "Javascript/Node.js",
-    "mode": "daemon",
-    "readme": "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
-    "loglevel": "info",
-    "icon": "scenes.png",
-    "enabled": true,
-    "messagebox": true,
-    "keywords": [
-      "Scenes",
-      "Szenen",
-      "Сцены"
-    ],
-    "compact": true,
-    "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
-    "localLink": "/adapter/scenes/tab.html",
-    "noConfig": true,
-    "type": "logic",
-    "adminTab": {
-      "name": {
-        "en": "Scenes",
-        "de": "Szenen",
-        "ru": "Cцeны"
-      },
-      "singleton": true,
-      "fa-icon": "theaters"
-    },
-    "plugins": {
-      "sentry": {
-        "dsn": "https://a66ab7f27f2744c5a722875d343471ad@sentry.iobroker.net/44"
-      }
-    },
-    "dependencies": {
-      "js-controller": ">=2.0.0"
-    },
-    "installedFrom": "D:\\Files\\Workspace\\iobroker\\ioBroker.scenes"
-  },
-  "native": {},
-  "instanceObjects": []
+    "native": {},
+    "instanceObjects": []
 }
