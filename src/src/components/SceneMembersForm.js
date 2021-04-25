@@ -247,6 +247,7 @@ class SceneMembersForm extends React.Component {
             deleteDialog: null,
             onFalseEnabled: props.onFalseEnabled,
             virtualGroup: props.virtualGroup,
+			aggregation: props.aggregation,
             sceneEnabled: props.sceneEnabled,
             selectedSceneChanged: props.selectedSceneChanged,
             engineId: props.engineId,
@@ -294,6 +295,10 @@ class SceneMembersForm extends React.Component {
         }
         if (props.virtualGroup !== state.virtualGroup) {
             newState.virtualGroup = props.virtualGroup;
+            changed = true;
+        }
+        if (props.aggregation !== state.aggregation) {
+            newState.aggregation = props.aggregation;
             changed = true;
         }
         if (props.selectedSceneChanged !== state.selectedSceneChanged) {
@@ -1131,6 +1136,7 @@ SceneMembersForm.propTypes = {
     sceneId: PropTypes.string,
     onFalseEnabled: PropTypes.bool,
     virtualGroup: PropTypes.bool,
+	aggregation: PropTypes.string,
     members: PropTypes.array,
     easy: PropTypes.bool,
     sceneEnabled: PropTypes.bool,
