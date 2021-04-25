@@ -247,7 +247,7 @@ class SceneMembersForm extends React.Component {
             deleteDialog: null,
             onFalseEnabled: props.onFalseEnabled,
             virtualGroup: props.virtualGroup,
-			aggregation: props.aggregation,
+            aggregation: props.aggregation,
             sceneEnabled: props.sceneEnabled,
             selectedSceneChanged: props.selectedSceneChanged,
             engineId: props.engineId,
