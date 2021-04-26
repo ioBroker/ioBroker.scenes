@@ -1136,7 +1136,7 @@ SceneMembersForm.propTypes = {
     sceneId: PropTypes.string,
     onFalseEnabled: PropTypes.bool,
     virtualGroup: PropTypes.bool,
-	aggregation: PropTypes.string,
+    aggregation: PropTypes.string,
     members: PropTypes.array,
     easy: PropTypes.bool,
     sceneEnabled: PropTypes.bool,
