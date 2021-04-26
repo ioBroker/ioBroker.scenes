@@ -25,7 +25,6 @@
     "Instance": "实例",
     "Interval between commands (ms)": "命令间隔（毫秒）",
     "Virtual group": "虚拟小组",
-    "Aggregation": "聚合",
     "Set value if false": "设置为false",
     "Trigger for TRUE": "触发TRUE",
     "Trigger ID": "触发编号",

@@ -25,7 +25,6 @@
     "Instance": "Инстанция",
     "Interval between commands (ms)": "Интервал между командами (мс)",
     "Virtual group": "Виртуальная группа",
-    "Aggregation": "Агрегирование",
     "Set value if false": "Установить значение при FALSE",
     "Trigger for TRUE": "Триггер для TRUE",
     "Trigger ID": "Идентификатор триггера",
