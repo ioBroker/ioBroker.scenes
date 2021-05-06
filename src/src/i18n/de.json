@@ -25,6 +25,7 @@
     "Instance": "Instanz",
     "Interval between commands (ms)": "Intervall zwischen Befehlen (ms)",
     "Virtual group": "Virtuelle Gruppe",
+    "Aggregation": "Aggregation",
     "Set value if false": "Werte bei FALSE",
     "Trigger for TRUE": "Trigger für TRUE",
     "Trigger ID": "Trigger ID",
