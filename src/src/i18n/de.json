@@ -23,7 +23,7 @@
     "Scene name": "Name der Szene",
     "Scene description": "Szenenbeschreibung",
     "Instance": "Instanz",
-    "Interval between commands (ms)": "Intervall zwischen Kommandos(ms)",
+    "Interval between commands (ms)": "Intervall zwischen Kommandos (ms)",
     "Virtual group": "Virtuelle Gruppe",
     "Set value if false": "Werte bei FALSE",
     "Trigger for TRUE": "Trigger für TRUE",
