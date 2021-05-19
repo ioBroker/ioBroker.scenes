@@ -232,7 +232,8 @@
         },
         "dependencies": {
             "js-controller": ">=2.0.0"
-        }
+        },
+        "tier": 1
     },
     "native": {},
     "instanceObjects": []
