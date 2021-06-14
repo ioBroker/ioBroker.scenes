@@ -78,7 +78,7 @@
     "tooltip_copyState": "Скопировать значение состояния в буфер обмена",
     "tooltip_editState": "Изменить значение состояния",
     "filter_id": "ID",
-    "filter_name": "Имя",
+    "filter_name": "Название",
     "filter_type": "Тип",
     "filter_role": "Роль",
     "filter_room": "Комната",
