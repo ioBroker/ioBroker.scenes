@@ -66,7 +66,7 @@
     "Name is not unique. Please change name before the save.": "Имя не уникально. Пожалуйста, измените имя перед сохранением.",
     "Instance not active": "Инстанция не активна",
     "tooltip_value": "Значение",
-    "tooltip_ack": "признанный",
+    "tooltip_ack": "Подтвержденный",
     "tooltip_ts": "Время",
     "tooltip_lc": "Время последнего изменения",
     "tooltip_from": "Источник",
