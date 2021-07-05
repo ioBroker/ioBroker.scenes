@@ -220,7 +220,14 @@
             "name": {
                 "en": "Scenes",
                 "de": "Szenen",
-                "ru": "Cцeны"
+                "ru": "Cцeны",
+                "pt": "Cenas",
+                "nl": "Scènes",
+                "fr": "Scènes",
+                "it": "scene",
+                "es": "Escenas",
+                "pl": "Sceny",
+                "zh-cn": "场景"
             },
             "singleton": true,
             "fa-icon": "theaters"
@@ -230,9 +237,11 @@
                 "dsn": "https://a66ab7f27f2744c5a722875d343471ad@sentry.iobroker.net/44"
             }
         },
-        "dependencies": {
-            "js-controller": ">=2.0.0"
-        },
+        "dependencies": [
+            {
+                "js-controller": ">=2.0.0"
+            }
+        ],
         "tier": 1
     },
     "native": {},
