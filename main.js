@@ -64,6 +64,7 @@ function startAdapter(options) {
     options = options || {};
     Object.assign(options, {
         name:    adapterName, // adapter name
+        strictObjectChecks: false, // because existing scenes have type 'boolean'. But it can have value 'uncertain'
         dirname: __dirname,   // say own position
         unload: cb => {
             Object.keys(scenesTimeout).forEach(id => scenesTimeout[id] && clearTimeout(scenesTimeout[id]));
@@ -436,10 +437,14 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
     let fVal;
     let aVal;
 
-    if (!state) return;
+    if (!state) {
+        return;
+    }
 
     let trigger = isTrue ? scenes[sceneId].native.onTrue : scenes[sceneId].native.onFalse;
-    if (!trigger || trigger.enabled === false || !trigger.trigger) return;
+    if (!trigger || trigger.enabled === false || !trigger.trigger) {
+        return;
+    }
     trigger = trigger.trigger;
 
     if (trigger.id === stateId) {

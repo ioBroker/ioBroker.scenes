@@ -37,6 +37,7 @@ import {MdPlayArrow as IconPlay} from 'react-icons/md';
 import {FaFolder as IconFolderClosed} from 'react-icons/fa';
 import {FaFolderOpen as IconFolderOpened} from 'react-icons/fa';
 import ClearIcon from '@material-ui/icons/Close';
+import IconCancel from '@material-ui/icons/Close';
 import IconExpandAll from '@material-ui/icons/ExpandMore';
 import IconCollapseAll from '@material-ui/icons/ExpandLess';
 import ListIcon from '@material-ui/icons/Menu';
@@ -500,17 +501,29 @@ class SceneMembersForm extends React.Component {
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button variant="contained" onClick={ () => this.setState({deleteDialog: null}) }>
-                        {I18n.t('Cancel')}
-                    </Button>
-                    <Button variant="contained" color="secondary" ref={this.delButtonRef} onClick={ e => {
-                        if (this.state.suppressDeleteConfirm) {
-                            window.localStorage.setItem('scenes.suppressDeleteConfirm', Date.now().toString());
-                        }
-                        this.deleteSceneMember(this.state.deleteDialog);
-                    } }>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        ref={this.delButtonRef}
+                        onClick={ e => {
+                            if (this.state.suppressDeleteConfirm) {
+                                window.localStorage.setItem('scenes.suppressDeleteConfirm', Date.now().toString());
+                            }
+                            this.deleteSceneMember(this.state.deleteDialog);
+                        } }
+                        startIcon={<IconDelete />}
+                    >
                         { I18n.t('Delete') }
                     </Button>
+                    <Button
+                        autoFocus
+                        variant="contained"
+                        onClick={ () => this.setState({deleteDialog: null}) }
+                        startIcon={<IconCancel />}
+                    >
+                        {I18n.t('Cancel')}
+                    </Button>
+
                 </DialogActions>
             </Dialog>;
     };

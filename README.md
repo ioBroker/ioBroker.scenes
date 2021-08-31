@@ -98,14 +98,14 @@ Delays can be used in the **group** too, but the states with delay are not parti
 You can create virtual group to control all shutters in living room. 
 By writing 40% into virtual group all shutters will be set to 40%.
 
-Additionally, you can define the behaviour which value should be taken for group not all states of the group have the same value.
+Additionally, you can define the behaviour for which value should be taken for the group if not all states of the group have the same value.
 
 You can provide following aggregations (available only in advanced mode):
 - `uncertain` - (default) - the value of the group will have text `uncertain`.
-- `any` - first not zero value of all states in group.
-- `min` - Minimal value of all states in group.
-- `max` - Maximal value of all states in group.
-- `avg` - Average value of all states in group.
+- `any` - first non zero value of all states in group.
+- `min` - minimal value of all states in group.
+- `max` - maximal value of all states in group.
+- `avg` - average value of all states in group.
 
 ## Save actual states as scene
 To save actual states in some scene you can send a message to the adapter:
@@ -129,8 +129,10 @@ The adapter will read all actual values for IDs defined in this scene and save i
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.3.7 (2021-08-31)
 * (Apollon77) Handle case where states are not set but used as value (Sentry IOBROKER-SCENES-13)
+* (TyrionWarMage) Added the aggregation mode for the virtual groups.
+* (bluefox) Sentry data will not be sent in front-end if the diagnostic or sentry is disabled
 
 ### 2.3.6 (2021-01-22)
 * (Apollon77) Check state id before getting value (Sentry IOBROKER-SCENES-F)
@@ -248,6 +250,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 ### 0.0.1 (2015-07-29)
 * (bluefox) initial commit
 
+## License
 The MIT License (MIT)
 
 Copyright (c) 2015-2021, Bluefox (dogafox@gmail.com)

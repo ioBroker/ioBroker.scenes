@@ -18,6 +18,11 @@ import 'ace-builds/src-noconflict/theme-clouds_midnight';
 import 'ace-builds/src-noconflict/theme-chrome';
 import 'ace-builds/src-noconflict/ext-language_tools'
 
+// icons
+import {MdClose as IconClose} from 'react-icons/md';
+import IconCopy from '@iobroker/adapter-react/icons/IconCopy';
+import {MdCheck as IconCheck} from 'react-icons/md';
+
 // Own
 import I18n from '@iobroker/adapter-react/i18n';
 import copy from '@iobroker/adapter-react/Components/copy-to-clipboard';
@@ -98,25 +103,35 @@ class ExportImportDialog extends React.Component {
                 </div>
             </DialogContent>
             <DialogActions>
-                <Button onClick={ () => this.props.onClose() } autoFocus={ !this.props.isImport }>
-                    { I18n.t('Close') }
-                </Button>
                 { this.props.isImport ?
                     <Button
                         disabled={ !this.state.text || this.state.error }
                         onClick={ () => this.props.onClose(JSON.parse(this.state.text)) }
                         color="primary"
+                        startIcon={<IconCheck />}
                     >
                         { I18n.t('Import') }
                     </Button>
                     :
-                    <Button onClick={ () => {
-                        copy(this.state.text);
-                        this.setState({ toast: I18n.t('Copied') });
-                        setTimeout(() => this.props.onClose(), 500);
-                    } } color="primary" autoFocus>
+                    <Button
+                        onClick={ () => {
+                            copy(this.state.text);
+                            this.setState({ toast: I18n.t('Copied') });
+                            setTimeout(() => this.props.onClose(), 500);
+                        }}
+                        color="primary"
+                        autoFocus
+                        startIcon={<IconCopy />}
+                    >
                         { I18n.t('Copy to clipboard') }
                     </Button>}
+                <Button
+                    onClick={ () => this.props.onClose() }
+                    autoFocus={ !this.props.isImport }
+                    startIcon={<IconClose />}
+                >
+                    { I18n.t('Close') }
+                </Button>
                 { this.renderToast() }
             </DialogActions>
         </Dialog>;

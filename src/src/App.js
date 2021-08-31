@@ -36,6 +36,7 @@ import ScenesList from './components/ScenesList';
 import {MdClose as IconCancel} from 'react-icons/md';
 import {MdSave as IconSave} from 'react-icons/md';
 import {MdDelete as IconDelete} from 'react-icons/md';
+import {MdCheck as IconCheck} from 'react-icons/md';
 import {MdFileDownload as IconExport} from 'react-icons/md';
 // import {MdFileUpload as IconImport} from 'react-icons/md';
 import {FaClone as IconClone} from 'react-icons/fa';
@@ -427,7 +428,7 @@ class App extends GenericApp {
         let template = {
             common: {
                 name: '',
-                type: 'boolean',
+                type: 'mixed', // because it can have value 'uncertain'
                 role: 'scene.state',
                 desc: '',
                 enabled: true,
@@ -612,13 +613,7 @@ class App extends GenericApp {
             onClose={ () => this.setState({sceneChangeDialog: ''}) }>
                 <DialogTitle>{ I18n.t('Are you sure for cancel unsaved changes?') }</DialogTitle>
                 <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                    <Button variant="contained" onClick={() => {
-                        this.confirmCb = null; // cancel callback
-                        this.setState({sceneChangeDialog: ''});
-                    }}>
-                        <IconCancel/> { I18n.t('Cancel') }
-                    </Button>
-                    <Button variant="contained" color="secondary" onClick={ () =>
+                    <Button variant="contained" onClick={ () =>
                         this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
                             const cb = this.confirmCb;
                             this.confirmCb = null;
@@ -627,7 +622,7 @@ class App extends GenericApp {
                             .catch(() => console.log('ignore')) }>
                         { I18n.t('Discard') }
                     </Button>
-                    <Button variant="contained" color="secondary" onClick={e => {
+                    <Button variant="contained" color="secondary" autoFocus onClick={e => {
                         // save scene
                         this.writeScene()
                             .then(() => that.changeSelectedScene(that.state.sceneChangeDialog === 'empty' ? '' : that.state.sceneChangeDialog, true, () => {
@@ -638,6 +633,12 @@ class App extends GenericApp {
                             .catch(() => console.log('ignore'))
                     }}>
                         <IconSave/> { I18n.t('Save changes') }
+                    </Button>
+                    <Button variant="contained" onClick={() => {
+                        this.confirmCb = null; // cancel callback
+                        this.setState({sceneChangeDialog: ''});
+                    }}>
+                        <IconCancel/> { I18n.t('Cancel') }
                     </Button>
                 </DialogActions>
             </Dialog> : null;
@@ -651,9 +652,6 @@ class App extends GenericApp {
         >
             <DialogTitle>{ I18n.t('Are you sure for delete this scene?') }</DialogTitle>
             <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                <Button variant="contained" onClick={ () => this.setState({deleteDialog: false}) }>
-                    {I18n.t('Cancel')}
-                </Button>
                 <Button
                     variant="contained"
                     color="secondary"
@@ -661,8 +659,17 @@ class App extends GenericApp {
                         this.setState({deleteDialog: false}, () =>
                             this.deleteScene(this.state.selectedSceneId))
                     }
+                    startIcon={<IconDelete />}
                 >
                     { I18n.t('Delete') }
+                </Button>
+                <Button
+                    variant="contained"
+                    autoFocus
+                    onClick={ () => this.setState({deleteDialog: false}) }
+                    startIcon={<IconCancel />}
+                >
+                    {I18n.t('Cancel')}
                 </Button>
             </DialogActions>
         </Dialog> : null;
@@ -716,6 +723,7 @@ class App extends GenericApp {
                 variant="contained"
                 color="secondary"
                 onClick={() => this.writeScene()}
+                startIcon={<IconCheck />}
             >
                 { I18n.t('Save') }
             </Button> : null }
@@ -723,6 +731,7 @@ class App extends GenericApp {
             { this.state.selectedSceneChanged ? <Button
                 className={ this.props.classes.toolbarButtons }
                 variant="contained"
+                startIcon={<IconCancel />}
                 onClick={ () => this.refreshData(this.state.selectedSceneId) }
             >
                 { I18n.t('Cancel') }

@@ -212,7 +212,7 @@ class ScenesList extends React.Component {
                 <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
                 <DialogContent className={ this.props.classes.p }>
                     <TextField
-                        autoFocus={true}
+                        autoFocus
                         label={ I18n.t('Title') }
                         value={ this.state.addFolderDialogTitle }
                         onChange={ e =>
@@ -221,18 +221,19 @@ class ScenesList extends React.Component {
                     />
                 </DialogContent>
                 <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                    <Button variant="contained" onClick={ () => this.setState({addFolderDialog: null}) }>
-                        <IconCancel className={ this.props.classes.buttonIcon }/>
-                        { I18n.t('Cancel') }
-                    </Button>
                     <Button
                         variant="contained"
                         disabled={!this.state.addFolderDialogTitle || Object.keys(this.props.folders.subFolders).find(name => name === this.state.addFolderDialogTitle)}
                         onClick={() => this.onAddFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle)}
-                        color="primary" autoFocus
+                        color="primary"
+                        autoFocus
+                        startIcon={<IconCheck className={ this.props.classes.buttonIcon }/>}
                     >
-                        <IconCheck className={ this.props.classes.buttonIcon }/>
                         {I18n.t('Create')}
+                    </Button>
+                    <Button variant="contained" onClick={ () => this.setState({addFolderDialog: null}) }>
+                        <IconCancel className={ this.props.classes.buttonIcon }/>
+                        { I18n.t('Cancel') }
                     </Button>
                 </DialogActions>
             </Dialog> : null;
@@ -277,19 +278,22 @@ class ScenesList extends React.Component {
                 />
             </DialogContent>
             <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                <Button variant="contained" onClick={ () => this.setState({editFolderDialog: null}) }>
-                    <IconCancel className={ this.props.classes.buttonIcon }/>
-                    { I18n.t('Cancel') }
-                </Button>
                 <Button
                     variant="contained"
                     disabled={ !this.state.editFolderDialogTitle || this.state.editFolderDialogTitleOrigin === this.state.editFolderDialogTitle || !isUnique}
                     onClick={() => this.onRenameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle)}
                     color="primary"
                     autoFocus
+                    startIcon={<IconCheck/>}
                 >
-                    <IconCheck className={ this.props.classes.buttonIcon }/>
                     { I18n.t('Apply') }
+                </Button>
+                <Button
+                    variant="contained"
+                    onClick={ () => this.setState({editFolderDialog: null}) }
+                    startIcon={<IconCancel />}
+                >
+                    { I18n.t('Cancel') }
                 </Button>
             </DialogActions>
         </Dialog>;

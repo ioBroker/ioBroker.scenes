@@ -370,7 +370,7 @@ class SceneForm extends React.Component {
 	                            <FormControl className={this.props.classes.width100}>
 	                                <InputLabel shrink={true}>{ I18n.t('Aggregation') }</InputLabel>
 	                                <Select
-	                                    value={ this.state.native.aggregation }
+	                                    value={ this.state.native.aggregation || 'uncertain' }
 	                                    onChange={e => {
 	                                        const native = JSON.parse(JSON.stringify(this.state.native));
 	                                        native.aggregation = e.target.value;
