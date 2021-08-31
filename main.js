@@ -172,12 +172,12 @@ function saveScene(sceneID, isForTrue, cb) {
             obj.native.members.forEach((member, i) => {
                 count++;
                 adapter.getForeignState(member.id, (err, state) => {
-                    console.log('ID ' + member.id + '=' + state.val);
+                    console.log('ID ' + member.id + '=' + (state ? state.val : state));
                     count--;
                     if (isForTrue) {
-                        obj.native.members[i].setIfTrue  = state.val;
+                        obj.native.members[i].setIfTrue  = state ? state.val : null;
                     } else {
-                        obj.native.members[i].setIfFalse = state.val;
+                        obj.native.members[i].setIfFalse = state ? state.val : null;
                     }
                     if (!count) {
                         adapter.setForeignObject(sceneID, obj, err => {
