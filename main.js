@@ -316,8 +316,22 @@ function checkScene(sceneId, stateId, state) {
 
                 if (activeValue === null) {
                     activeValue = sceneObjNative.members[i].actual;
-                } else if (activeValue != sceneObjNative.members[i].actual) {
-                    activeValue = 'uncertain';
+                } else {
+                	if (activeValue != sceneObjNative.members[i].actual && (sceneObjNative.aggregation === undefined || sceneObjNative.aggregation === "uncertain")) {
+                		activeValue = 'uncertain';	
+                	} else {
+                		if (sceneObjNative.aggregation == "any") {
+                			activeValue = activeValue || sceneObjNative.members[i].actual	
+                		} else if (sceneObjNative.aggregation == "all") {
+                			activeValue = activeValue && sceneObjNative.members[i].actual
+                		} else if (sceneObjNative.aggregation == "min") {
+                			activeValue = Math.min(activeValue,sceneObjNative.members[i].actual)
+                		} else if (sceneObjNative.aggregation == "max") {
+                			activeValue = Math.max(activeValue, sceneObjNative.members[i].actual)
+                		} else if (sceneObjNative.aggregation == "avg") {
+                			activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual)
+                		}
+                	}
                 }
             } else {
                 let setIfTrue;
@@ -355,6 +369,9 @@ function checkScene(sceneId, stateId, state) {
 
         try {
             if (sceneObjNative.virtualGroup) {
+                if (sceneObjNative.aggregation == "avg") {
+                	activeValue = activeValue / sceneObjNative.members.length
+                }
                 if (activeValue !== null) {
                     if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
                         sceneObj.value.val = activeValue;

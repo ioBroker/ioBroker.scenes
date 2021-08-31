@@ -365,7 +365,22 @@ class SceneForm extends React.Component {
                                                 }}
                                           />}
                                 />
-                                : null}
+                                : null }
+                            { this.state.native.virtualGroup && !this.state.native.easy ?
+	                            <FormControl className={this.props.classes.width100}>
+	                                <InputLabel shrink={true}>{ I18n.t('Aggregation') }</InputLabel>
+	                                <Select
+	                                    value={ this.state.native.aggregation }
+	                                    onChange={e => {
+	                                        const native = JSON.parse(JSON.stringify(this.state.native));
+	                                        native.aggregation = e.target.value;
+	                                        this.setStateWithParent({native});
+	                                    }}
+	                                >
+	                                    { ["uncertain","all","any","avg","min","max"].map(id => <MenuItem key={ id } value={ id }>{ id }</MenuItem>) }
+	                                </Select>
+	                            </FormControl>
+                                : null }
                         </Grid>
                     </Grid>
                 </Box>
@@ -390,8 +405,7 @@ class SceneForm extends React.Component {
                 { !this.state.native.virtualGroup ? this.renderOnTrueFalse('onTrue') : null }
                 { !this.state.native.virtualGroup && this.state.native.onFalse.enabled ? this.renderOnTrueFalse('onFalse') : null }
             </Box>
-        </Box>;
-
+        </Box>;	
         return [
             result,
             this.renderSelectIdDialog()
