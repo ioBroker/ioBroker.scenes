@@ -35,6 +35,7 @@ const styles = theme => ({
     columnContainer: {
         display: 'flex',
         flexDirection: 'column',
+        paddingTop: 16,
     },
     right: {
         float: 'right',

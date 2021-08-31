@@ -128,8 +128,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 -->
 
 ## Changelog
-
-### 2.3.7 (2021-08-31)
+### 2.3.8 (2021-08-31)
 * (Apollon77) Handle case where states are not set but used as value (Sentry IOBROKER-SCENES-13)
 * (TyrionWarMage) Added the aggregation mode for the virtual groups.
 * (bluefox) Sentry data will not be sent in front-end if the diagnostic or sentry is disabled

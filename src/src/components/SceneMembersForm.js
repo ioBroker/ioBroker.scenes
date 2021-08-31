@@ -118,7 +118,7 @@ const styles = theme => ({
     sceneSubTitle: {
         fontSize: 'small',
         borderRadius: 10,
-        padding: '2px ' + theme.spacing(1) + 'px',
+        padding: `2px ${theme.spacing(1)}px`,
     },
     sceneTrue: {
         background: theme.palette.type === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,

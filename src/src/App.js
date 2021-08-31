@@ -107,8 +107,10 @@ const styles = theme => ({
         paddingLeft: theme.spacing(1),
     },
     sceneSubTitle: {
-        fontSize: 'small',
-        display: 'block'
+        fontSize: 10,
+        display: 'block',
+        fontStyle: 'italic',
+        marginTop: -7,
     },
     toolbarButtons: {
         marginRight: theme.spacing(1),
