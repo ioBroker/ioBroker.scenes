@@ -95,7 +95,17 @@ Delays can be used in the **group** too, but the states with delay are not parti
 
 ## Virtual groups
 **Virtual groups** are like virtual channels and like groups, but can have any kind of values: numbers, strings and so on. 
-You can create virtual group to control all shutters in living room. By writing 40% into virtual group all shutters will be set to 40%. 
+You can create virtual group to control all shutters in living room. 
+By writing 40% into virtual group all shutters will be set to 40%.
+
+Additionally, you can define the behaviour which value should be taken for group not all states of the group have the same value.
+
+You can provide following aggregations (available only in advanced mode):
+- `uncertain` - (default) - the value of the group will have text `uncertain`.
+- `any` - first not zero value of all states in group.
+- `min` - Minimal value of all states in group.
+- `max` - Maximal value of all states in group.
+- `avg` - Average value of all states in group.
 
 ## Save actual states as scene
 To save actual states in some scene you can send a message to the adapter:

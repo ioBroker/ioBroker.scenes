@@ -377,7 +377,8 @@ class SceneForm extends React.Component {
 	                                        this.setStateWithParent({native});
 	                                    }}
 	                                >
-	                                    { ["uncertain","all","any","avg","min","max"].map(id => <MenuItem key={ id } value={ id }>{ id }</MenuItem>) }
+	                                    { ['uncertain', 'any', 'avg', 'min', 'max']
+                                            .map(id => <MenuItem key={ id } value={ id }>{ id }</MenuItem>) }
 	                                </Select>
 	                            </FormControl>
                                 : null }
@@ -405,7 +406,7 @@ class SceneForm extends React.Component {
                 { !this.state.native.virtualGroup ? this.renderOnTrueFalse('onTrue') : null }
                 { !this.state.native.virtualGroup && this.state.native.onFalse.enabled ? this.renderOnTrueFalse('onFalse') : null }
             </Box>
-        </Box>;	
+        </Box>;
         return [
             result,
             this.renderSelectIdDialog()

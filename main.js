@@ -1,4 +1,4 @@
-// Copyright Bluefox <dogafox@gmail.com> 2015-2020
+// Copyright Bluefox <dogafox@gmail.com> 2015-2021
 //
 
 // Structure of one scene
@@ -282,6 +282,7 @@ function checkScene(sceneId, stateId, state) {
         const sceneObj       = scenes[_sceneId];
         const sceneObjNative = sceneObj.native;
         const isWithFalse    = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
+        let avgCounter = 0;
         let stacked = false;
         let delay = 0; // not used actually
         const burstInterval = sceneObjNative.burstInterval;
@@ -317,27 +318,32 @@ function checkScene(sceneId, stateId, state) {
                 if (activeValue === null) {
                     activeValue = sceneObjNative.members[i].actual;
                 } else {
-                	if (activeValue != sceneObjNative.members[i].actual && (sceneObjNative.aggregation === undefined || sceneObjNative.aggregation === "uncertain")) {
-                		activeValue = 'uncertain';	
-                	} else {
-                		if (sceneObjNative.aggregation == "any") {
-                			activeValue = activeValue || sceneObjNative.members[i].actual	
-                		} else if (sceneObjNative.aggregation == "all") {
-                			activeValue = activeValue && sceneObjNative.members[i].actual
-                		} else if (sceneObjNative.aggregation == "min") {
-                			activeValue = Math.min(activeValue,sceneObjNative.members[i].actual)
-                		} else if (sceneObjNative.aggregation == "max") {
-                			activeValue = Math.max(activeValue, sceneObjNative.members[i].actual)
-                		} else if (sceneObjNative.aggregation == "avg") {
-                			activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual)
-                		}
-                	}
+                    // eslint-disable-next-line eslint-disable-line
+                    if (activeValue != sceneObjNative.members[i].actual) {
+                        if (sceneObjNative.aggregation === undefined || sceneObjNative.aggregation === 'uncertain') {
+                            activeValue = 'uncertain';
+                        } else {
+                            if (sceneObjNative.aggregation === 'any') {
+                                activeValue = activeValue || sceneObjNative.members[i].actual;
+                            } else if (sceneObjNative.aggregation === 'min') {
+                                activeValue = Math.min(activeValue, sceneObjNative.members[i].actual);
+                            } else if (sceneObjNative.aggregation === 'max') {
+                                activeValue = Math.max(activeValue, sceneObjNative.members[i].actual);
+                            } else if (sceneObjNative.aggregation === 'avg') {
+                                activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual);
+                                avgCounter++;
+                            }
+                        }
+                    } else if (sceneObjNative.aggregation === 'avg') {
+                        activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual);
+                        avgCounter++;
+                    }
                 }
             } else {
                 let setIfTrue;
                 let setIfFalse;
                 try {
-                    setIfTrue = await getSetValue(sceneObjNative.members[i].setIfTrue);
+                    setIfTrue  = await getSetValue(sceneObjNative.members[i].setIfTrue);
                     setIfFalse = await getSetValue(sceneObjNative.members[i].setIfFalse);
                 } catch (e) {
                     adapter.log.warn('Error while getting True/False states: ' +  e);
@@ -349,6 +355,7 @@ function checkScene(sceneId, stateId, state) {
                             activeTrue = false;
                         }
                     } else {
+                        // eslint-disable-next-line eslint-disable-line
                         if (setIfTrue != sceneObjNative.members[i].actual) {
                             activeTrue = false;
                         }
@@ -360,7 +367,9 @@ function checkScene(sceneId, stateId, state) {
                         if (Math.abs(setIfFalse - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfFalseTolerance) {
                             activeFalse = false;
                         }
-                    } else if (setIfFalse != sceneObjNative.members[i].actual) {
+                    } else
+                    // eslint-disable-next-line eslint-disable-line
+                    if (setIfFalse != sceneObjNative.members[i].actual) {
                         activeFalse = false;
                     }
                 }
@@ -369,10 +378,11 @@ function checkScene(sceneId, stateId, state) {
 
         try {
             if (sceneObjNative.virtualGroup) {
-                if (sceneObjNative.aggregation == "avg") {
-                	activeValue = activeValue / sceneObjNative.members.length
-                }
                 if (activeValue !== null) {
+                    if (sceneObjNative.aggregation === 'avg' && avgCounter) {
+                        activeValue = activeValue / (avgCounter + 1);
+                    }
+
                     if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
                         sceneObj.value.val = activeValue;
                         sceneObj.value.ack = true;

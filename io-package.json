@@ -213,7 +213,7 @@
         ],
         "compact": true,
         "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
-        "localLink": "/adapter/scenes/tab.html",
+        "localLinks": {"_default": "/adapter/scenes/tab.html"},
         "noConfig": true,
         "type": "logic",
         "adminTab": {

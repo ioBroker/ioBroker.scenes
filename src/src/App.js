@@ -1,10 +1,13 @@
 // Common
 import React from 'react';
+import * as Sentry from '@sentry/browser';
+import * as SentryIntegrations from '@sentry/integrations';
+
 import {withStyles} from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { withTheme } from '@material-ui/core/styles';
 import { MuiThemeProvider } from '@material-ui/core/styles';
-import withWidth from "@material-ui/core/withWidth";
+import withWidth from '@material-ui/core/withWidth';
 
 // MaterialUi
 import Grid from '@material-ui/core/Grid';
@@ -37,6 +40,7 @@ import {MdFileDownload as IconExport} from 'react-icons/md';
 // import {MdFileUpload as IconImport} from 'react-icons/md';
 import {FaClone as IconClone} from 'react-icons/fa';
 import {FaBars as IconMenu} from 'react-icons/fa';
+import {version} from '../package.json';
 
 const MARGIN_MEMBERS = 20;
 
@@ -184,7 +188,29 @@ class App extends GenericApp {
 
                 return this.socket.getAdapterInstances(window.adapterName)
                     .then(instances => {
+                        const sentryEnabled = systemConfig.common.diag !== 'none' && instances.find(item => !item.common.disableDataReporting);
                         newState.instances = instances.map(item => item._id);
+
+                        // if not local development
+                        if (window.sentryDSN && sentryEnabled && window.location.host !== 'localhost:3000') {
+                            Sentry.init({
+                                dsn: window.sentryDSN,
+                                release: `iobroker.${window.adapterName}@${version}`,
+                                integrations: [
+                                    new SentryIntegrations.Dedupe()
+                                ]
+                            });
+
+                            // BF 2021.08.31: may be this is not required as executed in adapter-react
+                            this.socket.getObject('system.meta.uuid')
+                                .then(uuidObj => {
+                                    if (uuidObj && uuidObj.native && uuidObj.native.uuid) {
+                                        Sentry.configureScope(scope =>
+                                            scope.setUser({id: uuidObj.native.uuid}));
+                                    }
+                                });
+                        }
+
                         this.setState(newState, () =>
                             this.refreshData());
                     });
