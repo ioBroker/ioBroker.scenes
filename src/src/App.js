@@ -211,11 +211,13 @@ class App extends GenericApp {
                                         Sentry.configureScope(scope =>
                                             scope.setUser({id: uuidObj.native.uuid}));
                                     }
+                                    this.setState(newState, () =>
+                                        this.refreshData());
                                 });
+                        } else {
+                            this.setState(newState, () =>
+                                this.refreshData());
                         }
-
-                        this.setState(newState, () =>
-                            this.refreshData());
                     });
             })
             .catch(e => this.showError(e));
