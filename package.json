@@ -16,7 +16,7 @@
     "url": "https://github.com/ioBroker/ioBroker.scenes"
   },
   "dependencies": {
-    "node-schedule": "^2.0.0",
+    "node-schedule": "^2.1.0",
     "@iobroker/adapter-core": "^2.5.1"
   },
   "devDependencies": {
