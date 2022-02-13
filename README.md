@@ -127,7 +127,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 -->
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 2.3.9 (2022-02-13)
 * (bluefox) Updated some GUI libraries
 * (bluefox) Updated releaser
 
@@ -242,7 +242,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 
 ### 0.1.0 (2015-08-09)
 * (bluefox) fix error with delays and config change
-* (bluefox) implement replace 
+* (bluefox) implement replace
 
 ### 0.0.2 (2015-08-05)
 * (bluefox) change configuration schema
@@ -274,4 +274,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
