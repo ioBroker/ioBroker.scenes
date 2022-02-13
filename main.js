@@ -1,4 +1,4 @@
-// Copyright Bluefox <dogafox@gmail.com> 2015-2021
+// Copyright Bluefox <dogafox@gmail.com> 2015-2022
 //
 
 // Structure of one scene
