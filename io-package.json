@@ -122,6 +122,7 @@
     "icon": "scenes.png",
     "enabled": true,
     "messagebox": true,
+    "eraseOnUpload": true,
     "keywords": [
       "Scenes",
       "Szenen",
