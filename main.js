@@ -642,7 +642,7 @@ function activateSceneState(sceneId, state, isTrue) {
             }
         })
         .catch(e =>
-            adapter.log.error(`Cannot read setValue from ${desiredValue.replace(/^\s*{{/, '').replace(/}}\s*$/, '')}: ${e}`));
+            adapter.log.error(`Cannot read setValue from ${desiredValue.toString().replace(/^\s*{{/, '').replace(/}}\s*$/, '')}: ${e}`));
 }
 
 // Set all states of the state with interval
