@@ -1,16 +1,15 @@
 // Common
 import React from 'react';
-import {withStyles} from '@material-ui/core/styles';
+import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
-import clsx from 'clsx';
 
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Alert from '@material-ui/lab/Alert';
-import Snackbar from '@material-ui/core/Snackbar';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
@@ -20,12 +19,11 @@ import 'ace-builds/src-noconflict/ext-language_tools'
 
 // icons
 import {MdClose as IconClose} from 'react-icons/md';
-import IconCopy from '@iobroker/adapter-react/icons/IconCopy';
+import IconCopy from '@iobroker/adapter-react-v5/icons/IconCopy';
 import {MdCheck as IconCheck} from 'react-icons/md';
 
 // Own
-import I18n from '@iobroker/adapter-react/i18n';
-import copy from '@iobroker/adapter-react/Components/copy-to-clipboard';
+import { Utils, I18n } from '@iobroker/adapter-react-v5';
 
 const styles = theme => ({
     divWithoutTitle: {
@@ -72,17 +70,17 @@ class ExportImportDialog extends React.Component {
 
     render() {
         return <Dialog
-            open={ true }
-            onClose={ () => this.props.onClose() }
+            open={!0}
+            onClose={() => this.props.onClose()}
             aria-labelledby="export-dialog-title"
             fullWidth
             maxWidth="lg"
-            fullScreen={ true }
+            fullScreen
             aria-describedby="export-dialog-description"
         >
-            <DialogTitle id="export-dialog-title">{ this.props.isImport ? I18n.t('Import scene') : I18n.t('Export scene') }</DialogTitle>
+            <DialogTitle id="export-dialog-title">{this.props.isImport ? I18n.t('Import scene') : I18n.t('Export scene')}</DialogTitle>
             <DialogContent>
-                <div className={ clsx(this.props.classes.divWithoutTitle, this.state.error && this.props.classes.error) }>
+                <div className={Utils.clsx(this.props.classes.divWithoutTitle, this.state.error && this.props.classes.error)}>
                     <AceEditor
                         autoFocus
                         mode="json"
@@ -92,12 +90,12 @@ class ExportImportDialog extends React.Component {
                             this.codeEditor = editor;
                             this.codeEditor.focus();
                         }}
-                        theme={ this.props.themeType === 'dark' ? 'clouds_midnight' : 'chrome' }
-                        onChange={ newValue => this.onChange(newValue) }
-                        value={ this.state.text || '' }
+                        theme={this.props.themeType === 'dark' ? 'clouds_midnight' : 'chrome' }
+                        onChange={newValue => this.onChange(newValue) }
+                        value={this.state.text || ''}
                         name="UNIQUE_ID_OF_DIV"
-                        fontSize={ 14 }
-                        readOnly={ !this.props.isImport }
+                        fontSize={14}
+                        readOnly={!this.props.isImport}
                         editorProps={{ $blockScrolling: true }}
                     />
                 </div>
@@ -105,17 +103,17 @@ class ExportImportDialog extends React.Component {
             <DialogActions>
                 { this.props.isImport ?
                     <Button
-                        disabled={ !this.state.text || this.state.error }
-                        onClick={ () => this.props.onClose(JSON.parse(this.state.text)) }
+                        disabled={!this.state.text || this.state.error}
+                        onClick={() => this.props.onClose(JSON.parse(this.state.text))}
                         color="primary"
                         startIcon={<IconCheck />}
                     >
-                        { I18n.t('Import') }
+                        {I18n.t('Import')}
                     </Button>
                     :
                     <Button
-                        onClick={ () => {
-                            copy(this.state.text);
+                        onClick={() => {
+                            Utils.copyToClipboard(this.state.text);
                             this.setState({ toast: I18n.t('Copied') });
                             setTimeout(() => this.props.onClose(), 500);
                         }}
@@ -123,16 +121,17 @@ class ExportImportDialog extends React.Component {
                         autoFocus
                         startIcon={<IconCopy />}
                     >
-                        { I18n.t('Copy to clipboard') }
+                        {I18n.t('Copy to clipboard')}
                     </Button>}
                 <Button
-                    onClick={ () => this.props.onClose() }
-                    autoFocus={ !this.props.isImport }
+                    color="grey"
+                    onClick={() => this.props.onClose()}
+                    autoFocus={!this.props.isImport}
                     startIcon={<IconClose />}
                 >
-                    { I18n.t('Close') }
+                    {I18n.t('Close')}
                 </Button>
-                { this.renderToast() }
+                {this.renderToast()}
             </DialogActions>
         </Dialog>;
     }

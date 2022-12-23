@@ -3,29 +3,24 @@ import React from 'react';
 import * as Sentry from '@sentry/browser';
 import * as SentryIntegrations from '@sentry/integrations';
 
-import {withStyles} from '@material-ui/core/styles';
-import clsx from 'clsx';
-import { withTheme } from '@material-ui/core/styles';
-import { MuiThemeProvider } from '@material-ui/core/styles';
-import withWidth from '@material-ui/core/withWidth';
+import { withStyles, withTheme } from '@mui/styles';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 
 // MaterialUi
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Container from '@material-ui/core/Container';
-import IconButton from '@material-ui/core/IconButton';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
-import Toolbar from '@material-ui/core/Toolbar';
-import DialogActions from '@material-ui/core/DialogActions';
-import Drawer from '@material-ui/core/Drawer';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
+import Toolbar from '@mui/material/Toolbar';
+import DialogActions from '@mui/material/DialogActions';
+import Drawer from '@mui/material/Drawer';
 
 // Own
-import Utils from '@iobroker/adapter-react/Components/Utils';
-import GenericApp from '@iobroker/adapter-react/GenericApp';
-import Loader from '@iobroker/adapter-react/Components/Loader'
-import I18n from '@iobroker/adapter-react/i18n';
+import GenericApp from '@iobroker/adapter-react-v5/GenericApp';
+import { AdminConnection, I18n, Loader, Utils, withWidth } from '@iobroker/adapter-react-v5';
 
 import SceneForm from './components/SceneForm';
 import SceneMembersForm from './components/SceneMembersForm';
@@ -33,15 +28,15 @@ import ExportImportDialog from './components/ExportImportDialog';
 import ScenesList from './components/ScenesList';
 
 // icons
-import {MdClose as IconCancel} from 'react-icons/md';
-import {MdSave as IconSave} from 'react-icons/md';
-import {MdDelete as IconDelete} from 'react-icons/md';
-import {MdCheck as IconCheck} from 'react-icons/md';
-import {MdFileDownload as IconExport} from 'react-icons/md';
-// import {MdFileUpload as IconImport} from 'react-icons/md';
-import {FaClone as IconClone} from 'react-icons/fa';
-import {FaBars as IconMenu} from 'react-icons/fa';
-import {version} from '../package.json';
+import { MdClose as IconCancel } from 'react-icons/md';
+import { MdSave as IconSave } from 'react-icons/md';
+import { MdDelete as IconDelete } from 'react-icons/md';
+import { MdCheck as IconCheck } from 'react-icons/md';
+import { MdFileDownload as IconExport } from 'react-icons/md';
+// import { MdFileUpload as IconImport } from 'react-icons/md';
+import { FaClone as IconClone } from 'react-icons/fa';
+import { FaBars as IconMenu } from 'react-icons/fa';
+import pack from '../package.json';
 
 const MARGIN_MEMBERS = 20;
 
@@ -49,7 +44,7 @@ const styles = theme => ({
     root: {
         width: '100%',
         height: 'calc(100% + 4px)',
-        backgroundColor: theme.palette.type === 'dark' ? '#000': '#fff',
+        backgroundColor: theme.palette.mode === 'dark' ? '#000': '#fff',
         overflowX: 'hidden',
     },
     width100: {
@@ -66,7 +61,7 @@ const styles = theme => ({
         height: 'calc(100% - 96px)',
     },
     heightMinusMargin: {
-        height: 'calc(100% - ' + MARGIN_MEMBERS + 'px)',
+        height: `calc(100% - ${MARGIN_MEMBERS}px)`,
     },
     fullWidthContainer: {
         maxWidth: 'inherit',
@@ -82,14 +77,14 @@ const styles = theme => ({
     },
     buttonsContainer1: {
         '& button': {
-            margin: '0 ' + theme.spacing(1) + 'px',
+            margin: `0 ${theme.spacing(1)}`,
         },
     },
     alignRight: {
         textAlign: 'right',
     },
     membersCell: {
-        backgroundColor: theme.palette.type === 'dark' ? '#566770': '#ADD8E6',
+        backgroundColor: theme.palette.mode === 'dark' ? '#566770': '#ADD8E6',
         marginTop: MARGIN_MEMBERS,
         marginRight: theme.spacing(1),
         marginBottom: theme.spacing(2),
@@ -99,10 +94,10 @@ const styles = theme => ({
         paddingBottom: 10,
 
         borderRadius: 4,
-        height: 'calc(100% - ' + theme.spacing(1) + 'px)',
+        height: `calc(100% - ${theme.spacing(1)})`,
     },
     sceneTitle: {
-        color: theme.palette.type === 'dark' ? '#FFF': '#000',
+        color: theme.palette.mode === 'dark' ? '#FFF': '#000',
         flexGrow: 1,
         paddingLeft: theme.spacing(1),
     },
@@ -116,10 +111,10 @@ const styles = theme => ({
         marginRight: theme.spacing(1),
     },
     settingsBackground: {
-        background: theme.palette.type === 'dark' ? '#3a3a3a': '#eeeeee',
+        background: theme.palette.mode === 'dark' ? '#3a3a3a': '#eeeeee',
     },
     drawer: {
-        overflow: 'hidden'
+        overflow: 'hidden',
     },
 });
 
@@ -155,8 +150,10 @@ class App extends GenericApp {
             'it': require('./i18n/it'),
             'es': require('./i18n/es'),
             'pl': require('./i18n/pl'),
+            'uk': require('./i18n/uk'),
             'zh-cn': require('./i18n/zh-cn'),
         };
+        extendedProps.Connection = AdminConnection;
 
         super(props, extendedProps);
 
@@ -198,7 +195,7 @@ class App extends GenericApp {
                         if (window.sentryDSN && sentryEnabled && window.location.host !== 'localhost:3000') {
                             Sentry.init({
                                 dsn: window.sentryDSN,
-                                release: `iobroker.${window.adapterName}@${version}`,
+                                release: `iobroker.${window.adapterName}@${pack.version}`,
                                 integrations: [
                                     new SentryIntegrations.Dedupe()
                                 ]
@@ -285,7 +282,7 @@ class App extends GenericApp {
 
     getData() {
         let scenes;
-        return this.socket.getObjectView('scene.0.', 'scene.\u9999', 'state')
+        return this.socket.getObjectViewSystem('state', 'scene.0.', 'scene.\u9999')
             .then(_scenes => {
                 scenes = _scenes;
                 return {scenes, folders: this.buildTree(scenes)};
@@ -616,33 +613,49 @@ class App extends GenericApp {
             key="sceneChangeDialog"
             onClose={ () => this.setState({sceneChangeDialog: ''}) }>
                 <DialogTitle>{ I18n.t('Are you sure for cancel unsaved changes?') }</DialogTitle>
-                <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
-                    <Button variant="contained" onClick={ () =>
-                        this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
-                            const cb = this.confirmCb;
-                            this.confirmCb = null;
-                            cb && cb();
-                        })
-                            .catch(() => console.log('ignore')) }>
-                        { I18n.t('Discard') }
-                    </Button>
-                    <Button variant="contained" color="secondary" autoFocus onClick={e => {
-                        // save scene
-                        this.writeScene()
-                            .then(() => that.changeSelectedScene(that.state.sceneChangeDialog === 'empty' ? '' : that.state.sceneChangeDialog, true, () => {
+                <DialogActions className={ Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+                    <Button
+                        variant="contained"
+                        color="grey"
+                        onClick={() =>
+                            this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
                                 const cb = this.confirmCb;
                                 this.confirmCb = null;
                                 cb && cb();
-                            }))
-                            .catch(() => console.log('ignore'))
-                    }}>
-                        <IconSave/> { I18n.t('Save changes') }
+                            })
+                                .catch(() => console.log('ignore'))
+                        }
+                    >
+                        {I18n.t('Discard')}
                     </Button>
-                    <Button variant="contained" onClick={() => {
-                        this.confirmCb = null; // cancel callback
-                        this.setState({sceneChangeDialog: ''});
-                    }}>
-                        <IconCancel/> { I18n.t('Cancel') }
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        autoFocus
+                        onClick={() => {
+                            // save scene
+                            this.writeScene()
+                                .then(() => that.changeSelectedScene(that.state.sceneChangeDialog === 'empty' ? '' : that.state.sceneChangeDialog, true, () => {
+                                    const cb = this.confirmCb;
+                                    this.confirmCb = null;
+                                    cb && cb();
+                                }))
+                                .catch(() => console.log('ignore'))
+                        }}
+                        startIcon={<IconSave />}
+                    >
+                         {I18n.t('Save changes')}
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="grey"
+                        onClick={() => {
+                            this.confirmCb = null; // cancel callback
+                            this.setState({sceneChangeDialog: ''});
+                        }}
+                        startIcon={<IconCancel />}
+                    >
+                         {I18n.t('Cancel')}
                     </Button>
                 </DialogActions>
             </Dialog> : null;
@@ -650,27 +663,28 @@ class App extends GenericApp {
 
     renderDeleteDialog() {
         return this.state.deleteDialog ? <Dialog
-            open={ true }
+            open={!0}
             key="deleteDialog"
-            onClose={ () => this.setState({deleteDialog: false}) }
+            onClose={() => this.setState({deleteDialog: false}) }
         >
-            <DialogTitle>{ I18n.t('Are you sure for delete this scene?') }</DialogTitle>
-            <DialogActions className={ clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+            <DialogTitle>{I18n.t('Are you sure for delete this scene?')}</DialogTitle>
+            <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
                 <Button
                     variant="contained"
                     color="secondary"
-                    onClick={e =>
+                    onClick={() =>
                         this.setState({deleteDialog: false}, () =>
                             this.deleteScene(this.state.selectedSceneId))
                     }
                     startIcon={<IconDelete />}
                 >
-                    { I18n.t('Delete') }
+                    {I18n.t('Delete')}
                 </Button>
                 <Button
+                    color="grey"
                     variant="contained"
                     autoFocus
-                    onClick={ () => this.setState({deleteDialog: false}) }
+                    onClick={() => this.setState({deleteDialog: false})}
                     startIcon={<IconCancel />}
                 >
                     {I18n.t('Cancel')}
@@ -729,17 +743,18 @@ class App extends GenericApp {
                 onClick={() => this.writeScene()}
                 startIcon={<IconCheck />}
             >
-                { I18n.t('Save') }
-            </Button> : null }
+                {I18n.t('Save')}
+            </Button> : null}
 
-            { this.state.selectedSceneChanged ? <Button
-                className={ this.props.classes.toolbarButtons }
+            {this.state.selectedSceneChanged ? <Button
+                color="grey"
+                className={this.props.classes.toolbarButtons}
                 variant="contained"
                 startIcon={<IconCancel />}
-                onClick={ () => this.refreshData(this.state.selectedSceneId) }
+                onClick={() => this.refreshData(this.state.selectedSceneId)}
             >
-                { I18n.t('Cancel') }
-            </Button> : null }
+                {I18n.t('Cancel')}
+            </Button> : null}
         </Toolbar>;
     }
 
@@ -758,26 +773,26 @@ class App extends GenericApp {
             onCreateScene={parentId => this.createScene(this.getNewSceneId(), parentId)}
             onRenameFolder={(folder, newId) => this.renameFolder(folder, newId)}
             onMoveScene={(oldId, newId) => this.moveScript(oldId, newId)}
-            />;
+        />;
     }
 
     renderSceneMembers(oneColumn) {
         return <SceneMembersForm
-            key={ 'selected' + this.state.selectedSceneId }
-            oneColumn={ oneColumn }
-            showError={ e => this.showError(e) }
-            updateSceneMembers={ (members, cb) => this.updateSceneMembers(members, cb) }
-            selectedSceneChanged={ this.state.selectedSceneChanged }
-            sceneEnabled={ this.state.selectedSceneData.common.enabled }
-            members={ this.state.selectedSceneData.native.members }
-            easy={ !!this.state.selectedSceneData.native.easy }
-            socket={ this.socket }
-            onFalseEnabled={ this.state.selectedSceneData.native.onFalse.enabled }
-            virtualGroup={ this.state.selectedSceneData.native.virtualGroup }
-            aggregation={ this.state.selectedSceneData.native.aggregation }
-            sceneId={ this.state.selectedSceneId }
-            engineId={ this.state.selectedSceneData.common.engine }
-            intervalBetweenCommands={ this.state.selectedSceneData.native.burstInterval || 0 }
+            key={`selected${this.state.selectedSceneId}`}
+            oneColumn={oneColumn}
+            showError={e => this.showError(e)}
+            updateSceneMembers={(members, cb) => this.updateSceneMembers(members, cb)}
+            selectedSceneChanged={this.state.selectedSceneChanged}
+            sceneEnabled={this.state.selectedSceneData.common.enabled}
+            members={this.state.selectedSceneData.native.members}
+            easy={!!this.state.selectedSceneData.native.easy}
+            socket={this.socket}
+            onFalseEnabled={this.state.selectedSceneData.native.onFalse.enabled}
+            virtualGroup={this.state.selectedSceneData.native.virtualGroup}
+            aggregation={this.state.selectedSceneData.native.aggregation}
+            sceneId={this.state.selectedSceneId}
+            engineId={this.state.selectedSceneData.common.engine}
+            intervalBetweenCommands={this.state.selectedSceneData.native.burstInterval || 0}
         />;
     }
 
@@ -787,13 +802,13 @@ class App extends GenericApp {
         }
 
         return <SceneForm
-            key={ this.state.selectedSceneId }
-            showError={ e => this.showError(e) }
-            oneColumn={ oneColumn }
-            updateScene={ (common, native, cb) => this.updateScene(common, native, cb) }
-            scene={ this.state.selectedSceneData }
-            socket={ this.socket }
-            instances={ this.state.instances }
+            key={this.state.selectedSceneId}
+            showError={e => this.showError(e)}
+            oneColumn={oneColumn}
+            updateScene={(common, native, cb) => this.updateScene(common, native, cb)}
+            scene={this.state.selectedSceneData}
+            socket={this.socket}
+            instances={this.state.instances}
         />;
     }
 
@@ -802,20 +817,20 @@ class App extends GenericApp {
             <Drawer
                 key="drawer"
                 anchor="left"
-                open={ this.state.menuOpened }
-                onClose={() => this.setState({menuOpened: false}) }
-                classes={ {paper: this.props.classes.drawer }}
+                open={this.state.menuOpened}
+                onClose={() => this.setState({ menuOpened: false })}
+                classes={{ paper: this.props.classes.drawer }}
             >
                 { this.renderDrawerContent() }
             </Drawer>,
             this.renderSceneTopToolbar(true),
             this.state.selectedSceneId ? <div
                     key="main"
-                    className={ this.props.classes.heightMinus2Toolbars }
-                    style={{ overflowY: 'auto', overflowX: 'hidden'}}
+                    className={this.props.classes.heightMinus2Toolbars}
+                    style={{ overflowY: 'auto', overflowX: 'hidden' }}
                 >
-                    { this.renderSceneSettings(true) }
-                    { this.renderSceneMembers(true) }
+                    {this.renderSceneSettings(true)}
+                    {this.renderSceneMembers(true)}
                 </div> : null,
             this.renderSceneBottomToolbar(),
         ]
@@ -824,31 +839,31 @@ class App extends GenericApp {
     renderInMoreThanOneColumn() {
         const showDrawer = this.props.width === 'sm' || this.props.width === 'xs';
 
-        return <Container className={ clsx(this.props.classes.height, this.props.classes.fullWidthContainer) }>
-            <Grid container spacing={ 1 } className={ this.props.classes.height }>
-                { showDrawer ?
-                    <Drawer anchor="left" open={ this.state.menuOpened } onClose={() => this.setState({menuOpened: false}) }>
-                        { this.renderDrawerContent() }
+        return <Container className={Utils.clsx(this.props.classes.height, this.props.classes.fullWidthContainer)}>
+            <Grid container spacing={1} className={this.props.classes.height}>
+                {showDrawer ?
+                    <Drawer anchor="left" open={this.state.menuOpened} onClose={() => this.setState({ menuOpened: false })}>
+                        {this.renderDrawerContent()}
                     </Drawer> :
-                    <Grid item xs={ 3 } className={ clsx(this.props.classes.columnContainer, this.props.classes.height) }>
-                        { this.renderDrawerContent() }
+                    <Grid item xs={3} className={Utils.clsx(this.props.classes.columnContainer, this.props.classes.height)}>
+                        {this.renderDrawerContent()}
                     </Grid>
                 }
                 { this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
-                    <Grid item xs={ showDrawer ? 12 : 9 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
-                        <Grid container spacing={ 1 } className={ clsx(this.props.classes.height, this.props.classes.settingsBackground) }>
-                            <Grid item xs={ this.props.width === 'xs' ? 12 : 5 } className={ this.props.classes.heightMinus2Toolbars }>
+                    <Grid item xs={showDrawer ? 12 : 9} className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
+                        <Grid container spacing={1} className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
+                            <Grid item xs={this.props.width === 'xs' ? 12 : 5} className={this.props.classes.heightMinus2Toolbars}>
                                 { this.renderSceneTopToolbar(showDrawer) }
                                 <div className={this.props.classes.height}>
                                     {this.state.selectedSceneId ? this.renderSceneSettings() : null}
                                 </div>
-                                { this.renderSceneBottomToolbar() }
+                                {this.renderSceneBottomToolbar()}
                             </Grid>
-                            <Grid item xs={ this.props.width === 'xs' ? 12 : 7 } className={ clsx(this.props.classes.height) }>
-                                <div className={ clsx(this.props.classes.heightMinusMargin) }>
-                                    { this.state.selectedSceneId ?
-                                        <div className={ clsx(this.props.classes.membersCell, this.props.classes.height) }>
-                                            { this.renderSceneMembers() }
+                            <Grid item xs={this.props.width === 'xs' ? 12 : 7} className={Utils.clsx(this.props.classes.height)}>
+                                <div className={Utils.clsx(this.props.classes.heightMinusMargin)}>
+                                    {this.state.selectedSceneId ?
+                                        <div className={Utils.clsx(this.props.classes.membersCell, this.props.classes.height)}>
+                                            {this.renderSceneMembers()}
                                         </div>
                                         : null}
                                 </div>
@@ -858,33 +873,34 @@ class App extends GenericApp {
                     : null
                 }
             </Grid>
-        </Container>
+        </Container>;
     }
 
     render() {
         if (!this.state.ready) {
-            return <MuiThemeProvider theme={ this.state.theme }>
-                <Loader theme={ this.state.themeName }/>
-            </MuiThemeProvider>;
+            return <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={this.state.theme}>
+                    <Loader theme={this.state.themeName} />
+                </ThemeProvider>
+            </StyledEngineProvider>;
         }
 
         const oneColumn = this.props.width === 'xs';
 
-        return (
-            <MuiThemeProvider theme={ this.state.theme }>
-                <div className={ this.props.classes.root }>
-                    { oneColumn ?
+        return <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={this.state.theme}>
+                <div className={this.props.classes.root}>
+                    {oneColumn ?
                         this.renderInOneColumn() :
                         this.renderInMoreThanOneColumn()
                     }
-
-                    { this.renderSceneChangeDialog() }
-                    { this.renderDeleteDialog() }
-                    { this.renderExportImportDialog() }
-                    { this.renderError() }
+                    {this.renderSceneChangeDialog()}
+                    {this.renderDeleteDialog()}
+                    {this.renderExportImportDialog()}
+                    {this.renderError()}
                 </div>
-            </MuiThemeProvider>
-        );
+            </ThemeProvider>
+        </StyledEngineProvider>;
     }
 }
 

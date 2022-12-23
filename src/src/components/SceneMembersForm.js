@@ -1,46 +1,44 @@
 import React from 'react'
-import clsx from 'clsx'
-import {withStyles} from '@material-ui/core/styles';
+import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-import TextField from '@material-ui/core/TextField';
-import Switch from '@material-ui/core/Switch';
-import Button from '@material-ui/core/Button';
-import Checkbox from '@material-ui/core/Checkbox';
-import IconButton from '@material-ui/core/IconButton';
-import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Paper from '@material-ui/core/Paper';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
+import TextField from '@mui/material/TextField';
+import Switch from '@mui/material/Switch';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Paper from '@mui/material/Paper';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 
 // own components
-import I18n from '@iobroker/adapter-react/i18n';
-import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
-import Utils from '@iobroker/adapter-react/Components/Utils';
+import { I18n, Utils } from '@iobroker/adapter-react-v5';
+import DialogSelectID from '@iobroker/adapter-react-v5/Dialogs/SelectID';
 
 // icons
-import {AiOutlineClockCircle as IconClock} from 'react-icons/ai';
-import {MdDelete as IconDelete} from 'react-icons/md';
-import {MdAdd as IconAdd} from 'react-icons/md';
-import {MdPlayArrow as IconPlay} from 'react-icons/md';
-import {FaFolder as IconFolderClosed} from 'react-icons/fa';
-import {FaFolderOpen as IconFolderOpened} from 'react-icons/fa';
-import ClearIcon from '@material-ui/icons/Close';
-import IconCancel from '@material-ui/icons/Close';
-import IconExpandAll from '@material-ui/icons/ExpandMore';
-import IconCollapseAll from '@material-ui/icons/ExpandLess';
-import ListIcon from '@material-ui/icons/Menu';
+import { AiOutlineClockCircle as IconClock } from 'react-icons/ai';
+import { MdDelete as IconDelete } from 'react-icons/md';
+import { MdAdd as IconAdd } from 'react-icons/md';
+import { MdPlayArrow as IconPlay } from 'react-icons/md';
+import { FaFolder as IconFolderClosed } from 'react-icons/fa';
+import { FaFolderOpen as IconFolderOpened } from 'react-icons/fa';
+import ClearIcon from '@mui/icons-material/Close';
+import IconCancel from '@mui/icons-material/Close';
+import IconExpandAll from '@mui/icons-material/ExpandMore';
+import IconCollapseAll from '@mui/icons-material/ExpandLess';
+import ListIcon from '@mui/icons-material/Menu';
 
 const TRUE_COLOR       = '#90ee90';
 const FALSE_COLOR      = '#ff9999';
@@ -51,10 +49,10 @@ const UNCERTAIN_COLOR  = '#bfb7be';
 const styles = theme => ({
     memberTrueFalse: {
         borderRadius: 10,
-        padding: '2px ' + theme.spacing(1) + 'px',
+        padding: `2px ${theme.spacing(1)}`,
         fontSize: 'initial',
         fontWeight: 'initial',
-        margin: '0 ' + theme.spacing(1) + 'px',
+        margin: `0 ${theme.spacing(1)}`,
         textAlign: 'right',
         whiteSpace: 'nowrap',
         maxWidth: 300,
@@ -62,7 +60,7 @@ const styles = theme => ({
         textOverflow: 'ellipsis',
     },
     memberTrue: {
-        backgroundColor: theme.palette.type === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
+        backgroundColor: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
     },
     memberFalse: {
         backgroundColor: 'pink',
@@ -73,7 +71,7 @@ const styles = theme => ({
     },
     memberCard: {
         padding: 4,
-        margin: theme.spacing(1) + 'px 0',
+        margin: `${theme.spacing(1)} 0`,
     },
     memberFolder: {
         position: 'absolute',
@@ -102,40 +100,40 @@ const styles = theme => ({
     },
     buttonsContainer: {
         '& button': {
-            margin: '0 ' + theme.spacing(1) + 'px',
+            margin: `0 ${theme.spacing(1)}`,
         },
     },
     p: {
-        margin: theme.spacing(1) + 'px 0',
+        margin: `${theme.spacing(1)} 0`,
     },
     guttersZero: {
         padding: 0,
     },
     sceneTitle: {
         flexGrow: 1,
-        color: theme.palette.type === 'dark' ? '#FFF': '#000',
+        color: theme.palette.mode === 'dark' ? '#FFF': '#000',
     },
     sceneSubTitle: {
         fontSize: 'small',
         borderRadius: 10,
-        padding: `2px ${theme.spacing(1)}px`,
+        padding: `2px ${theme.spacing(1)}`,
     },
     sceneTrue: {
-        background: theme.palette.type === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
+        background: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
     },
     sceneFalse: {
-        background: theme.palette.type === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
+        background: theme.palette.mode === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
     },
     sceneUncertain: {
         background: UNCERTAIN_COLOR,
     },
     btnTestTrue: {
-        background: theme.palette.type === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
+        background: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
         marginRight: theme.spacing(1),
         marginBottom: theme.spacing(0.5),
     },
     btnTestFalse: {
-        background: theme.palette.type === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
+        background: theme.palette.mode === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
         marginBottom: theme.spacing(0.5),
     },
     btnExpandAll: {
@@ -203,12 +201,12 @@ const styles = theme => ({
         minHeight: 48,
     },
     setValue: {
-        width: 'calc(70% - ' + (70 + theme.spacing(1)) + 'px)',
+        width: `calc(70% - ${70 + theme.spacing(1)})`,
         minWidth: 100,
         marginRight: theme.spacing(1),
     },
     setTolerance: {
-        width: 'calc(30% - ' + (70 + theme.spacing(1)) + 'px)',
+        width: `calc(30% - ${70 + theme.spacing(1)})`,
         minWidth: 100,
         marginRight: theme.spacing(1),
     },
@@ -513,9 +511,10 @@ class SceneMembersForm extends React.Component {
                         } }
                         startIcon={<IconDelete />}
                     >
-                        { I18n.t('Delete') }
+                        {I18n.t('Delete')}
                     </Button>
                     <Button
+                        color="grey"
                         autoFocus
                         variant="contained"
                         onClick={ () => this.setState({deleteDialog: null}) }
@@ -631,10 +630,11 @@ class SceneMembersForm extends React.Component {
                 label="From ID"
             /> : null }
             { !fromState && this.state.objectTypes[member.id] === 'boolean' ?
-                <FormControl className={ classes.setValue }>
-                    <InputLabel>{ labelSetValue }</InputLabel>
+                <FormControl className={classes.setValue} variant="standard">
+                    <InputLabel>{labelSetValue}</InputLabel>
                     <Select
-                        value={ setValue === true || setValue === 'true' ? 'true' : (setValue === false || setValue === 'false' ? 'false' : 'null')}
+                        variant="standard"
+                        value={setValue === true || setValue === 'true' ? 'true' : (setValue === false || setValue === 'false' ? 'false' : 'null')}
                         onChange={ e => {
                             const members = JSON.parse(JSON.stringify(this.state.members));
                             if (isTrue) {
@@ -643,8 +643,8 @@ class SceneMembersForm extends React.Component {
                                 members[index].setIfFalse = e.target.value === 'true' ? true : (e.target.value === 'false' ? false : null);
                             }
 
-                            this.setStateWithParent({members});
-                        } }
+                            this.setStateWithParent({ members });
+                        }}
                     >
                         <MenuItem value="false">FALSE</MenuItem>
                         <MenuItem value="true">TRUE</MenuItem>
@@ -655,6 +655,7 @@ class SceneMembersForm extends React.Component {
                 <React.Fragment>
                     {fromState ?
                         <TextField
+                            variant="standard"
                             fullWidth
                             InputLabelProps={{shrink: true}}
                             label={labelSetValue}
@@ -672,6 +673,7 @@ class SceneMembersForm extends React.Component {
                         />
                         :
                         <TextField
+                            variant="standard"
                             fullWidth
                             InputLabelProps={{shrink: true}}
                             label={labelSetValue}
@@ -716,11 +718,12 @@ class SceneMembersForm extends React.Component {
                     }
 
                     {!this.state.easy && this.state.objectTypes[member.id] !== 'boolean' ? <TextField
-                        InputLabelProps={ {shrink: true} }
-                        label={ '± ' + labelTolerance }
-                        value={ setValueTolerance === undefined || setValueTolerance === null ? '' : setValueTolerance }
-                        title={ I18n.t('Absolute value, not percent') }
-                        className={ classes.setTolerance }
+                        variant="standard"
+                        InputLabelProps={{ shrink: true }}
+                        label={`± ${labelTolerance}`}
+                        value={setValueTolerance === undefined || setValueTolerance === null ? '' : setValueTolerance}
+                        title={I18n.t('Absolute value, not percent')}
+                        className={classes.setTolerance}
                         InputProps={{
                             endAdornment: setValueTolerance ?
                                 <IconButton
@@ -738,15 +741,15 @@ class SceneMembersForm extends React.Component {
                                 </IconButton>
                                 : undefined,
                         }}
-                        onChange={ e => {
+                        onChange={e => {
                             const members = JSON.parse(JSON.stringify(this.state.members));
                             if (isTrue) {
                                 members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
                             } else {
                                 members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
                             }
-                            this.setStateWithParent({members});
-                        } }/> : null}
+                            this.setStateWithParent({ members });
+                        }} /> : null}
                 </React.Fragment>
             }
         </Box>;
@@ -767,23 +770,23 @@ class SceneMembersForm extends React.Component {
             if (member.setIfTrueTolerance && Math.abs(this.state.states[member.id] - member.setIfTrue) <= member.setIfTrueTolerance) {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberTrue) }>{ _valStr }</div>;
+                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberTrue) }>{ _valStr }</div>;
             } else if (this.state.states[member.id] === member.setIfTrue) {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberTrue) }>{ _valStr }</div>;
+                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberTrue) }>{ _valStr }</div>;
             } else if (member.setIfFalse !== undefined && member.setIfFalseTolerance && Math.abs(this.state.states[member.id] - member.setIfFalse) <= member.setIfFalseTolerance) {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberFalse) }>{ _valStr }</div>;
+                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberFalse) }>{ _valStr }</div>;
             } else if (member.setIfFalse !== undefined && this.state.states[member.id] === member.setIfFalse) {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberFalse) }>{ _valStr }</div>;
+                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberFalse) }>{ _valStr }</div>;
             } else {
                 value = <div
                     title={ I18n.t('Actual state value') }
-                    className={ clsx(classes.memberTrueFalse, classes.memberUncertain) }>{ _valStr }</div>;
+                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberUncertain) }>{ _valStr }</div>;
             }
         }
 
@@ -855,7 +858,7 @@ class SceneMembersForm extends React.Component {
 
         delay += (member.delay || 0);
 
-        return <Paper key={ member.id + '_' + index } className={ clsx(classes.memberCard, member.disabled && classes.disabled) }>
+        return <Paper key={ member.id + '_' + index } className={ Utils.clsx(classes.memberCard, member.disabled && classes.disabled) }>
             <div className={ classes.memberToolbar }>
                 <IconButton className={ classes.memberFolder} title={ I18n.t('Edit') } onClick={ () => {
                     const openedMembers = [...this.state.openedMembers];
@@ -922,13 +925,14 @@ class SceneMembersForm extends React.Component {
                                 }}
                             />
                         </Box>*/ }
-                        { !this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null }
-                        { !this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}
+                        {!this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null}
+                        {!this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}
                         {!this.state.easy ?
                             <Box className={classes.p}>
                                 <Grid container spacing={4}>
                                     <Grid item xs={12} sm={4}>
                                         <TextField
+                                            variant="standard"
                                             fullWidth
                                             InputLabelProps={{shrink: true}}
                                             label={I18n.t('Delay (ms)')}
@@ -1050,48 +1054,51 @@ class SceneMembersForm extends React.Component {
 
         const onFalseEnabled =!this.state.virtualGroup && this.state.onFalseEnabled;
 
-        let result = <div key="SceneMembersForm" className={ clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer) }>
+        let result = <div key="SceneMembersForm" className={ Utils.clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer) }>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
-                <Typography variant="h6" className={ clsx(this.props.classes.sceneTitle) } >
+                <Typography variant="h6" className={ Utils.clsx(this.props.classes.sceneTitle) } >
                     { I18n.t('Scene states') }{ !this.state.states[this.state.engineId + '.alive'] ? <span className={ this.props.classes.instanceNotActive }>{ I18n.t('Instance not active') }</span> : ''}
                     <br/>
-                    <span className={ clsx(
+                    <span className={ Utils.clsx(
                         this.props.classes.sceneSubTitle,
                         !this.state.virtualGroup && sceneState === true && this.props.classes.sceneTrue,
                         !this.state.virtualGroup && sceneState === false && this.props.classes.sceneFalse,
                         !this.state.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
-                    ) }>{ I18n.t('Scene state:') } { sceneState === true ? 'TRUE' : (sceneState === false ? 'FALSE' : sceneState.toString()) }</span>
+                    ) }>{I18n.t('Scene state:') } { sceneState === true ? 'TRUE' : (sceneState === false ? 'FALSE' : sceneState.toString())}</span>
                 </Typography>
-                <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({showDialog: true})}>
+                <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({ showDialog: true })}>
                     <IconAdd/>
                 </IconButton>
             </Toolbar>
-            <div className={ clsx(this.props.classes.testButtons, this.props.classes.width100) }>
+            <div className={Utils.clsx(this.props.classes.testButtons, this.props.classes.width100)}>
                 {  !this.state.selectedSceneChanged && this.state.virtualGroup ? <TextField
-                    className={ this.props.classes.width100WithButton }
-                    label={ I18n.t('Write to virtual group') }
-                    defaultValue={ sceneState }
+                    variant="standard"
+                    className={ this.props.classes.width100WithButton}
+                    label={I18n.t('Write to virtual group')}
+                    defaultValue={sceneState}
                     onKeyUp={e => e.keyCode === 13 && this.onWriteScene(this.state.writeSceneState)}
                     onChange={e => this.setState({writeSceneState: e.target.value}) }
                 /> : null}
                 { !this.state.selectedSceneChanged && this.state.virtualGroup && this.state.members.length ? <IconButton
                     onClick={e => this.onWriteScene(this.state.writeSceneState) }
-                ><IconPlay/></IconButton> : null}
+                ><IconPlay /></IconButton> : null}
                 { this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
-                    className={ this.props.classes.btnTestTrue }
-                    onClick={ () => this.onWriteScene(true) }
-                ><IconPlay/>{ !onFalseEnabled ? I18n.t('Test') : I18n.t('Test TRUE') }</Button> : null }
+                    color="grey"
+                    className={this.props.classes.btnTestTrue}
+                    onClick={() => this.onWriteScene(true)}
+                ><IconPlay />{!onFalseEnabled ? I18n.t('Test') : I18n.t('Test TRUE')}</Button> : null}
                 { this.state.sceneEnabled && !this.state.selectedSceneChanged && onFalseEnabled && this.state.members.length ? <Button
-                    className={ this.props.classes.btnTestFalse }
-                    onClick={ () => this.onWriteScene(false) }
-                ><IconPlay/>{ I18n.t('Test FALSE') }</Button> : null }
+                    color="grey"
+                    className={this.props.classes.btnTestFalse}
+                    onClick={() => this.onWriteScene(false)}
+                ><IconPlay />{I18n.t('Test FALSE')}</Button> : null}
                 {this.state.members.length > 1 && this.state.openedMembers.length ? <IconButton
                     title={I18n.t('Collapse all')}
                     className={ this.props.classes.btnCollapseAll }
-                    onClick={ () => {
+                    onClick={() => {
                         window.localStorage.setItem('Scenes.openedMembers', '[]');
-                        this.setState({openedMembers: []});
-                    } }
+                        this.setState({ openedMembers: [] });
+                    }}
                 ><IconCollapseAll/></IconButton> : null }
                 {this.state.members.length > 1 && this.state.openedMembers.length !== this.state.members.length ? <IconButton
                     title={I18n.t('Expand all')}

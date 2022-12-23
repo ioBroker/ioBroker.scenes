@@ -1,21 +1,20 @@
 import React from 'react'
-import clsx from 'clsx'
 import PropTypes from 'prop-types';
-import {withStyles} from "@material-ui/core/styles";
+import { withStyles } from '@mui/styles';
 
-import TextField from '@material-ui/core/TextField';
-import Switch from '@material-ui/core/Switch';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import Checkbox from '@material-ui/core/Checkbox';
-import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
+import TextField from '@mui/material/TextField';
+import Switch from '@mui/material/Switch';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 
-import DialogSelectID from '@iobroker/adapter-react/Dialogs/SelectID';
-import I18n from '@iobroker/adapter-react/i18n';
+import DialogSelectID from '@iobroker/adapter-react-v5/Dialogs/SelectID';
+import { Utils, I18n } from '@iobroker/adapter-react-v5';
 
 const styles = theme => ({
     alignRight: {
@@ -23,7 +22,7 @@ const styles = theme => ({
     },
     buttonsContainer: {
         '& button': {
-            margin: '0 ' + theme.spacing(1) + 'px',
+            margin: `0 ${theme.spacing(1)}`,
         },
     },
     height: {
@@ -50,10 +49,10 @@ const styles = theme => ({
     editItem: {
         display: 'block',
         marginBottom: theme.spacing(2),
-        color: theme.palette.type === 'dark' ? '#FFF': '#000',
+        color: theme.palette.mode === 'dark' ? '#FFF': '#000',
     },
     p: {
-        margin: theme.spacing(1) + 'px 0',
+        margin: `${theme.spacing(1)} 0`,
     },
     onTrue: {
         background: 'lightgreen',
@@ -153,6 +152,7 @@ class SceneForm extends React.Component {
                     <Grid container spacing={1}>
                         <Grid item xs={8}>
                             <TextField
+                                variant="standard"
                                 inputRef={this.inputs.Trigger.ref}
                                 fullWidth
                                 InputLabelProps={ {shrink: true} }
@@ -177,14 +177,16 @@ class SceneForm extends React.Component {
                         </Grid>
 
                         <Grid item xs={2}>
-                            <FormControl>
+                            <FormControl variant="standard">
                                 <InputLabel shrink={ true }>{ I18n.t('Condition') }</InputLabel>
-                                <Select value={ on.trigger.condition || '==' }
-                                        onChange={ e => {
-                                            const native = JSON.parse(JSON.stringify(this.state.native));
-                                            native[name].trigger.condition = e.target.value;
-                                            this.setStateWithParent({native});
-                                        } }
+                                <Select
+                                    variant="standard"
+                                    value={ on.trigger.condition || '==' }
+                                    onChange={e => {
+                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                        native[name].trigger.condition = e.target.value;
+                                        this.setStateWithParent({native});
+                                    }}
                                 >
                                     <MenuItem value="==">==</MenuItem>
                                     <MenuItem value="!=">!=</MenuItem>
@@ -192,12 +194,13 @@ class SceneForm extends React.Component {
                                     <MenuItem value="<">&lt;</MenuItem>
                                     <MenuItem value=">=">&gt;=</MenuItem>
                                     <MenuItem value="<=">&lt;=</MenuItem>
-                                    <MenuItem value="update">{ I18n.t('on update') }</MenuItem>
+                                    <MenuItem value="update">{I18n.t('on update')}</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
                         <Grid item xs={2}>
                             <TextField
+                                variant="standard"
                                 inputRef={this.inputs.Value.ref}
                                 fullWidth
                                 InputLabelProps= {{shrink: true} } label={ I18n.t('Value') }
@@ -219,6 +222,7 @@ class SceneForm extends React.Component {
             </div>,
             <div key="cron" className={ this.props.classes.editItem }>
                 <TextField
+                    variant="standard"
                     inputRef={this.inputs.Cron.ref}
                     fullWidth
                     InputLabelProps={{shrink: true}}
@@ -260,15 +264,16 @@ class SceneForm extends React.Component {
     }
 
     render() {
-        let result = <Box key="sceneForm" className={ clsx(this.props.classes.columnContainer, !this.props.oneColumn && this.props.classes.height) }>
-            <Box className={ this.props.classes.scroll }>
-                <Box className={ this.props.classes.editItem }>
+        let result = <Box key="sceneForm" className={Utils.clsx(this.props.classes.columnContainer, !this.props.oneColumn && this.props.classes.height)}>
+            <Box className={this.props.classes.scroll}>
+                <Box className={this.props.classes.editItem}>
                     <TextField
+                        variant="standard"
                         inputRef={this.inputs.Name.ref}
                         fullWidth
-                        InputLabelProps={ {shrink: true} }
-                        label={ I18n.t('Scene name') }
-                        value={ this.state.common.name }
+                        InputLabelProps={{ shrink: true }}
+                        label={I18n.t('Scene name')}
+                        value={this.state.common.name}
 
                         onFocus={() => this.saveCursorPosition('Name')}
                         onKeyDown={() => this.saveCursorPosition('Name')}
@@ -282,11 +287,12 @@ class SceneForm extends React.Component {
                 </Box>
                 <Box className={ this.props.classes.editItem }>
                     <TextField
+                        variant="standard"
                         inputRef={this.inputs.Description.ref}
                         fullWidth
-                        InputLabelProps={ {shrink: true} }
-                        label={ I18n.t('Scene description') }
-                        value={ this.state.common.desc }
+                        InputLabelProps={{ shrink: true }}
+                        label={I18n.t('Scene description')}
+                        value={this.state.common.desc}
 
                         onFocus={() => this.saveCursorPosition('Description')}
                         onKeyDown={() => this.saveCursorPosition('Description')}
@@ -299,30 +305,32 @@ class SceneForm extends React.Component {
                         }}
                     />
                 </Box>
-                <Box className={ this.props.classes.editItem }>
-                    <Grid container spacing={ 1 }>
-                        <Grid item xs={ 12 } sm={ 6 }>
-                            <FormControl className={this.props.classes.width100}>
-                                <InputLabel shrink={true}>{ I18n.t('Instance') }</InputLabel>
+                <Box className={this.props.classes.editItem}>
+                    <Grid container spacing={1}>
+                        <Grid item xs={12} sm={6}>
+                            <FormControl className={this.props.classes.width100} variant="standard">
+                                <InputLabel shrink>{I18n.t('Instance')}</InputLabel>
                                 <Select
-                                    value={ this.state.common.engine }
+                                    variant="standard"
+                                    value={this.state.common.engine}
                                     onChange={e => {
                                         const common = JSON.parse(JSON.stringify(this.state.common));
                                         common.engine = e.target.value;
                                         this.setStateWithParent({common});
                                     }}
                                 >
-                                    { this.props.instances.map(id => <MenuItem key={ id } value={ id }>{ id.replace('system.adapter.', '') }</MenuItem>) }
+                                    {this.props.instances.map(id => <MenuItem key={id} value={id}>{id.replace('system.adapter.', '')}</MenuItem>)}
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={ 12 } sm={ 6 }>
+                        <Grid item xs={12} sm={6}>
                             <TextField
+                                variant="standard"
                                 fullWidth
-                                InputLabelProps={ {shrink: true} }
-                                label={ I18n.t('Interval between commands') }
-                                min={ 0 }
-                                value={ this.state.native.burstInterval || 0 }
+                                InputLabelProps={{ shrink: true }}
+                                label={I18n.t('Interval between commands')}
+                                min={0}
+                                value={this.state.native.burstInterval || 0}
                                 helperText="ms"
                                 type="number"
                                 onChange={e => {
@@ -352,7 +360,7 @@ class SceneForm extends React.Component {
                             }/>
                         </Grid>
                         <Grid item xs={ 12 } sm={ 6 }>
-                            { !this.state.native.virtualGroup ?
+                            {!this.state.native.virtualGroup ?
                                 <FormControlLabel
                                     style={{paddingTop: 10}}
                                     label={I18n.t('Set value if false')}
@@ -366,51 +374,52 @@ class SceneForm extends React.Component {
                                                 }}
                                           />}
                                 />
-                                : null }
-                            { this.state.native.virtualGroup && !this.state.native.easy ?
-	                            <FormControl className={this.props.classes.width100}>
-	                                <InputLabel shrink={true}>{ I18n.t('Aggregation') }</InputLabel>
+                                : null}
+                            {this.state.native.virtualGroup && !this.state.native.easy ?
+	                            <FormControl className={this.props.classes.width100} variant="standard">
+	                                <InputLabel shrink>{I18n.t('Aggregation')}</InputLabel>
 	                                <Select
-	                                    value={ this.state.native.aggregation || 'uncertain' }
+                                        variant="standard"
+	                                    value={this.state.native.aggregation || 'uncertain'}
 	                                    onChange={e => {
 	                                        const native = JSON.parse(JSON.stringify(this.state.native));
 	                                        native.aggregation = e.target.value;
 	                                        this.setStateWithParent({native});
 	                                    }}
 	                                >
-	                                    { ['uncertain', 'any', 'avg', 'min', 'max']
-                                            .map(id => <MenuItem key={ id } value={ id }>{ id }</MenuItem>) }
+	                                    {['uncertain', 'any', 'avg', 'min', 'max']
+                                            .map(id => <MenuItem key={id} value={id}>{id}</MenuItem>)}
 	                                </Select>
 	                            </FormControl>
-                                : null }
+                                : null}
                         </Grid>
                     </Grid>
                 </Box>
-                <Box className={ this.props.classes.editItem }>
+                <Box className={this.props.classes.editItem}>
                     <Grid container spacing={1}>
-                        <Grid item xs={ 12 } sm={ 6 }>
+                        <Grid item xs={12} sm={6}>
                             <FormControlLabel
-                                style={{paddingTop: 10}}
-                                label={ I18n.t('Easy mode') } control={
-                                <Checkbox
+                                style={{ paddingTop: 10 }}
+                                label={I18n.t('Easy mode')}
+                                control={<Checkbox
                                     checked={this.state.native.easy}
-                                      onChange={e => {
-                                          const native = JSON.parse(JSON.stringify(this.state.native));
-                                          native.easy = e.target.checked;
-                                          this.setStateWithParent({native});
-                                      }}
-                                />
-                            }/>
+                                    onChange={e => {
+                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                        native.easy = e.target.checked;
+                                        this.setStateWithParent({ native });
+                                    }}
+                                />}
+                            />
                         </Grid>
                     </Grid>
                 </Box>
-                { !this.state.native.virtualGroup ? this.renderOnTrueFalse('onTrue') : null }
-                { !this.state.native.virtualGroup && this.state.native.onFalse.enabled ? this.renderOnTrueFalse('onFalse') : null }
+                {!this.state.native.virtualGroup ? this.renderOnTrueFalse('onTrue') : null}
+                {!this.state.native.virtualGroup && this.state.native.onFalse.enabled ? this.renderOnTrueFalse('onFalse') : null}
             </Box>
         </Box>;
         return [
             result,
-            this.renderSelectIdDialog()
+            this.renderSelectIdDialog(),
         ];
     }
 }
