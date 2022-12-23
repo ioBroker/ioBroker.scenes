@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "2.3.9",
+    "version": "2.4.0",
     "news": {
+      "2.4.0": {
+        "en": "prevent crash case reported by Sentry\nUpdated some GUI libraries",
+        "de": "verhindern Unfallfall gemeldet von Sentry\nEinige GUI-Bibliotheken aktualisiert",
+        "ru": "предотвратить случай аварии сообщается в Sentry\nОбновлены некоторые библиотеки GUI",
+        "pt": "prevenir caso de acidente relatado por Sentry\nAtualizado algumas bibliotecas GUI",
+        "nl": "vertaling:\nVerhoog wat GUI bibliotheek",
+        "fr": "prévenir les accidents signalés par Sentry\nMise à jour de certaines bibliothèques GUI",
+        "it": "prevenire il caso di crash segnalato da Sentry\nAggiornate alcune librerie GUI",
+        "es": "caso de emergencia reportado por Sentry\nActualización de algunas bibliotecas GUI",
+        "pl": "przypadek zapobiegania katastrofie\nUpowszechnione biblioteki GUI",
+        "uk": "запобігти виникненню аварійних випадків\nОновлено деякі бібліотеки GUI",
+        "zh-cn": "防止Sentry所报告的事故\n二. 更新的一些古伊图书馆"
+      },
       "2.3.9": {
         "en": "Updated some GUI libraries\nUpdated releaser",
         "de": "Einige GUI-Bibliotheken aktualisiert\nReleaser aktualisiert",
@@ -74,18 +87,6 @@
         "es": "Caso de prevención de accidentes (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
         "pl": "Zapobiegaj awariom (Sentry IOBROKER-SCENES-X, IOBROKER-SCENES-V)",
         "zh-cn": "防止发生崩溃情况（哨兵IOBROKER-SCENES-X，IOBROKER-SCENES-V）"
-      },
-      "2.3.3": {
-        "en": "Implemented drag&drop for the reorder of scenes in folders\nImplemented Easy mode\nPossibility to use set point from other state",
-        "de": "Drag & Drop für die Neuordnung von Szenen in Ordnern implementiert\nEinfacher Modus implementiert\nMöglichkeit, Sollwert aus einem anderen Zustand zu verwenden",
-        "ru": "Реализовано перетаскивание для изменения порядка сцен в папках\nРеализован легкий режим\nВозможность использовать уставку из другого состояния",
-        "pt": "Arrastar e soltar implementado para a reordenação de cenas em pastas\nModo fácil implementado\nPossibilidade de usar ponto de ajuste de outro estado",
-        "nl": "Drag & drop geïmplementeerd voor het herschikken van scènes in mappen\nGeïmplementeerde Easy-modus\nMogelijkheid om het instelpunt uit een andere staat te gebruiken",
-        "fr": "Implémentation du glisser-déposer pour la réorganisation des scènes dans les dossiers\nMode facile implémenté\nPossibilité d'utiliser le point de consigne d'un autre état",
-        "it": "Implementato il drag & drop per il riordino delle scene nelle cartelle\nModalità facile implementata\nPossibilità di utilizzare set point da un altro stato",
-        "es": "Implementado arrastrar y soltar para reordenar escenas en carpetas\nModo fácil implementado\nPosibilidad de usar set point de otro estado",
-        "pl": "Zaimplementowano przeciągnij i upuść w celu zmiany kolejności scen w folderach\nZaimplementowano tryb łatwy\nMożliwość wykorzystania wartości zadanej z innego stanu",
-        "zh-cn": "实现了拖放操作以对文件夹中的场景进行重新排序\n实施简易模式\n可以使用其他状态下的设定点"
       }
     },
     "title": "Scenes",
