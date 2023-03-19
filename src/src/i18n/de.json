@@ -30,7 +30,7 @@
     "Trigger for TRUE": "Trigger für TRUE",
     "Trigger ID": "Trigger ID",
     "Condition": "Bedingung",
-    "on update": "beim Update",
+    "on update": "beim Aktualisieren",
     "Value": "Wert",
     "On time (CRON expression)": "Nach Zeit einschalten (CRON-Ausdruck)",
     "Trigger for FALSE": "Auslöser für FALSE",
