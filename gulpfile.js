@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2022 bluefox <dogafox@gmail.com>
+ * Copyright 2018-2023 bluefox <dogafox@gmail.com>
  *
  * MIT License
  *
@@ -9,14 +9,32 @@
 const gulp       = require('gulp');
 const fs         = require('fs');
 const rename     = require('gulp-rename');
-const del        = require('del');
 const cp         = require('child_process');
 
 const pkg       = require('./package.json');
 const iopackage = require('./io-package.json');
 const version   = (pkg && pkg.version) ? pkg.version : iopackage.common.version;
 
-const dir = __dirname + '/src/src/i18n/';
+function deleteFoldersRecursive(path) {
+    if (path.endsWith('/')) {
+        path = path.substring(0, path.length - 1);
+    }
+    if (fs.existsSync(path)) {
+        const files = fs.readdirSync(path);
+        for (const file of files) {
+            const curPath = `${path}/${file}`;
+            const stat = fs.statSync(curPath);
+            if (stat.isDirectory()) {
+                deleteFoldersRecursive(curPath);
+                fs.rmdirSync(curPath);
+            } else {
+                fs.unlinkSync(curPath);
+            }
+        }
+    }
+}
+
+const dir = `${__dirname}/src/src/i18n/`;
 gulp.task('i18n=>flat', done => {
     const files = fs.readdirSync(dir).filter(name => name.match(/\.json$/));
     const index = {};
@@ -76,7 +94,7 @@ gulp.task('flat=>i18n', done => {
         const words = {};
         keys.forEach((key, line) => {
             if (!index[key]) {
-                console.log('No word ' + key + ', ' + lang + ', line: ' + line);
+                console.log(`No word ${key}, ${lang}, line: ${line}`);
             }
             words[key] = index[key][lang];
         });
@@ -85,17 +103,10 @@ gulp.task('flat=>i18n', done => {
     done();
 });
 
-gulp.task('clean', () => {
-    return del([
-        // 'src/node_modules/**/*',
-        'admin/**/*',
-        'admin/*',
-        'src/build/**/*'
-    ]).then(del([
-        // 'src/node_modules',
-        'src/build',
-        'admin/'
-    ]));
+gulp.task('clean', done => {
+    deleteFoldersRecursive(`${__dirname}/admin`);
+    deleteFoldersRecursive(`${__dirname}/src/build`);
+    done();
 });
 
 function npmInstall() {
@@ -175,31 +186,29 @@ gulp.task('3-build', () => build());
 gulp.task('3-build-dep', gulp.series('2-npm', '3-build'));
 
 function copyFiles() {
-    return del([
-        'admin/**/*'
-    ]).then(() => {
-        return Promise.all([
-            gulp.src([
-                'src/build/**/*',
-                '!src/build/index.html',
-                '!src/build/static/js/main.*.chunk.js',
-                '!src/build/i18n/**/*',
-                '!src/build/i18n',
-                'admin-config/*'
-            ])
-                .pipe(gulp.dest('admin/')),
+    deleteFoldersRecursive(`${__dirname}/admin`);
 
-            gulp.src([
-                'src/build/index.html',
-            ])
-                .pipe(rename('tab.html'))
-                .pipe(gulp.dest('admin/')),
-            gulp.src([
-                'src/build/static/js/main.*.chunk.js',
-            ])
-                .pipe(gulp.dest('admin/static/js/')),
-        ]);
-    });
+    return Promise.all([
+        gulp.src([
+            'src/build/**/*',
+            '!src/build/index.html',
+            '!src/build/static/js/main.*.chunk.js',
+            '!src/build/i18n/**/*',
+            '!src/build/i18n',
+            'admin-config/*'
+        ])
+            .pipe(gulp.dest('admin/')),
+
+        gulp.src([
+            'src/build/index.html',
+        ])
+            .pipe(rename('tab.html'))
+            .pipe(gulp.dest('admin/')),
+        gulp.src([
+            'src/build/static/js/main.*.chunk.js',
+        ])
+            .pipe(gulp.dest('admin/static/js/')),
+    ]);
 }
 
 gulp.task('5-copy', () => copyFiles());
