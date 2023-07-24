@@ -1,4 +1,4 @@
-// Copyright Bluefox <dogafox@gmail.com> 2015-2022
+// Copyright Bluefox <dogafox@gmail.com> 2015-2023
 //
 
 // Structure of one scene
@@ -120,7 +120,7 @@ function startAdapter(options) {
             if (scenes[id]) {
                 restartAdapter();
             } else if (obj) {
-                if (obj.common.engine === 'system.adapter.' + adapter.namespace) {
+                if (obj.common.engine === `system.adapter.${adapter.namespace}`) {
                     restartAdapter();
                 }
             }
@@ -140,17 +140,16 @@ function startAdapter(options) {
         if (obj && obj.command === 'save') {
             if (typeof obj.message !== 'object') {
                 try {
-                    obj.message = JSON.parse(obj.message)
+                    obj.message = JSON.parse(obj.message);
                 } catch (e) {
-                    adapter.log.error('Cannot parse message: ' + obj.message);
+                    adapter.log.error(`Cannot parse message: ${obj.message}`);
                     adapter.sendTo(obj.from, obj.command, {error: 'Cannot parse message'}, obj.callback);
                     return true;
                 }
             }
 
-            saveScene(obj.message.sceneId, obj.message.isForTrue, err => {
-                adapter.sendTo(obj.from, obj.command, {error: err}, obj.callback);
-            });
+            saveScene(obj.message.sceneId, obj.message.isForTrue, err =>
+                adapter.sendTo(obj.from, obj.command, {error: err}, obj.callback));
         }
 
         return true;
@@ -165,7 +164,7 @@ function saveScene(sceneID, isForTrue, cb) {
         isForTrue = true;
     }
 
-    adapter.log.debug('Saving ' + sceneID + '...');
+    adapter.log.debug(`Saving ${sceneID}...`);
 
     adapter.getForeignObject(sceneID, (err, obj) => {
         if (obj && obj.native && obj.native.members) {
@@ -173,7 +172,7 @@ function saveScene(sceneID, isForTrue, cb) {
             obj.native.members.forEach((member, i) => {
                 count++;
                 adapter.getForeignState(member.id, (err, state) => {
-                    console.log('ID ' + member.id + '=' + (state ? state.val : state));
+                    console.log(`ID ${member.id}=${state ? state.val : state}`);
                     count--;
                     if (isForTrue) {
                         obj.native.members[i].setIfTrue  = state ? state.val : null;
@@ -183,9 +182,9 @@ function saveScene(sceneID, isForTrue, cb) {
                     if (!count) {
                         adapter.setForeignObject(sceneID, obj, err => {
                             if (err) {
-                                adapter.log.error('Cannot save scene: ' + err);
+                                adapter.log.error(`Cannot save scene: ${err}`);
                             } else {
-                                adapter.log.info('Scene ' + obj.common.name + ' saved');
+                                adapter.log.info(`Scene ${obj.common.name} saved`);
                             }
                             cb(err);
                         });
@@ -347,7 +346,7 @@ function checkScene(sceneId, stateId, state) {
                     setIfTrue  = await getSetValue(sceneObjNative.members[i].setIfTrue);
                     setIfFalse = await getSetValue(sceneObjNative.members[i].setIfFalse);
                 } catch (e) {
-                    adapter.log.warn('Error while getting True/False states: ' +  e);
+                    adapter.log.warn(`Error while getting True/False states: ${e}`);
                 }
 
                 if (setIfTrue !== null && setIfTrue !== undefined) {
@@ -452,7 +451,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
 
         val = trigger.value;
 
-        adapter.log.debug('checkTrigger: ' + trigger.id + '(' + state.val + ') ' + trigger.condition + ' ' + val.toString());
+        adapter.log.debug(`checkTrigger: ${trigger.id}(${state.val}) ${trigger.condition} ${val.toString()}`);
 
         switch (trigger.condition) {
             case undefined:
@@ -525,7 +524,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                 break;
 
             default:
-                adapter.log.error('Unsupported condition: ' + trigger.condition);
+                adapter.log.error(`Unsupported condition: ${trigger.condition}`);
                 break;
         }
     }
@@ -588,7 +587,7 @@ function activateSceneState(sceneId, state, isTrue) {
                 timers[stateObj.id] = timers[stateObj.id] || [];
 
                 if (stateObj.stopAllDelays && timers[stateObj.id].length) {
-                    adapter.log.debug('Cancel running timers (' + timers[stateObj.id].length + ' for ' + stateObj.id);
+                    adapter.log.debug(`Cancel running timers (${timers[stateObj.id].length} for ${stateObj.id}`);
                     timers[stateObj.id].forEach(item => clearTimeout(item.timer));
                     timers[stateObj.id] = [];
                 }
@@ -596,12 +595,12 @@ function activateSceneState(sceneId, state, isTrue) {
 
                 // Start timeout
                 const timer = setTimeout(async (id, setValue, _tIndex) => {
-                    adapter.log.debug('Set delayed state for "' + sceneId + '": ' + id + ' = ' + setValue);
+                    adapter.log.debug(`Set delayed state for "${sceneId}": ${id} = ${setValue}`);
 
                     // execute timeout
                     if (stateObj.doNotOverwrite) {
                         adapter.getForeignState(id, (err, state) => {
-                            // Set new state only if differ from desired state
+                            // Set new state only if differ from the desired state
                             if (!state || state.val !== setValue) {
                                 adapter.setForeignState(id, setValue);
                             }
@@ -645,7 +644,7 @@ function activateSceneState(sceneId, state, isTrue) {
             adapter.log.error(`Cannot read setValue from ${desiredValue.toString().replace(/^\s*{{/, '').replace(/}}\s*$/, '')}: ${e}`));
 }
 
-// Set all states of the state with interval
+// Set all states of the state with an interval
 function activateSceneStates(sceneId, state, isTrue, interval, callback) {
     if (!scenes[sceneId]) {
         adapter.log.error(`Unexpected error: Scene "${sceneId}" does not exist!`);
@@ -670,7 +669,7 @@ function activateSceneStates(sceneId, state, isTrue, interval, callback) {
 }
 
 function activateScene(sceneId, isTrue) {
-    adapter.log.debug('activateScene: execute for "' + sceneId + '" (' + isTrue + ')');
+    adapter.log.debug(`activateScene: execute for "${sceneId}" (${isTrue})`);
 
     if (!scenes[sceneId]) {
         adapter.log.error(`Unexpected error: Scene "${sceneId}" does not exist!`);
@@ -688,13 +687,13 @@ function activateScene(sceneId, isTrue) {
         if (!scenes[sceneId].native.virtualGroup) {
             if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled) {
                 if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
-                    adapter.log.debug('activateScene: new state for "' + sceneId + '" is "' + isTrue + '"');
+                    adapter.log.debug(`activateScene: new state for "${sceneId}" is "${isTrue}"`);
                     scenes[sceneId].value.val = isTrue;
                     scenes[sceneId].value.ack = true;
                     adapter.setForeignState(sceneId, isTrue, true);
                 }
             } else if (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack) {
-                adapter.log.debug('activateScene: new state for "' + sceneId + '" is "true"');
+                adapter.log.debug(`activateScene: new state for "${sceneId}" is "true"`);
                 scenes[sceneId].value.val = true;
                 scenes[sceneId].value.ack = true;
                 adapter.setForeignState(sceneId, true, true);
@@ -709,13 +708,13 @@ function activateScene(sceneId, isTrue) {
             }
             if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.enabled) {
                 if (scenes[sceneId].value.val !== isTrue || !scenes[sceneId].value.ack) {
-                    adapter.log.debug('activateScene: new state for "' + sceneId + '" is "' + isTrue + '"');
+                    adapter.log.debug(`activateScene: new state for "${sceneId}" is "${isTrue}"`);
                     scenes[sceneId].value.val = isTrue;
                     scenes[sceneId].value.ack = true;
                     adapter.setForeignState(sceneId, isTrue, true);
                 }
             } else if (scenes[sceneId].value.val !== true || !scenes[sceneId].value.ack) {
-                adapter.log.debug('activateScene: new state for "' + sceneId + '" is "true"');
+                adapter.log.debug(`activateScene: new state for "${sceneId}" is "true"`);
                 scenes[sceneId].value.val = true;
                 scenes[sceneId].value.ack = true;
                 adapter.setForeignState(sceneId, true, true);
@@ -857,7 +856,7 @@ function initScenes() {
         subscription = countIds;
         // and for all states
         for (let i = 0; i < countIds.length; i++) {
-            adapter.log.debug('initScenes: subscribe on ' + countIds[i]);
+            adapter.log.debug(`initScenes: subscribe on ${countIds[i]}`);
             adapter.subscribeForeignStates(countIds[i]);
         }
     }
@@ -877,7 +876,7 @@ function main() {
                     continue;
                 }
                 // ignore if another instance
-                if (states[id].common.engine !== 'system.adapter.' + adapter.namespace) {
+                if (states[id].common.engine !== `system.adapter.${adapter.namespace}`) {
                     continue;
                 }
 
