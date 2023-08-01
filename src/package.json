@@ -9,7 +9,7 @@
         "@mui/styles": "^5.14.1",
         "babel-eslint": "^10.1.0",
         "@sentry/browser": "^7.60.0",
-        "@sentry/integrations": "^7.60.0",
+        "@sentry/integrations": "^7.61.0",
         "react-beautiful-dnd": "^13.1.1",
         "react-dnd-html5-backend": "^16.0.1",
         "react-dnd": "^16.0.1",
