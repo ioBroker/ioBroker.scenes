@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "2.4.1",
+    "version": "2.4.2",
     "news": {
+      "2.4.2": {
+        "en": "Preserved empty folders by renaming and moving of scenes",
+        "de": "Leere Ordner durch Umbenennung und Bewegung von Szenen erhalten",
+        "ru": "Сохранившиеся пустые папки путем переименования и перемещения сцен",
+        "pt": "Preservado pastas vazias renomeando e movendo de cenas",
+        "nl": "Bewaarde lege mappen door het hernoemen en verplaatsen van scènes",
+        "fr": "Dossiers vides conservés par renommage et déplacement de scènes",
+        "it": "Preservato cartelle vuote rinominando e muovendo di scene",
+        "es": "Carpetas vacías conservadas renombrando y moviendo escenas",
+        "pl": "Zachowane puste foldery przez zmianę nazwy i przesuwania scen",
+        "uk": "Збережені порожні папки, перенаправлення та переміщення сцен",
+        "zh-cn": "通过重新命名和移动场景保存的空文件夹"
+      },
       "2.4.0": {
         "en": "prevent crash case reported by Sentry\nUpdated some GUI libraries",
         "de": "verhindern Unfallfall gemeldet von Sentry\nEinige GUI-Bibliotheken aktualisiert",
