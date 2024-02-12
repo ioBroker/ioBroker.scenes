@@ -114,5 +114,10 @@
   "From ID by TRUE": "De ID por TRUE",
   "From ID by FALSE": "De ID por FALSE",
   "Select for": "Seleccione",
-  "copy": "Copiar"
+  "copy": "Copiar",
+  "The folder will not be saved until it contains at least one scene.": "La carpeta no se guardará hasta que contenga al menos una escena.",
+  "Folder not saved yet": "Carpeta aún no guardada",
+  "Do you want to move the scene?": "¿Quieres mover la escena?",
+  "You must change the scene ID in all scripts and vis widgets.": "Debe cambiar el ID de la escena en todos los scripts y widgets.",
+  "Move": "Mover"
 }

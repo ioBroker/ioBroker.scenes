@@ -114,5 +114,10 @@
   "From ID by TRUE": "Van ID door TRUE",
   "From ID by FALSE": "Van ID door FALSE",
   "Select for": "Selecteer",
-  "copy": "kopiëren"
+  "copy": "kopiëren",
+  "The folder will not be saved until it contains at least one scene.": "De map wordt pas opgeslagen als deze ten minste één scène bevat.",
+  "Folder not saved yet": "Map nog niet opgeslagen",
+  "Do you want to move the scene?": "Wil je de scène verplaatsen?",
+  "You must change the scene ID in all scripts and vis widgets.": "U moet de scène-ID in alle scripts en viswidgets wijzigen.",
+  "Move": "Beweging"
 }

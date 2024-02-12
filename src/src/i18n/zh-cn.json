@@ -114,5 +114,10 @@
   "From ID by TRUE": "从ID按TRUE",
   "From ID by FALSE": "从ID（按FALSE）",
   "Select for": "选择",
-  "copy": "复制"
+  "copy": "复制",
+  "The folder will not be saved until it contains at least one scene.": "该文件夹至少包含一个场景后才会被保存。",
+  "Folder not saved yet": "文件夹尚未保存",
+  "Do you want to move the scene?": "您想移动场景吗？",
+  "You must change the scene ID in all scripts and vis widgets.": "您必须更改所有脚本和 vis 小部件中的场景 ID。",
+  "Move": "移动"
 }

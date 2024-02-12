@@ -114,5 +114,10 @@
   "From ID by TRUE": "Из ID при TRUE",
   "From ID by FALSE": "Из ID при FALSE",
   "Select for": "Выбирать",
-  "copy": "копировать"
+  "copy": "копировать",
+  "The folder will not be saved until it contains at least one scene.": "Папка не будет сохранена, пока она не будет содержать хотя бы одну сцену.",
+  "Folder not saved yet": "Папка еще не сохранена",
+  "Do you want to move the scene?": "Хотите переместить сцену?",
+  "You must change the scene ID in all scripts and vis widgets.": "Вы должны изменить идентификатор сцены во всех скриптах и виджетах визуализации.",
+  "Move": "Передвинуть"
 }

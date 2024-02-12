@@ -4,38 +4,41 @@ import { withStyles } from '@mui/styles';
 import { useDrag, useDrop, DndProvider as DragDropContext } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend'
 
-import List from '@mui/material/List';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import I18n from '@iobroker/adapter-react-v5/i18n';
-import SearchIcon from '@mui/icons-material/Search';
-import TextField from '@mui/material/TextField';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
+import {
+    List,
+    Toolbar,
+    IconButton,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    ListItemSecondaryAction,
+    Button,
+    CircularProgress,
+    Switch,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField
+} from '@mui/material';
+import { Search as SearchIcon } from '@mui/icons-material';
 import {
     FaFolder as IconFolderClosed, FaFolderOpen as IconFolderOpened, FaScroll as IconScript,
 } from 'react-icons/fa';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Switch from '@mui/material/Switch';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 
 // icons
-import { MdExpandLess as IconCollapse } from 'react-icons/md';
-import { MdExpandMore as IconExpand } from 'react-icons/md';
-import { MdModeEdit as IconEdit } from 'react-icons/md';
-import { MdClose as IconCancel } from 'react-icons/md';
-import { MdCheck as IconCheck } from 'react-icons/md';
-import { MdAdd as IconAdd } from 'react-icons/md';
-import { MdCreateNewFolder as IconFolderAdd } from 'react-icons/md';
-import { MdSwapVert as IconReorder } from 'react-icons/md';
+import {
+    MdExpandLess as IconCollapse,
+    MdExpandMore as IconExpand,
+    MdModeEdit as IconEdit,
+    MdClose as IconCancel,
+    MdCheck as IconCheck,
+    MdAdd as IconAdd,
+    MdCreateNewFolder as IconFolderAdd,
+    MdSwapVert as IconReorder,
+} from 'react-icons/md';
 
-import { Utils } from '@iobroker/adapter-react-v5';
+import { Utils, I18n } from '@iobroker/adapter-react-v5';
 
 const LEVEL_PADDING = 16;
 
@@ -59,10 +62,8 @@ export const Droppable = props => {
 export const Draggable = (props) => {
     const { name } = props;
     const [{ opacity }, drag] = useDrag({
-        item: {
-            name,
-            type: 'item'
-        },
+        type: 'item',
+        item: () => ({ name }),
         collect: monitor => ({
             opacity: monitor.isDragging() ? 0.3 : 1,
         }),
@@ -169,8 +170,13 @@ const styles = theme => ({
         },
         '& .js-folder-dragging .item-reorder': {
             opacity: 0.3,
-        }
-    }
+        },
+    },
+    hint: {
+        opacity: 0.7,
+        fontSize: 'smaller',
+        fontStyle: 'italic',
+    },
 });
 
 class ScenesList extends React.Component {
@@ -192,13 +198,14 @@ class ScenesList extends React.Component {
             addFolderDialog: null,
             addFolderDialogTitle: null,
             editFolderDialogTitle: null,
+            showMoveWarning: null,
         };
     }
 
     onAddFolder(parent, id) {
         let opened = JSON.parse(JSON.stringify(this.state.opened));
         opened.push(id);
-        this.setState({addFolderDialog: null, opened}, () =>
+        this.setState({ addFolderDialog: null, opened }, () =>
             this.props.onCreateFolder(parent, id));
     }
 
@@ -206,7 +213,7 @@ class ScenesList extends React.Component {
         return this.state.addFolderDialog ?
             <Dialog
                 key="addDialog"
-                open={!!this.state.addFolderDialog}
+                open={!0}
                 onClose={() => this.setState({ addFolderDialog: null })}
             >
                 <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
@@ -216,6 +223,7 @@ class ScenesList extends React.Component {
                         autoFocus
                         label={I18n.t('Title')}
                         value={this.state.addFolderDialogTitle}
+                        helperText={I18n.t('The folder will not be saved until it contains at least one scene.')}
                         onChange={e =>
                             this.setState({ addFolderDialogTitle: e.target.value.replace(Utils.FORBIDDEN_CHARS, '_').replace(/\./g, '_') }) }
                         onKeyUp={e => e.keyCode === 13 && this.onAddFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle)}
@@ -262,14 +270,14 @@ class ScenesList extends React.Component {
 
     renderEditFolderDialog() {
         if (!this.state.editFolderDialog) {
-            return;
+            return null;
         }
 
         const isUnique = !Object.keys(this.props.folders.subFolders).find(folder => folder.id === this.state.editFolderDialogTitle);
 
         return <Dialog
             key="dialogEdit"
-            open={!!this.state.editFolderDialog}
+            open={!0}
             onClose={() => this.setState({ editFolderDialog: null })}
         >
             <DialogTitle>{I18n.t('Edit folder')}</DialogTitle>
@@ -314,7 +322,7 @@ class ScenesList extends React.Component {
         } else {
             opened.splice(pos, 1);
 
-            // If active scene is inside this folder select the first scene
+            // If an active scene is inside this folder, select the first scene
             if (Object.keys(folder.scenes).includes(this.props.selectedSceneId)) {
                 // To do ask question
                 if (this.props.selectedSceneChanged) {
@@ -331,7 +339,7 @@ class ScenesList extends React.Component {
 
         window.localStorage.setItem('Scenes.opened', JSON.stringify(opened));
 
-        this.setState({opened});
+        this.setState({ opened });
     }
 
     renderTreeScene = (item, level) => {
@@ -355,8 +363,11 @@ class ScenesList extends React.Component {
                 !scene.common.enabled && this.props.classes.disabled,
                 this.state.reorder && 'item-reorder'
             )}
-            onClick={() => this.props.onSceneSelect(scene._id)}>
-            <ListItemIcon classes={{ root: this.props.classes.itemIconRoot }}><IconScript className={this.props.classes.itemIcon}/></ListItemIcon>
+            onClick={() => this.props.onSceneSelect(scene._id)}
+        >
+            <ListItemIcon classes={{ root: this.props.classes.itemIconRoot }}>
+                <IconScript className={this.props.classes.itemIcon} />
+            </ListItemIcon>
             <ListItemText
                 classes={{ primary: this.props.classes.listItemTitle, secondary: this.props.classes.listItemSubTitle }}
                 primary={Utils.getObjectNameFromObj(scene, null, { language: I18n.getLanguage() })}
@@ -377,20 +388,26 @@ class ScenesList extends React.Component {
 
         if (this.state.reorder) {
             return <Draggable key={`draggable_${item._id}`} name={item._id}>{listItem}</Draggable>;
-        } else {
-            return  listItem;
         }
+        return  listItem;
     };
 
     onDragFinish(source, target) {
-        console.log(`Rename ${source} => ${target}`);
         let newId = `${target}.${source.split('.').pop()}`;
+        console.log(`Rename ${source} => ${newId}`);
         if (source !== newId) {
             if (this.props.scenes[newId]) {
                 newId += `_${I18n.t('copy')}`;
+                this.props.onMoveScene(source, newId);
+            } else {
+                this.setState({ showMoveWarning: { source, newId }});
             }
-            this.props.onMoveScene(source, newId);
         }
+    }
+
+    static isFolderNotEmpty(folder) {
+        const subNotEmpty = Object.keys(folder.subFolders).find(id => ScenesList.isFolderNotEmpty(folder.subFolders[id]));
+        return subNotEmpty || Object.keys(folder.scenes).length;
     }
 
     renderTree(parent, level) {
@@ -416,38 +433,51 @@ class ScenesList extends React.Component {
                     .forEach(scene =>
                         reactChildren.push(this.renderTreeScene(scene, level + 1)));
             } else {
-                reactChildren.push(<ListItem key="no scenes"><ListItemText className={this.props.classes.folderItem}>{I18n.t('No scenes created yet')}</ListItemText></ListItem>);
+                reactChildren.push(<ListItem key="no scenes">
+                    <ListItemText className={this.props.classes.folderItem}>
+                        {I18n.t('No scenes created yet')}
+                    </ListItemText>
+                </ListItem>);
             }
         }
 
         // Show folder item
         if (parent && (parent.id || this.state.reorder)) {
+            const empty = this.state.reorder ? false : !ScenesList.isFolderNotEmpty(parent);
+
             const folder = <ListItem
                 key={parent.prefix}
                 classes={{ gutters: this.props.classes.noGutters, root: this.props.classes.noPaddings }}
                 className={Utils.clsx(this.props.classes.width100, this.props.classes.folderItem, this.state.reorder && 'folder-reorder')}
-                style={{ paddingLeft: (this.state.reorder ? level : (level - 1)) * LEVEL_PADDING }}
+                style={{ paddingLeft: (this.state.reorder ? level : (level - 1)) * LEVEL_PADDING, opacity: empty ? 0.5 : 1 }}
             >
-                <ListItemIcon classes={{ root: this.props.classes.itemIconRoot }} onClick={() => this.toggleFolder(parent)}>{opened ?
-                    <IconFolderOpened className={Utils.clsx(this.props.classes.itemIcon, this.props.classes.itemIconFolder)} /> :
-                    <IconFolderClosed className={Utils.clsx(this.props.classes.itemIcon, this.props.classes.itemIconFolder)} />
-                }</ListItemIcon>
-                <ListItemText>{parent.id || I18n.t('Root')}</ListItemText>
+                <ListItemIcon classes={{ root: this.props.classes.itemIconRoot }} onClick={() => this.toggleFolder(parent)}>
+                    {opened ?
+                        <IconFolderOpened className={Utils.clsx(this.props.classes.itemIcon, this.props.classes.itemIconFolder)} /> :
+                        <IconFolderClosed className={Utils.clsx(this.props.classes.itemIcon, this.props.classes.itemIconFolder)} />
+                    }
+                </ListItemIcon>
+                <ListItemText
+                    primary={parent.id || I18n.t('Root')    }
+                    secondary={empty ? <span className={this.props.classes.hint}>{I18n.t('Folder not saved yet')}</span> : undefined}
+                />
                 {!this.state.reorder ? <ListItemSecondaryAction>
                     {opened ? <IconButton
                         onClick={() => this.props.onCreateScene(parent.id) }
                         title={ I18n.t('Create new scene')}
-                    ><IconAdd /></IconButton> : null}
+                    >
+                        <IconAdd />
+                    </IconButton> : null}
                     <IconButton
-                        onClick={() =>
-                            this.setState({
-                                editFolderDialog: parent,
-                                editFolderDialogTitle: parent.id,
-                                editFolderDialogTitleOrigin: parent.id
-                            })
-                        }
+                        onClick={() => this.setState({
+                            editFolderDialog: parent,
+                            editFolderDialogTitle: parent.id,
+                            editFolderDialogTitleOrigin: parent.id,
+                        })}
                         title={I18n.t('Edit folder name')}
-                    ><IconEdit /></IconButton>
+                    >
+                        <IconEdit />
+                    </IconButton>
                     <IconButton onClick={() => this.toggleFolder(parent)} title={opened ? I18n.t('Collapse') : I18n.t('Expand')}>
                         {opened ? <IconExpand /> : <IconCollapse />}
                     </IconButton>
@@ -477,12 +507,16 @@ class ScenesList extends React.Component {
             {!this.state.reorder ? <IconButton
                 onClick={() => this.props.onCreateScene()}
                 title={I18n.t('Create new scene')}
-            ><IconAdd /></IconButton> : null}
+            >
+                <IconAdd />
+            </IconButton> : null}
 
             {!this.state.reorder ? <IconButton
                 onClick={() => this.setState({addFolderDialog: this.props.folders, addFolderDialogTitle: ''})}
                 title={I18n.t('Create new folder')}
-            ><IconFolderAdd /></IconButton> : null}
+            >
+                <IconFolderAdd />
+            </IconButton> : null}
 
             {!this.state.reorder ? <span className={this.props.classes.right}>
                 <IconButton onClick={() => this.setState({showSearch: !this.state.showSearch})}>
@@ -508,8 +542,49 @@ class ScenesList extends React.Component {
                     e.stopPropagation();
                     this.setState({ reorder: !this.state.reorder });
                 }}
-            ><IconReorder /></IconButton> : null}
+            >
+                <IconReorder />
+            </IconButton> : null}
         </Toolbar>;
+    }
+
+    renderMoveWarningDialog() {
+        if (!this.state.showMoveWarning) {
+            return null;
+        }
+
+        return <Dialog
+            key="dialogMoveWarning"
+            open={!0}
+            onClose={() => this.setState({ showMoveWarning: null })}
+        >
+            <DialogTitle>{I18n.t('Do you want to move the scene?')}</DialogTitle>
+            <DialogContent>
+                {I18n.t('You must change the scene ID in all scripts and vis widgets.')}
+            </DialogContent>
+            <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
+                <Button
+                    variant="contained"
+                    onClick={() => {
+                        this.props.onMoveScene(this.state.showMoveWarning.source, this.state.showMoveWarning.newId);
+                        this.setState({ showMoveWarning: null });
+                    }}
+                    color="primary"
+                    autoFocus
+                    startIcon={<IconCheck />}
+                >
+                    {I18n.t('Move')}
+                </Button>
+                <Button
+                    color="grey"
+                    variant="contained"
+                    onClick={() => this.setState({ showMoveWarning: null })}
+                    startIcon={<IconCancel />}
+                >
+                    {I18n.t('Cancel')}
+                </Button>
+            </DialogActions>
+        </Dialog>;
     }
 
     render() {
@@ -524,6 +599,7 @@ class ScenesList extends React.Component {
             </div>,
             this.renderAddFolderDialog(),
             this.renderEditFolderDialog(),
+            this.renderMoveWarningDialog(),
         ];
     }
 }

@@ -249,7 +249,7 @@ class App extends GenericApp {
             let prefix = '';
             for (let i = 0; i < parts.length - 1; i++) {
                 if (prefix) {
-                    prefix = prefix + '.';
+                    prefix = `${prefix}.`;
                 }
                 prefix = prefix + parts[i];
                 if (!currentFolder.subFolders[parts[i]]) {
@@ -292,11 +292,13 @@ class App extends GenericApp {
 
     refreshData(changingScene) {
         const that = this;
+        const emptyFolders = this.state.folders ? this.collectEmptyFolders(this.state.folders) : [];
+
         return new Promise(resolve => {
             if (changingScene) {
-                this.setState({changingScene}, () => resolve());
+                this.setState({ changingScene }, () => resolve());
             } else {
-                this.setState({ready: false}, () => resolve());
+                this.setState({ ready: false }, () => resolve());
             }
         })
             .then(() => this.getData())
@@ -344,6 +346,26 @@ class App extends GenericApp {
                     newState.selectedSceneData = null;
                 }
 
+                // add empty folders
+                if (emptyFolders?.length) {
+                    emptyFolders.forEach(folder => {
+                        let prefix = folder.prefix.split('.');
+                        let parent = newState.folders;
+                        for (let i = 0; i < prefix.length; i++) {
+                            if (parent.subFolders[prefix[i]]) {
+                                parent = parent.subFolders[prefix[i]];
+                            } else {
+                                parent.subFolders[prefix[i]] = {
+                                    subFolders: {},
+                                    scenes: {},
+                                    id: prefix[i],
+                                    prefix: prefix.slice(0, i + 1).join('.'),
+                                };
+                            }
+                        }
+                    });
+                }
+
                 that.setState(newState);
             });
     }
@@ -356,25 +378,25 @@ class App extends GenericApp {
             scenes: {},
             subFolders: {},
             id,
-            prefix: _parentFolder.prefix ? _parentFolder.prefix + '.' + id : id
+            prefix: _parentFolder.prefix ? `${_parentFolder.prefix}.${id}` : id,
         };
 
-        this.setState({folders});
+        this.setState({ folders });
     }
 
     addSceneToFolderPrefix = (scene, folderPrefix, noRefresh) => {
         let oldId = scene._id;
         let sceneId = scene._id.split('.').pop();
-        scene._id = 'scene.0.' + folderPrefix + (folderPrefix ? '.' : '') + sceneId;
+        scene._id = `scene.0.${folderPrefix}${folderPrefix ? '.' : ''}${sceneId}`;
 
         return this.socket.delObject(oldId)
             .then(() => {
-                console.log('Deleted ' + oldId);
+                console.log(`Deleted ${oldId}`);
                 return this.socket.setObject(scene._id, scene)
             })
             .catch(e => this.showError(e))
             .then(() => {
-                console.log('Set new ID: ' + scene._id);
+                console.log(`Set new ID: ${scene._id}`);
                 return !noRefresh && this.refreshData(sceneId)
                     .then(() => this.changeSelectedScene(scene._id))
                     .catch(e => this.showError(e));
@@ -384,27 +406,53 @@ class App extends GenericApp {
     moveScript(oldId, newId) {
         const scene = this.state.scenes[oldId];
         if (this.state.selectedSceneId === oldId) {
-            return this.setState({selectedSceneId: newId}, () => this.moveScript(oldId, newId));
+            return this.setState({ selectedSceneId: newId }, () => this.moveScript(oldId, newId));
         }
 
+        const oldPrefix = getFolderPrefix(scene._id);
+        const folders = JSON.parse(JSON.stringify(this.state.folders));
+        const oldParentFolder = this.findFolder(folders, { prefix: oldPrefix });
         scene._id = newId;
 
         return this.socket.delObject(oldId)
             .then(() => {
-                console.log('Deleted ' + oldId);
+                console.log(`Deleted ${oldId}`);
                 return this.socket.setObject(scene._id, scene)
             })
             .catch(e => this.showError(e))
             .then(() => {
-                console.log('Set new ID: ' + scene._id);
-                return this.refreshData(newId)
-                    .then(() => this.changeSelectedScene(scene._id))
-                    .catch(e => this.showError(e));
+                console.log(`Set new ID: ${scene._id}`);
+                // move the scene in state
+                const scenes = JSON.parse(JSON.stringify(this.state.scenes));
+                delete scenes[oldId];
+                scenes[scene._id] = scene;
+                // find parent folder
+                const newPrefix = getFolderPrefix(scene._id);
+                const newParentFolder = this.findFolder(folders, { prefix: newPrefix });
+                if (newParentFolder && oldParentFolder) {
+                    newParentFolder.scenes[scene._id] = scene;
+                    delete oldParentFolder.scenes[oldId];
+                }
+
+                this.setState({ scenes, folders }, () =>
+                    this.refreshData(newId)
+                        .then(() => this.changeSelectedScene(scene._id))
+                        .catch(e => this.showError(e)));
             });
     };
 
+    collectEmptyFolders(folders, result) {
+        folders = folders || this.state.folders;
+        result = result || [];
+        if (!ScenesList.isFolderNotEmpty(folders)) {
+            result.push(folders);
+        }
+        Object.keys(folders.subFolders).forEach(id => this.collectEmptyFolders(folders.subFolders[id], result));
+        return result;
+    }
+
     renameFolder(folder, newName) {
-        return new Promise(resolve => this.setState({changingScene: folder}, () => resolve()))
+        return new Promise(resolve => this.setState({ changingScene: folder }, () => resolve()))
             .then(() => {
                 let newSelectedId;
 
@@ -413,15 +461,19 @@ class App extends GenericApp {
                 prefix = prefix.join('.');
 
                 if (Object.keys(folder.scenes).find(id => id === this.state.selectedSceneId)) {
-                    newSelectedId = 'scene.0.' + prefix + '.' + this.state.selectedSceneId.split('.').pop();
+                    newSelectedId = `scene.0.${prefix}.${this.state.selectedSceneId.split('.').pop()}`;
                 }
 
                 const promises = Object.keys(folder.scenes).map(sceneId =>
                     this.addSceneToFolderPrefix(folder.scenes[sceneId], prefix, true));
 
+                // collect empty folders, because they will disappear after reload from DB
+                folder.id = newName;
+                folder.prefix = prefix;
+
                 return Promise.all(promises)
                     .then(() => this.refreshData(folder))
-                    .then(() => newSelectedId && this.setState({selectedSceneId: newSelectedId}));
+                    .then(() => newSelectedId && this.setState({ selectedSceneId: newSelectedId }));
             });
     }
 
@@ -488,7 +540,7 @@ class App extends GenericApp {
         scene._id = this.state.selectedSceneId;
 
         const folder = getFolderPrefix(scene._id);
-        const newId = 'scene.0.' + (folder ? folder + '.' : '') + scene.common.name.replace(Utils.FORBIDDEN_CHARS, '_').replace(/\./g, '_').replace(/\s/g, '_');
+        const newId = `scene.0.${folder ? `${folder}.` : ''}${scene.common.name.replace(Utils.FORBIDDEN_CHARS, '_').replace(/\./g, '_').replace(/\s/g, '_')}`;
 
         if (scene._id !== newId) {
             // check if the scene name is unique
