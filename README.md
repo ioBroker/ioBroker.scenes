@@ -127,7 +127,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 -->
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 2.4.1 (2024-02-12)
 * (bluefox) Preserved empty folders by renaming and moving of scenes
 
 ### 2.4.0 (2022-12-23)
