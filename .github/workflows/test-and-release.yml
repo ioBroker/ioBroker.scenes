@@ -121,7 +121,7 @@ jobs:
           echo "::set-output name=BODY::$BODY"
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install -f
 
       - name: Create a clean build
         run: npm run build

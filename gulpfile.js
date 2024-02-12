@@ -41,7 +41,7 @@ function npmInstall() {
         // Install node modules
         const cwd = `${__dirname.replace(/\\/g, '/')}/src/`;
 
-        const cmd = `npm install`;
+        const cmd = `npm install -f`;
         console.log(`"${cmd} in ${cwd}`);
 
         // System call used for update of js-controller itself,
@@ -79,13 +79,13 @@ function build() {
     return new Promise((resolve, reject) => {
         const options = {
             stdio: 'pipe',
-            cwd:   __dirname + '/src/'
+            cwd:   `${__dirname}/src/`,
         };
 
         const version = JSON.parse(fs.readFileSync(`${__dirname}/package.json`).toString('utf8')).version;
         const data = JSON.parse(fs.readFileSync(`${__dirname}/src/package.json`).toString('utf8'));
         data.version = version;
-        fs.writeFileSync(`${__dirname}/src/package.json`, JSON.stringify(data, null, 4));
+        fs.writeFileSync(`${__dirname}/src/package.json`, JSON.stringify(data, null, 2));
 
         console.log(options.cwd);
 
