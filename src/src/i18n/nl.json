@@ -123,5 +123,6 @@
   "Import": "Importeren",
   "Scene will be overwritten and cannot be undone!": "De scène wordt overschreven en kan niet ongedaan worden gemaakt!",
   "Overwrite": "Overschrijven",
-  "Import scene": "Scène importeren"
+  "Import scene": "Scène importeren",
+  "Write with ack=true": "Schrijf met ack=true"
 }

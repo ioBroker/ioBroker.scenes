@@ -123,5 +123,6 @@
   "Import": "Импортировать",
   "Scene will be overwritten and cannot be undone!": "Сцена будет перезаписана и ее нельзя будет отменить!",
   "Overwrite": "Перезаписать",
-  "Import scene": "Импортировать сцену"
+  "Import scene": "Импортировать сцену",
+  "Write with ack=true": "Писать с ack=true"
 }

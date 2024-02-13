@@ -53,6 +53,9 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
         color: theme.palette.mode === 'dark' ? '#FFF': '#000',
     },
+    marginBottom2: {
+        marginBottom: theme.spacing(0.5),
+    },
     p: {
         margin: `${theme.spacing(1)} 0`,
     },
@@ -61,6 +64,14 @@ const styles = theme => ({
     },
     onFalse: {
         background: '#ff9999',
+    },
+    pTrue: {
+        backgroundColor: theme.palette.mode === 'dark' ? '#002502' : '#90ee90',
+        padding: 4,
+    },
+    pFalse: {
+        backgroundColor: theme.palette.mode === 'dark' ? '#332100' : '#eec590',
+        padding: 4,
     },
 });
 
@@ -126,9 +137,9 @@ class SceneForm extends React.Component {
     renderOnTrueFalse(name) {
         const on = this.state.native[name];
 
-        return [
+        return <Box className={this.state.native.onFalse.enabled ? (on === this.state.native.onTrue ? this.props.classes.pTrue : this.props.classes.pFalse) : ''}>
             <div key="switch" className={this.props.classes.editItem}>
-                <h4>{on === this.state.native.onTrue ? (this.state.native.onFalse.enabled ? I18n.t('Trigger for TRUE') : I18n.t('Trigger')) : I18n.t('Trigger for FALSE')}
+                <h4 style={this.state.native.onFalse.enabled ? { marginTop: 0 } : null}>{on === this.state.native.onTrue ? (this.state.native.onFalse.enabled ? I18n.t('Trigger for TRUE') : I18n.t('Trigger')) : I18n.t('Trigger for FALSE')}
                     <span className={this.props.classes.right}>
                         <Switch
                             checked={!!on.trigger.id}
@@ -151,7 +162,7 @@ class SceneForm extends React.Component {
                         />
                     </span>
                 </h4>
-            </div>,
+            </div>
             <div key="id" className={this.props.classes.editItem}>
                 {on.trigger.id ?
                     <Grid container spacing={1}>
@@ -222,8 +233,8 @@ class SceneForm extends React.Component {
                         </Grid>
                     </Grid>
                     : null}
-            </div>,
-            <div key="cron" className={this.props.classes.editItem}>
+            </div>
+            <div key="cron" className={Utils.clsx(this.props.classes.editItem, this.state.native.onFalse.enabled && this.props.classes.marginBottom2)}>
                 <TextField
                     variant="standard"
                     inputRef={this.inputs.Cron.ref}
@@ -249,7 +260,7 @@ class SceneForm extends React.Component {
                     ...
                 </Button>
             </div>
-        ];
+        </Box>;
     }
 
     saveCursorPosition = name => {
@@ -321,10 +332,8 @@ class SceneForm extends React.Component {
                         InputLabelProps={{ shrink: true }}
                         label={I18n.t('Scene description')}
                         value={this.state.common.desc}
-
                         onFocus={() => this.saveCursorPosition('Description')}
                         onKeyDown={() => this.saveCursorPosition('Description')}
-
                         onChange={ e => {
                             this.saveCursorPosition('Description');
                             const common = JSON.parse(JSON.stringify(this.state.common));

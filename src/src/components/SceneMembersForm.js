@@ -109,6 +109,14 @@ const styles = theme => ({
     p: {
         margin: `${theme.spacing(1)} 0`,
     },
+    pTrue: {
+        backgroundColor: theme.palette.mode === 'dark' ? '#002502' : '#90ee90',
+        padding: 4,
+    },
+    pFalse: {
+        padding: 4,
+        backgroundColor: theme.palette.mode === 'dark' ? '#332100' : '#eec590',
+    },
     guttersZero: {
         padding: 0,
     },
@@ -204,12 +212,12 @@ const styles = theme => ({
         minHeight: 48,
     },
     setValue: {
-        width: `calc(70% - ${70 + theme.spacing(1)})`,
+        width: `calc(70% - ${70 + parseInt(theme.spacing(1), 10)}px)`,
         minWidth: 100,
         marginRight: theme.spacing(1),
     },
     setTolerance: {
-        width: `calc(30% - ${70 + theme.spacing(1)})`,
+        width: `calc(30% - ${70 + parseInt(theme.spacing(1), 10)}px)`,
         minWidth: 100,
         marginRight: theme.spacing(1),
     },
@@ -225,6 +233,13 @@ const styles = theme => ({
     fromId: {
         marginTop: 8,
     },
+    smallClearBtn: {
+        width: 32,
+        height: 32,
+    },
+    ackTrue: {
+        marginLeft: 100,
+    }
 });
 
 class SceneMembersForm extends React.Component {
@@ -497,7 +512,10 @@ class SceneMembersForm extends React.Component {
                 <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
                 <DialogContent>
                     <FormControlLabel
-                        control={<Checkbox checked={this.state.suppressDeleteConfirm} onChange={() => this.setState({suppressDeleteConfirm: !this.state.suppressDeleteConfirm})} />}
+                        control={<Checkbox
+                            checked={this.state.suppressDeleteConfirm}
+                            onChange={() => this.setState({ suppressDeleteConfirm: !this.state.suppressDeleteConfirm })}
+                        />}
                         label={I18n.t('Suppress confirmation for next 5 minutes')}
                     />
                 </DialogContent>
@@ -604,7 +622,7 @@ class SceneMembersForm extends React.Component {
             setValueTolerance = member.setIfFalseTolerance;
         }
 
-        return <Box className={classes.p}>
+        return <Box className={Utils.clsx(classes.p, this.state.onFalseEnabled ? (isTrue ? classes.pTrue : classes.pFalse) : '')}>
             {!this.state.easy || fromState ? <FormControlLabel
                 classes={{ root: classes.fromId }}
                 control={<Switch
@@ -653,68 +671,69 @@ class SceneMembersForm extends React.Component {
                 </FormControl>
                 :
                 <>
-                    {fromState ?
-                        <TextField
-                            variant="standard"
-                            fullWidth
-                            InputLabelProps={{ shrink: true }}
-                            label={labelSetValue}
-                            value={setValue || ''}
-                            readOnly
-                            className={classes.setValue}
-                            InputProps={{
-                                endAdornment: <IconButton
-                                    size="small"
-                                    onClick={() => this.setState({ showSelectValueIdDialog: isTrue ? 'true' : 'false', showSelectValueIdDialogFor: index })}>
-                                    <IconList />
-                                </IconButton>,
-                            }}
-                        />
-                        :
-                        <TextField
-                            variant="standard"
-                            fullWidth
-                            InputLabelProps={{shrink: true}}
-                            label={labelSetValue}
-                            value={setValue === undefined || setValue === null ? '' : setValue}
-                            className={classes.setValue}
-                            InputProps={{
-                                endAdornment: setValue ?
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            if (isTrue) {
-                                                members[index].setIfTrue = null;
-                                            } else {
-                                                members[index].setIfFalse = null;
-                                            }
-                                            this.setStateWithParent({ members });
-                                        }}>
-                                        <IconCancel />
-                                    </IconButton>
-                                    : undefined,
-                            }}
-                            onChange={e => {
-                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                if (this.state.objectTypes[member.id] === 'number' && e.target.value !== '') {
+                    {fromState ? <TextField
+                        variant="standard"
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        label={labelSetValue}
+                        value={setValue || ''}
+                        readOnly
+                        className={classes.setValue}
+                        InputProps={{
+                            endAdornment: <IconButton
+                                className={this.props.classes.smallClearBtn}
+                                size="small"
+                                onClick={() => this.setState({ showSelectValueIdDialog: isTrue ? 'true' : 'false', showSelectValueIdDialogFor: index })}>
+                                <IconList />
+                            </IconButton>,
+                        }}
+                    />
+                    : <TextField
+                        variant="standard"
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        label={labelSetValue}
+                        value={setValue === undefined || setValue === null ? '' : setValue}
+                        className={classes.setValue}
+                        InputProps={{
+                            endAdornment: setValue ? <IconButton
+                                size="small"
+                                className={classes.smallClearBtn}
+                                onClick={() => {
+                                    const members = JSON.parse(JSON.stringify(this.state.members));
                                     if (isTrue) {
-                                        members[index].setIfTrue = parseFloat(e.target.value.replace(',', '.'));
+                                        members[index].setIfTrue = null;
                                     } else {
-                                        members[index].setIfFalse = parseFloat(e.target.value.replace(',', '.'));
+                                        members[index].setIfFalse = null;
+                                    }
+                                    this.setStateWithParent({ members });
+                                }}>
+                                <IconCancel />
+                            </IconButton> : undefined,
+                        }}
+                        onChange={e => {
+                            const members = JSON.parse(JSON.stringify(this.state.members));
+                            if (this.state.objectTypes[member.id] === 'number' && e.target.value !== '') {
+                                if (isTrue) {
+                                    members[index].setIfTrue = parseFloat(e.target.value.replace(',', '.'));
+                                    if (isNaN(members[index].setIfTrue)) {
+                                        members[index].setIfTrue = null;
                                     }
                                 } else {
-                                    if (isTrue) {
-                                        members[index].setIfTrue = e.target.value;
-                                    } else {
-                                        members[index].setIfFalse = e.target.value;
+                                    members[index].setIfFalse = parseFloat(e.target.value.replace(',', '.'));
+                                    if (isNaN(members[index].setIfFalse)) {
+                                        members[index].setIfFalse = null;
                                     }
                                 }
+                            } else if (isTrue) {
+                                members[index].setIfTrue = e.target.value;
+                            } else {
+                                members[index].setIfFalse = e.target.value;
+                            }
 
-                                this.setStateWithParent({ members });
-                            }}
-                        />
-                    }
+                            this.setStateWithParent({ members });
+                        }}
+                    />}
 
                     {!this.state.easy && this.state.objectTypes[member.id] !== 'boolean' ? <TextField
                         variant="standard"
@@ -724,33 +743,50 @@ class SceneMembersForm extends React.Component {
                         title={I18n.t('Absolute value, not percent')}
                         className={classes.setTolerance}
                         InputProps={{
-                            endAdornment: setValueTolerance ?
-                                <IconButton
-                                    size="small"
-                                    onClick={() => {
-                                        const members = JSON.parse(JSON.stringify(this.state.members));
-                                        if (isTrue) {
-                                            members[index].setIfTrueTolerance = null;
-                                        } else {
-                                            members[index].setIfFalseTolerance = null;
-                                        }
-                                        this.setStateWithParent({members});
-                                    }}>
-                                    <IconCancel />
-                                </IconButton>
-                                : undefined,
+                            endAdornment: setValueTolerance ? <IconButton
+                                size="small"
+                                className={classes.smallClearBtn}
+                                onClick={() => {
+                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    if (isTrue) {
+                                        members[index].setIfTrueTolerance = null;
+                                    } else {
+                                        members[index].setIfFalseTolerance = null;
+                                    }
+                                    this.setStateWithParent({ members });
+                                }}>
+                                <IconCancel />
+                            </IconButton> : undefined,
                         }}
                         onChange={e => {
                             const members = JSON.parse(JSON.stringify(this.state.members));
                             if (isTrue) {
-                                members[index].setIfTrueTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
+                                members[index].setIfTrueTolerance = e.target.value === '' ? null : parseFloat(e.target.value.replace(',', '.'));
+                                if (isNaN(members[index].setIfTrueTolerance)) {
+                                    members[index].setIfTrueTolerance = null;
+                                }
                             } else {
-                                members[index].setIfFalseTolerance = e.target.value === '' ? '' : parseFloat(e.target.value.replace(',', '.'));
+                                members[index].setIfFalseTolerance = e.target.value === '' ? null : parseFloat(e.target.value.replace(',', '.'));
+                                if (isNaN(members[index].setIfFalseTolerance)) {
+                                    members[index].setIfFalseTolerance = null;
+                                }
                             }
                             this.setStateWithParent({ members });
                         }} /> : null}
                 </>
             }
+            {!this.state.easy && !fromState && <FormControlLabel
+                label={I18n.t('Write with ack=true')}
+                classes={{ root: classes.ackTrue }}
+                control={<Checkbox
+                    checked={!!member.ackTrue}
+                    onChange={e => {
+                        const members = JSON.parse(JSON.stringify(this.state.members));
+                        members[index].ackTrue = e.target.checked;
+                        this.setStateWithParent({ members });
+                    }}
+                />}
+            />}
         </Box>;
     }
 
@@ -968,30 +1004,28 @@ class SceneMembersForm extends React.Component {
                             <Grid item xs={12} sm={4}>
                                 {!stacked ? <FormControlLabel
                                     label={I18n.t('Stack next delays')}
-                                    control={
-                                        <Checkbox
-                                            checked={!!member.stackNextDelays}
-                                            onChange={e => {
-                                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                                members[index].stackNextDelays = e.target.checked;
-                                                this.setStateWithParent({ members });
-                                            }}
-                                        />
-                                    }/> : null}
+                                    control={<Checkbox
+                                        checked={!!member.stackNextDelays}
+                                        onChange={e => {
+                                            const members = JSON.parse(JSON.stringify(this.state.members));
+                                            members[index].stackNextDelays = e.target.checked;
+                                            this.setStateWithParent({ members });
+                                        }}
+                                    />}
+                                /> : null}
                             </Grid>
                             <Grid item xs={12} sm={4}>
                                 <FormControlLabel
                                     label={I18n.t('Stop already started commands')}
-                                    control={
-                                        <Checkbox
-                                            checked={member.stopAllDelays}
-                                            onChange={e => {
-                                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                                members[index].stopAllDelays = e.target.checked;
-                                                this.setStateWithParent({ members });
-                                            }}
-                                        />
-                                    }/>
+                                    control={<Checkbox
+                                        checked={member.stopAllDelays}
+                                        onChange={e => {
+                                            const members = JSON.parse(JSON.stringify(this.state.members));
+                                            members[index].stopAllDelays = e.target.checked;
+                                            this.setStateWithParent({ members });
+                                        }}
+                                    />}
+                                />
                             </Grid>
                         </Grid>
                     </Box> : null

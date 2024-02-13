@@ -123,5 +123,6 @@
   "Import": "Importare",
   "Scene will be overwritten and cannot be undone!": "La scena verrà sovrascritta e non potrà essere annullata!",
   "Overwrite": "Sovrascrivi",
-  "Import scene": "Importa scena"
+  "Import scene": "Importa scena",
+  "Write with ack=true": "Scrivi con ack=true"
 }

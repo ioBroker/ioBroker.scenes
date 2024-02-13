@@ -27,7 +27,7 @@
   "Virtual group": "Virtuelle Gruppe",
   "Aggregation": "Aggregation",
   "Set value if false": "Werte bei FALSE",
-  "Trigger for TRUE": "Trigger für TRUE",
+  "Trigger for TRUE": "Auslöser für TRUE",
   "Trigger ID": "Trigger ID",
   "Condition": "Bedingung",
   "on update": "beim Aktualisieren",
@@ -123,5 +123,6 @@
   "Import": "Importieren",
   "Scene will be overwritten and cannot be undone!": "Die Szene wird überschrieben und kann nicht rückgängig gemacht werden!",
   "Overwrite": "Überschreiben",
-  "Import scene": "Szene importieren"
+  "Import scene": "Szene importieren",
+  "Write with ack=true": "Mit ack=true schreiben "
 }

@@ -123,5 +123,6 @@
   "Import": "Import",
   "Scene will be overwritten and cannot be undone!": "Scena zostanie nadpisana i nie można jej cofnąć!",
   "Overwrite": "Przepisać",
-  "Import scene": "Importuj scenę"
+  "Import scene": "Importuj scenę",
+  "Write with ack=true": "Napisz z potwierdzeniem=true"
 }

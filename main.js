@@ -660,11 +660,11 @@ function activateSceneState(sceneId, state, isTrue) {
                         adapter.getForeignState(id, (err, state) => {
                             // Set new state only if differ from the desired state
                             if (!state || state.val !== setValue) {
-                                adapter.setForeignState(id, setValue);
+                                adapter.setForeignState(id, setValue, !!stateObj.ackTrue);
                             }
                         });
                     } else {
-                        adapter.setForeignState(id, setValue);
+                        adapter.setForeignState(id, setValue, !!stateObj.ackTrue);
                     }
 
                     if (timers[id]) {
@@ -685,16 +685,16 @@ function activateSceneState(sceneId, state, isTrue) {
                     timers[stateObj.id].forEach(item => clearTimeout(item.timer));
                     timers[stateObj.id] = [];
                 }
-                // Set desired state
+                // Set the desired state
                 if (stateObj.doNotOverwrite) {
                     adapter.getForeignState(stateObj.id, (err, state) => {
-                        // Set new state only if differ from desired state
+                        // Set new state only if differ from the desired state
                         if (!state || state.val !== desiredValue) {
-                            adapter.setForeignState(stateObj.id, desiredValue);
+                            adapter.setForeignState(stateObj.id, desiredValue, !!stateObj.ackTrue);
                         }
                     });
                 } else {
-                    adapter.setForeignState(stateObj.id, desiredValue);
+                    adapter.setForeignState(stateObj.id, desiredValue, !!stateObj.ackTrue);
                 }
             }
         })
@@ -719,8 +719,8 @@ function activateSceneStates(sceneId, state, isTrue, interval, callback) {
         }
     }
 
-    scenesTimeout[sceneId + '_' + state] = setTimeout(() => {
-        scenesTimeout[sceneId + '_' + state] = null;
+    scenesTimeout[`${sceneId}_${state}`] = setTimeout(() => {
+        scenesTimeout[`${sceneId}_${state}`] = null;
         activateSceneState(sceneId, state, isTrue);
         activateSceneStates(sceneId, state + 1, isTrue, interval, callback);
     }, interval);
@@ -736,7 +736,7 @@ function activateScene(sceneId, isTrue) {
 
     scenes[sceneId].native.burstInterval = parseInt(scenes[sceneId].native.burstInterval, 10);
 
-    // all commands must be executed without interval
+    // all commands must be executed without an interval
     if (!scenes[sceneId].native.burstInterval) {
         for (let state = 0; state < scenes[sceneId].native.members.length; state++) {
             activateSceneState(sceneId, state, isTrue);
