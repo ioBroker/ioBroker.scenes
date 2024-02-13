@@ -946,6 +946,7 @@ class App extends GenericApp {
 
     renderDrawerContent(showDrawer) {
         return <ScenesList
+            themeType={this.state.themeType}
             scenes={this.state.scenes}
             folders={this.state.folders}
             selectedSceneId={this.state.selectedSceneId}

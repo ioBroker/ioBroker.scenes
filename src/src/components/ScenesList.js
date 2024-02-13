@@ -620,7 +620,7 @@ class ScenesList extends React.Component {
         return <ExportImportDialog
             key="exportImportDialog"
             isImport={!!this.state.importDialog}
-            themeType={this.state.themeType}
+            themeType={this.props.themeType}
             allScenes
             onClose={importedScenes => {
                 if (this.state.importDialog && importedScenes) {
@@ -667,6 +667,7 @@ ScenesList.propTypes = {
     theme: PropTypes.object,
     folders: PropTypes.object,
     showDrawer: PropTypes.bool,
+    themeType: PropTypes.string,
 };
 
 export default withStyles(styles)(ScenesList);
