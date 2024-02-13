@@ -707,7 +707,8 @@ class SceneMembersForm extends React.Component {
                                         members[index].setIfFalse = null;
                                     }
                                     this.setStateWithParent({ members });
-                                }}>
+                                }}
+                            >
                                 <IconCancel />
                             </IconButton> : undefined,
                         }}
@@ -754,7 +755,8 @@ class SceneMembersForm extends React.Component {
                                         members[index].setIfFalseTolerance = null;
                                     }
                                     this.setStateWithParent({ members });
-                                }}>
+                                }}
+                            >
                                 <IconCancel />
                             </IconButton> : undefined,
                         }}
@@ -959,22 +961,37 @@ class SceneMembersForm extends React.Component {
                     {value}
                 </div>
             </div>
-            <div>{member.desc} {!member.disabled && (this.props.intervalBetweenCommands || member.delay) ?
+            <div>{!member.disabled && (this.props.intervalBetweenCommands || member.delay) ?
                 <span> <IconClock /> {`${delay + I18n.t('ms')} ${I18n.t('from scene start')}`}</span> : null}
             </div>
             {opened ? <div>
-                {/*<Box className={classes.p}>
+                <Box className={classes.p}>
                     <TextField
+                        variant="standard"
                         fullWidth
-                        InputLabelProps={{shrink: true}} label={I18n.t('Description')}
+                        InputLabelProps={{ shrink: true }}
+                        label={I18n.t('Description')}
                         value={member.desc || ''}
+                        InputProps={{
+                            endAdornment: member.desc ? <IconButton
+                                size="small"
+                                className={classes.smallClearBtn}
+                                onClick={() => {
+                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    members[index].desc = null;
+                                    this.setStateWithParent({ members });
+                                }}
+                            >
+                                <IconCancel />
+                            </IconButton> : undefined,
+                        }}
                         onChange={e => {
                             const members = JSON.parse(JSON.stringify(this.state.members));
                             members[index].desc = e.target.value;
-                            this.setStateWithParent({members});
+                            this.setStateWithParent({ members });
                         }}
                     />
-                </Box>*/}
+                </Box>
                 {!this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null}
                 {!this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}
                 {!this.state.easy ?

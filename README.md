@@ -156,6 +156,8 @@ sendTo(
 * (bluefox) Cleared cron tasks by re-init
 * (bluefox) CRON Editor dialog added
 * (bluefox) Implemented scene enabling/disabling via messages
+* (bluefox) Implemented the writing of the scene states with ack=true
+* (bluefox) Added description to the scene states
 
 ### 2.4.2 (2024-02-12)
 * (bluefox) Preserved empty folders by renaming and moving of scenes
