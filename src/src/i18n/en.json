@@ -119,5 +119,9 @@
   "Folder not saved yet": "Folder not saved yet",
   "Do you want to move the scene?": "Do you want to move the scene?",
   "You must change the scene ID in all scripts and vis widgets.": "You must change the scene ID in all scripts and vis widgets.",
-  "Move": "Move"
+  "Move": "Move",
+  "Import": "Import",
+  "Scene will be overwritten and cannot be undone!": "Scene will be overwritten and cannot be undone!",
+  "Overwrite": "Overwrite",
+  "Import scene": "Import scene"
 }

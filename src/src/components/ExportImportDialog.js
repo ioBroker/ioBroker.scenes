@@ -27,12 +27,15 @@ import { Utils, I18n } from '@iobroker/adapter-react-v5';
 
 const styles = theme => ({
     divWithoutTitle: {
-        width: '100%',
-        height: '100%',
+        width: 'calc(100% - 4px)',
+        height: 'calc(100% - 4px)',
         border: '2px solid #00000000',
     },
     error: {
         border: '2px solid #FF0000',
+    },
+    dialogHeight: {
+        height: 'calc(100% - 64px)',
     },
 });
 
@@ -44,6 +47,7 @@ class ExportImportDialog extends React.Component {
             text: props.sceneObj ? JSON.stringify(props.sceneObj, null, 2) : '',
             error: false,
             toast: '',
+            showWarning: false,
         };
     }
 
@@ -63,21 +67,59 @@ class ExportImportDialog extends React.Component {
     }
 
     renderToast() {
-        return <Snackbar open={ !!this.state.toast } autoHideDuration={ 3000 } onClick={ () => this.setState({ toast: '' }) } onClose={ () => this.setState({ toast: '' }) }>
-            <Alert color="info" severity="success" >{ this.state.toast }</Alert>
+        return <Snackbar open={!!this.state.toast} autoHideDuration={3000} onClick={() => this.setState({ toast: '' })} onClose={() => this.setState({ toast: '' })}>
+            <Alert color="info" severity="success">{this.state.toast}</Alert>
         </Snackbar>;
+    }
+
+    renderWarningDialog() {
+        if (!this.state.showWarning) {
+            return null;
+        }
+        return <Dialog
+            open={!0}
+            onClose={() => this.setState({ showWarning: false })}
+        >
+            <DialogTitle>{I18n.t('Scene will be overwritten and cannot be undone!')}</DialogTitle>
+            <DialogContent>
+                {I18n.t('Are you sure?')}
+            </DialogContent>
+            <DialogActions>
+                <Button
+                    variant="contained"
+                    onClick={() => {
+                        this.props.onClose(this.state.showWarning);
+                        this.setState({ showWarning: false });
+                    }}
+                    color="primary"
+                    autoFocus
+                    startIcon={<IconCheck />}
+                >
+                    {I18n.t('Overwrite')}
+                </Button>
+                <Button
+                    color="grey"
+                    variant="contained"
+                    onClick={() => this.setState({ showWarning: false })}
+                    startIcon={<IconClose />}
+                >
+                    {I18n.t('Close')}
+                </Button>
+            </DialogActions>
+        </Dialog>;
     }
 
     render() {
         return <Dialog
             open={!0}
+            classes={{ paper: this.props.classes.dialogHeight }}
             onClose={() => this.props.onClose()}
             aria-labelledby="export-dialog-title"
             fullWidth
-            maxWidth="lg"
-            fullScreen
+            maxWidth="xl"
             aria-describedby="export-dialog-description"
         >
+            {this.renderWarningDialog()}
             <DialogTitle id="export-dialog-title">{this.props.isImport ? I18n.t('Import scene') : I18n.t('Export scene')}</DialogTitle>
             <DialogContent>
                 <div className={Utils.clsx(this.props.classes.divWithoutTitle, this.state.error && this.props.classes.error)}>
@@ -90,8 +132,8 @@ class ExportImportDialog extends React.Component {
                             this.codeEditor = editor;
                             this.codeEditor.focus();
                         }}
-                        theme={this.props.themeType === 'dark' ? 'clouds_midnight' : 'chrome' }
-                        onChange={newValue => this.onChange(newValue) }
+                        theme={this.props.themeType === 'dark' ? 'clouds_midnight' : 'chrome'}
+                        onChange={newValue => this.onChange(newValue)}
                         value={this.state.text || ''}
                         name="UNIQUE_ID_OF_DIV"
                         fontSize={14}
@@ -101,10 +143,18 @@ class ExportImportDialog extends React.Component {
                 </div>
             </DialogContent>
             <DialogActions>
-                { this.props.isImport ?
+                {this.props.isImport ?
                     <Button
+                        variant="contained"
                         disabled={!this.state.text || this.state.error}
-                        onClick={() => this.props.onClose(JSON.parse(this.state.text))}
+                        onClick={() => {
+                            try {
+                                const scene = JSON.parse(this.state.text);
+                                this.setState({ showWarning: scene })
+                            } catch (e) {
+                                this.setState({ toast: I18n.t('Cannot parse') });
+                            }
+                        }}
                         color="primary"
                         startIcon={<IconCheck />}
                     >
@@ -112,6 +162,7 @@ class ExportImportDialog extends React.Component {
                     </Button>
                     :
                     <Button
+                        variant="contained"
                         onClick={() => {
                             Utils.copyToClipboard(this.state.text);
                             this.setState({ toast: I18n.t('Copied') });
@@ -125,6 +176,7 @@ class ExportImportDialog extends React.Component {
                     </Button>}
                 <Button
                     color="grey"
+                    variant="contained"
                     onClick={() => this.props.onClose()}
                     autoFocus={!this.props.isImport}
                     startIcon={<IconClose />}

@@ -119,5 +119,9 @@
   "Folder not saved yet": "Map nog niet opgeslagen",
   "Do you want to move the scene?": "Wil je de scène verplaatsen?",
   "You must change the scene ID in all scripts and vis widgets.": "U moet de scène-ID in alle scripts en viswidgets wijzigen.",
-  "Move": "Beweging"
+  "Move": "Beweging",
+  "Import": "Importeren",
+  "Scene will be overwritten and cannot be undone!": "De scène wordt overschreven en kan niet ongedaan worden gemaakt!",
+  "Overwrite": "Overschrijven",
+  "Import scene": "Scène importeren"
 }

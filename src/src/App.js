@@ -8,16 +8,18 @@ import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import ReactSplit, { SplitDirection, GutterTheme } from '@devbookhq/splitter';
 
 // MaterialUi
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import Button from '@mui/material/Button';
-import Toolbar from '@mui/material/Toolbar';
-import DialogActions from '@mui/material/DialogActions';
-import Drawer from '@mui/material/Drawer';
+import {
+    Grid,
+    Typography,
+    Container,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    Button,
+    Toolbar,
+    DialogActions,
+    Drawer,
+} from '@mui/material';
 
 // Own
 import GenericApp from '@iobroker/adapter-react-v5/GenericApp';
@@ -29,14 +31,15 @@ import ExportImportDialog from './components/ExportImportDialog';
 import ScenesList from './components/ScenesList';
 
 // icons
-import { MdClose as IconCancel } from 'react-icons/md';
-import { MdSave as IconSave } from 'react-icons/md';
-import { MdDelete as IconDelete } from 'react-icons/md';
-import { MdCheck as IconCheck } from 'react-icons/md';
-import { MdFileDownload as IconExport } from 'react-icons/md';
-// import { MdFileUpload as IconImport } from 'react-icons/md';
-import { FaClone as IconClone } from 'react-icons/fa';
-import { FaBars as IconMenu } from 'react-icons/fa';
+import {
+    MdClose as IconCancel,
+    MdSave as IconSave,
+    MdDelete as IconDelete,
+    MdCheck as IconCheck,
+    MdFileDownload as IconExport,
+    MdFileUpload as IconImport,
+} from 'react-icons/md';
+import { FaClone as IconClone, FaBars as IconMenu } from 'react-icons/fa';
 import pack from '../package.json';
 
 const MARGIN_MEMBERS = 20;
@@ -780,19 +783,32 @@ class App extends GenericApp {
         }
 
         return <ExportImportDialog
-            isImport={ !!this.state.importDialog }
-            themeType={ this.state.themeType }
-            onClose={ importedScene => {
+            isImport={!!this.state.importDialog}
+            themeType={this.state.themeType}
+            onClose={importedScene => {
                 if (this.state.importDialog && importedScene) {
                     const scene = this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId];
-                    importedScene.common._id = scene._id;
-                    importedScene.common.name = scene.name || importedScene.common.name;
-                    this.setState({selectedSceneData: importedScene,  importDialog: false});
+                    // if inability changed
+                    if ((importedScene.common.enabled !== false) !== (scene.common.enabled !== false)) {
+                        const scenes = JSON.parse(JSON.stringify(this.state.scenes));
+                        scenes[this.state.selectedSceneId].common.enabled = importedScene.common.enabled !== false;
+
+                        this.socket.setObject(this.state.selectedSceneId, scenes[this.state.selectedSceneId])
+                            .catch(e => this.showError(e));
+                        this.setState({ scenes });
+                    }
+                    scene.common.enabled = importedScene.common.enabled !== false;
+                    scene.common.engine = importedScene.common.engine;
+                    if (!scene.common.engine || !this.state.instances.includes(scene.common.engine)) {
+                        scene.common.engine = this.state.instances[0];
+                    }
+                    scene.native = importedScene.native;
+                    this.updateScene(scene.common, scene.native, () => this.setState({ importDialog: false }));
                 } else {
-                    this.setState({exportDialog: false, importDialog: false})
+                    this.setState({ exportDialog: false, importDialog: false })
                 }
-            } }
-            sceneObj={ this.state.exportDialog ? this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId] : '' }
+            }}
+            sceneObj={this.state.exportDialog ? this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId] : null}
         />
     }
 
@@ -804,7 +820,7 @@ class App extends GenericApp {
         >
             {this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? <Typography variant="h6" className={ this.props.classes.sceneTitle }>
                 {I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
-                <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, { language: I18n.getLanguage() }, true)}</span>
+                <span className={this.props.classes.sceneSubTitle}>{Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, { language: I18n.getLanguage() }, true)}</span>
             </Typography> : null}
 
             {showDrawer ? <IconButton
@@ -814,13 +830,13 @@ class App extends GenericApp {
             >
                 <IconMenu />
             </IconButton> : null}
-            <IconButton aria-label="Clone" title={ I18n.t('Clone') } onClick={ () => this.cloneScene(this.state.selectedSceneId) }><IconClone/></IconButton>
+            <IconButton aria-label="Clone" title={I18n.t('Clone')} onClick={() => this.cloneScene(this.state.selectedSceneId)}><IconClone /></IconButton>
 
-            <IconButton aria-label="Delete" title={ I18n.t('Delete') } onClick={ () => this.setState({deleteDialog: true}) }><IconDelete/></IconButton>
+            <IconButton aria-label="Delete" title={I18n.t('Delete')} onClick={() => this.setState({ deleteDialog: true })}><IconDelete /></IconButton>
 
-            <IconButton aria-label="Export" title={ I18n.t('Export scene') } onClick={ () => this.setState({exportDialog: true}) }><IconExport/></IconButton>
+            <IconButton aria-label="Export" title={I18n.t('Export scene')} onClick={() => this.setState({ exportDialog: true })}><IconExport /></IconButton>
 
-            {/*<IconButton aria-label="Import" title={ I18n.t('Import scene') } onClick={ () => this.setState({importDialog: true}) }><IconImport/></IconButton>*/}
+            <IconButton aria-label="Import" title={I18n.t('Import scene')} onClick={() => this.setState({ importDialog: true })}><IconImport /></IconButton>
         </Toolbar>;
     }
 

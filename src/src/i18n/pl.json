@@ -119,5 +119,9 @@
   "Folder not saved yet": "Folder nie został jeszcze zapisany",
   "Do you want to move the scene?": "Czy chcesz przenieść scenę?",
   "You must change the scene ID in all scripts and vis widgets.": "Musisz zmienić identyfikator sceny we wszystkich skryptach i widżetach.",
-  "Move": "Przenosić"
+  "Move": "Przenosić",
+  "Import": "Import",
+  "Scene will be overwritten and cannot be undone!": "Scena zostanie nadpisana i nie można jej cofnąć!",
+  "Overwrite": "Przepisać",
+  "Import scene": "Importuj scenę"
 }

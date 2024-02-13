@@ -111,15 +111,16 @@ class SceneForm extends React.Component {
 
     renderSelectIdDialog() {
         return this.state.showDialog ? <DialogSelectID
-                key="selectDialog"
-                imagePrefix={'../..'}
-                socket={ this.props.socket }
-                dialogName="memberEdit"
-                title={ I18n.t('Select for ') }
-                selected={ null }
-                onOk={ this.state.showDialog }
-                onClose={ () => this.setState({showDialog: false}) }
-            /> : null;
+            classes={undefined}
+            key="selectDialog"
+            imagePrefix="../.."
+            socket={this.props.socket}
+            dialogName="memberEdit"
+            title={I18n.t('Select for ')}
+            selected={null}
+            onOk={this.state.showDialog}
+            onClose={() => this.setState({ showDialog: false })}
+        /> : null;
     };
 
     renderOnTrueFalse(name) {

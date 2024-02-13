@@ -119,5 +119,9 @@
   "Folder not saved yet": "Папка еще не сохранена",
   "Do you want to move the scene?": "Хотите переместить сцену?",
   "You must change the scene ID in all scripts and vis widgets.": "Вы должны изменить идентификатор сцены во всех скриптах и виджетах визуализации.",
-  "Move": "Передвинуть"
+  "Move": "Передвинуть",
+  "Import": "Импортировать",
+  "Scene will be overwritten and cannot be undone!": "Сцена будет перезаписана и ее нельзя будет отменить!",
+  "Overwrite": "Перезаписать",
+  "Import scene": "Импортировать сцену"
 }

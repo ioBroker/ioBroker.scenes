@@ -119,5 +119,9 @@
   "Folder not saved yet": "文件夹尚未保存",
   "Do you want to move the scene?": "您想移动场景吗？",
   "You must change the scene ID in all scripts and vis widgets.": "您必须更改所有脚本和 vis 小部件中的场景 ID。",
-  "Move": "移动"
+  "Move": "移动",
+  "Import": "进口",
+  "Scene will be overwritten and cannot be undone!": "场景将被覆盖且无法撤消！",
+  "Overwrite": "覆盖",
+  "Import scene": "导入场景"
 }

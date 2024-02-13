@@ -268,7 +268,7 @@ class SceneMembersForm extends React.Component {
                 this.setState(newState, () => {
                     // subscribe on scene state
                     this.props.socket.subscribeState(this.props.sceneId, this.memberStateChange);
-                    this.state.engineId && this.props.socket.subscribeState(this.state.engineId + '.alive', this.memberStateChange);
+                    this.state.engineId && this.props.socket.subscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
 
                     // subscribe on all states
                     this.state.members.forEach(member =>
@@ -278,7 +278,7 @@ class SceneMembersForm extends React.Component {
 
     componentWillUnmount() {
         this.props.socket.unsubscribeState(this.props.sceneId, this.memberStateChange);
-        this.state.engineId && this.props.socket.unsubscribeState(this.state.engineId + '.alive', this.memberStateChange);
+        this.state.engineId && this.props.socket.unsubscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
 
         this.state.members.forEach(member =>
             this.props.socket.unsubscribeState(member.id, this.memberStateChange));
@@ -1047,31 +1047,31 @@ class SceneMembersForm extends React.Component {
         }
 
         if (this.engineId !== this.state.engineId) {
-            this.engineId && this.props.socket.unsubscribeState(this.engineId + '.alive', this.memberStateChange);
-            this.state.engineId && this.props.socket.subscribeState(this.state.engineId + '.alive', this.memberStateChange);
+            this.engineId && this.props.socket.unsubscribeState(`${this.engineId}.alive`, this.memberStateChange);
+            this.state.engineId && this.props.socket.subscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
             this.engineId = this.state.engineId;
         }
 
         const onFalseEnabled =!this.state.virtualGroup && this.state.onFalseEnabled;
 
-        let result = <div key="SceneMembersForm" className={ Utils.clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer) }>
+        let result = <div key="SceneMembersForm" className={Utils.clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer)}>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
-                <Typography variant="h6" className={ Utils.clsx(this.props.classes.sceneTitle) } >
-                    { I18n.t('Scene states') }{ !this.state.states[this.state.engineId + '.alive'] ? <span className={ this.props.classes.instanceNotActive }>{ I18n.t('Instance not active') }</span> : ''}
-                    <br/>
-                    <span className={ Utils.clsx(
+                <Typography variant="h6" className={Utils.clsx(this.props.classes.sceneTitle)} >
+                    {I18n.t('Scene states')}{!this.state.states[`${this.state.engineId}.alive`] ? <span className={this.props.classes.instanceNotActive}>{I18n.t('Instance not active')}</span> : ''}
+                    <br />
+                    <span className={Utils.clsx(
                         this.props.classes.sceneSubTitle,
                         !this.state.virtualGroup && sceneState === true && this.props.classes.sceneTrue,
                         !this.state.virtualGroup && sceneState === false && this.props.classes.sceneFalse,
                         !this.state.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
-                    ) }>{I18n.t('Scene state:') } { sceneState === true ? 'TRUE' : (sceneState === false ? 'FALSE' : sceneState.toString())}</span>
+                    )}>{I18n.t('Scene state:') } {sceneState === true ? 'TRUE' : (sceneState === false ? 'FALSE' : sceneState.toString())}</span>
                 </Typography>
                 <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({ showDialog: true })}>
-                    <IconAdd/>
+                    <IconAdd />
                 </IconButton>
             </Toolbar>
             <div className={Utils.clsx(this.props.classes.testButtons, this.props.classes.width100)}>
-                {  !this.state.selectedSceneChanged && this.state.virtualGroup ? <TextField
+                {!this.state.selectedSceneChanged && this.state.virtualGroup ? <TextField
                     variant="standard"
                     className={ this.props.classes.width100WithButton}
                     label={I18n.t('Write to virtual group')}
@@ -1079,19 +1079,25 @@ class SceneMembersForm extends React.Component {
                     onKeyUp={e => e.keyCode === 13 && this.onWriteScene(this.state.writeSceneState)}
                     onChange={e => this.setState({writeSceneState: e.target.value}) }
                 /> : null}
-                { !this.state.selectedSceneChanged && this.state.virtualGroup && this.state.members.length ? <IconButton
+                {!this.state.selectedSceneChanged && this.state.virtualGroup && this.state.members.length ? <IconButton
                     onClick={e => this.onWriteScene(this.state.writeSceneState) }
-                ><IconPlay /></IconButton> : null}
-                { this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
+                >
+                    <IconPlay />
+                </IconButton> : null}
+                {this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
                     color="grey"
                     className={this.props.classes.btnTestTrue}
                     onClick={() => this.onWriteScene(true)}
-                ><IconPlay />{!onFalseEnabled ? I18n.t('Test') : I18n.t('Test TRUE')}</Button> : null}
+                    startIcon={<IconPlay />}
+                >
+                    {!onFalseEnabled ? I18n.t('Test') : I18n.t('Test TRUE')}
+                </Button> : null}
                 { this.state.sceneEnabled && !this.state.selectedSceneChanged && onFalseEnabled && this.state.members.length ? <Button
                     color="grey"
                     className={this.props.classes.btnTestFalse}
+                    startIcon={<IconPlay />}
                     onClick={() => this.onWriteScene(false)}
-                ><IconPlay />{I18n.t('Test FALSE')}</Button> : null}
+                >{I18n.t('Test FALSE')}</Button> : null}
                 {this.state.members.length > 1 && this.state.openedMembers.length ? <IconButton
                     title={I18n.t('Collapse all')}
                     className={ this.props.classes.btnCollapseAll }
@@ -1099,7 +1105,9 @@ class SceneMembersForm extends React.Component {
                         window.localStorage.setItem('Scenes.openedMembers', '[]');
                         this.setState({ openedMembers: [] });
                     }}
-                ><IconCollapseAll/></IconButton> : null }
+                >
+                    <IconCollapseAll />
+                </IconButton> : null }
                 {this.state.members.length > 1 && this.state.openedMembers.length !== this.state.members.length ? <IconButton
                     title={I18n.t('Expand all')}
                     className={ this.props.classes.btnExpandAll }
@@ -1110,31 +1118,31 @@ class SceneMembersForm extends React.Component {
                     } }
                 ><IconExpandAll/></IconButton> : null }
             </div>
-            <DragDropContext onDragEnd={ this.onDragEnd }>
+            <DragDropContext onDragEnd={this.onDragEnd}>
                 <Droppable droppableId="droppable">
-                    {(provided, snapshot) => (
-                        <div className={ this.props.classes.scroll }
-                             {...provided.droppableProps}
-                             ref={ provided.innerRef }
-                             style={ this.getListStyle(snapshot.isDraggingOver) }
-                        >
-                            { this.state.members.map((member, i) =>
-                                <Draggable key={ member.id + '_' + i } draggableId={ member.id + '_' + i } index={ i }>
-                                    {(provided, snapshot) =>
-                                        <div
-                                            ref={ provided.innerRef }
-                                            {...provided.draggableProps }
-                                            {...provided.dragHandleProps }
-                                            style={ this.getItemStyle(
-                                                snapshot.isDragging,
-                                                provided.draggableProps.style
-                                            ) }
-                                        >{ this.renderMember(member, i) }</div>}
-                                </Draggable>
-                            )}
-                            { provided.placeholder }
-                        </div>
-                    )}
+                    {(provided, snapshot) => <div className={this.props.classes.scroll}
+                         {...provided.droppableProps}
+                         ref={provided.innerRef}
+                         style={this.getListStyle(snapshot.isDraggingOver)}
+                    >
+                        {this.state.members.map((member, i) =>
+                            <Draggable key={`${member.id}_${i}`} draggableId={`${member.id}_${i}`} index={i}>
+                                {(provided, snapshot) =>
+                                    <div
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        style={this.getItemStyle(
+                                            snapshot.isDragging,
+                                            provided.draggableProps.style
+                                        )}
+                                    >
+                                        {this.renderMember(member, i)}
+                                    </div>}
+                            </Draggable>
+                        )}
+                        {provided.placeholder}
+                    </div>}
                 </Droppable>
             </DragDropContext>
         </div>;

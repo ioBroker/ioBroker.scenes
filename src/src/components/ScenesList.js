@@ -413,7 +413,7 @@ class ScenesList extends React.Component {
     renderTree(parent, level) {
         let result = [];
         level = level || 0;
-        let opened = this.state.reorder ||(this.state.opened ? this.state.opened.includes(parent.prefix) : false);
+        let opened = this.state.reorder || (this.state.opened ? this.state.opened.includes(parent.prefix) : false);
 
         const reactChildren = [];
         if (parent && (opened || !parent.id)) { // root cannot be closed and have id === ''
