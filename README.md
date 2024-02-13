@@ -123,10 +123,14 @@ The adapter will read all actual values for IDs defined in this scene and save i
 
 <!--
 	Placeholder for the next version (at the beginning of the line):
-	### __WORK IN PROGRESS__
+	### **WORK IN PROGRESS**
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Cleared cron tasks by re-init
+* (bluefox) CRON Editor dialog added
+
 ### 2.4.2 (2024-02-12)
 * (bluefox) Preserved empty folders by renaming and moving of scenes
 

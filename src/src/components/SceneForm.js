@@ -2,19 +2,21 @@ import React from 'react'
 import PropTypes from 'prop-types';
 import { withStyles } from '@mui/styles';
 
-import TextField from '@mui/material/TextField';
-import Switch from '@mui/material/Switch';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
+import {
+    TextField,
+    Switch,
+    Select,
+    MenuItem,
+    Checkbox,
+    Box,
+    Grid,
+    FormControlLabel,
+    FormControl,
+    InputLabel,
+    Button,
+} from '@mui/material';
 
-import DialogSelectID from '@iobroker/adapter-react-v5/Dialogs/SelectID';
-import { Utils, I18n } from '@iobroker/adapter-react-v5';
+import { Utils, I18n, SelectID as DialogSelectID, Cron } from '@iobroker/adapter-react-v5';
 
 const styles = theme => ({
     alignRight: {
@@ -75,6 +77,7 @@ class SceneForm extends React.Component {
             native: sceneObj.native,
             showDialog: null,
             sceneId: props.scene._id,
+            showCronDialog: null,
         };
 
         const inputs = ['Trigger', 'Value', 'Cron', 'Name', 'Description'];
@@ -96,9 +99,9 @@ class SceneForm extends React.Component {
                 common: sceneObj.common,
                 native: sceneObj.native,
             };
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     setStateWithParent = (newState, cb) => {
@@ -123,47 +126,13 @@ class SceneForm extends React.Component {
         const on = this.state.native[name];
 
         return [
-            <div key="switch" className={ this.props.classes.editItem }>
-                <h4>{ on === this.state.native.onTrue ? (this.state.native.onFalse.enabled ? I18n.t('Trigger for TRUE') : I18n.t('Trigger')) : I18n.t('Trigger for FALSE') }
-                    <span className={ this.props.classes.right }>
-                        <Switch checked={ !!on.trigger.id }
-                                onChange={ e => {
-                                    if (e.target.checked) {
-                                        this.setState({
-                                            showDialog: id => {
-                                                const native = JSON.parse(JSON.stringify(this.state.native));
-                                                native[name].trigger.id = id;
-                                                native[name].trigger.condition = native[name].trigger.condition || '==';
-                                                this.setStateWithParent({native});
-                                            }
-                                        });
-                                    } else {
-                                        const native = JSON.parse(JSON.stringify(this.state.native));
-                                        native[name].trigger.id = '';
-                                        this.setStateWithParent({native});
-                                    }
-                                } }
-                        />
-                    </span>
-                </h4>
-            </div>,
-            <div key="id" className={ this.props.classes.editItem }>
-                {on.trigger.id ?
-                    <Grid container spacing={1}>
-                        <Grid item xs={8}>
-                            <TextField
-                                variant="standard"
-                                inputRef={this.inputs.Trigger.ref}
-                                fullWidth
-                                InputLabelProps={ {shrink: true} }
-                                label={ I18n.t('Trigger ID') }
-                                value={ on.trigger.id }
-
-                                onFocus={() => this.saveCursorPosition('Trigger')}
-                                onKeyDown={() => this.saveCursorPosition('Trigger')}
-                                onChange={() => this.saveCursorPosition('Trigger')}
-
-                                onClick={ () => {
+            <div key="switch" className={this.props.classes.editItem}>
+                <h4>{on === this.state.native.onTrue ? (this.state.native.onFalse.enabled ? I18n.t('Trigger for TRUE') : I18n.t('Trigger')) : I18n.t('Trigger for FALSE')}
+                    <span className={this.props.classes.right}>
+                        <Switch
+                            checked={!!on.trigger.id}
+                            onChange={e => {
+                                if (e.target.checked) {
                                     this.setState({
                                         showDialog: id => {
                                             const native = JSON.parse(JSON.stringify(this.state.native));
@@ -172,20 +141,53 @@ class SceneForm extends React.Component {
                                             this.setStateWithParent({native});
                                         }
                                     });
-                                }}
+                                } else {
+                                    const native = JSON.parse(JSON.stringify(this.state.native));
+                                    native[name].trigger.id = '';
+                                    this.setStateWithParent({native});
+                                }
+                            }}
+                        />
+                    </span>
+                </h4>
+            </div>,
+            <div key="id" className={this.props.classes.editItem}>
+                {on.trigger.id ?
+                    <Grid container spacing={1}>
+                        <Grid item xs={8}>
+                            <TextField
+                                variant="standard"
+                                inputRef={this.inputs.Trigger.ref}
+                                fullWidth
+                                InputLabelProps={{ shrink: true }}
+                                label={I18n.t('Trigger ID')}
+                                value={on.trigger.id}
+
+                                onFocus={() => this.saveCursorPosition('Trigger')}
+                                onKeyDown={() => this.saveCursorPosition('Trigger')}
+                                onChange={() => this.saveCursorPosition('Trigger')}
+
+                                onClick={() => this.setState({
+                                    showDialog: id => {
+                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                        native[name].trigger.id = id;
+                                        native[name].trigger.condition = native[name].trigger.condition || '==';
+                                        this.setStateWithParent({native});
+                                    },
+                                })}
                             />
                         </Grid>
 
                         <Grid item xs={2}>
                             <FormControl variant="standard">
-                                <InputLabel shrink={ true }>{ I18n.t('Condition') }</InputLabel>
+                                <InputLabel shrink>{ I18n.t('Condition') }</InputLabel>
                                 <Select
                                     variant="standard"
-                                    value={ on.trigger.condition || '==' }
+                                    value={on.trigger.condition || '=='}
                                     onChange={e => {
                                         const native = JSON.parse(JSON.stringify(this.state.native));
                                         native[name].trigger.condition = e.target.value;
-                                        this.setStateWithParent({native});
+                                        this.setStateWithParent({ native });
                                     }}
                                 >
                                     <MenuItem value="==">==</MenuItem>
@@ -203,31 +205,31 @@ class SceneForm extends React.Component {
                                 variant="standard"
                                 inputRef={this.inputs.Value.ref}
                                 fullWidth
-                                InputLabelProps= {{shrink: true} } label={ I18n.t('Value') }
-                                value={ on.trigger.value || '' }
+                                InputLabelProps= {{ shrink: true }} label={I18n.t('Value')}
+                                value={on.trigger.value || ''}
 
                                 onFocus={() => this.saveCursorPosition('Value')}
                                 onKeyDown={() => this.saveCursorPosition('Value')}
 
-                                onChange={ e => {
+                                onChange={e => {
                                     this.saveCursorPosition('Value');
                                     const native = JSON.parse(JSON.stringify(this.state.native));
                                     native[name].trigger.value = e.target.value;
-                                    this.setStateWithParent({native});
+                                    this.setStateWithParent({ native });
                                 }}
                             />
                         </Grid>
                     </Grid>
                     : null}
             </div>,
-            <div key="cron" className={ this.props.classes.editItem }>
+            <div key="cron" className={this.props.classes.editItem}>
                 <TextField
                     variant="standard"
                     inputRef={this.inputs.Cron.ref}
-                    fullWidth
-                    InputLabelProps={{shrink: true}}
-                    label={ name === 'onTrue' ? I18n.t('On time (CRON expression)') : I18n.t('Off time (CRON expression)')}
-                    value={ on.cron || '' }
+                    style={{ width: 'calc(100% - 52px)' }}
+                    InputLabelProps={{ shrink: true }}
+                    label={name === 'onTrue' ? I18n.t('On time (CRON expression)') : I18n.t('Off time (CRON expression)')}
+                    value={on.cron || ''}
 
                     onFocus={() => this.saveCursorPosition('Cron')}
                     onKeyDown={() => this.saveCursorPosition('Cron')}
@@ -239,13 +241,19 @@ class SceneForm extends React.Component {
                         this.setStateWithParent({native});
                     }}
                 />
+                <Button
+                    style={{ minWidth: 48, marginLeft: 4, marginTop: 10 }}
+                    variant="contained"
+                    onClick={() => this.setState({ showCronDialog: name || 'onFalse' })}>
+                    ...
+                </Button>
             </div>
         ];
     }
 
     saveCursorPosition = name => {
         this.inputs[name].start = this.inputs[name].ref.current.selectionStart;
-        this.inputs[name].end   = this.inputs[name].ref.current.selectionEnd;
+        this.inputs[name].end = this.inputs[name].ref.current.selectionEnd;
     }
 
     componentDidUpdate() {
@@ -256,11 +264,30 @@ class SceneForm extends React.Component {
                 if (this.inputs[name].ref.current.selectionStart !== this.inputs[name].start) {
                     this.inputs[name].ref.current.selectionStart = this.inputs[name].start;
                 }
-                if (this.inputs[name].ref.current.selectionEnd   !== this.inputs[name].end) {
-                    this.inputs[name].ref.current.selectionEnd   = this.inputs[name].end;
+                if (this.inputs[name].ref.current.selectionEnd !== this.inputs[name].end) {
+                    this.inputs[name].ref.current.selectionEnd = this.inputs[name].end;
                 }
             }
         });
+    }
+
+    renderCronDialog() {
+        if (!this.state.showCronDialog) {
+            return null;
+        }
+
+        return <Cron
+            key="cronDialog"
+            cron={this.state.native[this.state.showCronDialog].cron}
+            noWizard
+            onOk={cron => {
+                const native = JSON.parse(JSON.stringify(this.state.native));
+                native[this.state.showCronDialog].cron = cron;
+                this.setStateWithParent({native});
+                this.setState({showCronDialog: null});
+            }}
+            onClose={() => this.setState({ showCronDialog: null })}
+        />;
     }
 
     render() {
@@ -278,14 +305,15 @@ class SceneForm extends React.Component {
                         onFocus={() => this.saveCursorPosition('Name')}
                         onKeyDown={() => this.saveCursorPosition('Name')}
 
-                        onChange={ e => {
+                        onChange={e => {
                             this.saveCursorPosition('Name');
                             const common = JSON.parse(JSON.stringify(this.state.common));
                             common.name = e.target.value;
                             this.setStateWithParent({common});
-                        }}/>
+                        }}
+                    />
                 </Box>
-                <Box className={ this.props.classes.editItem }>
+                <Box className={this.props.classes.editItem}>
                     <TextField
                         variant="standard"
                         inputRef={this.inputs.Description.ref}
@@ -301,7 +329,7 @@ class SceneForm extends React.Component {
                             this.saveCursorPosition('Description');
                             const common = JSON.parse(JSON.stringify(this.state.common));
                             common.desc = e.target.value;
-                            this.setStateWithParent({common});
+                            this.setStateWithParent({ common });
                         }}
                     />
                 </Box>
@@ -316,7 +344,7 @@ class SceneForm extends React.Component {
                                     onChange={e => {
                                         const common = JSON.parse(JSON.stringify(this.state.common));
                                         common.engine = e.target.value;
-                                        this.setStateWithParent({common});
+                                        this.setStateWithParent({ common });
                                     }}
                                 >
                                     {this.props.instances.map(id => <MenuItem key={id} value={id}>{id.replace('system.adapter.', '')}</MenuItem>)}
@@ -342,37 +370,36 @@ class SceneForm extends React.Component {
                         </Grid>
                     </Grid>
                 </Box>
-                <Box className={ this.props.classes.editItem }>
+                <Box className={this.props.classes.editItem}>
                     <Grid container spacing={1}>
-                        <Grid item xs={ 12 } sm={ 6 }>
+                        <Grid item xs={12} sm={6}>
                             <FormControlLabel
-                                style={{paddingTop: 10}}
-                                title={ I18n.t('virtual_group_tooltip') }
-                                label={ I18n.t('Virtual group') } control={
-                                <Checkbox
+                                style={{ paddingTop: 10 }}
+                                title={I18n.t('virtual_group_tooltip')}
+                                label={I18n.t('Virtual group')}
+                                control={<Checkbox
                                     checked={this.state.native.virtualGroup}
-                                      onChange={e => {
-                                          const native = JSON.parse(JSON.stringify(this.state.native));
-                                          native.virtualGroup = e.target.checked;
-                                          this.setStateWithParent({native});
-                                      }}
-                                />
-                            }/>
+                                    onChange={e => {
+                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                        native.virtualGroup = e.target.checked;
+                                        this.setStateWithParent({ native });
+                                    }}
+                                />}
+                            />
                         </Grid>
-                        <Grid item xs={ 12 } sm={ 6 }>
+                        <Grid item xs={12} sm={6}>
                             {!this.state.native.virtualGroup ?
                                 <FormControlLabel
-                                    style={{paddingTop: 10}}
+                                    style={{ paddingTop: 10 }}
                                     label={I18n.t('Set value if false')}
-                                    control={
-                                          <Checkbox
-                                              checked={ this.state.native.onFalse.enabled }
-                                                onChange={e => {
-                                                    const native = JSON.parse(JSON.stringify(this.state.native));
-                                                    native.onFalse.enabled = e.target.checked;
-                                                    this.setStateWithParent({native});
-                                                }}
-                                          />}
+                                    control={<Checkbox
+                                        checked={this.state.native.onFalse.enabled}
+                                        onChange={e => {
+                                            const native = JSON.parse(JSON.stringify(this.state.native));
+                                            native.onFalse.enabled = e.target.checked;
+                                            this.setStateWithParent({ native });
+                                        }}
+                                    />}
                                 />
                                 : null}
                             {this.state.native.virtualGroup && !this.state.native.easy ?
@@ -417,9 +444,11 @@ class SceneForm extends React.Component {
                 {!this.state.native.virtualGroup && this.state.native.onFalse.enabled ? this.renderOnTrueFalse('onFalse') : null}
             </Box>
         </Box>;
+
         return [
             result,
             this.renderSelectIdDialog(),
+            this.renderCronDialog(),
         ];
     }
 }

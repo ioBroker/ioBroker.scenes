@@ -210,9 +210,10 @@ function restartAdapter() {
             timers[id][tt] && timers[id][tt].timer && clearTimeout(timers[id][tt].timer)));
     timers = {};
 
-    schedule && Object.keys(cronTasks).forEach(id =>
-        cronTasks[id] && cronTasks[id].cancel());
-    cronTasks = {};
+    schedule && Object.keys(cronTasks).forEach(id => {
+        cronTasks[`${id}_true`] && cronTasks[`${id}_true`].cancel();
+        cronTasks[`${id}_false`] && cronTasks[`${id}_false`].cancel();
+    });
 
     if (!subscription) {
         adapter.unsubscribeForeignStates();
@@ -744,14 +745,15 @@ function getState(sceneId, stateNumber, callback) {
 function initTrueFalse(sceneId, isTrue) {
     const usedIds = [];
     const sStruct = isTrue ? scenes[sceneId].native.onTrue : scenes[sceneId].native.onFalse;
-    if (!sStruct) return;
-    if (sStruct.enabled === false) return;
+    if (!sStruct || sStruct.enabled === false) {
+        return;
+    }
 
     // remember triggers for true
     if (sStruct.trigger && sStruct.trigger.id) {
         usedIds.push(sStruct.trigger.id);
         triggers[sStruct.trigger.id] = triggers[sStruct.trigger.id] || [];
-        if (triggers[sStruct.trigger.id].indexOf(sceneId) === -1) {
+        if (!triggers[sStruct.trigger.id].includes(sceneId)) {
             triggers[sStruct.trigger.id].push(sceneId);
         }
     }
@@ -761,10 +763,18 @@ function initTrueFalse(sceneId, isTrue) {
 
         adapter.log.debug(`Initiate cron task for ${sceneId}(${isTrue}): ${sStruct.cron}`);
 
-        cronTasks[sceneId] = schedule.scheduleJob(sStruct.cron, () => {
+        if (cronTasks[`${sceneId}_${isTrue}`]) {
+            cronTasks[`${sceneId}_${isTrue}`].cancel();
+            cronTasks[`${sceneId}_${isTrue}`] = null;
+        }
+
+        cronTasks[`${sceneId}_${isTrue}`] = schedule.scheduleJob(sStruct.cron, () => {
             adapter.log.debug(`cron for ${sceneId}(${isTrue}): ${sStruct.cron}`);
             activateScene(sceneId, isTrue);
         });
+    } else if (cronTasks[`${sceneId}_${isTrue}`]) {
+        cronTasks[`${sceneId}_${isTrue}`].cancel();
+        delete cronTasks[`${sceneId}_${isTrue}`];
     }
 
     return usedIds;
@@ -845,7 +855,7 @@ function initScenes() {
         usedIds && usedIds.forEach(id => !countIds.includes(id) && countIds.push(id));
     }
 
-    // If requested more than 20 ids => get all of them
+    // If it is requested more than 20 ids, get all of them
     if (countIds.length > 20) {
         adapter.log.debug('initScenes: subscribe on all');
 
