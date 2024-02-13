@@ -124,5 +124,11 @@
   "Scene will be overwritten and cannot be undone!": "La scène sera écrasée et ne pourra pas être annulée !",
   "Overwrite": "Écraser",
   "Import scene": "Importer une scène",
-  "Write with ack=true": "Écrivez avec ack=true"
+  "Write with ack=true": "Écrivez avec ack=true",
+  "Export scenes": "Exporter des scènes",
+  "Import scenes": "Importer des scènes",
+  "Copied": "Copié",
+  "Some of the scenes already exists": "Certaines scènes existent déjà",
+  "Change names": "Changer les noms",
+  "Overwrite existing": "Remplacer l'existant"
 }

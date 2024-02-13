@@ -124,5 +124,11 @@
   "Scene will be overwritten and cannot be undone!": "Сцена будет перезаписана и ее нельзя будет отменить!",
   "Overwrite": "Перезаписать",
   "Import scene": "Импортировать сцену",
-  "Write with ack=true": "Писать с ack=true"
+  "Write with ack=true": "Писать с ack=true",
+  "Export scenes": "Экспорт сцен",
+  "Import scenes": "Импортировать сцены",
+  "Copied": "Скопировано",
+  "Some of the scenes already exists": "Некоторые сцены уже существуют",
+  "Change names": "Изменить имена",
+  "Overwrite existing": "Перезаписать существующий"
 }

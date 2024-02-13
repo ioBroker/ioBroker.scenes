@@ -210,6 +210,7 @@ class App extends GenericApp {
             exportDialog: false,
             importDialog: false,
             menuOpened: false,
+            showImportWarning: null,
             splitSizes,
             splitSizes2,
         };
@@ -567,7 +568,7 @@ class App extends GenericApp {
         );
     };
 
-    writeScene() {
+    async writeScene() {
         const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         scene._id = this.state.selectedSceneId;
 
@@ -581,18 +582,22 @@ class App extends GenericApp {
             }
 
             // delete first the old scene
-            return this.socket.delObject(scene._id)
-                .then(() => {
-                    scene._id = newId;
-                    return this.socket.setObject(scene._id, scene);
-                })
-                .then(() => this.refreshData(this.state.selectedSceneId))
-                .then(() => this.changeSelectedScene(newId))
-                .catch(e => this.showError(e));
+            try {
+                await this.socket.delObject(scene._id);
+                scene._id = newId;
+                await this.socket.setObject(scene._id, scene);
+                await this.refreshData(this.state.selectedSceneId);
+                await this.changeSelectedScene(newId, true);
+            } catch (e) {
+                this.showError(e)
+            }
         } else {
-            return this.socket.setObject(this.state.selectedSceneId, scene)
-                .then(() => this.refreshData(this.state.selectedSceneId))
-                .catch(e => this.showError(e));
+            try {
+                await this.socket.setObject(this.state.selectedSceneId, scene);
+                await this.refreshData(this.state.selectedSceneId);
+            } catch (e) {
+                this.showError(e)
+            }
         }
     }
 
@@ -669,7 +674,7 @@ class App extends GenericApp {
             if (this.state.selectedSceneId !== newId) {
                 if (this.state.selectedSceneChanged && !ignoreUnsaved) {
                     this.confirmCb = cb;
-                    this.setState({sceneChangeDialog: newId}, () => resolve());
+                    this.setState({ sceneChangeDialog: newId }, () => resolve());
                 } else {
                     window.localStorage.setItem('Scenes.selectedSceneId', newId);
                     this.setState({
@@ -693,22 +698,21 @@ class App extends GenericApp {
     renderSceneChangeDialog() {
         const that = this;
         return this.state.sceneChangeDialog ? <Dialog
-            open={ true }
+            open={!0}
             key="sceneChangeDialog"
-            onClose={ () => this.setState({sceneChangeDialog: ''}) }>
-                <DialogTitle>{ I18n.t('Are you sure for cancel unsaved changes?') }</DialogTitle>
-                <DialogActions className={ Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer) }>
+            onClose={() => this.setState({ sceneChangeDialog: '' })}
+        >
+                <DialogTitle>{I18n.t('Are you sure for cancel unsaved changes?')}</DialogTitle>
+                <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
                     <Button
                         variant="contained"
                         color="grey"
-                        onClick={() =>
-                            this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
-                                const cb = this.confirmCb;
-                                this.confirmCb = null;
-                                cb && cb();
-                            })
-                                .catch(() => console.log('ignore'))
-                        }
+                        onClick={() => this.changeSelectedScene(this.state.sceneChangeDialog, true, () => {
+                            const cb = this.confirmCb;
+                            this.confirmCb = null;
+                            cb && cb();
+                        })
+                            .catch(() => console.log('ignore'))}
                     >
                         {I18n.t('Discard')}
                     </Button>
@@ -716,7 +720,7 @@ class App extends GenericApp {
                         variant="contained"
                         color="secondary"
                         autoFocus
-                        onClick={() => {
+                        onClick={() =>
                             // save scene
                             this.writeScene()
                                 .then(() => that.changeSelectedScene(that.state.sceneChangeDialog === 'empty' ? '' : that.state.sceneChangeDialog, true, () => {
@@ -724,8 +728,7 @@ class App extends GenericApp {
                                     this.confirmCb = null;
                                     cb && cb();
                                 }))
-                                .catch(() => console.log('ignore'))
-                        }}
+                                .catch(() => console.log('ignore'))}
                         startIcon={<IconSave />}
                     >
                          {I18n.t('Save changes')}
@@ -735,7 +738,7 @@ class App extends GenericApp {
                         color="grey"
                         onClick={() => {
                             this.confirmCb = null; // cancel callback
-                            this.setState({sceneChangeDialog: ''});
+                            this.setState({ sceneChangeDialog: '' });
                         }}
                         startIcon={<IconCancel />}
                     >
@@ -743,13 +746,13 @@ class App extends GenericApp {
                     </Button>
                 </DialogActions>
             </Dialog> : null;
-    };
+    }
 
     renderDeleteDialog() {
         return this.state.deleteDialog ? <Dialog
             open={!0}
             key="deleteDialog"
-            onClose={() => this.setState({deleteDialog: false}) }
+            onClose={() => this.setState({ deleteDialog: false })}
         >
             <DialogTitle>{I18n.t('Are you sure for delete this scene?')}</DialogTitle>
             <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
@@ -812,6 +815,82 @@ class App extends GenericApp {
         />
     }
 
+    renderImportWarningDialog() {
+        return this.state.showImportWarning ? <Dialog
+            open={!0}
+            onClose={() => this.setState({ showImportWarning: null })}
+        >
+            <DialogTitle>{I18n.t('Some of the scenes already exists')}</DialogTitle>
+            <DialogActions>
+                <Button
+                    variant="contained"
+                    color="grey"
+                    onClick={async () => {
+                        const importedScenes = this.state.showImportWarning;
+                        const ids = Object.keys(importedScenes);
+                        for (let s = 0; s < ids.length; s++) {
+                            // if exists
+                            if (this.state.scenes[ids[s]]) {
+                                // find a unique name
+                                let newId = ids[s];
+                                while (this.state.scenes[newId]) {
+                                    newId += '_import';
+                                }
+                                importedScenes[ids[s]].common.name = newId.split('.').pop();
+                                await this.socket.setObject(newId, importedScenes[ids[s]]);
+                            } else {
+                                await this.socket.setObject(ids[s], importedScenes[ids[s]]);
+                            }
+                        }
+                        this.setState({ showImportWarning: null });
+                        await this.refreshData();
+                    }}
+                >
+                    {I18n.t('Change names')}
+                </Button>
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    autoFocus
+                    onClick={async () => {
+                        const importedScenes = this.state.showImportWarning;
+                        const ids = Object.keys(importedScenes);
+                        for (let s = 0; s < ids.length; s++) {
+                            await this.socket.setObject(ids[s], importedScenes[ids[s]]);
+                        }
+                        this.setState({ showImportWarning: null });
+                        this.refreshData();
+                    }}
+                    startIcon={<IconSave />}
+                >
+                    {I18n.t('Overwrite existing')}
+                </Button>
+                <Button
+                    variant="contained"
+                    color="grey"
+                    onClick={() => this.setState({ showImportWarning: null })}
+                    startIcon={<IconCancel />}
+                >
+                    {I18n.t('Cancel')}
+                </Button>
+            </DialogActions>
+        </Dialog> : null;
+    }
+
+    async importScenes(importedScenes) {
+        // check if all scenes are unique
+        const ids = Object.keys(this.state.scenes);
+        if (ids.find(id => importedScenes[id])) {
+            this.setState({ showImportWarning: importedScenes });
+        } else {
+            const ids = Object.keys(importedScenes);
+            for (let s = 0; s < ids.length; s++) {
+                await this.socket.setObject(ids[s], importedScenes[ids[s]]);
+            }
+            await this.refreshData();
+        }
+    }
+
     renderSceneTopToolbar(showDrawer) {
         return <Toolbar
             variant="dense"
@@ -843,7 +922,7 @@ class App extends GenericApp {
     renderSceneBottomToolbar() {
         return <Toolbar variant="dense" key="bottomToolbar" classes={{ gutters: this.props.classes.noGutters }}>
             <div style={{ flexGrow: 1 }} />
-            { this.state.selectedSceneChanged ? <Button
+            {this.state.selectedSceneChanged ? <Button
                 className={ this.props.classes.toolbarButtons }
                 variant="contained"
                 color="secondary"
@@ -873,9 +952,9 @@ class App extends GenericApp {
             selectedSceneChanged={this.state.selectedSceneChanged}
             theme={this.state.theme}
             showDrawer={showDrawer}
-            onSceneSelect={id =>
-                this.changeSelectedScene(id)
-                    .catch(() => console.log('ignore'))}
+            onScenesImport={importedScenes => this.importScenes(importedScenes)}
+            onSceneSelect={id => this.changeSelectedScene(id)
+                .catch(() => console.log('ignore'))}
             onSceneEnableDisable={id => this.sceneSwitch(id)}
             onCreateFolder={(parent, id) => this.addFolder(parent, id)}
             onCreateScene={parentId => this.createScene(this.getNewSceneId(), parentId)}
@@ -1064,6 +1143,7 @@ class App extends GenericApp {
                     {this.renderSceneChangeDialog()}
                     {this.renderDeleteDialog()}
                     {this.renderExportImportDialog()}
+                    {this.renderImportWarningDialog()}
                     {this.renderError()}
                 </div>
             </ThemeProvider>

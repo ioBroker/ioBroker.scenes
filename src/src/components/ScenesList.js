@@ -36,9 +36,13 @@ import {
     MdAdd as IconAdd,
     MdCreateNewFolder as IconFolderAdd,
     MdSwapVert as IconReorder,
+    MdFileDownload as IconExport,
+    MdFileUpload as IconImport,
 } from 'react-icons/md';
 
 import { Utils, I18n } from '@iobroker/adapter-react-v5';
+
+import ExportImportDialog from './ExportImportDialog';
 
 const LEVEL_PADDING = 16;
 
@@ -199,6 +203,8 @@ class ScenesList extends React.Component {
             addFolderDialogTitle: null,
             editFolderDialogTitle: null,
             showMoveWarning: null,
+            exportDialog: false,
+            importDialog: false,
         };
     }
 
@@ -517,27 +523,41 @@ class ScenesList extends React.Component {
             </IconButton> : null}
 
             {!this.state.reorder ? <IconButton
-                onClick={() => this.setState({addFolderDialog: this.props.folders, addFolderDialogTitle: ''})}
+                onClick={() => this.setState({ addFolderDialog: this.props.folders, addFolderDialogTitle: '' })}
                 title={I18n.t('Create new folder')}
             >
                 <IconFolderAdd />
             </IconButton> : null}
 
             {!this.state.reorder ? <span className={this.props.classes.right}>
-                <IconButton onClick={() => this.setState({showSearch: !this.state.showSearch})}>
+                <IconButton onClick={() => this.setState({ showSearch: !this.state.showSearch })}>
                     <SearchIcon />
                 </IconButton>
             </span> : null}
 
-            {this.state.showSearch ?
-                <TextField
-                    variant="standard"
-                    value={this.state.search}
-                    className={this.props.classes.textInput}
-                    onChange={e => this.setState({ search: e.target.value })} />
-                : null
-            }
-            <div style={{flexGrow: 1}} />
+            {this.state.showSearch ? <TextField
+                variant="standard"
+                value={this.state.search}
+                className={this.props.classes.textInput}
+                onChange={e => this.setState({ search: e.target.value })} />
+            : null}
+            {!this.state.reorder ? <IconButton
+                    aria-label="Export"
+                    title={I18n.t('Export scenes')}
+                    onClick={() => this.setState({ exportDialog: true })}
+                >
+                    <IconExport />
+            </IconButton> : null}
+
+            {!this.state.reorder ? <IconButton
+                    aria-label="Import"
+                    title={I18n.t('Import scenes')}
+                    onClick={() => this.setState({ importDialog: true })}
+                >
+                    <IconImport />
+            </IconButton> : null}
+
+            <div style={{ flexGrow: 1 }} />
             {!this.state.showSearch ? <IconButton
                 key="reorder"
                 title={I18n.t('Reorder scenes in folders')}
@@ -592,6 +612,28 @@ class ScenesList extends React.Component {
         </Dialog>;
     }
 
+    renderExportImportDialog() {
+        if (!this.state.exportDialog && !this.state.importDialog) {
+            return null;
+        }
+
+        return <ExportImportDialog
+            key="exportImportDialog"
+            isImport={!!this.state.importDialog}
+            themeType={this.state.themeType}
+            allScenes
+            onClose={importedScenes => {
+                if (this.state.importDialog && importedScenes) {
+                    this.setState({ importDialog: false });
+                    this.props.onScenesImport(importedScenes);
+                } else {
+                    this.setState({ exportDialog: false, importDialog: false })
+                }
+            }}
+            sceneObj={this.state.exportDialog ? this.props.scenes : null}
+        />
+    }
+
     render() {
         return [
             this.renderListToolbar(),
@@ -605,6 +647,7 @@ class ScenesList extends React.Component {
             this.renderAddFolderDialog(),
             this.renderEditFolderDialog(),
             this.renderMoveWarningDialog(),
+            this.renderExportImportDialog(),
         ];
     }
 }
@@ -614,6 +657,7 @@ ScenesList.propTypes = {
     onCreateScene: PropTypes.func,
     onCreateFolder: PropTypes.func,
     onSceneSelect: PropTypes.func,
+    onScenesImport: PropTypes.func,
     onMoveScene: PropTypes.func,
     onSceneEnableDisable: PropTypes.func,
     classes: PropTypes.object,

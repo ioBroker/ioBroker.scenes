@@ -124,5 +124,11 @@
   "Scene will be overwritten and cannot be undone!": "场景将被覆盖且无法撤消！",
   "Overwrite": "覆盖",
   "Import scene": "导入场景",
-  "Write with ack=true": "用 ack=true 写入"
+  "Write with ack=true": "用 ack=true 写入",
+  "Export scenes": "导出场景",
+  "Import scenes": "导入场景",
+  "Copied": "已复制",
+  "Some of the scenes already exists": "有些场景已经存在",
+  "Change names": "更改名称",
+  "Overwrite existing": "覆盖现有的"
 }

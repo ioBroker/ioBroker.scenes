@@ -150,7 +150,11 @@ class ExportImportDialog extends React.Component {
                         onClick={() => {
                             try {
                                 const scene = JSON.parse(this.state.text);
-                                this.setState({ showWarning: scene })
+                                if (this.props.allScenes) {
+                                    this.props.onClose(scene);
+                                } else {
+                                    this.setState({ showWarning: scene });
+                                }
                             } catch (e) {
                                 this.setState({ toast: I18n.t('Cannot parse') });
                             }
@@ -195,6 +199,7 @@ ExportImportDialog.propTypes = {
     themeType: PropTypes.string,
     onClose: PropTypes.func,
     isImport: PropTypes.bool,
+    allScenes: PropTypes.bool,
 };
 
 export default withStyles(styles)(ExportImportDialog);

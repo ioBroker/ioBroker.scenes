@@ -124,5 +124,11 @@
   "Scene will be overwritten and cannot be undone!": "De scène wordt overschreven en kan niet ongedaan worden gemaakt!",
   "Overwrite": "Overschrijven",
   "Import scene": "Scène importeren",
-  "Write with ack=true": "Schrijf met ack=true"
+  "Write with ack=true": "Schrijf met ack=true",
+  "Export scenes": "Scènes exporteren",
+  "Import scenes": "Scènes importeren",
+  "Copied": "Gekopieerd",
+  "Some of the scenes already exists": "Sommige scènes bestaan al",
+  "Change names": "Verander namen",
+  "Overwrite existing": "Overschrijf bestaande"
 }
