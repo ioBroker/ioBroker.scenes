@@ -132,24 +132,80 @@ function startAdapter(options) {
         adapter.subscribeForeignObjects('scene.*');
     });
 
-    adapter.on('message', obj => {
+    adapter.on('message', async obj => {
         if (!obj || !obj.message) {
             return false;
         }
+        if (typeof obj.message === 'string' && obj.message.startsWith('{')) {
+            try {
+                obj.message = JSON.parse(obj.message);
+            } catch (e) {
+                adapter.log.error(`Cannot parse message: ${obj.message}`);
+                adapter.sendTo(obj.from, obj.command, {error: 'Cannot parse message'}, obj.callback);
+                return true;
+            }
+        }
+        let sceneId;
+        if (typeof obj.message === 'string') {
+            sceneId = obj.message;
+        } else if (obj.message && obj.message.sceneId) {
+            sceneId = obj.message.sceneId;
+        }
 
-        if (obj && obj.command === 'save') {
-            if (typeof obj.message !== 'object') {
-                try {
-                    obj.message = JSON.parse(obj.message);
-                } catch (e) {
-                    adapter.log.error(`Cannot parse message: ${obj.message}`);
-                    adapter.sendTo(obj.from, obj.command, {error: 'Cannot parse message'}, obj.callback);
-                    return true;
-                }
+        if (!sceneId) {
+            adapter.log.error(`Cannot find scene ID in message: ${JSON.stringify(obj.message)}`);
+            adapter.sendTo(obj.from, obj.command, {error: 'No scene ID'}, obj.callback);
+            return true;
+        }
+
+        if (sceneId && obj.command === 'save') {
+            let isForTrue = true;
+            if (typeof obj.message === 'object' && obj.message.isForTrue !== undefined) {
+                isForTrue = obj.message.isForTrue;
             }
 
-            saveScene(obj.message.sceneId, obj.message.isForTrue, err =>
-                adapter.sendTo(obj.from, obj.command, {error: err}, obj.callback));
+            try {
+                await saveScene(obj.message.sceneId, isForTrue);
+                adapter.sendTo(obj.from, obj.command, {result: 'Current states saved'}, obj.callback);
+            } catch (err) {
+                adapter.sendTo(obj.from, obj.command, {error: err}, obj.callback);
+            }
+        } else if (obj.command === 'enable') {
+            let sceneObj;
+            try {
+                sceneObj = await adapter.getForeignObjectAsync(sceneId);
+            } catch (e) {
+                adapter.log.error(`Cannot get scene: ${e}`);
+                adapter.sendTo(obj.from, obj.command, {error: `Cannot get scene: ${e}`}, obj.callback);
+                return true;
+            }
+            if (sceneObj) {
+                if (!sceneObj.common.enabled) {
+                    sceneObj.common.enabled = true;
+                    await adapter.setForeignObjectAsync(sceneObj._id, sceneObj);
+                    adapter.sendTo(obj.from, obj.command, {result: 'Scene was enabled'}, obj.callback);
+                } else {
+                    adapter.sendTo(obj.from, obj.command, {warning: 'Scene already enabled'}, obj.callback);
+                }
+            }
+        } else if (obj.command === 'disable') {
+            let sceneObj;
+            try {
+                sceneObj = await adapter.getForeignObjectAsync(sceneId);
+            } catch (e) {
+                adapter.log.error(`Cannot get scene: ${e}`);
+                adapter.sendTo(obj.from, obj.command, {error: `Cannot get scene: ${e}`}, obj.callback);
+                return true;
+            }
+            if (sceneObj) {
+                if (sceneObj.common.enabled !== false) {
+                    sceneObj.common.enabled = false;
+                    await adapter.setForeignObjectAsync(sceneObj._id, sceneObj);
+                    adapter.sendTo(obj.from, obj.command, {result: 'Scene was disabled'}, obj.callback);
+                } else {
+                    adapter.sendTo(obj.from, obj.command, {warning: 'Scene already disabled'}, obj.callback);
+                }
+            }
         }
 
         return true;
@@ -159,42 +215,43 @@ function startAdapter(options) {
 }
 
 // expects like: scene.0.blabla
-function saveScene(sceneID, isForTrue, cb) {
+async function saveScene(sceneID, isForTrue) {
     if (isForTrue === undefined) {
         isForTrue = true;
     }
 
     adapter.log.debug(`Saving ${sceneID}...`);
 
-    adapter.getForeignObject(sceneID, (err, obj) => {
-        if (obj && obj.native && obj.native.members) {
-            let count = 0;
-            obj.native.members.forEach((member, i) => {
-                count++;
-                adapter.getForeignState(member.id, (err, state) => {
-                    console.log(`ID ${member.id}=${state ? state.val : state}`);
-                    count--;
-                    if (isForTrue) {
-                        obj.native.members[i].setIfTrue  = state ? state.val : null;
-                    } else {
-                        obj.native.members[i].setIfFalse = state ? state.val : null;
-                    }
-                    if (!count) {
-                        adapter.setForeignObject(sceneID, obj, err => {
-                            if (err) {
-                                adapter.log.error(`Cannot save scene: ${err}`);
-                            } else {
-                                adapter.log.info(`Scene ${obj.common.name} saved`);
-                            }
-                            cb(err);
-                        });
-                    }
-                });
-            });
-        } else {
-            cb('Scene not found');
+    let obj;
+    try {
+        obj = await adapter.getForeignObjectAsync(sceneID);
+    } catch (e) {
+        adapter.log.error(`Cannot get scene: ${e}`);
+        throw new Error('Scene not found');
+    }
+    if (obj && obj.native && obj.native.members) {
+        let count = 0;
+        for (let m = 0; m < obj.native.members.length; m++) {
+            const member = obj.native.members[m];
+            const state = await adapter.getForeignStateAsync(member.id);
+            console.log(`ID ${member.id}=${state ? state.val : state}`);
+            if (isForTrue) {
+                member.setIfTrue  = state ? state.val : null;
+            } else {
+                member.setIfFalse = state ? state.val : null;
+            }
         }
-    });
+
+        try {
+            await adapter.setForeignObjectAsync(sceneID, obj);
+            adapter.log.info(`Scene ${obj.common.name} saved`);
+        } catch (e) {
+            adapter.log.error(`Cannot save scene: ${e}`);
+            throw new Error('Cannot save scene');
+        }
+    } else {
+        throw new Error('Scene not found');
+    }
 }
 
 function restartAdapter() {
@@ -802,7 +859,9 @@ function initScenes() {
 
             // remember which scenes uses this state
             ids[stateId] = ids[stateId] || [];
-            if (ids[stateId].indexOf(sceneId) === -1) ids[stateId].push(sceneId);
+            if (!ids[stateId].includes(sceneId)) {
+                ids[stateId].push(sceneId);
+            }
 
             // Convert delay
             if (scenes[sceneId].native.members[state].delay) {

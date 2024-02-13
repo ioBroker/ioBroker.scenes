@@ -120,6 +120,31 @@ sendTo(
 );
 ```
 The adapter will read all actual values for IDs defined in this scene and save it as configured ones.
+## Disable or enable scene via message
+To disable or enable some scene, you can send a message to the adapter:
+```
+// enable
+sendTo(
+    'scenes.0', 
+    'enable', 
+    'scene.0.SCENE_ID', 
+    result => result.err && console.error(result.error) // optional
+);
+// disable
+sendTo(
+    'scenes.0', 
+    'disable', 
+    'scene.0.SCENE_ID', 
+    result => result.err && console.error(result.error) // optional
+);
+// or
+sendTo(
+    'scenes.0', 
+    'disable', // 'enable' to enable
+    {sceneId: 'scene.0.SCENE_ID'}, 
+    result => result.err && console.error(result.error) // optional
+);
+```
 
 <!--
 	Placeholder for the next version (at the beginning of the line):
@@ -130,6 +155,7 @@ The adapter will read all actual values for IDs defined in this scene and save i
 ### **WORK IN PROGRESS**
 * (bluefox) Cleared cron tasks by re-init
 * (bluefox) CRON Editor dialog added
+* (bluefox) Implemented scene enabling/disabling via messages
 
 ### 2.4.2 (2024-02-12)
 * (bluefox) Preserved empty folders by renaming and moving of scenes
