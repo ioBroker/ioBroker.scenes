@@ -5,6 +5,7 @@ import * as SentryIntegrations from '@sentry/integrations';
 
 import { withStyles, withTheme } from '@mui/styles';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import ReactSplit, { SplitDirection, GutterTheme } from '@devbookhq/splitter';
 
 // MaterialUi
 import Grid from '@mui/material/Grid';
@@ -111,7 +112,13 @@ const styles = theme => ({
         marginRight: theme.spacing(1),
     },
     settingsBackground: {
-        background: theme.palette.mode === 'dark' ? '#3a3a3a': '#eeeeee',
+        background: theme.palette.mode === 'dark' ? '#3a3a3a': '#eee',
+    },
+    gutter: {
+        background: theme.palette.mode === 'dark' ? '#3a3a3a !important': '#eee !important',
+        '& .__dbk__dragger': {
+            background: theme.palette.mode === 'dark' ? 'white !important': 'black !important',
+        }
     },
     drawer: {
         overflow: 'hidden',
@@ -166,6 +173,26 @@ class App extends GenericApp {
     }
 
     onConnectionReady() {
+        let splitSizes = window.localStorage.getItem('Scenes.splitSizes');
+        if (splitSizes) {
+            try {
+                splitSizes = JSON.parse(splitSizes);
+            } catch (e) {
+                // ignore
+            }
+        }
+        splitSizes = splitSizes || [30, 70];
+
+        let splitSizes2 = window.localStorage.getItem('Scenes.splitSizes2');
+        if (splitSizes2) {
+            try {
+                splitSizes2 = JSON.parse(splitSizes2);
+            } catch (e) {
+                // ignore
+            }
+        }
+        splitSizes2 = splitSizes2 || [40, 60];
+
         const newState = {
             lang: this.socket.systemLang,
             ready: false,
@@ -180,6 +207,8 @@ class App extends GenericApp {
             exportDialog: false,
             importDialog: false,
             menuOpened: false,
+            splitSizes,
+            splitSizes2,
         };
 
         this.socket.getSystemConfig()
@@ -488,28 +517,28 @@ class App extends GenericApp {
                 read: true,
                 write: true,
                 def: false,
-                engine: 'system.adapter.scenes.0'
+                engine: 'system.adapter.scenes.0',
             },
             native: {
                 onTrue: {
                     trigger: {},
                     cron: null,
-                    astro: null
+                    astro: null,
                 },
                 onFalse: {
                     enabled: false,
                     trigger: {},
                     cron: null,
-                    astro: null
+                    astro: null,
                 },
                 easy: true,
-                members: []
+                members: [],
             },
-            type: 'state'
+            type: 'state',
         };
 
         template.common.name = name;
-        let id = 'scene.0.' + (parentId ? parentId + '.' : '') + template.common.name;
+        let id = `scene.0.${parentId ? `${parentId}.` : ''}${template.common.name}`;
 
         this.setState({changingScene: id}, () =>
             this.socket.setObject(id, template)
@@ -525,7 +554,7 @@ class App extends GenericApp {
         scene._id.pop();
         scene._id.push(this.getNewSceneId());
         scene._id = scene._id.join('.');
-        scene.common.name = scene.common.name + ' ' + I18n.t('copy');
+        scene.common.name = `${scene.common.name} ${I18n.t('copy')}`;
 
         this.setState({changingScene: scene._id}, () =>
             this.socket.setObject(scene._id, scene)
@@ -576,7 +605,7 @@ class App extends GenericApp {
         }
 
         let selectedSceneChanged = JSON.stringify(this.state.scenes[this.state.selectedSceneId]) !== JSON.stringify(scene);
-        this.setState({selectedSceneChanged, selectedSceneData: scene}, () => cb && cb());
+        this.setState({ selectedSceneChanged, selectedSceneData: scene }, () => cb && cb());
     };
 
     deleteScene(id) {
@@ -586,10 +615,10 @@ class App extends GenericApp {
                     return this.refreshData(id)
                         .then(() => {
                             const ids = Object.keys(this.state.scenes);
-                            // Find next scene
+                            // Find the next scene
                             let nextId = ids.find(_id => _id > id) || '';
                             if (!nextId) {
-                                // try prev scene
+                                // try a prev scene
                                 for (let i = ids.length - 1; i >= 0; i--) {
                                     if (ids[i] < id) {
                                         nextId = ids[i];
@@ -603,9 +632,9 @@ class App extends GenericApp {
 
                             return this.changeSelectedScene(nextId);
                         });
-                } else {
-                    return this.refreshData(id);
                 }
+
+                return this.refreshData(id);
             })
             .catch(e => this.showError(e));
     };
@@ -621,7 +650,7 @@ class App extends GenericApp {
             }
         }
 
-        return 'scene' + newId;
+        return `scene${newId}`;
     };
 
     updateSceneMembers(members, cb) {
@@ -768,13 +797,23 @@ class App extends GenericApp {
     }
 
     renderSceneTopToolbar(showDrawer) {
-        return <Toolbar variant="dense" key="topToolbar" classes={ {gutters: this.props.classes.noGutters} }>
-            { this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? <Typography variant="h6" className={ this.props.classes.sceneTitle }>
-                { I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
-                <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, {language: I18n.getLanguage()}, true) }</span>
-            </Typography> : null }
+        return <Toolbar
+            variant="dense"
+            key="topToolbar"
+            classes={{ gutters: this.props.classes.noGutters }}
+        >
+            {this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? <Typography variant="h6" className={ this.props.classes.sceneTitle }>
+                {I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
+                <span className={this.props.classes.sceneSubTitle}>{ Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, { language: I18n.getLanguage() }, true)}</span>
+            </Typography> : null}
 
-            { showDrawer ? <IconButton aria-label="Open list" title={ I18n.t('Open list') } onClick={ () => this.setState({menuOpened: true}) }><IconMenu/></IconButton> : null }
+            {showDrawer ? <IconButton
+                aria-label="Open list"
+                title={I18n.t('Open list')}
+                onClick={() => this.setState({ menuOpened: true })}
+            >
+                <IconMenu />
+            </IconButton> : null}
             <IconButton aria-label="Clone" title={ I18n.t('Clone') } onClick={ () => this.cloneScene(this.state.selectedSceneId) }><IconClone/></IconButton>
 
             <IconButton aria-label="Delete" title={ I18n.t('Delete') } onClick={ () => this.setState({deleteDialog: true}) }><IconDelete/></IconButton>
@@ -786,8 +825,8 @@ class App extends GenericApp {
     }
 
     renderSceneBottomToolbar() {
-        return <Toolbar variant="dense" key="bottomToolbar" classes={ {gutters: this.props.classes.noGutters} }>
-            <div style={{flexGrow: 1}}/>
+        return <Toolbar variant="dense" key="bottomToolbar" classes={{ gutters: this.props.classes.noGutters }}>
+            <div style={{ flexGrow: 1 }} />
             { this.state.selectedSceneChanged ? <Button
                 className={ this.props.classes.toolbarButtons }
                 variant="contained"
@@ -810,13 +849,14 @@ class App extends GenericApp {
         </Toolbar>;
     }
 
-    renderDrawerContent() {
+    renderDrawerContent(showDrawer) {
         return <ScenesList
             scenes={this.state.scenes}
             folders={this.state.folders}
             selectedSceneId={this.state.selectedSceneId}
             selectedSceneChanged={this.state.selectedSceneChanged}
             theme={this.state.theme}
+            showDrawer={showDrawer}
             onSceneSelect={id =>
                 this.changeSelectedScene(id)
                     .catch(() => console.log('ignore'))}
@@ -873,13 +913,13 @@ class App extends GenericApp {
                 onClose={() => this.setState({ menuOpened: false })}
                 classes={{ paper: this.props.classes.drawer }}
             >
-                { this.renderDrawerContent() }
+                {this.renderDrawerContent(true)}
             </Drawer>,
             this.renderSceneTopToolbar(true),
             this.state.selectedSceneId ? <div
                     key="main"
                     className={this.props.classes.heightMinus2Toolbars}
-                    style={{ overflowY: 'auto', overflowX: 'hidden' }}
+                    style={{ overflowY: 'auto', overflowX: 'hidden', padding: 8, height: 'calc(100% - 112px)' }}
                 >
                     {this.renderSceneSettings(true)}
                     {this.renderSceneMembers(true)}
@@ -889,43 +929,102 @@ class App extends GenericApp {
     }
 
     renderInMoreThanOneColumn() {
-        const showDrawer = this.props.width === 'sm' || this.props.width === 'xs';
+        const showDrawer = this.props.width === 'sm';
 
-        return <Container className={Utils.clsx(this.props.classes.height, this.props.classes.fullWidthContainer)}>
-            <Grid container spacing={1} className={this.props.classes.height}>
-                {showDrawer ?
+        if (showDrawer) {
+            const renderedScene = this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ? <Grid
+                container
+                spacing={1}
+                className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}
+            >
+                <Grid
+                    item
+                    xs={this.props.width === 'xs' ? 12 : 5}
+                    className={this.props.classes.heightMinus2Toolbars}
+                >
+                    {this.renderSceneTopToolbar(true)}
+                    <div
+                        className={this.props.classes.height}
+                        style={{ paddingLeft: 8 }}
+                    >
+                        {this.state.selectedSceneId ? this.renderSceneSettings() : null}
+                    </div>
+                    {this.renderSceneBottomToolbar()}
+                </Grid>
+                <Grid item xs={this.props.width === 'xs' ? 12 : 7} className={Utils.clsx(this.props.classes.height)}>
+                    <div className={Utils.clsx(this.props.classes.heightMinusMargin)}>
+                        <div className={Utils.clsx(this.props.classes.membersCell, this.props.classes.height)}>
+                            {this.renderSceneMembers()}
+                        </div>
+                    </div>
+                </Grid>
+            </Grid> : null;
+
+            return <Container className={Utils.clsx(this.props.classes.height, this.props.classes.fullWidthContainer)}>
+                <Grid container spacing={1} className={this.props.classes.height}>
                     <Drawer anchor="left" open={this.state.menuOpened} onClose={() => this.setState({ menuOpened: false })}>
-                        {this.renderDrawerContent()}
-                    </Drawer> :
-                    <Grid item xs={3} className={Utils.clsx(this.props.classes.columnContainer, this.props.classes.height)}>
-                        {this.renderDrawerContent()}
-                    </Grid>
-                }
-                { this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
-                    <Grid item xs={showDrawer ? 12 : 9} className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
-                        <Grid container spacing={1} className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
-                            <Grid item xs={this.props.width === 'xs' ? 12 : 5} className={this.props.classes.heightMinus2Toolbars}>
-                                { this.renderSceneTopToolbar(showDrawer) }
-                                <div className={this.props.classes.height}>
-                                    {this.state.selectedSceneId ? this.renderSceneSettings() : null}
-                                </div>
-                                {this.renderSceneBottomToolbar()}
-                            </Grid>
-                            <Grid item xs={this.props.width === 'xs' ? 12 : 7} className={Utils.clsx(this.props.classes.height)}>
-                                <div className={Utils.clsx(this.props.classes.heightMinusMargin)}>
-                                    {this.state.selectedSceneId ?
-                                        <div className={Utils.clsx(this.props.classes.membersCell, this.props.classes.height)}>
-                                            {this.renderSceneMembers()}
-                                        </div>
-                                        : null}
-                                </div>
-                            </Grid>
+                        {this.renderDrawerContent(true)}
+                    </Drawer>
+                    {this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
+                        <Grid item xs={12} className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
+                            {renderedScene}
                         </Grid>
-                    </Grid>
-                    : null
-                }
-            </Grid>
-        </Container>;
+                        : null
+                    }
+                </Grid>
+            </Container>;
+        }
+
+        const renderedScene = this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ? <ReactSplit
+            direction={SplitDirection.Horizontal}
+            initialSizes={this.state.splitSizes2}
+            minWidths={[400, 350]}
+            onResizeFinished={(gutterIdx, splitSizes2) => {
+                this.setState({ splitSizes2 });
+                window.localStorage.setItem('Scenes.splitSizes2', JSON.stringify(splitSizes2));
+            }}
+            theme={this.state.themeName === 'dark' ? GutterTheme.Dark : GutterTheme.Light}
+            gutterClassName={this.state.themeName === 'dark' ? `${this.props.classes.gutter} Dark visGutter` : `${this.props.classes.gutter} Light visGutter`}
+        >
+            <div className={this.props.classes.heightMinus2Toolbars}>
+                {this.renderSceneTopToolbar(false)}
+                <div
+                    className={this.props.classes.height}
+                    style={{ paddingLeft: 8, paddingRight: 8 }}
+                >
+                    {this.state.selectedSceneId ? this.renderSceneSettings() : null}
+                </div>
+                {this.renderSceneBottomToolbar()}
+            </div>
+            <div>
+                <div className={Utils.clsx(this.props.classes.heightMinusMargin)}>
+                    <div className={Utils.clsx(this.props.classes.membersCell, this.props.classes.height)}>
+                        {this.renderSceneMembers()}
+                    </div>
+                </div>
+            </div>
+        </ReactSplit> : null;
+
+        return <ReactSplit
+            direction={SplitDirection.Horizontal}
+            initialSizes={this.state.splitSizes}
+            minWidths={[270, 450]}
+            onResizeFinished={(gutterIdx, splitSizes) => {
+                this.setState({ splitSizes });
+                window.localStorage.setItem('Scenes.splitSizes', JSON.stringify(splitSizes));
+            }}
+            theme={this.state.themeName === 'dark' ? GutterTheme.Dark : GutterTheme.Light}
+            gutterClassName={this.state.themeName === 'dark' ? 'Dark visGutter' : 'Light visGutter'}
+        >
+            <div className={Utils.clsx(this.props.classes.columnContainer, this.props.classes.height)}>
+                {this.renderDrawerContent(false)}
+            </div>
+            {this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
+                <div className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
+                    {renderedScene}
+                </div>
+                : <div />}
+        </ReactSplit>;
     }
 
     render() {

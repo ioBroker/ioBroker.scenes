@@ -283,8 +283,7 @@ class SceneForm extends React.Component {
             onOk={cron => {
                 const native = JSON.parse(JSON.stringify(this.state.native));
                 native[this.state.showCronDialog].cron = cron;
-                this.setStateWithParent({native});
-                this.setState({showCronDialog: null});
+                this.setStateWithParent({ native, showCronDialog: null });
             }}
             onClose={() => this.setState({ showCronDialog: null })}
         />;

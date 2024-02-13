@@ -503,7 +503,12 @@ class ScenesList extends React.Component {
     }
 
     renderListToolbar() {
-        return <Toolbar key="toolbar" variant="dense" className={this.props.classes.mainToolbar}>
+        return <Toolbar
+            key="toolbar"
+            variant="dense"
+            className={this.props.classes.mainToolbar}
+            style={this.props.showDrawer ? undefined : { marginRight: -8 }}
+        >
             {!this.state.reorder ? <IconButton
                 onClick={() => this.props.onCreateScene()}
                 title={I18n.t('Create new scene')}
@@ -617,6 +622,7 @@ ScenesList.propTypes = {
     selectedSceneChanged: PropTypes.bool,
     theme: PropTypes.object,
     folders: PropTypes.object,
+    showDrawer: PropTypes.bool,
 };
 
 export default withStyles(styles)(ScenesList);
