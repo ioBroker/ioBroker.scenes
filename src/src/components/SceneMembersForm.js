@@ -41,7 +41,10 @@ import {
     ExpandMore as IconExpandAll,
     ExpandLess as IconCollapseAll,
     Menu as IconList,
+    AddBox as IconAddBox,
 } from '@mui/icons-material';
+
+import EnumsSelector from './EnumsSelector';
 
 const TRUE_COLOR       = '#90ee90';
 const FALSE_COLOR      = '#ff9999';
@@ -239,10 +242,20 @@ const styles = theme => ({
     },
     ackTrue: {
         marginLeft: 100,
+    },
+    enumTitle: {
+        color: theme.palette.primary.main,
+        border: `1px solid ${theme.palette.primary.main}`,
+        padding: '1px 4px 3px 4px',
+        borderRadius: 5,
     }
 });
 
 class SceneMembersForm extends React.Component {
+    static enums = null;
+
+    static objects = null;
+
     constructor(props) {
         super(props);
 
@@ -271,6 +284,7 @@ class SceneMembersForm extends React.Component {
             suppressDeleteConfirm: false,
             showSelectValueIdDialog: false,
             showSelectValueIdDialogFor: null,
+            showAddEnumsDialog: null,
         };
 
         this.delButtonRef = React.createRef();
@@ -280,18 +294,25 @@ class SceneMembersForm extends React.Component {
         this.onDragEnd = this.onDragEnd.bind(this);
     }
 
-    componentDidMount() {
-        this.readObjects()
-            .then(newState =>
-                this.setState(newState, () => {
-                    // subscribe on scene state
-                    this.props.socket.subscribeState(this.props.sceneId, this.memberStateChange);
-                    this.state.engineId && this.props.socket.subscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
+    async componentDidMount() {
+        if (!SceneMembersForm.enums) {
+            try {
+                SceneMembersForm.enums = await this.props.socket.getEnums();
+            } catch (e) {
+                this.props.showError(e);
+            }
+        }
 
-                    // subscribe on all states
-                    this.state.members.forEach(member =>
-                        member.id && this.props.socket.subscribeState(member.id, this.memberStateChange))
-                }));
+        const newState = await this.readObjects();
+        this.setState(newState,  () => {
+            // subscribe on scene state
+            this.props.socket.subscribeState(this.props.sceneId, this.memberStateChange);
+            this.state.engineId && this.props.socket.subscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
+
+            // subscribe on all states
+            this.state.members.forEach(member =>
+                member.id && this.props.socket.subscribeState(member.id, this.memberStateChange))
+        });
     }
 
     componentWillUnmount() {
@@ -347,29 +368,28 @@ class SceneMembersForm extends React.Component {
         const [removed] = members.splice(result.source.index, 1);
         members.splice(result.destination.index, 0, removed);
 
-        this.setStateWithParent({members});
+        this.setStateWithParent({ members });
     }
 
-    readObjects() {
+    async readObjects() {
         if (this.state.members) {
-            return Promise.all(
-                this.state.members.map(member =>
-                    this.props.socket.getObject(member.id)))
-                .then(results => {
-                    const objectTypes = {};
-                    const objectNames = {};
-                    results.forEach(obj => {
-                        if (obj && obj.common && obj.common.type) {
-                            objectTypes[obj._id] = obj.common.type;
-                            objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, false);
-                        }
-                    });
-
-                    return {objectTypes, objectNames};
-                })
-                .catch(e => this.props.showError(e));
+            const objectTypes = {};
+            const objectNames = {};
+            try {
+                for (let m = 0; m < this.state.members.length; m++) {
+                    const member = this.state.members[m];
+                    const obj = member.id && await this.props.socket.getObject(member.id);
+                    if (obj && obj.common && obj.common.type) {
+                        objectTypes[obj._id] = obj.common.type;
+                        objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, { language: I18n.getLanguage() }, false);
+                    }
+                }
+            } catch (e) {
+                this.props.showError(e);
+            }
+            return { objectTypes, objectNames };
         } else {
-            return Promise.resolve({});
+            return {};
         }
     }
 
@@ -396,63 +416,94 @@ class SceneMembersForm extends React.Component {
         this.setState({ states, objectTypes });
     };
 
-    createSceneMembers = ids => {
-        this.setState({showDialog: false}, () => {
+    createSceneMembersWithIDs = ids => {
+        this.setState({ showDialog: false }, async () => {
             if (ids.length) {
                 const openedMembers = [...this.state.openedMembers];
                 const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
                 const objectNames = JSON.parse(JSON.stringify(this.state.objectNames));
                 const members     = JSON.parse(JSON.stringify(this.state.members));
+                try {
+                    for (let i = 0; i < ids.length; i++) {
+                        const id = ids[i];
+                        const obj = await this.props.socket.getObject(id);
+                        if (!obj) {
+                            continue;
+                        }
 
-                Promise.all(ids.map(id =>
-                    // Read type of state
-                    this.props.socket.getObject(id)
-                        .then(obj => {
-                            if (!obj) {
-                                return;
-                            }
+                        const template = {
+                            id,
+                            setIfTrue: null,
+                            setIfFalse: null,
+                            stopAllDelays: true,
+                            desc: null,
+                            disabled: false,
+                            delay: 0,
+                        };
 
-                            const template = {
-                                id,
-                                setIfTrue: null,
-                                setIfFalse: null,
-                                stopAllDelays: true,
-                                desc: null,
-                                disabled: false,
-                                delay: 0
-                            };
+                        if (obj) {
+                            objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, { language: I18n.getLanguage() }, true);
+                        }
 
-                            if (obj) {
-                                objectNames[obj._id] = Utils.getObjectNameFromObj(obj, null, {language: I18n.getLanguage()}, true);
-                            }
+                        if (obj && obj.common && obj.common.type) {
+                            objectTypes[id] = obj.common.type;
 
-
-                            if (obj && obj.common && obj.common.type) {
-                                objectTypes[id] = obj.common.type;
-
-                                if (objectTypes[id] === 'boolean') {
-                                    template.setIfTrue = true;
-                                    if (this.state.onFalseEnabled) {
-                                        template.setIfFalse = false;
-                                    }
+                            if (objectTypes[id] === 'boolean') {
+                                template.setIfTrue = true;
+                                if (this.state.onFalseEnabled) {
+                                    template.setIfFalse = false;
                                 }
                             }
+                        }
 
-                            members.push(template);
+                        members.push(template);
 
-                            // open added state
-                            openedMembers.push(id);
-                        })
-                        .then(() => this.setStateWithParent({objectTypes, objectNames, members, openedMembers}, () =>
-                            // Subscribe on all new members
-                            ids.forEach(id => this.props.socket.subscribeState(id, this.memberStateChange)))
-                        )
-                    )
-                )
-                    .catch(e => this.props.showError(e));
+                        // open added state
+                        openedMembers.push(id);
+                    }
+
+                    this.setStateWithParent({ objectTypes, objectNames, members, openedMembers }, async () => {
+                        // Subscribe on all new members
+                        for (let i = 0; i < ids.length; i++) {
+                            await this.props.socket.subscribeState(ids[i], this.memberStateChange);
+                        }
+                    });
+                } catch (e) {
+                    this.props.showError(e);
+                }
             } else {
                 // Show alert
                 this.props.showError(I18n.t('Unknown error!'));
+            }
+        });
+    };
+
+    createSceneMembersWithEnums = enums => {
+        this.setState({ showDialog: false }, async () => {
+            if (enums) {
+                const openedMembers = [...this.state.openedMembers];
+                const members     = JSON.parse(JSON.stringify(this.state.members));
+
+                try {
+                    const template = {
+                        enums,
+                        setIfTrue: null,
+                        setIfFalse: null,
+                        stopAllDelays: true,
+                        desc: null,
+                        disabled: false,
+                        delay: 0,
+                    };
+
+                    // open added state
+                    openedMembers.push(members.length);
+
+                    members.push(template);
+
+                    this.setStateWithParent({ members, openedMembers });
+                } catch (e) {
+                    this.props.showError(e);
+                }
             }
         });
     };
@@ -466,7 +517,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        this.setStateWithParent({members, deleteDialog: null}, () =>
+        this.setStateWithParent({ members, deleteDialog: null }, () =>
             this.props.socket.unsubscribeState(id, this.memberStateChange));
     };
 
@@ -478,20 +529,47 @@ class SceneMembersForm extends React.Component {
 
     renderSelectIdDialog() {
         return this.state.showDialog ? <DialogSelectID
-            imagePrefix={'../..'}
+            imagePrefix="../.."
             key="selectDialogMembers"
-            socket={ this.props.socket }
+            socket={this.props.socket}
             dialogName="memberEdit"
-            multiSelect={ true }
-            title={ I18n.t('Select for ') }
-            selected={ null }
-            onOk={ id => this.createSceneMembers(id) }
-            onClose={ () => this.setState({showDialog: false}) }
+            multiSelect
+            title={I18n.t('Select for ')}
+            selected={null}
+            onOk={id => this.createSceneMembersWithIDs(id)}
+            onClose={() => this.setState({ showDialog: false })}
         /> : null;
     }
 
+    renderSelectEnumsDialog() {
+        if (this.state.showAddEnumsDialog === null) {
+            return null;
+        }
+
+        return <EnumsSelector
+            key="selectDialogEnums"
+            showError={this.props.showError}
+            onClose={enums => {
+                if (enums) {
+                    if (this.state.showAddEnumsDialog === true) {
+                        this.createSceneMembersWithEnums(enums);
+                    } else {
+                        const members = JSON.parse(JSON.stringify(this.state.members));
+                        members[this.state.showAddEnumsDialog].enums = enums;
+                        this.setStateWithParent({ members });
+                    }
+                }
+
+                this.setState({ showAddEnumsDialog: null });
+            }}
+            edit={this.state.showAddEnumsDialog !== true}
+            socket={this.props.socket}
+            value={this.state.showAddEnumsDialog === true ? null : this.state.members[this.state.showAddEnumsDialog].enums}
+        />;
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
-        this.state.deleteDialog && setTimeout(() => {
+        this.state.deleteDialog !== null && setTimeout(() => {
             if (this.delButtonRef.current) {
                 this.delButtonRef.current.focus();
             }
@@ -504,90 +582,88 @@ class SceneMembersForm extends React.Component {
         }
 
         return <Dialog
-            open={ true }
+            open={!0}
             key="deleteDialog"
-            onClose={ () =>
-                this.setState({deleteDialog: null}) }
-            >
-                <DialogTitle>{ I18n.t('Are you sure for delete this state?') }</DialogTitle>
-                <DialogContent>
-                    <FormControlLabel
-                        control={<Checkbox
-                            checked={this.state.suppressDeleteConfirm}
-                            onChange={() => this.setState({ suppressDeleteConfirm: !this.state.suppressDeleteConfirm })}
-                        />}
-                        label={I18n.t('Suppress confirmation for next 5 minutes')}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        ref={this.delButtonRef}
-                        onClick={ e => {
-                            if (this.state.suppressDeleteConfirm) {
-                                window.localStorage.setItem('scenes.suppressDeleteConfirm', Date.now().toString());
-                            }
-                            this.deleteSceneMember(this.state.deleteDialog);
-                        } }
-                        startIcon={<IconDelete />}
-                    >
-                        {I18n.t('Delete')}
-                    </Button>
-                    <Button
-                        color="grey"
-                        autoFocus
-                        variant="contained"
-                        onClick={ () => this.setState({deleteDialog: null}) }
-                        startIcon={<IconCancel />}
-                    >
-                        {I18n.t('Cancel')}
-                    </Button>
+            onClose={() => this.setState({ deleteDialog: null })}
+        >
+            <DialogTitle>{I18n.t('Are you sure for delete this state?')}</DialogTitle>
+            <DialogContent>
+                <FormControlLabel
+                    control={<Checkbox
+                        checked={this.state.suppressDeleteConfirm}
+                        onChange={() => this.setState({ suppressDeleteConfirm: !this.state.suppressDeleteConfirm })}
+                    />}
+                    label={I18n.t('Suppress confirmation for next 5 minutes')}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    ref={this.delButtonRef}
+                    onClick={() => {
+                        if (this.state.suppressDeleteConfirm) {
+                            window.localStorage.setItem('scenes.suppressDeleteConfirm', Date.now().toString());
+                        }
+                        this.deleteSceneMember(this.state.deleteDialog);
+                    }}
+                    startIcon={<IconDelete />}
+                >
+                    {I18n.t('Delete')}
+                </Button>
+                <Button
+                    color="grey"
+                    autoFocus
+                    variant="contained"
+                    onClick={() => this.setState({ deleteDialog: null })}
+                    startIcon={<IconCancel />}
+                >
+                    {I18n.t('Cancel')}
+                </Button>
 
-                </DialogActions>
-            </Dialog>;
+            </DialogActions>
+        </Dialog>;
     };
 
     renderSelectStateIdDialog() {
         if (!this.state.showSelectValueIdDialog) {
             return null;
-        } else {
-            let setValue;
-            if (this.state.showSelectValueIdDialog === 'true') {
-                setValue = this.state.members[this.state.showSelectValueIdDialogFor].setIfTrue;
-            } else {
-                setValue = this.state.members[this.state.showSelectValueIdDialogFor].setIfFalse;
-            }
-            const m = typeof setValue === 'string' && setValue.match(/^{{([^}]*)}}$/);
-            if (m) {
-                setValue = m[1];
-            }
-
-            return <DialogSelectID
-                imagePrefix={'../..'}
-                key="selectDialogMember"
-                socket={ this.props.socket }
-                dialogName="memberEdit"
-                multiSelect={ false }
-                title={ I18n.t('Select for ') + (this.state.showSelectValueIdDialog === 'true' ? 'TRUE' : 'FALSE') }
-                selected={ setValue }
-                onOk={ id => {
-                    if (id) {
-                        const index = this.state.showSelectValueIdDialogFor;
-                        const members = JSON.parse(JSON.stringify(this.state.members));
-                        if (this.state.showSelectValueIdDialog === 'true') {
-                            members[index].setIfTrue = '{{' + id + '}}';
-                        } else {
-                            members[index].setIfFalse = '{{' + id + '}}';
-                        }
-
-                        this.setState({showSelectValueIdDialog: false, showSelectValueIdDialogFor: null}, () =>
-                            this.setStateWithParent({members}));
-                    }
-                }}
-                onClose={ () => this.setState({showSelectValueIdDialog: false, showSelectValueIdDialogFor: null}) }
-            />;
         }
+        let setValue;
+        if (this.state.showSelectValueIdDialog === 'true') {
+            setValue = this.state.members[this.state.showSelectValueIdDialogFor].setIfTrue;
+        } else {
+            setValue = this.state.members[this.state.showSelectValueIdDialogFor].setIfFalse;
+        }
+        const m = typeof setValue === 'string' && setValue.match(/^{{([^}]*)}}$/);
+        if (m) {
+            setValue = m[1];
+        }
+
+        return <DialogSelectID
+            imagePrefix="../.."
+            key="selectDialogMember"
+            socket={this.props.socket}
+            dialogName="memberEdit"
+            multiSelect={false}
+            title={I18n.t('Select for ') + (this.state.showSelectValueIdDialog === 'true' ? 'TRUE' : 'FALSE')}
+            selected={ setValue }
+            onOk={ id => {
+                if (id) {
+                    const index = this.state.showSelectValueIdDialogFor;
+                    const members = JSON.parse(JSON.stringify(this.state.members));
+                    if (this.state.showSelectValueIdDialog === 'true') {
+                        members[index].setIfTrue = `{{${id}}}`;
+                    } else {
+                        members[index].setIfFalse = `{{${id}}}`;
+                    }
+
+                    this.setState({ showSelectValueIdDialog: false, showSelectValueIdDialogFor: null }, () =>
+                        this.setStateWithParent({ members }));
+                }
+            }}
+            onClose={ () => this.setState({ showSelectValueIdDialog: false, showSelectValueIdDialogFor: null }) }
+        />;
     }
 
     renderSetValue(classes, index, member, onFalseEnabled, isTrue) {
@@ -792,10 +868,126 @@ class SceneMembersForm extends React.Component {
         </Box>;
     }
 
+    static getObjectName(id, obj) {
+        return obj ? Utils.getObjectNameFromObj(obj, null, { language: I18n.getLanguage() }, false) : id;
+    }
+
+    static getAllEnumIds(enumsSettings) {
+        const ids = [];
+        if (!SceneMembersForm.enums) {
+            return ids;
+        }
+        enumsSettings.rooms.forEach(roomId => {
+            const members = SceneMembersForm.enums[roomId].common.members;
+            for (let r = 0; r < members.length; r++) {
+                if (!ids.includes(members[r])) {
+                    ids.push(members[r]);
+                }
+            }
+        });
+        if (!enumsSettings.rooms.length) {
+            enumsSettings.funcs.forEach(funcId => {
+                const members = SceneMembersForm.enums[funcId].common.members;
+                for (let r = 0; r < members.length; r++) {
+                    if (!ids.includes(members[r])) {
+                        ids.push(members[r]);
+                    }
+                }
+            });
+        } else if (enumsSettings.funcs.length) {
+            for (let i = ids.length - 1; i >= 0; i--) {
+                const id = ids[i];
+                // find this id in all functions
+                if (!enumsSettings.funcs.find(funcId => SceneMembersForm.enums[funcId].common.members.includes(id))) {
+                    ids.splice(i, 1);
+                }
+            }
+        }
+        enumsSettings.others.forEach(enumId => {
+            const members = SceneMembersForm.enums[enumId].common.members;
+            for (let r = 0; r < members.length; r++) {
+                if (!ids.includes(members[r])) {
+                    ids.push(members[r]);
+                }
+            }
+        });
+        for (let e = 0; e < enumsSettings.exclude.length; e++) {
+            const index = ids.indexOf(enumsSettings.exclude[e]);
+            if (index !== -1) {
+                ids.splice(index, 1);
+            }
+        }
+        return ids;
+    }
+
+    getTitleForEnums(enumsSettings) {
+        let title = '';
+        if (enumsSettings.rooms?.length) {
+            title += enumsSettings.rooms.map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id])).join(', ');
+            if (enumsSettings.funcs?.length) {
+                title += ` 🗗 ${enumsSettings.funcs.map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id])).join(', ')}`;
+            }
+        } else if (enumsSettings.funcs?.length) {
+            title += enumsSettings.funcs.map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id])).join(', ');
+        }
+
+        if (enumsSettings.others?.length) {
+            title += ` + ${enumsSettings.map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id])).others.join(', ')}`;
+        }
+        if (enumsSettings.exclude?.length) {
+            title += ` - ${enumsSettings.exclude.length} ${I18n.t('state(s)')}`;
+        }
+
+        title += ` [${SceneMembersForm.getAllEnumIds(enumsSettings).length}]`;
+
+        return <span className={this.props.classes.enumTitle}>{title}✎</span>;
+    }
+
+    getEnumType(index) {
+        const ids = SceneMembersForm.getAllEnumIds(this.state.members[index].enums);
+        if (ids.length === 0) {
+            return 'boolean';
+        }
+        let type = '';
+        this.toRead = this.toRead || [];
+        for (let i = 0; i < ids.length; i++) {
+            if (this.state.objectTypes[ids[i]] === undefined) {
+                !this.toRead.includes(ids[i]) && this.toRead.push(ids[i]);
+            } else if (!type && this.state.objectTypes[ids[i]]) {
+                type = this.state.objectTypes[ids[i]];
+            } else if (this.state.objectTypes[ids[i]] && type !== this.state.objectTypes[ids[i]]) {
+                type = 'mixed';
+            }
+        }
+
+        if (this.toRead.length) {
+            this.readObjectsTimeout && clearTimeout(this.readObjectsTimeout);
+            this.readObjectsTimeout = setTimeout(async () => {
+                this.readObjectsTimeout = null;
+                const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
+
+                for (let i = 0; i < this.toRead.length; i++) {
+                    if (!objectTypes[this.toRead[i]]) {
+                        const obj = await this.props.socket.getObject(this.toRead[i]);
+                        if (obj?.common?.type) {
+                            objectTypes[this.toRead[i]] = obj.common.type;
+                        } else {
+                            objectTypes[this.toRead[i]] = null;
+                        }
+                    }
+                }
+                this.toRead = null;
+                this.setState({ objectTypes });
+            }, 300);
+        }
+
+        return type;
+    }
+
     renderMember = (member, index) => {
         let value = null;
         const classes = this.props.classes;
-        if (this.state.states[member.id] !== undefined && this.state.states[member.id] !== null) {
+        if (member.id && this.state.states[member.id] !== undefined && this.state.states[member.id] !== null) {
             let _valStr = this.state.states[member.id].toString();
 
             if (_valStr === 'true') {
@@ -806,8 +998,11 @@ class SceneMembersForm extends React.Component {
 
             if (member.setIfTrueTolerance && Math.abs(this.state.states[member.id] - member.setIfTrue) <= member.setIfTrueTolerance) {
                 value = <div
-                    title={ I18n.t('Actual state value') }
-                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberTrue) }>{_valStr}</div>;
+                    title={I18n.t('Actual state value')}
+                    className={Utils.clsx(classes.memberTrueFalse, classes.memberTrue)}
+                >
+                    {_valStr}
+                </div>;
             } else if (this.state.states[member.id] === member.setIfTrue) {
                 value = <div
                     title={I18n.t('Actual state value')}
@@ -837,9 +1032,16 @@ class SceneMembersForm extends React.Component {
                     {_valStr}
                 </div>;
             }
+        } else if (member.enums) {
+            value = <div
+                title={I18n.t('Enum states')}
+                className={classes.memberTrueFalse}
+            >
+                {I18n.t('ENUM')}
+            </div>;
         }
 
-        const opened = this.state.openedMembers.includes(member.id);
+        const opened = member.id ? this.state.openedMembers.includes(member.id) : this.state.openedMembers.includes(index);
         const onFalseEnabled = !this.state.virtualGroup && this.state.onFalseEnabled;
         let setIfTrueVisible = true;
 
@@ -861,9 +1063,9 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        const varType =  this.state.objectTypes[member.id];
+        const varType = member.id ? this.state.objectTypes[member.id] : this.getEnumType(index);
 
-        if (onFalseEnabled && setIfTrueVisible && setIfTrue === '' && (varType === 'number' || varType === 'boolean')) {
+        if (onFalseEnabled && setIfTrueVisible && setIfTrue === '' && (varType === 'number' || varType === 'boolean' || varType === 'mixed')) {
             setIfTrueVisible = false;
         }
 
@@ -886,7 +1088,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        if (setIfFalseVisible && setIfFalse === '' && (varType === 'number' || varType === 'boolean')) {
+        if (setIfFalseVisible && setIfFalse === '' && (varType === 'number' || varType === 'boolean' || varType === 'mixed')) {
             setIfFalseVisible = false;
         }
 
@@ -907,28 +1109,36 @@ class SceneMembersForm extends React.Component {
 
         delay += member.delay || 0;
 
-        return <Paper key={`${member.id}_${index}`} className={Utils.clsx(classes.memberCard, member.disabled && classes.disabled)}>
+        const title = member.id || this.getTitleForEnums(member.enums);
+
+        return <Paper key={`${member.id || ''}_${index}`} className={Utils.clsx(classes.memberCard, member.disabled && classes.disabled)}>
             <div className={classes.memberToolbar}>
                 <IconButton
                     className={classes.memberFolder}
                     title={I18n.t('Edit')}
                     onClick={() => {
                         const openedMembers = [...this.state.openedMembers];
-                        const pos = openedMembers.indexOf(member.id);
+                        const pos = member.id ? openedMembers.indexOf(member.id) : openedMembers.indexOf(index);
                         if (pos !== -1) {
                             openedMembers.splice(pos, 1);
                         } else {
-                            openedMembers.push(member.id);
+                            openedMembers.push(member.id || index);
                             openedMembers.sort();
                         }
                         window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
-                        this.setState({openedMembers});
+                        this.setState({ openedMembers });
                     }}
                 >
                     {opened ? <IconFolderOpened /> : <IconFolderClosed />}
                 </IconButton>
-                <div className={classes.memberTitle}>{member.id}</div>
-                <div className={classes.memberDesc}>{member.desc || this.state.objectNames[member.id] || ''}</div>
+                <div
+                    className={classes.memberTitle}
+                    style={member.id ? undefined : { cursor: 'pointer' }}
+                    onClick={member.id ? undefined : () => this.setState({ showAddEnumsDialog: index })}
+                >
+                    {title}
+                </div>
+                <div className={classes.memberDesc}>{member.desc || (member.id && this.state.objectNames[member.id]) || ''}</div>
                 <div className={classes.memberButtons}>
                     <IconButton
                         size="small"
@@ -940,10 +1150,10 @@ class SceneMembersForm extends React.Component {
                                     this.deleteSceneMember(member.id);
                                 } else {
                                     window.localStorage.removeItem('scenes.suppressDeleteConfirm');
-                                    this.setState({ deleteDialog: member.id });
+                                    this.setState({ deleteDialog: member.id || index });
                                 }
                             } else {
-                                this.setState({ deleteDialog: member.id, suppressDeleteConfirm: false });
+                                this.setState({ deleteDialog: member.id || index, suppressDeleteConfirm: false });
                             }
                         }}
                     >
@@ -956,7 +1166,7 @@ class SceneMembersForm extends React.Component {
                             members[index].disabled = !e.target.checked;
                             this.setStateWithParent({ members });
                         }}
-                        name={member.id}
+                        name={member.id || undefined}
                     />
                     {value}
                 </div>
@@ -1132,6 +1342,9 @@ class SceneMembersForm extends React.Component {
                 <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({ showDialog: true })}>
                     <IconAdd />
                 </IconButton>
+                <IconButton title={I18n.t('Add new categories')} onClick={() => this.setState({ showAddEnumsDialog: true })}>
+                    <IconAddBox />
+                </IconButton>
             </Toolbar>
             <div className={Utils.clsx(this.props.classes.testButtons, this.props.classes.width100)}>
                 {!this.state.selectedSceneChanged && this.state.virtualGroup ? <TextField
@@ -1177,7 +1390,7 @@ class SceneMembersForm extends React.Component {
                     title={I18n.t('Expand all')}
                     className={this.props.classes.btnExpandAll}
                     onClick={() => {
-                        const openedMembers = this.state.members.map(member => member.id);
+                        const openedMembers = this.state.members.map((member, i) => member.id || i);
                         window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
                         this.setState({ openedMembers });
                     }}
@@ -1193,7 +1406,7 @@ class SceneMembersForm extends React.Component {
                          style={this.getListStyle(snapshot.isDraggingOver)}
                     >
                         {this.state.members.map((member, i) =>
-                            <Draggable key={`${member.id}_${i}`} draggableId={`${member.id}_${i}`} index={i}>
+                            <Draggable key={`${member.id || ''}_${i}`} draggableId={`${member.id || ''}_${i}`} index={i}>
                                 {(provided, snapshot) =>
                                     <div
                                         ref={provided.innerRef}
@@ -1218,6 +1431,7 @@ class SceneMembersForm extends React.Component {
             result,
             this.renderDeleteDialog(),
             this.renderSelectIdDialog(),
+            this.renderSelectEnumsDialog(),
             this.renderSelectStateIdDialog(),
         ];
     }

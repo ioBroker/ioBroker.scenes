@@ -312,10 +312,8 @@ class SceneForm extends React.Component {
                         InputLabelProps={{ shrink: true }}
                         label={I18n.t('Scene name')}
                         value={this.state.common.name}
-
                         onFocus={() => this.saveCursorPosition('Name')}
                         onKeyDown={() => this.saveCursorPosition('Name')}
-
                         onChange={e => {
                             this.saveCursorPosition('Name');
                             const common = JSON.parse(JSON.stringify(this.state.common));
@@ -373,7 +371,7 @@ class SceneForm extends React.Component {
                                 onChange={e => {
                                     const native = JSON.parse(JSON.stringify(this.state.native));
                                     native.burstInterval = parseInt(e.target.value, 10);
-                                    this.setStateWithParent({native});
+                                    this.setStateWithParent({ native });
                                 }}
                             />
                         </Grid>
