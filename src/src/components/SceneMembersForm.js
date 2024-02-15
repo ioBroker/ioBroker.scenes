@@ -698,6 +698,8 @@ class SceneMembersForm extends React.Component {
             setValueTolerance = member.setIfFalseTolerance;
         }
 
+        const type = member.id ? this.state.objectTypes[member.id] : (member.enums.type || 'boolean');
+
         return <Box className={Utils.clsx(classes.p, this.state.onFalseEnabled ? (isTrue ? classes.pTrue : classes.pFalse) : '')}>
             {!this.state.easy || fromState ? <FormControlLabel
                 classes={{ root: classes.fromId }}
@@ -723,7 +725,7 @@ class SceneMembersForm extends React.Component {
                 />}
                 label={I18n.t('From ID')}
             /> : null}
-            {!fromState && this.state.objectTypes[member.id] === 'boolean' ?
+            {!fromState && type === 'boolean' ?
                 <FormControl className={classes.setValue} variant="standard">
                     <InputLabel>{labelSetValue}</InputLabel>
                     <Select
@@ -790,7 +792,7 @@ class SceneMembersForm extends React.Component {
                         }}
                         onChange={e => {
                             const members = JSON.parse(JSON.stringify(this.state.members));
-                            if (this.state.objectTypes[member.id] === 'number' && e.target.value !== '') {
+                            if (type === 'number' && e.target.value !== '') {
                                 if (isTrue) {
                                     members[index].setIfTrue = parseFloat(e.target.value.replace(',', '.'));
                                     if (isNaN(members[index].setIfTrue)) {
@@ -812,7 +814,7 @@ class SceneMembersForm extends React.Component {
                         }}
                     />}
 
-                    {!this.state.easy && this.state.objectTypes[member.id] !== 'boolean' ? <TextField
+                    {!this.state.easy && type !== 'boolean' ? <TextField
                         variant="standard"
                         InputLabelProps={{ shrink: true }}
                         label={`± ${labelTolerance}`}
@@ -1063,9 +1065,9 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        const varType = member.id ? this.state.objectTypes[member.id] : this.getEnumType(index);
+        const varType = member.id ? this.state.objectTypes[member.id] : (member.enums.type || 'boolean');
 
-        if (onFalseEnabled && setIfTrueVisible && setIfTrue === '' && (varType === 'number' || varType === 'boolean' || varType === 'mixed')) {
+        if (onFalseEnabled && setIfTrueVisible && setIfTrue === '' && (varType === 'number' || varType === 'boolean')) {
             setIfTrueVisible = false;
         }
 
@@ -1088,7 +1090,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        if (setIfFalseVisible && setIfFalse === '' && (varType === 'number' || varType === 'boolean' || varType === 'mixed')) {
+        if (setIfFalseVisible && setIfFalse === '' && (varType === 'number' || varType === 'boolean')) {
             setIfFalseVisible = false;
         }
 
@@ -1202,61 +1204,76 @@ class SceneMembersForm extends React.Component {
                         }}
                     />
                 </Box>
+                {member.id ? null : <Box className={classes.p}>
+                    <FormControl fullWidth variant="standard">
+                        <InputLabel>{I18n.t('Value type')}</InputLabel>
+                        <Select
+                            value={member.enums.type || 'boolean'}
+                            onChange={e => {
+                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                members[index].enums.type = e.target.value;
+                                this.setStateWithParent({ members });
+                            }}
+                        >
+                            <MenuItem value="boolean">{I18n.t('Boolean')}</MenuItem>
+                            <MenuItem value="number">{I18n.t('Number')}</MenuItem>
+                            <MenuItem value="string">{I18n.t('String')}</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>}
                 {!this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null}
                 {!this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}
-                {!this.state.easy ?
-                    <Box className={classes.p}>
-                        <Grid container spacing={4}>
-                            <Grid item xs={12} sm={4}>
-                                <TextField
-                                    variant="standard"
-                                    fullWidth
-                                    InputLabelProps={{ shrink: true }}
-                                    label={I18n.t('Delay (ms)')}
-                                    title={I18n.t(
-                                        'Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start',
-                                        this.props.intervalBetweenCommands,
-                                        this.props.intervalBetweenCommands * index + (member.delay || 0)
-                                    )}
-                                    helperText={stacked ? I18n.t('from previous state') : I18n.t('from start of scene')}
-                                    value={member.delay || 0}
-                                    min={0}
-                                    type="number"
+                {!this.state.easy ? <Box className={classes.p}>
+                    <Grid container spacing={4}>
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                variant="standard"
+                                fullWidth
+                                InputLabelProps={{ shrink: true }}
+                                label={I18n.t('Delay (ms)')}
+                                title={I18n.t(
+                                    'Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start',
+                                    this.props.intervalBetweenCommands,
+                                    this.props.intervalBetweenCommands * index + (member.delay || 0)
+                                )}
+                                helperText={stacked ? I18n.t('from previous state') : I18n.t('from start of scene')}
+                                value={member.delay || 0}
+                                min={0}
+                                type="number"
+                                onChange={e => {
+                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    members[index].delay = parseInt(e.target.value, 10);
+                                    this.setStateWithParent({ members });
+                                }}/>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            {!stacked ? <FormControlLabel
+                                label={I18n.t('Stack next delays')}
+                                control={<Checkbox
+                                    checked={!!member.stackNextDelays}
                                     onChange={e => {
                                         const members = JSON.parse(JSON.stringify(this.state.members));
-                                        members[index].delay = parseInt(e.target.value, 10);
+                                        members[index].stackNextDelays = e.target.checked;
                                         this.setStateWithParent({ members });
-                                    }}/>
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                {!stacked ? <FormControlLabel
-                                    label={I18n.t('Stack next delays')}
-                                    control={<Checkbox
-                                        checked={!!member.stackNextDelays}
-                                        onChange={e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].stackNextDelays = e.target.checked;
-                                            this.setStateWithParent({ members });
-                                        }}
-                                    />}
-                                /> : null}
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <FormControlLabel
-                                    label={I18n.t('Stop already started commands')}
-                                    control={<Checkbox
-                                        checked={member.stopAllDelays}
-                                        onChange={e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].stopAllDelays = e.target.checked;
-                                            this.setStateWithParent({ members });
-                                        }}
-                                    />}
-                                />
-                            </Grid>
+                                    }}
+                                />}
+                            /> : null}
                         </Grid>
-                    </Box> : null
-                }
+                        <Grid item xs={12} sm={4}>
+                            <FormControlLabel
+                                label={I18n.t('Stop already started commands')}
+                                control={<Checkbox
+                                    checked={member.stopAllDelays}
+                                    onChange={e => {
+                                        const members = JSON.parse(JSON.stringify(this.state.members));
+                                        members[index].stopAllDelays = e.target.checked;
+                                        this.setStateWithParent({ members });
+                                    }}
+                                />}
+                            />
+                        </Grid>
+                    </Grid>
+                </Box> : null}
                 {!this.state.easy ? <Box className={classes.p}>
                     <FormControlLabel
                         label={I18n.t('Do not overwrite state if it has the required value')}

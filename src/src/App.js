@@ -964,10 +964,6 @@ class App extends GenericApp {
         />;
     }
 
-    showError(text) {
-        super.showError(text);
-    }
-
     renderSceneMembers(oneColumn) {
         return <SceneMembersForm
             key={`selected${this.state.selectedSceneId}`}

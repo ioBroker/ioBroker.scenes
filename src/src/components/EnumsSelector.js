@@ -80,6 +80,7 @@ class EnumsSelector extends React.Component {
                 rooms: [],
                 others: [],
                 exclude: [],
+                type: 'boolean',
             },
             ids: [],
             objects: {},
