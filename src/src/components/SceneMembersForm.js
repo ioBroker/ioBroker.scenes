@@ -1205,7 +1205,7 @@ class SceneMembersForm extends React.Component {
                     />
                 </Box>
                 {member.id ? null : <Box className={classes.p}>
-                    <FormControl fullWidth variant="standard">
+                    <FormControl style={{ width: '50%' }} variant="standard">
                         <InputLabel>{I18n.t('Value type')}</InputLabel>
                         <Select
                             value={member.enums.type || 'boolean'}
@@ -1220,6 +1220,32 @@ class SceneMembersForm extends React.Component {
                             <MenuItem value="string">{I18n.t('String')}</MenuItem>
                         </Select>
                     </FormControl>
+                    <TextField
+                        variant="standard"
+                        style={{ width: 'calc(50% - 8px)', marginLeft: 8 }}
+                        InputLabelProps={{ shrink: true }}
+                        label={I18n.t('Delay between commands (ms)')}
+                        value={member.enums.delay || 0}
+                        type="number"
+                        InputProps={{
+                            endAdornment: member.enums.delay ? <IconButton
+                                size="small"
+                                className={classes.smallClearBtn}
+                                onClick={() => {
+                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    members[index].enums.delay = null;
+                                    this.setStateWithParent({ members });
+                                }}
+                            >
+                                <IconCancel />
+                            </IconButton> : undefined,
+                        }}
+                        onChange={e => {
+                            const members = JSON.parse(JSON.stringify(this.state.members));
+                            members[index].enums.delay = e.target.value;
+                            this.setStateWithParent({ members });
+                        }}
+                    />
                 </Box>}
                 {!this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null}
                 {!this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}

@@ -57,9 +57,13 @@
 
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const adapterName = require('./package.json').name.split('.').pop();
-
+const ChannelDetector = require('@iobroker/type-detector');
+const Types = ChannelDetector.Types;
 let schedule;
 let adapter;
+let enums;
+let hasEnums = false;
+
 function startAdapter(options) {
     options = options || {};
     Object.assign(options, {
@@ -116,7 +120,7 @@ function startAdapter(options) {
     });
 
     adapter.on('objectChange', (id, obj) => {
-        if (id.match(/^scene\./)) {
+        if (id.startsWith('scene.')) {
             if (scenes[id]) {
                 restartAdapter();
             } else if (obj) {
@@ -124,12 +128,15 @@ function startAdapter(options) {
                     restartAdapter();
                 }
             }
+        } else if (id.startsWith('enum.') && hasEnums) {
+            restartAdapter();
         }
     });
 
-    adapter.on('ready', () => {
-        main();
+    adapter.on('ready', async () => {
+        await main();
         adapter.subscribeForeignObjects('scene.*');
+        adapter.subscribeForeignObjects('enum.*');
     });
 
     adapter.on('message', async obj => {
@@ -289,7 +296,8 @@ function restartAdapter() {
     checkTimers  = {};
     cronTasks    = {};
 
-    main();
+    main()
+        .catch(e => adapter.log.error(`Cannot restart adapter: ${e}`));
 }
 
 let subscription  = null;
@@ -837,8 +845,189 @@ function initTrueFalse(sceneId, isTrue) {
     return usedIds;
 }
 
-function initScenes() {
+
+function getAllEnumIds(enumsSettings) {
+    const ids = [];
+
+    enumsSettings.rooms.forEach(roomId => {
+        const members = enums[roomId].common.members;
+        for (let r = 0; r < members.length; r++) {
+            if (!ids.includes(members[r])) {
+                ids.push(members[r]);
+            }
+        }
+    });
+
+    if (!enumsSettings.rooms.length) {
+        enumsSettings.funcs.forEach(funcId => {
+            const members = enums[funcId].common.members;
+            for (let r = 0; r < members.length; r++) {
+                if (!ids.includes(members[r])) {
+                    ids.push(members[r]);
+                }
+            }
+        });
+    } else if (enumsSettings.funcs.length) {
+        for (let i = ids.length - 1; i >= 0; i--) {
+            const id = ids[i];
+            // find this id in all functions
+            if (!enumsSettings.funcs.find(funcId => enums[funcId].common.members.includes(id))) {
+                ids.splice(i, 1);
+            }
+        }
+    }
+    enumsSettings.others.forEach(enumId => {
+        const members = enums[enumId].common.members;
+        for (let r = 0; r < members.length; r++) {
+            if (!ids.includes(members[r])) {
+                ids.push(members[r]);
+            }
+        }
+    });
+    for (let e = 0; e < enumsSettings.exclude.length; e++) {
+        const index = ids.indexOf(enumsSettings.exclude[e]);
+        if (index !== -1) {
+            ids.splice(index, 1);
+        }
+    }
+    return ids;
+}
+
+const NAMES = {
+    [Types.airCondition]: {boolean: 'POWER', number: 'SET'},
+    [Types.blind]: {number: 'SET'},
+    [Types.cie]: {string: 'CIE', boolean: 'ON'},
+    [Types.ct]: {number: 'TEMPERATURE', boolean: 'ON'},
+    [Types.dimmer]: {boolean: 'ON_SET', number: 'SET'},
+    [Types.gate]: {boolean: 'SET'},
+    [Types.hue]: {boolean: 'ON', number: 'DIMMER|BRIGHTNESS'},
+    [Types.slider]: {number: 'SET'},
+    [Types.light]: {boolean: 'SET'},
+//    [Types.lock]: {boolean: 'SET'}, // not supported yet
+    [Types.media]: {boolean: 'STATE'},
+    [Types.rgb]: {boolean: 'ON', number: 'DIMMER|BRIGHTNESS'},
+    [Types.rgbSingle]: {boolean: 'ON', string: 'RGB'},
+    [Types.rgbwSingle]: {boolean: 'ON', string: 'RGBW'},
+    [Types.socket]: {boolean: 'SET'},
+    [Types.vacuumCleaner]: {boolean: 'POWER'},
+    [Types.volume]: {boolean: 'SET'},
+    [Types.volumeGroup]: {boolean: 'SET'},
+}
+
+async function findControlState(obj, type) {
+    // read all states of the device
+    const objs = await adapter.getObjectViewAsync('system', 'state', {
+        startkey: `${obj._id}.\u0000`,
+        endkey: `${obj._id}.\u9999`,
+    });
+    const objects = {};
+    objs.rows.forEach(item => objects[item.id] = item.value);
+    objects[obj._id] = obj;
+    const keys = Object.keys(objects);
+
+    let found = false;
+    // if it is only one state with this type and writable, take it
+    for (let i = 0; i < keys.length; i++) {
+        const id = keys[i];
+        if (objects[id].type === 'state' && objects[id].common.type === type && objects[id].common.write !== false) {
+            if (!found) {
+                found = id;
+            } else {
+                // more than one state with this type
+                found = false;
+                break;
+            }
+        }
+    }
+    // try to use always the device detector
+    if (false && found) {
+        return found;
+    }
+
+    // else try to use type detector
+    const detector = new ChannelDetector.default();
+
+    // initialize iobroker type detector
+    const usedIds = [];
+    const ignoreIndicators = ['UNREACH_STICKY'];    // Ignore indicators by name
+    const excludedTypes = ['info'];
+    const options = {
+        objects,
+        _keysOptional: keys,
+        _usedIdsOptional: usedIds,
+        ignoreIndicators,
+        excludedTypes,
+    };
+    options.id = obj._id;
+    let controls = detector.detect(options);
+    if (controls && controls.length) {
+        // try to find in all controls
+        for (let c = 0; c < controls.length; c++) {
+            const control = controls[c];
+            if (NAMES[control.type] && NAMES[control.type][type]) {
+                const st = control.states.find(state => state.name === NAMES[control.type][type] && state.id);
+                if (st) {
+                    return st.id;
+                }
+            }
+        }
+    }
+    return null;
+}
+
+async function enum2scenes(sceneId, index) {
+    if (!hasEnums) {
+        hasEnums = true;
+        // read enums
+        const objs = await adapter.getObjectViewAsync('system', 'enum', {
+            startkey: 'enum.\u0000',
+            endkey: 'enum.\u9999',
+        });
+        enums = {};
+        objs.rows.forEach(item => enums[item.id] = item.value);
+    }
+    const patternMember = JSON.parse(JSON.stringify(scenes[sceneId].native.members[index]));
+    const enumsSettings = JSON.parse(JSON.stringify(patternMember.enums));
+    delete patternMember.enums;
+    // remove this member from a list
+    scenes[sceneId].native.members.splice(index, 1);
+
+    // collect all IDs in this enum
+    const ids = getAllEnumIds(enumsSettings);
+
+    // copy all settings from the first member
+    for (let i = 0; i < ids.length; i++) {
+        const newMember = JSON.parse(JSON.stringify(patternMember));
+        const obj = await adapter.getForeignObjectAsync(ids[i]);
+        if (!obj) {
+            continue;
+        }
+        if (obj.type !== 'state') {
+            if (obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder') {
+                // try to use types detector to find the control state
+                const controlId = await findControlState(obj, enumsSettings.type || 'boolean');
+                if (!controlId) {
+                    adapter.log.warn(`Cannot find control state of type "${enumsSettings.type || 'boolean'}" for "${obj.type}" ${ids[i]} in "${sceneId}"`);
+                    continue;
+                }
+                newMember.id = controlId;
+            } else {
+                adapter.log.warn(`Cannot find control state for ${ids[i]} as it is not device or channel`);
+            }
+        } else {
+            newMember.id = ids[i];
+        }
+        if (i) {
+            newMember.delay = enumsSettings.delay || 0;
+        }
+        // place this member on the place of index
+        scenes[sceneId].native.members.splice(index++, 0, newMember);
+    }
+}
+
+async function initScenes() {
     const countIds = [];
+    hasEnums = false;
 
     // list all scenes in Object
     for (const sceneId in scenes) {
@@ -915,63 +1104,76 @@ function initScenes() {
     }
 
     // If it is requested more than 20 ids, get all of them
-    if (countIds.length > 20) {
+    if (countIds.length > 200) {
         adapter.log.debug('initScenes: subscribe on all');
 
-        adapter.subscribeForeignStates();
+        await adapter.subscribeForeignStatesAsync();
     } else {
         // subscribe for own scenes
-        adapter.subscribeForeignStates('scene.*');
+        await adapter.subscribeForeignStatesAsync('scene.*');
         subscription = countIds;
         // and for all states
         for (let i = 0; i < countIds.length; i++) {
             adapter.log.debug(`initScenes: subscribe on ${countIds[i]}`);
-            adapter.subscribeForeignStates(countIds[i]);
+            await adapter.subscribeForeignStatesAsync(countIds[i]);
         }
     }
 }
 
-function main() {
+async function main() {
     // Read all scenes
-    adapter.getForeignObjects('scene.*', 'state', (err, states) => {
-        if (states) {
-            for (const id in states) {
-                // ignore if no states involved
-                if (!states.hasOwnProperty(id) || !states[id].native || !states[id].native.members || !states[id].native.members.length) {
-                    continue;
-                }
-                // ignore if scene is disabled
-                if (!states[id].common.enabled) {
-                    continue;
-                }
-                // ignore if another instance
-                if (states[id].common.engine !== `system.adapter.${adapter.namespace}`) {
-                    continue;
-                }
-
-                scenes[id] = states[id];
-                scenes[id].native = scenes[id].native || {};
-
-                // rename attribute
-                if (scenes[id].native.burstIntervall !== undefined) {
-                    scenes[id].native.burstInterval = scenes[id].native.burstIntervall;
-                    delete scenes[id].native.burstIntervall;
-                }
-
-                // Remove all disabled scenes
-                for (let m = states[id].native.members.length - 1; m >= 0; m--) {
-                    if (!scenes[id].native.members[m] || states[id].native.members[m].disabled) {
-                        scenes[id].native.members.splice(m, 1);
-                        continue;
-                    }
-
-                    // Reset actual state
-                    scenes[id].native.members[m].actual = null;
-                }
+    const states = await adapter.getForeignObjectsAsync('scene.*', 'state');
+    if (states) {
+        for (const id in states) {
+            // ignore if no states involved
+            if (!states.hasOwnProperty(id) || !states[id].native || !states[id].native.members || !states[id].native.members.length) {
+                continue;
             }
+            // ignore if a scene is disabled
+            if (!states[id].common.enabled) {
+                continue;
+            }
+            // ignore if another instance
+            if (states[id].common.engine !== `system.adapter.${adapter.namespace}`) {
+                continue;
+            }
+
+            scenes[id] = states[id];
+            scenes[id].native = scenes[id].native || {};
+
+            // rename attribute
+            if (scenes[id].native.burstIntervall !== undefined) {
+                scenes[id].native.burstInterval = scenes[id].native.burstIntervall;
+                delete scenes[id].native.burstIntervall;
+            }
+
+            // Remove all disabled scenes
+            for (let m = states[id].native.members.length - 1; m >= 0; m--) {
+                if (!scenes[id].native.members[m] || states[id].native.members[m].disabled) {
+                    scenes[id].native.members.splice(m, 1);
+                    continue;
+                }
+
+                // Reset actual state
+                scenes[id].native.members[m].actual = null;
+            }
+
+            if (!states[id].native.members.length) {
+                delete scenes[id];
+            }
+
+            // extend all enums to simple scenes
+            let i;
+            do {
+                i = scenes[id].native.members.findIndex(member => member.enums);
+                if (i !== -1) {
+                    await enum2scenes(id, i);
+                }
+            } while (i !== -1);
         }
-        initScenes();
-    });
+    }
+
+    await initScenes();
 }
 
 // If started as allInOne mode => return function to create instance
