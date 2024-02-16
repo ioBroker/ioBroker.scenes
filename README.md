@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 3.0.0 (2024-02-16)
 * (bluefox) Cleared cron tasks by re-init
 * (bluefox) CRON Editor dialog added
 * (bluefox) Implemented scene enabling/disabling via messages
