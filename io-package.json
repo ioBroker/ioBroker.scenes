@@ -3,19 +3,6 @@
     "name": "scenes",
     "version": "3.0.0",
     "news": {
-      "3.0.0": {
-        "en": "Cleared cron tasks by re-init\nCRON Editor dialog added\nImplemented scene enabling/disabling via messages\nImplemented the writing of the scene states with ack=true\nAdded description to the scene states\nAdded possibility to use categories/enumerations",
-        "de": "Gelöschte Cron-Aufgaben durch Wiederinit\nCRON Editor Dialog hinzugefügt\nErgänzte Szene, die über Nachrichten ermöglicht/abschaltet\nErgänzt das Schreiben der Szenezustände mit ack=true\nBeschreibung der Szenenzustände hinzugefügt\nMöglichkeit zur Verwendung von Kategorien / Aufzählungen",
-        "ru": "Очищенные задачи корона путем повторного ввода\nCRON Диалог редактора\nРеализованная сцена, позволяющая/разображающая через сообщения\nВыполнено написание состояния сцены с ack=true\nДобавить описание в состояние сцены\nДобавлена возможность использования категорий/потреблений",
-        "pt": "Limpar tarefas cron por reinit\nCRONOL Editor diálogo adicionado\nHabilitação/desativação de cena implementada através de mensagens\nImplementado a escrita da cena estados com ack=true\nDescrição adicionada aos estados de cena\nAdicionado possibilidade de usar categorias/enumerations",
-        "nl": "Cron-taken gewist door re-init\nCRON Editor-dialoog toegevoegd\nGeïmplementeerde scène inschakelen/uitschakelen via berichten\nImplementeerde het schrijven van de scène toestanden met ack=true\nToegevoegd beschrijving aan de scène toestanden\nToegevoegde mogelijkheid om categorieën/nummers te gebruiken",
-        "fr": "Effacer les tâches de cron par ré-init\nCRON Boîte de dialogue de l'éditeur ajoutée\nScène implémentée permettant/désactivant par messages\nImplémenté l'écriture des états de la scène avec ack=true\nAjout de la description aux états de la scène\nPossibilité supplémentaire d'utiliser des catégories/énumérations",
-        "it": "Attività di cron cancellate da re-init\nCRON finestra di dialogo Editor aggiunto\nScena implementata che consente/disattiva tramite messaggi\nImplementato la scrittura della scena afferma con ack=true\nDescrizione aggiunta alla scena stati\nAggiunta possibilità di utilizzare categorie/enumerazioni",
-        "es": "Funciones de cron limpias por reinicio\nCRON Cuadro de diálogo añadido\nCreación de escenas habilitantes/discapacitados mediante mensajes\nImplementó la escritura de los estados de escena con ack=true\nDescripción adicional a los estados de escena\nMayor posibilidad de utilizar categorías/enumeración",
-        "pl": "Oczyszczone zadania cron przez re- init\nCRON Okno edytora\nWdrożona scena umożliwiająca / wyłączająca poprzez wiadomości\nWdrożenie zapisu stanów sceny z ack = true\nDodano opis do stanu sceny\nDodano możliwość użycia kategorii / wyliczeń",
-        "uk": "Очищені коронні завдання за допомогою повторного\nКронштейн Додано діалогове вікно редактора\nРеалізована сцена дозволяє / відключення через повідомлення\nРеалізовано написання сценових станів з ack=true\nДодано опис до стану сцени\nДодана можливість використання категорій / винагород",
-        "zh-cn": "通过重新点印清除 cron 任务\n连 添加编辑器对话框\n通过信息实现场景启用/失效\n执行场景状态的写法\n添加到场景状态的描述\n添加使用类别/编号的可能性"
-      },
       "2.4.2": {
         "en": "Preserved empty folders by renaming and moving of scenes",
         "de": "Leere Ordner durch Umbenennung und Bewegung von Szenen erhalten",
