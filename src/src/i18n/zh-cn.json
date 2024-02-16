@@ -130,5 +130,22 @@
   "Copied": "已复制",
   "Some of the scenes already exists": "有些场景已经存在",
   "Change names": "更改名称",
-  "Overwrite existing": "覆盖现有的"
+  "Overwrite existing": "覆盖现有的",
+  "Add new categories": "添加新类别",
+  "Description": "描述",
+  "Value type": "值类型",
+  "Boolean": "布尔值 (boolean)",
+  "Number": "数量 (number)",
+  "String": "字符串 (string)",
+  "Delay between commands (ms)": "命令之间的延迟（毫秒）",
+  "Overlap of rooms and functions": "房间和功能重叠",
+  "Add": "添加",
+  "Rooms": "客房",
+  "Functions": "功能",
+  "Other": "其他",
+  "Name: %s": "姓名：%s",
+  "Exclude": "排除",
+  "Include": "包括",
+  "uncertain": "不确定",
+  "Combined state of all states in category": "类别中所有州的综合价值"
 }

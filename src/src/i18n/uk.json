@@ -130,5 +130,22 @@
   "Copied": "Скопійовано",
   "Some of the scenes already exists": "Деякі сцени вже існують",
   "Change names": "Змінити імена",
-  "Overwrite existing": "Перезаписати наявне"
+  "Overwrite existing": "Перезаписати наявне",
+  "Add new categories": "Додайте нові категорії",
+  "Description": "опис",
+  "Value type": "Тип значення",
+  "Boolean": "Boolean (boolean)",
+  "Number": "Число (number)",
+  "String": "Рядок (string)",
+  "Delay between commands (ms)": "Затримка між командами (мс)",
+  "Overlap of rooms and functions": "Перекриття кімнат і функцій",
+  "Add": "додати",
+  "Rooms": "Кімнати",
+  "Functions": "Функції",
+  "Other": "Інший",
+  "Name: %s": "Ім'я: %s",
+  "Exclude": "Виключити",
+  "Include": "Включати",
+  "uncertain": "невизначений",
+  "Combined state of all states in category": "Загальне значення всіх станів у категорії"
 }

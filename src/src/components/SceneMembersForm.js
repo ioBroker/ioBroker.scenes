@@ -44,6 +44,7 @@ import {
     AddBox as IconAddBox,
 } from '@mui/icons-material';
 
+
 import EnumsSelector from './EnumsSelector';
 
 const TRUE_COLOR       = '#90ee90';
@@ -291,6 +292,8 @@ class SceneMembersForm extends React.Component {
 
         this.engineId = this.state.engineId;
 
+        this.cacheEnumsState = [];
+
         this.onDragEnd = this.onDragEnd.bind(this);
     }
 
@@ -319,8 +322,14 @@ class SceneMembersForm extends React.Component {
         this.props.socket.unsubscribeState(this.props.sceneId, this.memberStateChange);
         this.state.engineId && this.props.socket.unsubscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
 
-        this.state.members.forEach(member =>
-            this.props.socket.unsubscribeState(member.id, this.memberStateChange));
+        this.state.members.forEach((member, i) => {
+            if (member.id) {
+                this.props.socket.unsubscribeState(member.id, this.memberStateChange);
+            } else if (member.enums) {
+                this.cacheEnumsState[i] && this.cacheEnumsState[i].realIds && this.cacheEnumsState[i].realIds.forEach(id =>
+                    this.props.socket.unsubscribeState(id, this.memberStateChange));
+            }
+        });
     }
 
     static getDerivedStateFromProps(props, state) {
@@ -394,8 +403,12 @@ class SceneMembersForm extends React.Component {
     }
 
     memberStateChange = (id, state) => {
+        const val = state ? state.val : null;
+        if (this.state.states[id] === val && (this.state.objectTypes[id] || val === null || val === undefined)) {
+            return;
+        }
         const states = JSON.parse(JSON.stringify(this.state.states));
-        states[id] = state ? state.val : null;
+        states[id] = val;
         const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
 
         if (!objectTypes[id] && states[id] !== null && states[id] !== undefined) {
@@ -919,10 +932,12 @@ class SceneMembersForm extends React.Component {
                 ids.splice(index, 1);
             }
         }
+        ids.sort();
         return ids;
     }
 
-    getTitleForEnums(enumsSettings) {
+    getTitleForEnums(index) {
+        const enumsSettings = this.state.members[index].enums;
         let title = '';
         if (enumsSettings.rooms?.length) {
             title += enumsSettings.rooms.map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id])).join(', ');
@@ -940,50 +955,98 @@ class SceneMembersForm extends React.Component {
             title += ` - ${enumsSettings.exclude.length} ${I18n.t('state(s)')}`;
         }
 
-        title += ` [${SceneMembersForm.getAllEnumIds(enumsSettings).length}]`;
+        if (this.cacheEnumsState[index]) {
+            if (this.cacheEnumsState[index] === true) {
+                title += ` ... - ${enumsSettings.type || 'boolean'}`;
+            } else {
+                title += ` [${this.cacheEnumsState[index].realIds.length}] - ${enumsSettings.type || 'boolean'}`;
+            }
+        }
 
         return <span className={this.props.classes.enumTitle}>{title}✎</span>;
     }
 
-    getEnumType(index) {
-        const ids = SceneMembersForm.getAllEnumIds(this.state.members[index].enums);
-        if (ids.length === 0) {
-            return 'boolean';
-        }
-        let type = '';
-        this.toRead = this.toRead || [];
-        for (let i = 0; i < ids.length; i++) {
-            if (this.state.objectTypes[ids[i]] === undefined) {
-                !this.toRead.includes(ids[i]) && this.toRead.push(ids[i]);
-            } else if (!type && this.state.objectTypes[ids[i]]) {
-                type = this.state.objectTypes[ids[i]];
-            } else if (this.state.objectTypes[ids[i]] && type !== this.state.objectTypes[ids[i]]) {
-                type = 'mixed';
+    getEnumsState(index) {
+        const enumsSettings = this.state.members[index].enums;
+        const ids = SceneMembersForm.getAllEnumIds(enumsSettings);
+        let realIds = [];
+        if (!this.cacheEnumsState[index] || this.cacheEnumsState[index].ids !== JSON.stringify(ids) || this.cacheEnumsState[index].type !== enumsSettings.type) {
+            if (this.cacheEnumsState[index] === true) {
+                return;
             }
-        }
-
-        if (this.toRead.length) {
-            this.readObjectsTimeout && clearTimeout(this.readObjectsTimeout);
-            this.readObjectsTimeout = setTimeout(async () => {
-                this.readObjectsTimeout = null;
-                const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
-
-                for (let i = 0; i < this.toRead.length; i++) {
-                    if (!objectTypes[this.toRead[i]]) {
-                        const obj = await this.props.socket.getObject(this.toRead[i]);
-                        if (obj?.common?.type) {
-                            objectTypes[this.toRead[i]] = obj.common.type;
+            this.cacheEnumsState[index] = true;
+            setTimeout(async () => {
+                for (let i = 0; i < ids.length; i++) {
+                    const obj = await this.props.socket.getObject(ids[i]);
+                    if (!obj) {
+                        continue;
+                    }
+                    if (obj.type !== 'state') {
+                        if (obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder') {
+                            // try to use types detector to find the control state
+                            const controlId = await EnumsSelector.findControlState(obj, enumsSettings.type || 'boolean', this.props.socket);
+                            if (!controlId) {
+                                console.warn(`Cannot find control state of type "${enumsSettings.type || 'boolean'}" for "${obj.type}" ${ids[i]}`);
+                                continue;
+                            }
+                            realIds.includes(controlId) || realIds.push(controlId);
                         } else {
-                            objectTypes[this.toRead[i]] = null;
+                            console.warn(`Cannot find control state for ${ids[i]} as it is not device or channel`);
                         }
+                    } else {
+                        realIds.includes(ids[i]) || realIds.push(ids[i]);
                     }
                 }
-                this.toRead = null;
-                this.setState({ objectTypes });
-            }, 300);
+
+                // const states = JSON.parse(JSON.stringify(this.state.states));
+                if (this.cacheEnumsState[index] !== true) {
+                    const oldIds = JSON.parse(this.cacheEnumsState[index].ids);
+                    // unsubscribe unused IDs
+                    for (let i = 0; i < oldIds.length; i++) {
+                        if (!realIds.includes(oldIds[i])) {
+                            await this.props.socket.unsubscribeState(oldIds[i], this.memberStateChange);
+                        }
+                    }
+                    // subscribe on new IDs
+                    for (let i = 0; i < realIds.length; i++) {
+                        if (!oldIds.includes(realIds[i])) {
+                            // states[realIds[i]] = await this.props.socket.getState(realIds[i]);
+                            await this.props.socket.subscribeState(realIds[i], this.memberStateChange);
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < realIds.length; i++) {
+                        // states[realIds[i]] = await this.props.socket.getState(realIds[i]);
+                        await this.props.socket.subscribeState(realIds[i], this.memberStateChange);
+                    }
+                }
+                this.cacheEnumsState[index] = { ids: JSON.stringify(ids), realIds, type: enumsSettings.type };
+                this.forceUpdate();
+            }, 200);
+        } else {
+            realIds = this.cacheEnumsState[index].realIds;
         }
 
-        return type;
+        if (realIds.length === 0) {
+            return null;
+        }
+        if (!enumsSettings.type || enumsSettings.type === 'boolean' || enumsSettings.type === 'string') {
+            let val = this.state.states[realIds[0]];
+            for (let i = 1; i < realIds.length; i++) {
+                if (this.state.states[realIds[i]] !== val) {
+                    return 'uncertain';
+                }
+            }
+            return val;
+        } else {
+            let val = this.state.states[realIds[0]];
+            for (let i = 1; i < realIds.length; i++) {
+                if (this.state.states[realIds[i]] !== val) {
+                    return 'uncertain';
+                }
+            }
+            return val;
+        }
     }
 
     renderMember = (member, index) => {
@@ -1035,11 +1098,20 @@ class SceneMembersForm extends React.Component {
                 </div>;
             }
         } else if (member.enums) {
+            let _valStr = this.getEnumsState(index);
+            if (_valStr === true) {
+                _valStr = 'TRUE';
+            } else if (_valStr === false) {
+                _valStr = 'FALSE';
+            }else if (_valStr === 'uncertain') {
+                _valStr = I18n.t('uncertain');
+            }
+
             value = <div
-                title={I18n.t('Enum states')}
+                title={I18n.t('Combined state of all states in category')}
                 className={classes.memberTrueFalse}
             >
-                {I18n.t('ENUM')}
+                {_valStr}
             </div>;
         }
 
@@ -1111,7 +1183,7 @@ class SceneMembersForm extends React.Component {
 
         delay += member.delay || 0;
 
-        const title = member.id || this.getTitleForEnums(member.enums);
+        const title = member.id || this.getTitleForEnums(index);
 
         return <Paper key={`${member.id || ''}_${index}`} className={Utils.clsx(classes.memberCard, member.disabled && classes.disabled)}>
             <div className={classes.memberToolbar}>

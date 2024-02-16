@@ -6,13 +6,13 @@ import {
     Checkbox, CircularProgress,
     Dialog, DialogActions,
     DialogContent,
-    DialogTitle,
-    Grid, IconButton,
+    DialogTitle, FormControl,
+    Grid, IconButton, InputLabel,
     List,
     ListItem,
     ListItemButton,
     ListItemIcon, ListItemText,
-    ListSubheader, Tooltip
+    ListSubheader, MenuItem, Select, Tooltip
 } from '@mui/material';
 
 import {
@@ -33,6 +33,28 @@ import {
     IconState,
     Utils,
 } from '@iobroker/adapter-react-v5';
+import ChannelDetector, { Types } from '@iobroker/type-detector';
+
+const NAMES = {
+    [Types.airCondition]: { boolean: 'POWER', number: 'SET' },
+    [Types.blind]: { number: 'SET' },
+    [Types.cie]: { string: 'CIE', boolean: 'ON' },
+    [Types.ct]: { number: 'TEMPERATURE', boolean: 'ON' },
+    [Types.dimmer]: { boolean: 'ON_SET', number: 'SET' },
+    [Types.gate]: { boolean: 'SET' },
+    [Types.hue]: { boolean: 'ON', number: 'DIMMER|BRIGHTNESS' },
+    [Types.slider]: { number: 'SET' },
+    [Types.light]: { boolean: 'SET' },
+//    [Types.lock]: { boolean: 'SET' }, // not supported yet
+    [Types.media]: { boolean: 'STATE' },
+    [Types.rgb]: { boolean: 'ON', number: 'DIMMER|BRIGHTNESS' },
+    [Types.rgbSingle]: { boolean: 'ON', string: 'RGB' },
+    [Types.rgbwSingle]: { boolean: 'ON', string: 'RGBW' },
+    [Types.socket]: { boolean: 'SET' },
+    [Types.vacuumCleaner]: { boolean: 'POWER' },
+    [Types.volume]: { boolean: 'SET' },
+    [Types.volumeGroup]: { boolean: 'SET' },
+};
 
 const styles = theme => ({
     dialogPaper: {
@@ -140,17 +162,29 @@ class EnumsSelector extends React.Component {
         });
 
         for (let i = ids.length - 1; i >= 0; i--) {
-            if (!objects[ids[i]]) {
-                const obj = await this.props.socket.getObject(ids[i]);
-                if (obj) {
-                    delete obj.native;
-                    objects[ids[i]] = obj;
+            const obj = objects[ids[i]] || (await this.props.socket.getObject(ids[i]));
+            if (obj) {
+                delete obj.native;
+                delete obj.realId;
+                if (obj.type !== 'state') {
+                    if (obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder') {
+                        // try to use types detector to find the control state
+                        const controlId = await EnumsSelector.findControlState(obj, this.state.value.type || 'boolean', this.props.socket);
+                        if (!controlId) {
+                            ids.splice(i, 1);
+                        } else {
+                            obj.realId = controlId;
+                            objects[ids[i]] = obj;
+                        }
+                    } else {
+                        ids.splice(i, 1);
+                    }
                 } else {
-                    objects[ids[i]] = {
-                        _id: ids[i],
-                        common: {},
-                    };
+                    obj.realId = ids[i];
+                    objects[ids[i]] = obj;
                 }
+            } else {
+                ids.splice(i, 1);
             }
         }
 
@@ -193,11 +227,52 @@ class EnumsSelector extends React.Component {
             window.alert(`Cannot get icons: ${e}`);
         }
 
+
         this.setState({ ids, icons, objects });
     }
 
     static getName(name, lang) {
         return (name && typeof name === 'object') ? (name[lang] || name.en || '') : (name || '');
+    }
+
+    static async findControlState(obj, type, socket) {
+        // read all states of the device
+        const objects = await socket.getObjectViewSystem('state', `${obj._id}.\u0000`, `${obj._id}.\u9999`);
+        objects[obj._id] = obj;
+        const keys = Object.keys(objects);
+
+        // else try to use type detector
+        const detector = new ChannelDetector();
+
+        // initialize iobroker type detector
+        const usedIds = [];
+        const ignoreIndicators = ['UNREACH_STICKY'];    // Ignore indicators by name
+        const excludedTypes = ['info'];
+        const options = {
+            objects,
+            _keysOptional: keys,
+            _usedIdsOptional: usedIds,
+            ignoreIndicators,
+            excludedTypes,
+        };
+        options.id = obj._id;
+        let controls = detector.detect(options);
+        if (controls && controls.length) {
+            // try to find in all controls
+            for (let c = 0; c < controls.length; c++) {
+                const control = controls[c];
+                if (NAMES[control.type] && NAMES[control.type][type]) {
+                    const names = NAMES[control.type][type].split('|');
+                    for (let t = 0; t < names.length; t++) {
+                        const st = control.states.find(state => state.name === names[t] && state.id);
+                        if (st) {
+                            return st.id;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     renderDevice(id) {
@@ -227,7 +302,7 @@ class EnumsSelector extends React.Component {
             }
             <div>
                 {name || member._id}
-                {name ? <div className={this.props.classes.secondLine}>{member._id}</div> : null}
+                {name || member.realId !== member._id ? <div className={this.props.classes.secondLine}>{member.realId || member._id}</div> : null}
             </div>
             <IconButton
                 size="small"
@@ -260,7 +335,24 @@ class EnumsSelector extends React.Component {
             classes={{ paper: this.props.classes.dialogPaper }}
             onClose={() => this.setState({ showAddEnumsDialog: false })}
         >
-            <DialogTitle>{I18n.t('Select for ')}</DialogTitle>
+            <DialogTitle style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                {I18n.t('Select for')}
+                <FormControl style={{ width: 150 }} variant="standard">
+                    <InputLabel>{I18n.t('Value type')}</InputLabel>
+                    <Select
+                        value={this.state.value.type || 'boolean'}
+                        onChange={e => {
+                            const value = JSON.parse(JSON.stringify(this.state.value));
+                            value.type = e.target.value;
+                            this.setState({ value }, () => this.updateAllIds());
+                        }}
+                    >
+                        <MenuItem value="boolean">{I18n.t('Boolean')}</MenuItem>
+                        <MenuItem value="number">{I18n.t('Number')}</MenuItem>
+                        <MenuItem value="string">{I18n.t('String')}</MenuItem>
+                    </Select>
+                </FormControl>
+            </DialogTitle>
             <DialogContent>
                 <div>
                     <div style={{ width: this.state.others.length ? '66.6%' : '100%', height: 38, textAlign: 'center' }}>
@@ -357,7 +449,7 @@ class EnumsSelector extends React.Component {
                                 disablePadding
                             >
                                 <ListItemButton
-                                    onClick={e => {
+                                    onClick={() => {
                                         const value = JSON.parse(JSON.stringify(this.state.value));
                                         const pos = value.others.indexOf(id);
                                         if (pos !== -1) {

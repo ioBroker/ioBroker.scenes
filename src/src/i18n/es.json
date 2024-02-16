@@ -130,5 +130,22 @@
   "Copied": "Copiado",
   "Some of the scenes already exists": "Algunas de las escenas ya existen.",
   "Change names": "Cambiar nombres",
-  "Overwrite existing": "Sobrescribir existentes"
+  "Overwrite existing": "Sobrescribir existentes",
+  "Add new categories": "Agregar nuevas categorías",
+  "Description": "Descripción",
+  "Value type": "Tipo de valor",
+  "Boolean": "Booleano (boolean)",
+  "Number": "Número (number)",
+  "String": "Cadena (string)",
+  "Delay between commands (ms)": "Retraso entre comandos (ms)",
+  "Overlap of rooms and functions": "Superposición de habitaciones y funciones.",
+  "Add": "Agregar",
+  "Rooms": "Habitaciones",
+  "Functions": "Funciones",
+  "Other": "Otro",
+  "Name: %s": "Nombre: %s",
+  "Exclude": "Excluir",
+  "Include": "Incluir",
+  "uncertain": "incierto",
+  "Combined state of all states in category": "Valor combinado de todos los estados en la categoría"
 }

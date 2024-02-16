@@ -912,7 +912,7 @@ const NAMES = {
     [Types.vacuumCleaner]: {boolean: 'POWER'},
     [Types.volume]: {boolean: 'SET'},
     [Types.volumeGroup]: {boolean: 'SET'},
-}
+};
 
 async function findControlState(obj, type) {
     // read all states of the device
@@ -965,9 +965,12 @@ async function findControlState(obj, type) {
         for (let c = 0; c < controls.length; c++) {
             const control = controls[c];
             if (NAMES[control.type] && NAMES[control.type][type]) {
-                const st = control.states.find(state => state.name === NAMES[control.type][type] && state.id);
-                if (st) {
-                    return st.id;
+                const names = NAMES[control.type][type].split('|');
+                for (let t = 0; t < names.length; t++) {
+                    const st = control.states.find(state => state.name === names[t] && state.id);
+                    if (st) {
+                        return st.id;
+                    }
                 }
             }
         }

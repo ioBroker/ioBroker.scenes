@@ -158,6 +158,7 @@ sendTo(
 * (bluefox) Implemented scene enabling/disabling via messages
 * (bluefox) Implemented the writing of the scene states with ack=true
 * (bluefox) Added description to the scene states
+* (bluefox) Added possibility to use categories/enumerations
 
 ### 2.4.2 (2024-02-12)
 * (bluefox) Preserved empty folders by renaming and moving of scenes
@@ -171,7 +172,7 @@ sendTo(
 * (bluefox) Updated releaser
 
 ### 2.3.8 (2021-08-31)
-* (Apollon77) Handle a case where states are not set but used as value (Sentry IOBROKER-SCENES-13)
+* (Apollon77) Handles a case where states are not set but used as value (Sentry IOBROKER-SCENES-13)
 * (TyrionWarMage) Added the aggregation mode for the virtual groups.
 * (bluefox) Sentry data will not be sent in front-end if the diagnostic or sentry is disabled
 

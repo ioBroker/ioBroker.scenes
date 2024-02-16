@@ -130,5 +130,22 @@
   "Copied": "Скопировано",
   "Some of the scenes already exists": "Некоторые сцены уже существуют",
   "Change names": "Изменить имена",
-  "Overwrite existing": "Перезаписать существующий"
+  "Overwrite existing": "Перезаписать существующий",
+  "Add new categories": "Добавить новые категории",
+  "Description": "Описание",
+  "Value type": "Тип значения",
+  "Boolean": "Логическое значение (boolean)",
+  "Number": "Число (number)",
+  "String": "Строка (string)",
+  "Delay between commands (ms)": "Задержка между командами (мс)",
+  "Overlap of rooms and functions": "Перекрытие помещений и функций",
+  "Add": "Добавить",
+  "Rooms": "Номера",
+  "Functions": "Функции",
+  "Other": "Другой",
+  "Name: %s": "Имя: %s",
+  "Exclude": "Исключать",
+  "Include": "Включить",
+  "uncertain": "неопределенный",
+  "Combined state of all states in category": "Комбинированное значение всех состояний в категории"
 }

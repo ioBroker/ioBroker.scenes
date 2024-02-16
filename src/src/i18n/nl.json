@@ -130,5 +130,22 @@
   "Copied": "Gekopieerd",
   "Some of the scenes already exists": "Sommige scènes bestaan al",
   "Change names": "Verander namen",
-  "Overwrite existing": "Overschrijf bestaande"
+  "Overwrite existing": "Overschrijf bestaande",
+  "Add new categories": "Voeg nieuwe categorieën toe",
+  "Description": "Beschrijving",
+  "Value type": "Waarde type",
+  "Boolean": "Booleaans (boolean)",
+  "Number": "Nummer (number)",
+  "String": "Tekenreeks (string)",
+  "Delay between commands (ms)": "Vertraging tussen opdrachten (ms)",
+  "Overlap of rooms and functions": "Overlap van kamers en functies",
+  "Add": "Toevoegen",
+  "Rooms": "Kamers",
+  "Functions": "Functies",
+  "Other": "Ander",
+  "Name: %s": "Naam: %s",
+  "Exclude": "Uitsluiten",
+  "Include": "Erbij betrekken",
+  "uncertain": "onzeker",
+  "Combined state of all states in category": "Gecombineerde waarde van alle staten in categorie"
 }
