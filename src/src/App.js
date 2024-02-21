@@ -1092,11 +1092,9 @@ class App extends GenericApp {
                 </div>
                 {this.renderSceneBottomToolbar()}
             </div>
-            <div>
-                <div className={Utils.clsx(this.props.classes.heightMinusMargin)}>
-                    <div className={Utils.clsx(this.props.classes.membersCell, this.props.classes.height)}>
-                        {this.renderSceneMembers()}
-                    </div>
+            <div className={Utils.clsx(this.props.classes.heightMinusMargin)}>
+                <div className={Utils.clsx(this.props.classes.membersCell, this.props.classes.height)}>
+                    {this.renderSceneMembers()}
                 </div>
             </div>
         </ReactSplit> : null;

@@ -97,7 +97,7 @@ Delays can be used in the **group** too, but the states with delay are not parti
 You can create a virtual group to control all shutters in living room. 
 By writing 40% into a virtual group all shutters will be set to 40%.
 
-Additionally, you can define the behaviour for which value should be taken for the group if not all states of the group have the same value.
+Additionally, you can define the behavior for which value should be taken for the group if not all states of the group have the same value.
 
 You can provide following aggregations (available only in advanced mode):
 - `uncertain` - (default) - the value of the group will have text `uncertain`.
@@ -191,13 +191,13 @@ sendTo(
 * (bluefox) Possibility to use set point from another state
 
 ### 2.3.1 (2020-11-06)
-* (Apollon77) Prevent crash case (Sentry IOBROKER-SCENES-M)
+* (Apollon77) Prevent a crash case (Sentry IOBROKER-SCENES-M)
 
 ### 2.3.0 (2020-11-02)
 * (bluefox) Fixed GUI errors
 
 ### 2.1.7 (2020-10-30)
-* (Apollon77) Prevent crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)
+* (Apollon77) Prevent a crash case (Sentry IOBROKER-SCENES-E, IOBROKER-SCENES-G, IOBROKER-SCENES-A)
 
 ### 2.1.6 (2020-09-25)
 * (bluefox) Updated the select ID dialog.
