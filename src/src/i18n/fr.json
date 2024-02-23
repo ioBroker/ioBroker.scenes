@@ -147,5 +147,8 @@
   "Exclude": "Exclure",
   "Include": "Inclure",
   "uncertain": "incertain",
-  "Combined state of all states in category": "Valeur combinée de tous les états de la catégorie"
+  "Combined state of all states in category": "Valeur combinée de tous les états de la catégorie",
+  "Cannot save scene state": "Impossible de sauvegarder l'état de la scène",
+  "Scene state saved": "État de la scène enregistré",
+  "Scene state saved partially. Check log for details": "État de la scène enregistré partiellement. Consultez le journal pour plus de détails"
 }

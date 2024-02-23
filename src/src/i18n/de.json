@@ -146,6 +146,9 @@
   "Name: %s": "Name: %s",
   "Exclude": "Ausschließen",
   "Include": "Enthalten",
-  "uncertain": "unsicher",
-  "Combined state of all states in category": "Kombinierter Wert aller Zustände in der Kategorie"
+  "uncertain": "unbestimmt",
+  "Combined state of all states in category": "Kombinierter Wert aller Zustände in der Kategorie",
+  "Cannot save scene state": "Szenenstatus kann nicht gespeichert werden",
+  "Scene state saved": "Szenenstatus gespeichert",
+  "Scene state saved partially. Check log for details": "Szenenstatus teilweise gespeichert. Weitere Informationen finden Sie im Protokoll"
 }

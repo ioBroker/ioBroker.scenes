@@ -147,5 +147,8 @@
   "Exclude": "排除",
   "Include": "包括",
   "uncertain": "不确定",
-  "Combined state of all states in category": "类别中所有州的综合价值"
+  "Combined state of all states in category": "类别中所有州的综合价值",
+  "Cannot save scene state": "无法保存场景状态",
+  "Scene state saved": "场景状态已保存",
+  "Scene state saved partially. Check log for details": "场景状态已部分保存。检查日志以获取详细信息"
 }

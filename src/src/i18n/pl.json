@@ -147,5 +147,8 @@
   "Exclude": "Wykluczać",
   "Include": "Włączać",
   "uncertain": "niepewny",
-  "Combined state of all states in category": "Łączna wartość wszystkich stanów w kategorii"
+  "Combined state of all states in category": "Łączna wartość wszystkich stanów w kategorii",
+  "Cannot save scene state": "Nie można zapisać stanu sceny",
+  "Scene state saved": "Stan sceny został zapisany",
+  "Scene state saved partially. Check log for details": "Stan sceny został zapisany częściowo. Sprawdź dziennik, aby poznać szczegóły"
 }

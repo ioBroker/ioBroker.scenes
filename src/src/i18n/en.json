@@ -147,5 +147,8 @@
   "Exclude": "Exclude",
   "Include": "Include",
   "uncertain": "uncertain",
-  "Combined state of all states in category": "Combined value of all states in category"
+  "Combined state of all states in category": "Combined value of all states in category",
+  "Cannot save scene state": "Cannot save scene state",
+  "Scene state saved": "Scene state saved",
+  "Scene state saved partially. Check log for details": "Scene state saved partially. Check log for details"
 }

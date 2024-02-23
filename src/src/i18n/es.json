@@ -147,5 +147,8 @@
   "Exclude": "Excluir",
   "Include": "Incluir",
   "uncertain": "incierto",
-  "Combined state of all states in category": "Valor combinado de todos los estados en la categoría"
+  "Combined state of all states in category": "Valor combinado de todos los estados en la categoría",
+  "Cannot save scene state": "No se puede guardar el estado de la escena",
+  "Scene state saved": "Estado de escena guardado",
+  "Scene state saved partially. Check log for details": "Estado de la escena guardado parcialmente. Consulte el registro para obtener más detalles"
 }

@@ -147,5 +147,8 @@
   "Exclude": "Исключать",
   "Include": "Включить",
   "uncertain": "неопределенный",
-  "Combined state of all states in category": "Комбинированное значение всех состояний в категории"
+  "Combined state of all states in category": "Комбинированное значение всех состояний в категории",
+  "Cannot save scene state": "Невозможно сохранить состояние сцены",
+  "Scene state saved": "Состояние сцены сохранено.",
+  "Scene state saved partially. Check log for details": "Состояние сцены сохранено частично. Проверьте журнал для получения подробной информации"
 }

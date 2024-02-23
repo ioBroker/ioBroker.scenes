@@ -147,5 +147,8 @@
   "Exclude": "Uitsluiten",
   "Include": "Erbij betrekken",
   "uncertain": "onzeker",
-  "Combined state of all states in category": "Gecombineerde waarde van alle staten in categorie"
+  "Combined state of all states in category": "Gecombineerde waarde van alle staten in categorie",
+  "Cannot save scene state": "Kan scènestatus niet opslaan",
+  "Scene state saved": "Scènestatus opgeslagen",
+  "Scene state saved partially. Check log for details": "Scènestatus gedeeltelijk opgeslagen. Controleer het logboek voor details"
 }

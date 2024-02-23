@@ -172,8 +172,8 @@ function startAdapter(options) {
             }
 
             try {
-                await saveScene(obj.message.sceneId, isForTrue);
-                adapter.sendTo(obj.from, obj.command, {result: 'Current states saved'}, obj.callback);
+                const allSaved = await saveScene(obj.message.sceneId, isForTrue);
+                adapter.sendTo(obj.from, obj.command, {result: 'Current states saved', allSaved}, obj.callback);
             } catch (err) {
                 adapter.sendTo(obj.from, obj.command, {error: err}, obj.callback);
             }
@@ -236,28 +236,73 @@ async function saveScene(sceneID, isForTrue) {
         adapter.log.error(`Cannot get scene: ${e}`);
         throw new Error('Scene not found');
     }
-    if (obj && obj.native && obj.native.members) {
-        let count = 0;
+    if (obj?.native?.members) {
+        let anyNotSaved = false;
         for (let m = 0; m < obj.native.members.length; m++) {
             const member = obj.native.members[m];
-            const state = await adapter.getForeignStateAsync(member.id);
-            console.log(`ID ${member.id}=${state ? state.val : state}`);
-            if (isForTrue) {
-                member.setIfTrue  = state ? state.val : null;
+            let state
+            if (member.id) {
+                state = await adapter.getForeignStateAsync(member.id);
+                console.log(`ID ${member.id}=${state ? state.val : state}`);
             } else {
-                member.setIfFalse = state ? state.val : null;
+                // enum => get all states and their values
+                const ids = getAllEnumIds(member.enums);
+                const values = [];
+                // copy all settings from the first member
+                for (let i = 0; i < ids.length; i++) {
+                    const controlId = await getControlState(ids[i], member.enums.type, sceneID);
+                    if (!controlId) {
+                        continue;
+                    }
+                    const value = await adapter.getForeignStateAsync(controlId);
+                    if (value) {
+                        values.push(value.val);
+                    }
+                }
+                // determine common state
+                if (member.enums.type === 'boolean' || member.enums.type === 'string') {
+                    // all states must be true or false
+                    let val = values[0];
+                    for (let i = 1; i < values.length; i++) {
+                        if (val !== values[i]) {
+                            val = 'uncertain';
+                            break;
+                        }
+                    }
+                    state = {val};
+                    adapter.log.info(`Take for member ${m} of (${sceneID}) value "${val}" from ${values.length} states`);
+                } else if (member.enums.type === 'number') {
+                    // calculate average
+                    let val = values[0];
+                    for (let i = 1; i < values.length; i++) {
+                        val += values[i];
+                    }
+                    val /= values.length;
+                    state = {val};
+                    adapter.log.info(`Take for member ${m} of (${sceneID}) average value "${val}" from ${values.length} states`);
+                }
+            }
+            if (state?.val !== 'uncertain') {
+                if (isForTrue) {
+                    member.setIfTrue  = state ? state.val : null;
+                } else {
+                    member.setIfFalse = state ? state.val : null;
+                }
+            } else {
+                anyNotSaved = true;
             }
         }
 
         try {
             await adapter.setForeignObjectAsync(sceneID, obj);
             adapter.log.info(`Scene ${obj.common.name} saved`);
+            return !anyNotSaved;
         } catch (e) {
             adapter.log.error(`Cannot save scene: ${e}`);
             throw new Error('Cannot save scene');
         }
     } else {
-        throw new Error('Scene not found');
+        throw new Error(obj ? 'Scene not found' : 'Scene has no members');
     }
 }
 
@@ -845,7 +890,6 @@ function initTrueFalse(sceneId, isTrue) {
     return usedIds;
 }
 
-
 function getAllEnumIds(enumsSettings) {
     const ids = [];
 
@@ -978,6 +1022,29 @@ async function findControlState(obj, type) {
     return null;
 }
 
+async function getControlState(id, type, sceneId) {
+    const obj = await adapter.getForeignObjectAsync(id);
+    if (!obj) {
+        return null;
+    }
+    if (obj.type !== 'state') {
+        if (obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder') {
+            // try to use types detector to find the control state
+            const controlId = await findControlState(obj, type || 'boolean');
+            if (!controlId) {
+                adapter.log.warn(`Cannot find control state of type "${type || 'boolean'}" for "${obj.type}" ${id} in "${sceneId}"`);
+                return null;
+            }
+            return controlId;
+        } else {
+            adapter.log.warn(`Cannot find control state for ${id} as it is not device or channel`);
+            return null;
+        }
+    }
+
+    return id;
+}
+
 async function enum2scenes(sceneId, index) {
     if (!hasEnums) {
         hasEnums = true;
@@ -1000,26 +1067,13 @@ async function enum2scenes(sceneId, index) {
 
     // copy all settings from the first member
     for (let i = 0; i < ids.length; i++) {
-        const newMember = JSON.parse(JSON.stringify(patternMember));
-        const obj = await adapter.getForeignObjectAsync(ids[i]);
-        if (!obj) {
+        const controlId = await getControlState(ids[i], enumsSettings.type, sceneId);
+        if (!controlId) {
             continue;
         }
-        if (obj.type !== 'state') {
-            if (obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder') {
-                // try to use types detector to find the control state
-                const controlId = await findControlState(obj, enumsSettings.type || 'boolean');
-                if (!controlId) {
-                    adapter.log.warn(`Cannot find control state of type "${enumsSettings.type || 'boolean'}" for "${obj.type}" ${ids[i]} in "${sceneId}"`);
-                    continue;
-                }
-                newMember.id = controlId;
-            } else {
-                adapter.log.warn(`Cannot find control state for ${ids[i]} as it is not device or channel`);
-            }
-        } else {
-            newMember.id = ids[i];
-        }
+        const newMember = JSON.parse(JSON.stringify(patternMember));
+        newMember.id = controlId;
+
         if (i) {
             newMember.delay = enumsSettings.delay || 0;
         }

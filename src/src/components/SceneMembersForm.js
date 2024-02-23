@@ -26,7 +26,12 @@ import {
 } from '@mui/material';
 
 // own components
-import { I18n, Utils, SelectID as DialogSelectID } from '@iobroker/adapter-react-v5';
+import {
+    I18n,
+    Utils,
+    SelectID as DialogSelectID,
+    Message as MessageDialog,
+} from '@iobroker/adapter-react-v5';
 
 // icons
 import { AiOutlineClockCircle as IconClock } from 'react-icons/ai';
@@ -41,7 +46,7 @@ import {
     ExpandMore as IconExpandAll,
     ExpandLess as IconCollapseAll,
     Menu as IconList,
-    AddBox as IconAddBox,
+    AddBox as IconAddBox, Save,
 } from '@mui/icons-material';
 
 
@@ -132,6 +137,8 @@ const styles = theme => ({
         fontSize: 'small',
         borderRadius: 10,
         padding: `2px ${theme.spacing(1)}`,
+        display: 'inline-flex',
+        alignItems: 'center',
     },
     sceneTrue: {
         background: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
@@ -1422,6 +1429,81 @@ class SceneMembersForm extends React.Component {
 
     getListStyle = isDraggingOver => ({ background: isDraggingOver ? 'lightblue' : 'inherit' });
 
+    renderMessageDialog() {
+        if (!this.state.message) {
+            return null;
+        }
+        return <MessageDialog
+            key="message-dialog"
+            onClose={() => this.setState({ message: '' })}
+            title={I18n.t('Result')}
+            text={this.state.message}
+        />;
+    }
+
+    saveActualState(isForTrue) {
+        this.props.socket.sendTo(this.state.engineId, 'save', { sceneId: this.props.sceneId, isForTrue: isForTrue || false })
+            .then(result => {
+                if (result.error) {
+                    // show error
+                    this.props.showError(`${I18n.t(`Cannot save scene state`)}:${result.error}`);
+                } else {
+                    if (result.allSaved) {
+                        this.setState({ message: I18n.t('Scene state saved') });
+                    } else {
+                        this.setState({ message: I18n.t('Scene state saved partially. Check log for details') });
+                    }
+                }
+            });
+    }
+
+    renderTrueFalseDialog() {
+        if (!this.state.askTrueFalse) {
+            return null;
+        }
+
+        return <Dialog
+            key="askTrueFalse"
+            open={!0}
+            onClose={() => this.setState({ askTrueFalse: false })}
+        >
+            <DialogTitle>{I18n.t('Save actual state')}</DialogTitle>
+            <DialogContent>
+                {I18n.t('Do you want to save the current state as TRUE or FALSE?')}
+            </DialogContent>
+            <DialogActions>
+                <Button
+                    variant="contained"
+                    onClick={() => {
+                        this.saveActualState(true);
+                        this.setState({ askTrueFalse: false });
+                    }}
+                    color="primary"
+                >
+                    {I18n.t('TRUE')}
+                </Button>
+                <Button
+                    variant="contained"
+                    onClick={() => {
+                        this.saveActualState(false);
+                        this.setState({ askTrueFalse: false });
+                    }}
+                    color="secondary"
+                >
+                    {I18n.t('FALSE')}
+                </Button>
+                <Button
+                    variant="contained"
+                    onClick={() => this.setState({ askTrueFalse: false })}
+                    color="grey"
+                    startIcon={<IconCancel />}
+                >
+                    {I18n.t('Cancel')}
+                </Button>
+            </DialogActions>
+        </Dialog>;
+    }
+
     render = () => {
         let sceneState = this.state.states[this.props.sceneId];
         if (this.state.selectedSceneChanged) {
@@ -1437,22 +1519,42 @@ class SceneMembersForm extends React.Component {
         }
 
         const onFalseEnabled =!this.state.virtualGroup && this.state.onFalseEnabled;
+        let takeState;
+        if (this.state.states[`${this.state.engineId}.alive`] && sceneState !== true && (!onFalseEnabled || sceneState !== false)) {
+            takeState = <div
+                style={{ display: 'inline-flex', alignItems: 'center' }}
+                title={onFalseEnabled ? I18n.t('Take current state as TRUE or FALSE') : I18n.t('Take current state')}
+                onClick={() => {
+                    if (onFalseEnabled) {
+                        this.setState({ askTrueFalse: true });
+                    } else {
+                        this.saveActualState(true);
+                    }
+                }}
+            >
+                <Save style={{ marginLeft: 4, marginRight: 4, width: 16, height: 16 }} />
+                {sceneState === false ? 'FALSE' : sceneState.toString()}
+            </div>;
+        }
 
         let result = <div key="SceneMembersForm" className={Utils.clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer)}>
             <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
                 <Typography variant="h6" className={Utils.clsx(this.props.classes.sceneTitle)} >
                     {I18n.t('Scene states')}{!this.state.states[`${this.state.engineId}.alive`] ? <span className={this.props.classes.instanceNotActive}>{I18n.t('Instance not active')}</span> : ''}
                     <br />
-                    <span
+                    <div
                         className={Utils.clsx(
                             this.props.classes.sceneSubTitle,
                             !this.state.virtualGroup && sceneState === true && this.props.classes.sceneTrue,
                             !this.state.virtualGroup && sceneState === false && this.props.classes.sceneFalse,
                             !this.state.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
                         )}
+                        style={takeState ? { cursor: 'pointer' } : null}
                     >
-                        {I18n.t('Scene state:')} {sceneState === true ? 'TRUE' : (sceneState === false ? 'FALSE' : sceneState.toString())}
-                    </span>
+                        {I18n.t('Scene state:')} {sceneState === true ? 'TRUE' :
+                            (sceneState === false ?
+                                (takeState || 'FALSE') : (takeState || sceneState.toString()))}
+                    </div>
                 </Typography>
                 <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({ showDialog: true })}>
                     <IconAdd />
@@ -1471,7 +1573,7 @@ class SceneMembersForm extends React.Component {
                     onChange={e => this.setState({writeSceneState: e.target.value})}
                 /> : null}
                 {!this.state.selectedSceneChanged && this.state.virtualGroup && this.state.members.length ? <IconButton
-                    onClick={e => this.onWriteScene(this.state.writeSceneState) }
+                    onClick={() => this.onWriteScene(this.state.writeSceneState) }
                 >
                     <IconPlay />
                 </IconButton> : null}
@@ -1548,6 +1650,8 @@ class SceneMembersForm extends React.Component {
             this.renderSelectIdDialog(),
             this.renderSelectEnumsDialog(),
             this.renderSelectStateIdDialog(),
+            this.renderMessageDialog(),
+            this.renderTrueFalseDialog(),
         ];
     }
 }
