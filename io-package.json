@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "3.0.2",
+    "version": "3.0.3",
     "news": {
+      "3.0.3": {
+        "en": "Saving of the scene states from GUI was implemented",
+        "de": "Das Speichern der Szenenzustände von GUI wurde implementiert",
+        "ru": "Было реализовано спасение состояния сцены из GUI",
+        "pt": "A economia dos estados de cena da GUI foi implementada",
+        "nl": "Het opslaan van de scène states van GUI werd geïmplementeerd",
+        "fr": "Sauver les états de scène de l'interface utilisateur",
+        "it": "Il salvataggio degli stati della scena dalla GUI è stato implementato",
+        "es": "Ahorro de los estados de escena de GUI fue implementado",
+        "pl": "Uratowanie stanów sceny z GUI zostało wdrożone",
+        "uk": "Збереження сценічних станів з GUI було реалізовано",
+        "zh-cn": "从图形界面中保存场景状态已执行"
+      },
       "3.0.2": {
         "en": "Saving of the scene states from GUI was implemented",
         "de": "Das Speichern der Szenenzustände von GUI wurde implementiert",
@@ -68,18 +81,6 @@
         "zh-cn": "更新了一些 GUI 库\n更新的发布者"
       },
       "2.3.8": {
-        "en": "Handle case where states are not set but used as value (Sentry IOBROKER-SCENES-13)\nAdded the aggregation mode for the virtual groups.\nSentry data will not be sent in front-end if the diagnostic or sentry is disabled",
-        "de": "Behandeln Sie Fälle, in denen Zustände nicht festgelegt, sondern als Wert verwendet werden (Sentry IOBROKER-SCENES-13)\nDer Aggregationsmodus für die virtuellen Gruppen wurde hinzugefügt.\nSentry-Daten werden nicht im Front-End gesendet, wenn die Diagnose oder der Sentry deaktiviert ist",
-        "ru": "Обработка случая, когда состояния не устанавливаются, а используются как значение (Sentry IOBROKER-SCENES-13)\nДобавлен режим агрегации для виртуальных групп.\nСторожевые данные не будут отправляться во внешний интерфейс, если диагностика или сторожевой режим отключены.",
-        "pt": "Lidar com o caso em que os estados não são definidos, mas usados como valor (Sentry IOBROKER-SCENES-13)\nAdicionado o modo de agregação para os grupos virtuais.\nOs dados da sentinela não serão enviados no front-end se o diagnóstico ou a sentinela estiverem desabilitados",
-        "nl": "Behandel geval waarin staten niet zijn ingesteld maar als waarde worden gebruikt (Sentry IOBROKER-SCENES-13)\nDe aggregatiemodus voor de virtuele groepen toegevoegd.\nSentry-gegevens worden niet in front-end verzonden als de diagnose of schildwacht is uitgeschakeld",
-        "fr": "Gérer le cas où les états ne sont pas définis mais utilisés comme valeur (Sentry IOBROKER-SCENES-13)\nAjout du mode d'agrégation pour les groupes virtuels.\nLes données de sentinelle ne seront pas envoyées en front-end si le diagnostic ou la sentinelle est désactivé",
-        "it": "Gestire il caso in cui gli stati non sono impostati ma utilizzati come valore (Sentry IOBROKER-SCENES-13)\nAggiunta la modalità di aggregazione per i gruppi virtuali.\nI dati della sentinella non verranno inviati in front-end se la diagnostica o la sentinella sono disabilitate",
-        "es": "Manejar caso donde los estados no se establecen pero se usan como valor (Sentry IOBROKER-SCENES-13)\nSe agregó el modo de agregación para los grupos virtuales.\nLos datos del centinela no se enviarán en el front-end si el diagnóstico o el centinela están desactivados",
-        "pl": "Obsługa przypadku, w którym stany nie są ustawione, ale używane jako wartość (Sentry IOBROKER-SCENES-13)\nDodano tryb agregacji dla grup wirtualnych.\nDane Sentry nie będą wysyłane w interfejsie użytkownika, jeśli diagnostyka lub Sentry są wyłączone",
-        "zh-cn": "处理未设置状态但用作值的情况（Sentry IOBROKER-SCENES-13）\n增加了虚拟组的聚合模式。\n如果诊断或哨兵被禁用，哨兵数据将不会在前端发送"
-      },
-      "2.3.7": {
         "en": "Handle case where states are not set but used as value (Sentry IOBROKER-SCENES-13)\nAdded the aggregation mode for the virtual groups.\nSentry data will not be sent in front-end if the diagnostic or sentry is disabled",
         "de": "Behandeln Sie Fälle, in denen Zustände nicht festgelegt, sondern als Wert verwendet werden (Sentry IOBROKER-SCENES-13)\nDer Aggregationsmodus für die virtuellen Gruppen wurde hinzugefügt.\nSentry-Daten werden nicht im Front-End gesendet, wenn die Diagnose oder der Sentry deaktiviert ist",
         "ru": "Обработка случая, когда состояния не устанавливаются, а используются как значение (Sentry IOBROKER-SCENES-13)\nДобавлен режим агрегации для виртуальных групп.\nСторожевые данные не будут отправляться во внешний интерфейс, если диагностика или сторожевой режим отключены.",

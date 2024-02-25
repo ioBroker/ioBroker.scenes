@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 3.0.3 (2024-02-25)
 * (bluefox) Saving of the scene states from GUI was implemented
 
 ### 3.0.1 (2024-02-16)
