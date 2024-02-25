@@ -150,5 +150,9 @@
   "Combined state of all states in category": "Комбинированное значение всех состояний в категории",
   "Cannot save scene state": "Невозможно сохранить состояние сцены",
   "Scene state saved": "Состояние сцены сохранено.",
-  "Scene state saved partially. Check log for details": "Состояние сцены сохранено частично. Проверьте журнал для получения подробной информации"
+  "Scene state saved partially. Check log for details": "Состояние сцены сохранено частично. Проверьте журнал для получения подробной информации",
+  "Take current state": "Сохранить текущее состояние",
+  "state(s)": "состояние(я)",
+  "Save actual state": "Сохранить фактическое состояние",
+  "Do you want to save the current state as TRUE or FALSE?": "Хотите ли вы сохранить текущее состояние как TRUE или FALSE?"
 }

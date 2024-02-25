@@ -280,6 +280,7 @@ class SceneMembersForm extends React.Component {
             objectTypes: {},
             objectNames: {},
             members: JSON.parse(JSON.stringify(props.members)),
+            ts: props.ts,
             easy: props.easy,
             writeSceneState: '',
             deleteDialog: null,
@@ -369,6 +370,11 @@ class SceneMembersForm extends React.Component {
         }
         if (props.easy !== state.easy) {
             newState.easy = props.easy;
+            changed = true;
+        }
+        if (props.ts !== state.ts) {
+            newState.ts = props.ts;
+            newState.members = JSON.parse(JSON.stringify(props.members));
             changed = true;
         }
 
@@ -1480,7 +1486,7 @@ class SceneMembersForm extends React.Component {
                     }}
                     color="primary"
                 >
-                    {I18n.t('TRUE')}
+                    TRUE
                 </Button>
                 <Button
                     variant="contained"
@@ -1490,7 +1496,7 @@ class SceneMembersForm extends React.Component {
                     }}
                     color="secondary"
                 >
-                    {I18n.t('FALSE')}
+                    FALSE
                 </Button>
                 <Button
                     variant="contained"
@@ -1520,17 +1526,10 @@ class SceneMembersForm extends React.Component {
 
         const onFalseEnabled =!this.state.virtualGroup && this.state.onFalseEnabled;
         let takeState;
-        if (this.state.states[`${this.state.engineId}.alive`] && sceneState !== true && (!onFalseEnabled || sceneState !== false)) {
+        if (this.state.states[`${this.state.engineId}.alive`] && sceneState !== true) {
             takeState = <div
                 style={{ display: 'inline-flex', alignItems: 'center' }}
                 title={onFalseEnabled ? I18n.t('Take current state as TRUE or FALSE') : I18n.t('Take current state')}
-                onClick={() => {
-                    if (onFalseEnabled) {
-                        this.setState({ askTrueFalse: true });
-                    } else {
-                        this.saveActualState(true);
-                    }
-                }}
             >
                 <Save style={{ marginLeft: 4, marginRight: 4, width: 16, height: 16 }} />
                 {sceneState === false ? 'FALSE' : sceneState.toString()}
@@ -1550,6 +1549,13 @@ class SceneMembersForm extends React.Component {
                             !this.state.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
                         )}
                         style={takeState ? { cursor: 'pointer' } : null}
+                        onClick={takeState ? () => {
+                            if (onFalseEnabled) {
+                                this.setState({ askTrueFalse: true });
+                            } else {
+                                this.saveActualState(true);
+                            }
+                        } : undefined}
                     >
                         {I18n.t('Scene state:')} {sceneState === true ? 'TRUE' :
                             (sceneState === false ?
@@ -1666,6 +1672,7 @@ SceneMembersForm.propTypes = {
     virtualGroup: PropTypes.bool,
     aggregation: PropTypes.string,
     members: PropTypes.array,
+    ts: PropTypes.number,
     easy: PropTypes.bool,
     sceneEnabled: PropTypes.bool,
     selectedSceneChanged: PropTypes.bool,

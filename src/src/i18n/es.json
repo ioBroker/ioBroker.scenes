@@ -150,5 +150,9 @@
   "Combined state of all states in category": "Valor combinado de todos los estados en la categoría",
   "Cannot save scene state": "No se puede guardar el estado de la escena",
   "Scene state saved": "Estado de escena guardado",
-  "Scene state saved partially. Check log for details": "Estado de la escena guardado parcialmente. Consulte el registro para obtener más detalles"
+  "Scene state saved partially. Check log for details": "Estado de la escena guardado parcialmente. Consulte el registro para obtener más detalles",
+  "Take current state": "Guardar estado actual",
+  "state(s)": "estado(s)",
+  "Save actual state": "Guardar estado actual",
+  "Do you want to save the current state as TRUE or FALSE?": "¿Quiere guardar el estado actual como VERDADERO o FALSO?"
 }

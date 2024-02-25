@@ -150,5 +150,9 @@
   "Combined state of all states in category": "Gecombineerde waarde van alle staten in categorie",
   "Cannot save scene state": "Kan scènestatus niet opslaan",
   "Scene state saved": "Scènestatus opgeslagen",
-  "Scene state saved partially. Check log for details": "Scènestatus gedeeltelijk opgeslagen. Controleer het logboek voor details"
+  "Scene state saved partially. Check log for details": "Scènestatus gedeeltelijk opgeslagen. Controleer het logboek voor details",
+  "Take current state": "Bewaar huidige status",
+  "state(s)": "staat(en)",
+  "Save actual state": "Werkelijke status opslaan",
+  "Do you want to save the current state as TRUE or FALSE?": "Wilt u de huidige status opslaan als TRUE of FALSE?"
 }

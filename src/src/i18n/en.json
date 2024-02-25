@@ -150,5 +150,9 @@
   "Combined state of all states in category": "Combined value of all states in category",
   "Cannot save scene state": "Cannot save scene state",
   "Scene state saved": "Scene state saved",
-  "Scene state saved partially. Check log for details": "Scene state saved partially. Check log for details"
+  "Scene state saved partially. Check log for details": "Scene state saved partially. Check log for details",
+  "Take current state": "Save current state",
+  "state(s)": "state(s)",
+  "Save actual state": "Save actual state",
+  "Do you want to save the current state as TRUE or FALSE?": "Do you want to save the current state as TRUE or FALSE?"
 }

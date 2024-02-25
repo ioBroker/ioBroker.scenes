@@ -189,6 +189,7 @@ function startAdapter(options) {
             if (sceneObj) {
                 if (!sceneObj.common.enabled) {
                     sceneObj.common.enabled = true;
+                    delete sceneObj.ts;
                     await adapter.setForeignObjectAsync(sceneObj._id, sceneObj);
                     adapter.sendTo(obj.from, obj.command, {result: 'Scene was enabled'}, obj.callback);
                 } else {
@@ -207,8 +208,9 @@ function startAdapter(options) {
             if (sceneObj) {
                 if (sceneObj.common.enabled !== false) {
                     sceneObj.common.enabled = false;
+                    delete sceneObj.ts;
                     await adapter.setForeignObjectAsync(sceneObj._id, sceneObj);
-                    adapter.sendTo(obj.from, obj.command, {result: 'Scene was disabled'}, obj.callback);
+                    adapter.sendTo(obj.from, obj.command, { result: 'Scene was disabled' }, obj.callback);
                 } else {
                     adapter.sendTo(obj.from, obj.command, {warning: 'Scene already disabled'}, obj.callback);
                 }
@@ -232,6 +234,7 @@ async function saveScene(sceneID, isForTrue) {
     let obj;
     try {
         obj = await adapter.getForeignObjectAsync(sceneID);
+        delete obj.ts;
     } catch (e) {
         adapter.log.error(`Cannot get scene: ${e}`);
         throw new Error('Scene not found');
@@ -294,6 +297,7 @@ async function saveScene(sceneID, isForTrue) {
         }
 
         try {
+            delete obj.ts;
             await adapter.setForeignObjectAsync(sceneID, obj);
             adapter.log.info(`Scene ${obj.common.name} saved`);
             return !anyNotSaved;

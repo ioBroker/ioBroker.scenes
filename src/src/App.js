@@ -239,7 +239,7 @@ class App extends GenericApp {
                                 .then(uuidObj => {
                                     if (uuidObj && uuidObj.native && uuidObj.native.uuid) {
                                         Sentry.configureScope(scope =>
-                                            scope.setUser({id: uuidObj.native.uuid}));
+                                            scope.setUser({ id: uuidObj.native.uuid }));
                                     }
                                     this.setState(newState, () =>
                                         this.refreshData());
@@ -248,10 +248,57 @@ class App extends GenericApp {
                             this.setState(newState, () =>
                                 this.refreshData());
                         }
-                    });
+                    })
+                    .then(() => this.socket.subscribeObject('scene.0.*', this.onObjectChange));
             })
             .catch(e => this.showError(e));
     }
+
+    onObjectChange = (id, obj) => {
+        if (obj) {
+            const members = obj.native?.members;
+            // place members on the last place
+            if (members) {
+                delete obj.native.members;
+                obj.native.members = members;
+            }
+        }
+
+        if (!this.state.scenes[id] || // new
+            (!obj && this.state.scenes[id]) || // deleted
+            JSON.stringify(this.state.scenes[id].common) !== JSON.stringify(obj.common) || // changed
+            JSON.stringify(this.state.scenes[id].native) !== JSON.stringify(obj.native) // changed
+        ) {
+            const scenes = JSON.parse(JSON.stringify(this.state.scenes));
+            if (obj) {
+                if (scenes[id]) {
+                    scenes[id].common = obj.common;
+                    scenes[id].native = obj.native;
+                    scenes[id].ts = obj.ts;
+                } else {
+                    scenes[id] = {
+                        common: obj.common,
+                        native: obj.native,
+                        type: obj.type,
+                        _id: obj._id,
+                        ts: obj.ts,
+                    }
+                }
+            } else {
+                delete scenes[id];
+            }
+            if (!obj && id === this.state.selectedSceneId) {
+                this.setState({ scenes, folders: this.buildTree(scenes) });
+                // select a first scene
+                setTimeout(_newSceneId =>
+                    this.changeSelectedScene(_newSceneId), 100, Object.keys(scenes).shift() || '');
+            } else if (id === this.state.selectedSceneId) {
+                this.setState({ scenes, selectedSceneData: JSON.parse(JSON.stringify(scenes[id])) });
+            } else {
+                this.setState({ scenes, folders: this.buildTree(scenes) });
+            }
+        }
+    };
 
     sceneSwitch(id) {
         let scenes = JSON.parse(JSON.stringify(this.state.scenes));
@@ -262,7 +309,7 @@ class App extends GenericApp {
 
         scenes[id].common.enabled = !scenes[id].common.enabled;
 
-        return this.socket.setObject(id, scenes[id])
+        return this.saveScene(id, scenes[id])
             .then(() => this.refreshData(id))
             .catch(e => this.showError(e));
     }
@@ -318,7 +365,7 @@ class App extends GenericApp {
         return this.socket.getObjectViewSystem('state', 'scene.0.', 'scene.\u9999')
             .then(_scenes => {
                 scenes = _scenes;
-                return {scenes, folders: this.buildTree(scenes)};
+                return { scenes, folders: this.buildTree(scenes) };
             })
             .catch(e => this.showError(e));
     }
@@ -342,9 +389,13 @@ class App extends GenericApp {
 
                 // Fill missing data
                 Object.keys(newState.scenes).forEach(id => {
-                    const sceneObj = newState.scenes[id];
-                    sceneObj.common = sceneObj.common || {};
-                    sceneObj.native = sceneObj.native || {};
+                    const sceneObj = {
+                        common: newState.scenes[id].common || {},
+                        native: newState.scenes[id].native || {},
+                        type: newState.scenes[id].type,
+                        _id: id,
+                        ts: newState.scenes[id].ts,
+                    };
 
                     // rename attribute
                     if (sceneObj.native.burstIntervall !== undefined) {
@@ -360,12 +411,9 @@ class App extends GenericApp {
                     sceneObj.native.members = sceneObj.native.members || [];
                     const members = sceneObj.native.members;
                     delete sceneObj.native.members;
-                    sceneObj.native.members = members; // place it on the last place
-
-                    delete sceneObj.from;
-                    delete sceneObj.user;
-                    delete sceneObj.ts;
-                    delete sceneObj.acl;
+                    // place it on the last place
+                    sceneObj.native.members = members;
+                    newState.scenes[id] = sceneObj;
                 });
 
                 if (!newState.scenes[this.state.selectedSceneId]) {
@@ -425,7 +473,7 @@ class App extends GenericApp {
         return this.socket.delObject(oldId)
             .then(() => {
                 console.log(`Deleted ${oldId}`);
-                return this.socket.setObject(scene._id, scene)
+                return this.saveScene(scene._id, scene);
             })
             .catch(e => this.showError(e))
             .then(() => {
@@ -450,7 +498,7 @@ class App extends GenericApp {
         return this.socket.delObject(oldId)
             .then(() => {
                 console.log(`Deleted ${oldId}`);
-                return this.socket.setObject(scene._id, scene)
+                return this.saveScene(scene._id, scene);
             })
             .catch(e => this.showError(e))
             .then(() => {
@@ -544,8 +592,8 @@ class App extends GenericApp {
         template.common.name = name;
         let id = `scene.0.${parentId ? `${parentId}.` : ''}${template.common.name}`;
 
-        this.setState({changingScene: id}, () =>
-            this.socket.setObject(id, template)
+        this.setState({ changingScene: id }, () =>
+            this.saveScene(id, template)
                 .then(() => this.refreshData(id))
                 .then(() => this.changeSelectedScene(id))
                 .catch(e => this.showError(e))
@@ -560,13 +608,23 @@ class App extends GenericApp {
         scene._id = scene._id.join('.');
         scene.common.name = `${scene.common.name} ${I18n.t('copy')}`;
 
-        this.setState({changingScene: scene._id}, () =>
-            this.socket.setObject(scene._id, scene)
+        this.setState({ changingScene: scene._id }, () =>
+            this.saveScene(scene._id, scene)
                 .then(() => this.refreshData(scene._id))
                 .then(() => this.changeSelectedScene(scene._id))
                 .catch(e => this.showError(e))
         );
     };
+
+    async saveScene(sceneId, sceneObj) {
+        if (sceneObj.ts) {
+            const _sceneObj = JSON.parse(JSON.stringify(sceneObj));
+            delete _sceneObj.ts;
+            await this.socket.setObject(sceneId, _sceneObj);
+        } else {
+            await this.socket.setObject(sceneId, sceneObj);
+        }
+    }
 
     async writeScene() {
         const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
@@ -585,18 +643,18 @@ class App extends GenericApp {
             try {
                 await this.socket.delObject(scene._id);
                 scene._id = newId;
-                await this.socket.setObject(scene._id, scene);
+                await this.saveScene(scene._id, scene);
                 await this.refreshData(this.state.selectedSceneId);
                 await this.changeSelectedScene(newId, true);
             } catch (e) {
-                this.showError(e)
+                this.showError(e);
             }
         } else {
             try {
-                await this.socket.setObject(this.state.selectedSceneId, scene);
+                await this.saveScene(this.state.selectedSceneId, scene);
                 await this.refreshData(this.state.selectedSceneId);
             } catch (e) {
-                this.showError(e)
+                this.showError(e);
             }
         }
     }
@@ -616,35 +674,34 @@ class App extends GenericApp {
         this.setState({ selectedSceneChanged, selectedSceneData: scene }, () => cb && cb());
     };
 
-    deleteScene(id) {
-        return this.socket.delObject(id)
-            .then(() => {
-                if (this.state.selectedSceneId === id) {
-                    return this.refreshData(id)
-                        .then(() => {
-                            const ids = Object.keys(this.state.scenes);
-                            // Find the next scene
-                            let nextId = ids.find(_id => _id > id) || '';
-                            if (!nextId) {
-                                // try a prev scene
-                                for (let i = ids.length - 1; i >= 0; i--) {
-                                    if (ids[i] < id) {
-                                        nextId = ids[i];
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!nextId && ids.length) {
-                                nextId = ids.shift();
-                            }
-
-                            return this.changeSelectedScene(nextId);
-                        });
+    async deleteScene(id) {
+        try {
+            await this.socket.delObject(id);
+            if (this.state.selectedSceneId === id) {
+                await this.refreshData(id);
+                const ids = Object.keys(this.state.scenes);
+                // Find the next scene
+                let nextId = ids.find(_id => _id > id) || '';
+                if (!nextId) {
+                    // try a prev scene
+                    for (let i = ids.length - 1; i >= 0; i--) {
+                        if (ids[i] < id) {
+                            nextId = ids[i];
+                            break;
+                        }
+                    }
+                }
+                if (!nextId && ids.length) {
+                    nextId = ids.shift();
                 }
 
-                return this.refreshData(id);
-            })
-            .catch(e => this.showError(e));
+                await this.changeSelectedScene(nextId);
+            }
+
+            await this.refreshData(id);
+        } catch (e) {
+            this.showError(e);
+        }
     };
 
     getNewSceneId() {
@@ -662,11 +719,11 @@ class App extends GenericApp {
     };
 
     updateSceneMembers(members, cb) {
-        const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
-        scene.native.members = JSON.parse(JSON.stringify(members));
+        const selectedSceneData = JSON.parse(JSON.stringify(this.state.selectedSceneData));
+        selectedSceneData.native.members = JSON.parse(JSON.stringify(members));
 
-        let selectedSceneChanged = JSON.stringify(this.state.scenes[this.state.selectedSceneId]) !== JSON.stringify(scene);
-        this.setState({selectedSceneChanged, selectedSceneData: scene}, () => cb && cb());
+        let selectedSceneChanged = JSON.stringify(this.state.scenes[this.state.selectedSceneId]) !== JSON.stringify(selectedSceneData);
+        this.setState({ selectedSceneChanged, selectedSceneData }, () => cb && cb());
     };
 
     changeSelectedScene(newId, ignoreUnsaved, cb) {
@@ -760,7 +817,7 @@ class App extends GenericApp {
                     variant="contained"
                     color="secondary"
                     onClick={() =>
-                        this.setState({deleteDialog: false}, () =>
+                        this.setState({ deleteDialog: false }, () =>
                             this.deleteScene(this.state.selectedSceneId))
                     }
                     startIcon={<IconDelete />}
@@ -771,7 +828,7 @@ class App extends GenericApp {
                     color="grey"
                     variant="contained"
                     autoFocus
-                    onClick={() => this.setState({deleteDialog: false})}
+                    onClick={() => this.setState({ deleteDialog: false })}
                     startIcon={<IconCancel />}
                 >
                     {I18n.t('Cancel')}
@@ -795,8 +852,7 @@ class App extends GenericApp {
                     if ((importedScene.common.enabled !== false) !== (scene.common.enabled !== false)) {
                         const scenes = JSON.parse(JSON.stringify(this.state.scenes));
                         scenes[this.state.selectedSceneId].common.enabled = importedScene.common.enabled !== false;
-
-                        this.socket.setObject(this.state.selectedSceneId, scenes[this.state.selectedSceneId])
+                        this.saveScene(this.state.selectedSceneId, scenes[this.state.selectedSceneId])
                             .catch(e => this.showError(e));
                         this.setState({ scenes });
                     }
@@ -837,9 +893,9 @@ class App extends GenericApp {
                                     newId += '_import';
                                 }
                                 importedScenes[ids[s]].common.name = newId.split('.').pop();
-                                await this.socket.setObject(newId, importedScenes[ids[s]]);
+                                await this.saveScene(newId, importedScenes[ids[s]]);
                             } else {
-                                await this.socket.setObject(ids[s], importedScenes[ids[s]]);
+                                await this.saveScene(ids[s], importedScenes[ids[s]]);
                             }
                         }
                         this.setState({ showImportWarning: null });
@@ -856,7 +912,7 @@ class App extends GenericApp {
                         const importedScenes = this.state.showImportWarning;
                         const ids = Object.keys(importedScenes);
                         for (let s = 0; s < ids.length; s++) {
-                            await this.socket.setObject(ids[s], importedScenes[ids[s]]);
+                            await this.saveScene(ids[s], importedScenes[ids[s]]);
                         }
                         this.setState({ showImportWarning: null });
                         this.refreshData();
@@ -885,7 +941,7 @@ class App extends GenericApp {
         } else {
             const ids = Object.keys(importedScenes);
             for (let s = 0; s < ids.length; s++) {
-                await this.socket.setObject(ids[s], importedScenes[ids[s]]);
+                await this.saveScene(ids[s], importedScenes[ids[s]]);
             }
             await this.refreshData();
         }
@@ -972,6 +1028,7 @@ class App extends GenericApp {
             updateSceneMembers={(members, cb) => this.updateSceneMembers(members, cb)}
             selectedSceneChanged={this.state.selectedSceneChanged}
             sceneEnabled={this.state.selectedSceneData.common.enabled}
+            ts={this.state.selectedSceneData.ts || 0}
             members={this.state.selectedSceneData.native.members}
             easy={!!this.state.selectedSceneData.native.easy}
             socket={this.socket}

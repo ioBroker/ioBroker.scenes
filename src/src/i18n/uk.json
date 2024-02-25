@@ -150,5 +150,9 @@
   "Combined state of all states in category": "Загальне значення всіх станів у категорії",
   "Cannot save scene state": "Не вдається зберегти стан сцени",
   "Scene state saved": "Стан сцени збережено",
-  "Scene state saved partially. Check log for details": "Стан сцени збережено частково. Подробиці перевірте в журналі"
+  "Scene state saved partially. Check log for details": "Стан сцени збережено частково. Подробиці перевірте в журналі",
+  "Take current state": "Зберегти поточний стан",
+  "state(s)": "стан(и)",
+  "Save actual state": "Зберегти фактичний стан",
+  "Do you want to save the current state as TRUE or FALSE?": "Ви бажаєте зберегти поточний стан як TRUE або FALSE?"
 }
