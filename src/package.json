@@ -10,7 +10,7 @@
     "@mui/styles": "5.14.14",
     "@mui/icons-material": "^5.15.11",
     "babel-eslint": "^10.1.0",
-    "@sentry/browser": "^7.102.1",
+    "@sentry/browser": "^7.109.0",
     "@sentry/integrations": "^7.102.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dnd-html5-backend": "^16.0.1",
