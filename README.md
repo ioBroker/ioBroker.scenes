@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 3.0.4 (2024-04-27)
 * (bluefox) Corrected error if profile is empty
 
 ### 3.0.3 (2024-02-25)
