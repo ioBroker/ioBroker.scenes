@@ -1221,6 +1221,7 @@ async function main() {
 
             if (!states[id].native.members.length) {
                 delete scenes[id];
+                continue;
             }
 
             // extend all enums to simple scenes
