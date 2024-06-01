@@ -11,7 +11,7 @@
     "@mui/icons-material": "^5.15.19",
     "babel-eslint": "^10.1.0",
     "@sentry/browser": "^7.112.2",
-    "@sentry/integrations": "^7.112.2",
+    "@sentry/integrations": "^7.114.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dnd": "^16.0.1",
