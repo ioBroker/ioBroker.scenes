@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "3.0.4",
+    "version": "3.1.0",
     "news": {
+      "3.1.0": {
+        "en": "Packages updated\nPrepared for js-controller 6",
+        "de": "Pakete aktualisiert\nVorbereitet für js-controller 6",
+        "ru": "Обновленные пакеты\nПодготовлено для js-контроллера 6",
+        "pt": "Pacotes atualizados\nPreparado para controlador js 6",
+        "nl": "Pakketten bijgewerkt\nBereid voor js-controller 6",
+        "fr": "Mise à jour des paquets\nPréparé pour js-controller 6",
+        "it": "Pacchetti aggiornati\nPreparato per js-controller 6",
+        "es": "Paquetes actualizados\nPreparado para js-controller 6",
+        "pl": "Aktualizacja pakietów\nPrzygotowany do sterownika js- 6",
+        "uk": "Пакети оновлені\nПриготований для js-controller 6 хв",
+        "zh-cn": "更新软件包\n为 Js 控制器编写 6个"
+      },
       "3.0.4": {
         "en": "Corrected error if profile is empty",
         "de": "Fehler behoben, wenn das Profil leer ist",
@@ -80,18 +93,6 @@
         "pl": "przypadek zapobiegania katastrofie\nUpowszechnione biblioteki GUI",
         "uk": "запобігти виникненню аварійних випадків\nОновлено деякі бібліотеки GUI",
         "zh-cn": "防止Sentry所报告的事故\n二. 更新的一些古伊图书馆"
-      },
-      "2.3.9": {
-        "en": "Updated some GUI libraries\nUpdated releaser",
-        "de": "Einige GUI-Bibliotheken aktualisiert\nReleaser aktualisiert",
-        "ru": "Обновлены некоторые библиотеки графического интерфейса.\nОбновленный релиз",
-        "pt": "Atualizadas algumas bibliotecas GUI\nLiberador atualizado",
-        "nl": "Enkele GUI-bibliotheken bijgewerkt\nBijgewerkte releaser",
-        "fr": "Mise à jour de certaines bibliothèques d'interface graphique\nOutil de libération mis à jour",
-        "it": "Aggiornate alcune librerie della GUI\nRilascio aggiornato",
-        "es": "Se actualizaron algunas bibliotecas GUI\nLiberador actualizado",
-        "pl": "Zaktualizowano niektóre biblioteki GUI\nZaktualizowany wydawca",
-        "zh-cn": "更新了一些 GUI 库\n更新的发布者"
       }
     },
     "title": "Scenes",
