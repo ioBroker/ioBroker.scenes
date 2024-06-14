@@ -1168,7 +1168,7 @@ async function initScenes() {
     if (countIds.length > 200) {
         adapter.log.debug('initScenes: subscribe on all');
 
-        await adapter.subscribeForeignStatesAsync();
+        await adapter.subscribeForeignStatesAsync('*');
     } else {
         // subscribe for own scenes
         await adapter.subscribeForeignStatesAsync('scene.*');
