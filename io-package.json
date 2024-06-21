@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "news": {
+      "3.1.1": {
+        "en": "(bluefox) Packages updated\n(bluefox) Prepared for js-controller 6",
+        "de": "(bluefox) Pakete aktualisiert\n(bluefox) Bereitgestellt für js-controller 6",
+        "ru": "(bluefox) Обновленные пакеты\n(bluefox)",
+        "pt": "(bluefox) Pacotes atualizados\nPreparado para js-controller 6",
+        "nl": "Pakketten bijgewerkt\n(Bluefox) Bereid voor js-controller 6",
+        "fr": "(Bluefox) Packages mis à jour\nPréparé pour js-controller 6",
+        "it": "(bluefox) Pacchetti aggiornati\n(bluefox) Preparato per js-controller 6",
+        "es": "Paquetes actualizados\n(bluefox) Preparado para js-controller 6",
+        "pl": "(bluefox) Pakiety zaktualizowane\n(bluefox) Przygotowany do sterownika js- 6",
+        "uk": "Пакети оновлені\n(синійфокс) Приготований для js-controller 6",
+        "zh-cn": "(bluefox) 软件包更新\n为js控制器6编写"
+      },
       "3.0.4": {
         "en": "Corrected error if profile is empty",
         "de": "Fehler behoben, wenn das Profil leer ist",

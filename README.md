@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 3.1.1 (2024-06-21)
 * (bluefox) Packages updated
 * (bluefox) Prepared for js-controller 6
 
