@@ -3,19 +3,6 @@
     "name": "scenes",
     "version": "3.1.0",
     "news": {
-      "3.1.0": {
-        "en": "Packages updated\nPrepared for js-controller 6",
-        "de": "Pakete aktualisiert\nVorbereitet für js-controller 6",
-        "ru": "Обновленные пакеты\nПодготовлено для js-контроллера 6",
-        "pt": "Pacotes atualizados\nPreparado para controlador js 6",
-        "nl": "Pakketten bijgewerkt\nBereid voor js-controller 6",
-        "fr": "Mise à jour des paquets\nPréparé pour js-controller 6",
-        "it": "Pacchetti aggiornati\nPreparato per js-controller 6",
-        "es": "Paquetes actualizados\nPreparado para js-controller 6",
-        "pl": "Aktualizacja pakietów\nPrzygotowany do sterownika js- 6",
-        "uk": "Пакети оновлені\nПриготований для js-controller 6 хв",
-        "zh-cn": "更新软件包\n为 Js 控制器编写 6个"
-      },
       "3.0.4": {
         "en": "Corrected error if profile is empty",
         "de": "Fehler behoben, wenn das Profil leer ist",
@@ -121,7 +108,10 @@
     "authors": [
       "bluefox <dogafox@gmail.com>"
     ],
-    "license": "MIT",
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
     "platform": "Javascript/Node.js",
     "mode": "daemon",
     "readme": "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
@@ -153,6 +143,7 @@
         "it": "scene",
         "es": "Escenas",
         "pl": "Sceny",
+        "uk": "Сцени",
         "zh-cn": "场景"
       },
       "singleton": true,
