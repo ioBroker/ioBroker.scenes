@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "3.1.1",
+    "version": "3.2.0",
     "news": {
+      "3.2.0": {
+        "en": "(bluefox) GUI migrated for the new `adapter-react` library",
+        "de": "(bluefox) GUI migriert für die neue `adapter-react` Bibliothek",
+        "ru": "(bluefox) GUI мигрировал в новую библиотеку `adapter-react'",
+        "pt": "(bluefox) GUI migrado para a nova biblioteca `adapter-react`",
+        "nl": "(bluefox) GUI is gemigreerd voor de nieuwe \"adapter-reageren\" bibliotheek",
+        "fr": "(Bluefox) GUI migré pour la nouvelle bibliothèque `adaptation-réaction`",
+        "it": "(bluefox) GUI migrata per la nuova libreria `adapter-react`",
+        "es": "(bluefox) GUI migrated for the new `adapter-react` library",
+        "pl": "(bluefox) GUI wyemigrował do nowej biblioteki 'adapter-response'",
+        "uk": "(bluefox) GUI мігрантував нову бібліотеку `adapter-react`",
+        "zh-cn": "(bluefox) GUI 迁移到新的“适应器反应”库"
+      },
       "3.1.1": {
         "en": "(bluefox) Packages updated\n(bluefox) Prepared for js-controller 6",
         "de": "(bluefox) Pakete aktualisiert\n(bluefox) Bereitgestellt für js-controller 6",
@@ -80,19 +93,6 @@
         "pl": "Zachowane puste foldery przez zmianę nazwy i przesuwania scen",
         "uk": "Збережені порожні папки, перенаправлення та переміщення сцен",
         "zh-cn": "通过重新命名和移动场景保存的空文件夹"
-      },
-      "2.4.0": {
-        "en": "prevent crash case reported by Sentry\nUpdated some GUI libraries",
-        "de": "verhindern Unfallfall gemeldet von Sentry\nEinige GUI-Bibliotheken aktualisiert",
-        "ru": "предотвратить случай аварии сообщается в Sentry\nОбновлены некоторые библиотеки GUI",
-        "pt": "prevenir caso de acidente relatado por Sentry\nAtualizado algumas bibliotecas GUI",
-        "nl": "vertaling:\nVerhoog wat GUI bibliotheek",
-        "fr": "prévenir les accidents signalés par Sentry\nMise à jour de certaines bibliothèques GUI",
-        "it": "prevenire il caso di crash segnalato da Sentry\nAggiornate alcune librerie GUI",
-        "es": "caso de emergencia reportado por Sentry\nActualización de algunas bibliotecas GUI",
-        "pl": "przypadek zapobiegania katastrofie\nUpowszechnione biblioteki GUI",
-        "uk": "запобігти виникненню аварійних випадків\nОновлено деякі бібліотеки GUI",
-        "zh-cn": "防止Sentry所报告的事故\n二. 更新的一些古伊图书馆"
       }
     },
     "title": "Scenes",
