@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### 3.2.0 (2024-06-21)
+### **WORK IN PROGRESS**
 * (bluefox) GUI migrated for the new `adapter-react` library
 
 ### 3.1.1 (2024-06-21)
