@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/styles';
 import { useDrag, useDrop, DndProvider as DragDropContext } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend'
 
@@ -79,7 +78,7 @@ export const Draggable = (props) => {
     </div>;
 };
 
-const styles = theme => ({
+const styles = {
     scroll: {
         overflowY: 'auto',
         overflowX: 'hidden',
@@ -92,9 +91,9 @@ const styles = theme => ({
     heightMinusToolbar: {
         height: 'calc(100% - 48px)',
     },
-    mainToolbar: {
+    mainToolbar: theme => ({
         background: theme.palette.primary.main,
-    },
+    }),
     textInput: {
         display: 'block',
     },
@@ -111,7 +110,7 @@ const styles = theme => ({
         height: 24,
     },
     itemIconRoot: {
-        minWidth: 24 + parseInt(theme.spacing(1), 10),
+        minWidth: 24 + 8,
     },
     width100: {
         width: '100%',
@@ -123,16 +122,16 @@ const styles = theme => ({
     alignRight: {
         textAlign: 'right',
     },
-    itemIconFolder: {
+    itemIconFolder: theme => ({
         color: theme.palette.mode === 'dark' ? '#ffca2c' : '#ffca2c'
-    },
+    }),
     changed: {
         position: 'relative',
         '&:after': {
             content: '""',
             width: 6,
             height: 6,
-            borderRadius: 6,
+            borderRadius: '6px',
             background: '#FF0000',
             position: 'absolute',
             top: 5,
@@ -142,17 +141,17 @@ const styles = theme => ({
     disabled: {
         opacity: 0.3
     },
-    folderItem: {
+    folderItem: theme => ({
         fontWeight: 'bold',
         cursor: 'pointer',
         color: theme.palette.mode === 'dark' ? '#FFF': '#000',
-    },
-    listItemTitle: {
+    }),
+    listItemTitle: theme => ({
         color: theme.palette.mode === 'dark' ? '#FFF': '#000',
-    },
-    listItemSubTitle: {
+    }),
+    listItemSubTitle: theme => ({
         color: theme.palette.mode === 'dark' ? '#bababa': '#2a2a2a',
-    },
+    }),
     list: {
         width: '100%',
         padding: 0,
@@ -164,8 +163,8 @@ const styles = theme => ({
         height: 32,
     },
     mainList: {
-        width: `calc(100% - ${theme.spacing(1)})`,
-        marginLeft: theme.spacing(1),
+        width: `calc(100% - 8px)`,
+        ml: '8px',
         '& .js-folder-dragover>li.folder-reorder': {
             background: '#40adff'
         },
@@ -181,7 +180,12 @@ const styles = theme => ({
         fontSize: 'smaller',
         fontStyle: 'italic',
     },
-});
+    buttonsContainer: {
+        '& button': {
+            margin: `0 8px`,
+        },
+    },
+};
 
 class ScenesList extends React.Component {
     constructor(props) {
@@ -223,7 +227,7 @@ class ScenesList extends React.Component {
                 onClose={() => this.setState({ addFolderDialog: null })}
             >
                 <DialogTitle>{I18n.t('Create folder')}</DialogTitle>
-                <DialogContent className={this.props.classes.p}>
+                <DialogContent style={styles.p}>
                     <TextField
                         variant="standard"
                         autoFocus
@@ -235,7 +239,7 @@ class ScenesList extends React.Component {
                         onKeyUp={e => e.keyCode === 13 && this.onAddFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle)}
                     />
                 </DialogContent>
-                <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
+                <DialogActions sx={{ ...styles.alignRight, ...styles.buttonsContainer }}>
                     <Button
                         variant="contained"
                         disabled={!this.state.addFolderDialogTitle || Object.keys(this.props.folders.subFolders).find(name => name === this.state.addFolderDialogTitle)}
@@ -291,13 +295,14 @@ class ScenesList extends React.Component {
                 <TextField
                     variant="standard"
                     autoFocus
+                    fullWidth
                     label={I18n.t('Title')}
                     value={this.state.editFolderDialogTitle}
                     onChange={e => this.setState({editFolderDialogTitle: e.target.value.replace(Utils.FORBIDDEN_CHARS, '_').replace(/\./g, '_')})}
                     onKeyUp={e => e.keyCode === 13 && this.onRenameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle)}
                 />
             </DialogContent>
-            <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
+            <DialogActions sx={{ ...styles.alignRight, ...styles.buttonsContainer }}>
                 <Button
                     variant="contained"
                     disabled={!this.state.editFolderDialogTitle || this.state.editFolderDialogTitleOrigin === this.state.editFolderDialogTitle || !isUnique}
@@ -359,23 +364,23 @@ class ScenesList extends React.Component {
         const changed = this.props.selectedSceneId && this.props.selectedSceneId === scene._id && this.props.selectedSceneChanged;
 
         const listItem = <ListItem
-            style={{ paddingLeft: (this.state.reorder ? level : (level - 1)) * LEVEL_PADDING }}
+            style={{ ...styles.noPaddings, paddingLeft: (this.state.reorder ? level : (level - 1)) * LEVEL_PADDING }}
             key={item._id}
-            classes={{ root: this.props.classes.noPaddings }}
             selected={this.props.selectedSceneId ? this.props.selectedSceneId === scene._id : false}
             button
-            className={Utils.clsx(
-                changed && this.props.classes.changed,
-                !scene.common.enabled && this.props.classes.disabled,
-                this.state.reorder && 'item-reorder'
+            sx={Utils.getStyle(
+                this.props.theme,
+                changed && styles.changed,
+                !scene.common.enabled && styles.disabled,
             )}
+            className={this.state.reorder ? 'item-reorder' : ''}
             onClick={() => this.props.onSceneSelect(scene._id)}
         >
-            <ListItemIcon classes={{ root: this.props.classes.itemIconRoot }}>
-                <IconScript className={this.props.classes.itemIcon} />
+            <ListItemIcon style={styles.itemIconRoot}>
+                <IconScript style={styles.itemIcon} />
             </ListItemIcon>
             <ListItemText
-                classes={{ primary: this.props.classes.listItemTitle, secondary: this.props.classes.listItemSubTitle }}
+                sx={{ '& .MuiListItemText-primary': styles.listItemTitle, '& .MuiListItemText-secondary': styles.listItemSubTitle }}
                 primary={Utils.getObjectNameFromObj(scene, null, { language: I18n.getLanguage() })}
                 secondary={Utils.getObjectNameFromObj(scene, null, { language: I18n.getLanguage() }, true)}
             />
@@ -440,7 +445,7 @@ class ScenesList extends React.Component {
                         reactChildren.push(this.renderTreeScene(scene, level + 1)));
             } else {
                 reactChildren.push(<ListItem key="no scenes">
-                    <ListItemText className={this.props.classes.folderItem}>
+                    <ListItemText sx={styles.folderItem}>
                         {I18n.t('No scenes created yet')}
                     </ListItemText>
                 </ListItem>);
@@ -453,19 +458,24 @@ class ScenesList extends React.Component {
 
             const folder = <ListItem
                 key={parent.prefix}
-                classes={{ gutters: this.props.classes.noGutters, root: this.props.classes.noPaddings }}
-                className={Utils.clsx(this.props.classes.width100, this.props.classes.folderItem, this.state.reorder && 'folder-reorder')}
+                sx={Utils.getStyle(
+                    this.props.theme,
+                    styles.width100,
+                    styles.folderItem,
+                    { '& .MuiListItem-gutters': styles.noGutters, '& .MuiListItem-root': styles.noPaddings }
+                )}
+                className={this.state.reorder ? 'folder-reorder' : ''}
                 style={{ paddingLeft: (this.state.reorder ? level : (level - 1)) * LEVEL_PADDING, opacity: empty ? 0.5 : 1 }}
             >
-                <ListItemIcon classes={{ root: this.props.classes.itemIconRoot }} onClick={() => this.toggleFolder(parent)}>
+                <ListItemIcon style={styles.itemIconRoot} onClick={() => this.toggleFolder(parent)}>
                     {opened ?
-                        <IconFolderOpened className={Utils.clsx(this.props.classes.itemIcon, this.props.classes.itemIconFolder)} /> :
-                        <IconFolderClosed className={Utils.clsx(this.props.classes.itemIcon, this.props.classes.itemIconFolder)} />
+                        <IconFolderOpened style={Utils.getStyle(this.props.theme, styles.itemIcon, styles.itemIconFolder)} /> :
+                        <IconFolderClosed style={Utils.getStyle(this.props.theme, styles.itemIcon, styles.itemIconFolder)} />
                     }
                 </ListItemIcon>
                 <ListItemText
                     primary={parent.id || I18n.t('Root')    }
-                    secondary={empty ? <span className={this.props.classes.hint}>{I18n.t('Folder not saved yet')}</span> : undefined}
+                    secondary={empty ? <span style={styles.hint}>{I18n.t('Folder not saved yet')}</span> : undefined}
                 />
                 {!this.state.reorder ? <ListItemSecondaryAction>
                     {opened ? <IconButton
@@ -512,36 +522,36 @@ class ScenesList extends React.Component {
         return <Toolbar
             key="toolbar"
             variant="dense"
-            className={this.props.classes.mainToolbar}
+            sx={styles.mainToolbar}
             style={this.props.showDrawer ? undefined : { marginRight: -8 }}
         >
-            {!this.state.reorder ? <IconButton
+            {!this.state.reorder && !this.state.showSearch ? <IconButton
                 onClick={() => this.props.onCreateScene()}
                 title={I18n.t('Create new scene')}
             >
                 <IconAdd />
             </IconButton> : null}
 
-            {!this.state.reorder ? <IconButton
+            {!this.state.reorder && !this.state.showSearch ? <IconButton
                 onClick={() => this.setState({ addFolderDialog: this.props.folders, addFolderDialogTitle: '' })}
                 title={I18n.t('Create new folder')}
             >
                 <IconFolderAdd />
             </IconButton> : null}
 
-            {!this.state.reorder ? <span className={this.props.classes.right}>
+            {!this.state.reorder ? <span style={styles.right}>
                 <IconButton onClick={() => this.setState({ showSearch: !this.state.showSearch })}>
                     <SearchIcon />
                 </IconButton>
             </span> : null}
 
-            {this.state.showSearch ? <TextField
+            {this.state.showSearch && !this.state.reorder ? <TextField
                 variant="standard"
                 value={this.state.search}
-                className={this.props.classes.textInput}
+                style={styles.textInput}
                 onChange={e => this.setState({ search: e.target.value })} />
             : null}
-            {!this.state.reorder ? <IconButton
+            {!this.state.reorder && !this.state.showSearch ? <IconButton
                     aria-label="Export"
                     title={I18n.t('Export scenes')}
                     onClick={() => this.setState({ exportDialog: true })}
@@ -549,19 +559,23 @@ class ScenesList extends React.Component {
                     <IconExport />
             </IconButton> : null}
 
-            {!this.state.reorder ? <IconButton
+            {!this.state.reorder && !this.state.showSearch ? <IconButton
                     aria-label="Import"
                     title={I18n.t('Import scenes')}
                     onClick={() => this.setState({ importDialog: true })}
                 >
                     <IconImport />
             </IconButton> : null}
-
+            {!this.state.reorder && !this.state.showSearch ? <span
+                style={{ opacity: 0.6, fontSize: 'small' }}
+            >
+                v
+                {this.props.version}
+            </span> : null}
             <div style={{ flexGrow: 1 }} />
             {!this.state.showSearch ? <IconButton
                 key="reorder"
                 title={I18n.t('Reorder scenes in folders')}
-                className={this.props.classes.toolbarButtons}
                 style={{ color: this.state.reorder ? 'red' : undefined, float: 'right' }}
                 onClick={e => {
                     e.stopPropagation();
@@ -587,7 +601,7 @@ class ScenesList extends React.Component {
             <DialogContent>
                 {I18n.t('You must change the scene ID in all scripts and vis widgets.')}
             </DialogContent>
-            <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
+            <DialogActions sx={{ ...styles.alignRight, ...styles.buttonsContainer }}>
                 <Button
                     variant="contained"
                     onClick={() => {
@@ -637,9 +651,9 @@ class ScenesList extends React.Component {
     render() {
         return [
             this.renderListToolbar(),
-            <div key="list" className={this.props.classes.heightMinusToolbar}>
+            <div key="list" style={styles.heightMinusToolbar}>
                 <DragDropContext backend={HTML5Backend}>
-                    <List className={Utils.clsx(this.props.classes.scroll, this.props.classes.mainList)}>
+                    <List sx={{ ...styles.scroll, ...styles.mainList }}>
                         {this.renderTree(this.props.folders)}
                     </List>
                 </DragDropContext>
@@ -660,14 +674,14 @@ ScenesList.propTypes = {
     onScenesImport: PropTypes.func,
     onMoveScene: PropTypes.func,
     onSceneEnableDisable: PropTypes.func,
-    classes: PropTypes.object,
     scenes: PropTypes.object,
     selectedSceneId: PropTypes.string,
     selectedSceneChanged: PropTypes.bool,
-    theme: PropTypes.object,
+    theme: PropTypes.object.isRequired,
     folders: PropTypes.object,
     showDrawer: PropTypes.bool,
     themeType: PropTypes.string,
+    version: PropTypes.string,
 };
 
-export default withStyles(styles)(ScenesList);
+export default ScenesList;

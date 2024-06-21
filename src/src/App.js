@@ -1,9 +1,7 @@
 // Common
 import React from 'react';
 import * as Sentry from '@sentry/browser';
-import * as SentryIntegrations from '@sentry/integrations';
 
-import { withStyles, withTheme } from '@mui/styles';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import ReactSplit, { SplitDirection, GutterTheme } from '@devbookhq/splitter';
 
@@ -18,7 +16,7 @@ import {
     Button,
     Toolbar,
     DialogActions,
-    Drawer,
+    Drawer, Box,
 } from '@mui/material';
 
 // Own
@@ -44,19 +42,19 @@ import pack from '../package.json';
 
 const MARGIN_MEMBERS = 20;
 
-const styles = theme => ({
-    root: {
+const styles = {
+    root: theme => ({
         width: '100%',
         height: 'calc(100% + 4px)',
         backgroundColor: theme.palette.mode === 'dark' ? '#000': '#fff',
         overflowX: 'hidden',
-    },
+    }),
     width100: {
         width: '100%',
     },
     noGutters: {
-        paddingLeft: 0,
-        paddingRight: 0,
+        pl: 0,
+        pr: 0,
     },
     height: {
         height: '100%',
@@ -79,54 +77,49 @@ const styles = theme => ({
         display: 'flex',
         flexDirection: 'column',
     },
-    buttonsContainer1: {
-        '& button': {
-            margin: `0 ${theme.spacing(1)}`,
-        },
-    },
     alignRight: {
         textAlign: 'right',
     },
-    membersCell: {
+    membersCell: theme => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#566770': '#ADD8E6',
-        marginTop: MARGIN_MEMBERS,
-        marginRight: theme.spacing(1),
-        marginBottom: theme.spacing(2),
-        paddingTop: 0,
-        paddingLeft: 10,
-        paddingRight: 10,
-        paddingBottom: 10,
+        mt: `${MARGIN_MEMBERS}px`,
+        mr: '8px',
+        mb: '16px',
+        pt: 0,
+        pl: '10px',
+        pr: '10px',
+        pb: '10px',
 
-        borderRadius: 4,
+        borderRadius: '4px',
         height: `calc(100% - ${theme.spacing(1)})`,
-    },
-    sceneTitle: {
+    }),
+    sceneTitle: theme => ({
         color: theme.palette.mode === 'dark' ? '#FFF': '#000',
         flexGrow: 1,
         paddingLeft: theme.spacing(1),
-    },
+    }),
     sceneSubTitle: {
         fontSize: 10,
         display: 'block',
         fontStyle: 'italic',
         marginTop: -7,
     },
-    toolbarButtons: {
+    toolbarButtons: theme => ({
         marginRight: theme.spacing(1),
-    },
-    settingsBackground: {
+    }),
+    settingsBackground: theme => ({
         background: theme.palette.mode === 'dark' ? '#3a3a3a': '#eee',
-    },
-    gutter: {
+    }),
+    gutter: theme => ({
         background: theme.palette.mode === 'dark' ? '#3a3a3a !important': '#eee !important',
         '& .__dbk__dragger': {
             background: theme.palette.mode === 'dark' ? 'white !important': 'black !important',
         }
-    },
+    }),
     drawer: {
         overflow: 'hidden',
     },
-});
+};
 
 function getUrlQuery() {
     const parts = (window.location.search || '').replace(/^\?/, '').split('&');
@@ -230,16 +223,16 @@ class App extends GenericApp {
                                 dsn: window.sentryDSN,
                                 release: `iobroker.${window.adapterName}@${pack.version}`,
                                 integrations: [
-                                    new SentryIntegrations.Dedupe()
-                                ]
+                                    Sentry.dedupeIntegration(),
+                                ],
                             });
 
                             // BF 2021.08.31: may be this is not required as executed in adapter-react
                             this.socket.getObject('system.meta.uuid')
                                 .then(uuidObj => {
                                     if (uuidObj && uuidObj.native && uuidObj.native.uuid) {
-                                        Sentry.configureScope(scope =>
-                                            scope.setUser({ id: uuidObj.native.uuid }));
+                                        const scope = Sentry.getCurrentScope();
+                                        scope.setUser({ id: uuidObj.native.uuid });
                                     }
                                     this.setState(newState, () =>
                                         this.refreshData());
@@ -760,7 +753,7 @@ class App extends GenericApp {
             onClose={() => this.setState({ sceneChangeDialog: '' })}
         >
                 <DialogTitle>{I18n.t('Are you sure for cancel unsaved changes?')}</DialogTitle>
-                <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
+                <DialogActions style={styles.alignRight}>
                     <Button
                         variant="contained"
                         color="grey"
@@ -812,7 +805,7 @@ class App extends GenericApp {
             onClose={() => this.setState({ deleteDialog: false })}
         >
             <DialogTitle>{I18n.t('Are you sure for delete this scene?')}</DialogTitle>
-            <DialogActions className={Utils.clsx(this.props.classes.alignRight, this.props.classes.buttonsContainer)}>
+            <DialogActions style={styles.alignRight}>
                 <Button
                     variant="contained"
                     color="secondary"
@@ -951,11 +944,11 @@ class App extends GenericApp {
         return <Toolbar
             variant="dense"
             key="topToolbar"
-            classes={{ gutters: this.props.classes.noGutters }}
+            sx={{ '& .MuiToolbar-gutters': styles.noGutters }}
         >
-            {this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? <Typography variant="h6" className={ this.props.classes.sceneTitle }>
+            {this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? <Typography variant="h6" sx={styles.sceneTitle}>
                 {I18n.t('Scene options') /*Utils.getObjectNameFromObj(scene, null, {language: I18n.getLanguage()}) */}
-                <span className={this.props.classes.sceneSubTitle}>{Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, { language: I18n.getLanguage() }, true)}</span>
+                <span style={styles.sceneSubTitle}>{Utils.getObjectNameFromObj(this.state.scenes[this.state.selectedSceneId], null, { language: I18n.getLanguage() }, true)}</span>
             </Typography> : null}
 
             {showDrawer ? <IconButton
@@ -976,10 +969,10 @@ class App extends GenericApp {
     }
 
     renderSceneBottomToolbar() {
-        return <Toolbar variant="dense" key="bottomToolbar" classes={{ gutters: this.props.classes.noGutters }}>
+        return <Toolbar variant="dense" key="bottomToolbar" sx={{ '& .MuiToolbar-gutters': styles.noGutters }}>
             <div style={{ flexGrow: 1 }} />
             {this.state.selectedSceneChanged ? <Button
-                className={ this.props.classes.toolbarButtons }
+                sx={styles.toolbarButtons}
                 variant="contained"
                 color="secondary"
                 onClick={() => this.writeScene()}
@@ -990,7 +983,7 @@ class App extends GenericApp {
 
             {this.state.selectedSceneChanged ? <Button
                 color="grey"
-                className={this.props.classes.toolbarButtons}
+                sx={styles.toolbarButtons}
                 variant="contained"
                 startIcon={<IconCancel />}
                 onClick={() => this.refreshData(this.state.selectedSceneId)}
@@ -1017,6 +1010,7 @@ class App extends GenericApp {
             onCreateScene={parentId => this.createScene(this.getNewSceneId(), parentId)}
             onRenameFolder={(folder, newId) => this.renameFolder(folder, newId)}
             onMoveScene={(oldId, newId) => this.moveScript(oldId, newId)}
+            version={pack.version}
         />;
     }
 
@@ -1038,6 +1032,7 @@ class App extends GenericApp {
             sceneId={this.state.selectedSceneId}
             engineId={this.state.selectedSceneData.common.engine}
             intervalBetweenCommands={this.state.selectedSceneData.native.burstInterval || 0}
+            theme={this.state.theme}
         />;
     }
 
@@ -1054,6 +1049,7 @@ class App extends GenericApp {
             scene={this.state.selectedSceneData}
             socket={this.socket}
             instances={this.state.instances}
+            theme={this.state.theme}
         />;
     }
 
@@ -1064,15 +1060,14 @@ class App extends GenericApp {
                 anchor="left"
                 open={this.state.menuOpened}
                 onClose={() => this.setState({ menuOpened: false })}
-                classes={{ paper: this.props.classes.drawer }}
+                sx={{ '& .MuiDrawer-paper': styles.drawer }}
             >
                 {this.renderDrawerContent(true)}
             </Drawer>,
             this.renderSceneTopToolbar(true),
             this.state.selectedSceneId ? <div
                     key="main"
-                    className={this.props.classes.heightMinus2Toolbars}
-                    style={{ overflowY: 'auto', overflowX: 'hidden', padding: 8, height: 'calc(100% - 112px)' }}
+                    style={{ ...styles.heightMinus2Toolbars, overflowY: 'auto', overflowX: 'hidden', padding: 8, height: 'calc(100% - 112px)' }}
                 >
                     {this.renderSceneSettings(true)}
                     {this.renderSceneMembers(true)}
@@ -1088,38 +1083,37 @@ class App extends GenericApp {
             const renderedScene = this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ? <Grid
                 container
                 spacing={1}
-                className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}
+                sx={Utils.getStyle(this.state.theme, styles.height, styles.settingsBackground)}
             >
                 <Grid
                     item
                     xs={this.props.width === 'xs' ? 12 : 5}
-                    className={this.props.classes.heightMinus2Toolbars}
+                    style={styles.heightMinus2Toolbars}
                 >
                     {this.renderSceneTopToolbar(true)}
                     <div
-                        className={this.props.classes.height}
-                        style={{ paddingLeft: 8 }}
+                        style={{ ...styles.height, paddingLeft: 8 }}
                     >
                         {this.state.selectedSceneId ? this.renderSceneSettings() : null}
                     </div>
                     {this.renderSceneBottomToolbar()}
                 </Grid>
-                <Grid item xs={this.props.width === 'xs' ? 12 : 7} className={Utils.clsx(this.props.classes.height)}>
-                    <div className={Utils.clsx(this.props.classes.heightMinusMargin)}>
-                        <div className={Utils.clsx(this.props.classes.membersCell, this.props.classes.height)}>
+                <Grid item xs={this.props.width === 'xs' ? 12 : 7} style={styles.height}>
+                    <div style={styles.heightMinusMargin}>
+                        <Box component="div" sx={Utils.getStyle(this.state.theme, styles.membersCell, styles.height)}>
                             {this.renderSceneMembers()}
-                        </div>
+                        </Box>
                     </div>
                 </Grid>
             </Grid> : null;
 
-            return <Container className={Utils.clsx(this.props.classes.height, this.props.classes.fullWidthContainer)}>
-                <Grid container spacing={1} className={this.props.classes.height}>
+            return <Container style={{ ...styles.height, ...styles.fullWidthContainer }}>
+                <Grid container spacing={1} style={styles.height}>
                     <Drawer anchor="left" open={this.state.menuOpened} onClose={() => this.setState({ menuOpened: false })}>
                         {this.renderDrawerContent(true)}
                     </Drawer>
                     {this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
-                        <Grid item xs={12} className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
+                        <Grid item xs={12} sx={Utils.getStyle(this.state.theme, styles.height, styles.settingsBackground)}>
                             {renderedScene}
                         </Grid>
                         : null
@@ -1137,29 +1131,28 @@ class App extends GenericApp {
                 window.localStorage.setItem('Scenes.splitSizes2', JSON.stringify(splitSizes2));
             }}
             theme={this.state.themeName === 'dark' ? GutterTheme.Dark : GutterTheme.Light}
-            gutterClassName={this.state.themeName === 'dark' ? `${this.props.classes.gutter} Dark visGutter` : `${this.props.classes.gutter} Light visGutter`}
+            gutterClassName={this.state.themeName === 'dark' ? `Dark visGutter` : `Light visGutter`}
         >
-            <div className={this.props.classes.heightMinus2Toolbars}>
+            <div style={styles.heightMinus2Toolbars}>
                 {this.renderSceneTopToolbar(false)}
                 <div
-                    className={this.props.classes.height}
-                    style={{ paddingLeft: 8, paddingRight: 8 }}
+                    style={{ ...styles.height, paddingLeft: 8, paddingRight: 8 }}
                 >
                     {this.state.selectedSceneId ? this.renderSceneSettings() : null}
                 </div>
                 {this.renderSceneBottomToolbar()}
             </div>
-            <div className={Utils.clsx(this.props.classes.heightMinusMargin)}>
-                <div className={Utils.clsx(this.props.classes.membersCell, this.props.classes.height)}>
+            <Box style={styles.heightMinusMargin}>
+                <Box component="div" sx={Utils.getStyle(this.state.theme, styles.membersCell, styles.height)}>
                     {this.renderSceneMembers()}
-                </div>
-            </div>
+                </Box>
+            </Box>
         </ReactSplit> : null;
 
         return <ReactSplit
             direction={SplitDirection.Horizontal}
             initialSizes={this.state.splitSizes}
-            minWidths={[270, 450]}
+            minWidths={[290, 450]}
             onResizeFinished={(gutterIdx, splitSizes) => {
                 this.setState({ splitSizes });
                 window.localStorage.setItem('Scenes.splitSizes', JSON.stringify(splitSizes));
@@ -1167,13 +1160,13 @@ class App extends GenericApp {
             theme={this.state.themeName === 'dark' ? GutterTheme.Dark : GutterTheme.Light}
             gutterClassName={this.state.themeName === 'dark' ? 'Dark visGutter' : 'Light visGutter'}
         >
-            <div className={Utils.clsx(this.props.classes.columnContainer, this.props.classes.height)}>
+            <div style={{ ...styles.columnContainer, ...styles.height }}>
                 {this.renderDrawerContent(false)}
             </div>
             {this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ?
-                <div className={Utils.clsx(this.props.classes.height, this.props.classes.settingsBackground)}>
+                <Box component="div" sx={Utils.getStyle(this.state.theme, styles.height, styles.settingsBackground)}>
                     {renderedScene}
-                </div>
+                </Box>
                 : <div />}
         </ReactSplit>;
     }
@@ -1182,7 +1175,7 @@ class App extends GenericApp {
         if (!this.state.ready) {
             return <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={this.state.theme}>
-                    <Loader theme={this.state.themeName} />
+                    <Loader themeName={this.state.themeName} />
                 </ThemeProvider>
             </StyledEngineProvider>;
         }
@@ -1191,7 +1184,7 @@ class App extends GenericApp {
 
         return <StyledEngineProvider injectFirst>
             <ThemeProvider theme={this.state.theme}>
-                <div className={this.props.classes.root}>
+                <Box component="div" sx={styles.root}>
                     {oneColumn ?
                         this.renderInOneColumn() :
                         this.renderInMoreThanOneColumn()
@@ -1201,10 +1194,10 @@ class App extends GenericApp {
                     {this.renderExportImportDialog()}
                     {this.renderImportWarningDialog()}
                     {this.renderError()}
-                </div>
+                </Box>
             </ThemeProvider>
         </StyledEngineProvider>;
     }
 }
 
-export default withWidth()(withStyles(styles)(withTheme(App)));
+export default withWidth()(App);

@@ -152,6 +152,9 @@ sendTo(
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) GUI migrated for the new `adapter-react` library
+
 ### 3.1.1 (2024-06-21)
 * (bluefox) Packages updated
 * (bluefox) Prepared for js-controller 6

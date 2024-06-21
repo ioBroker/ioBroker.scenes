@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/styles';
 import {
     Button, Card,
     Checkbox, CircularProgress,
@@ -56,21 +55,21 @@ const NAMES = {
     [Types.volumeGroup]: { boolean: 'SET' },
 };
 
-const styles = theme => ({
+const styles = {
     dialogPaper: {
         height: 'calc(100% - 96px)',
     },
-    enumGroupMember: {
+    enumGroupMember: theme => ({
         display: 'inline-flex',
-        margin: 4,
-        padding: 4,
+        m: '4px',
+        p: '4px',
         backgroundColor: '#00000010',
         border: '1px solid #FFF',
         borderColor: theme.palette.text.hint,
         color: theme.palette.text.primary,
         alignItems: 'center',
         position: 'relative',
-    },
+    }),
     icon: {
         height: 32,
         width: 32,
@@ -86,7 +85,7 @@ const styles = theme => ({
         whiteSpace: 'nowrap',
         opacity: 0.5,
     },
-});
+};
 
 class EnumsSelector extends React.Component {
     constructor(props) {
@@ -284,25 +283,25 @@ class EnumsSelector extends React.Component {
             key={id}
             title={name ? `${I18n.t('Name: %s', name)}\nID: ${member._id}` : member._id}
             variant="outlined"
-            className={this.props.classes.enumGroupMember}
+            sx={styles.enumGroupMember}
             style={{ opacity: this.state.value.exclude.includes(id) ? 0.5 : 1 }}
         >
             {
                 this.state.icons[id] ?
-                    <Icon className={this.props.classes.icon} src={this.state.icons[id]} />
+                    <Icon style={styles.icon} src={this.state.icons[id]} />
                     :
-                    (member.type === 'state' ? <IconState className={this.props.classes.icon} />
+                    (member.type === 'state' ? <IconState style={styles.icon} />
                             : (member.type === 'channel' ?
-                                    <IconChannel className={this.props.classes.icon} />
+                                    <IconChannel style={styles.icon} />
                                     : member.type === 'device' ?
-                                        <IconDevice className={this.props.classes.icon} /> :
-                                        <IconList className={this.props.classes.icon} />
+                                        <IconDevice style={styles.icon} /> :
+                                        <IconList style={styles.icon} />
                             )
                     )
             }
             <div>
                 {name || member._id}
-                {name || member.realId !== member._id ? <div className={this.props.classes.secondLine}>{member.realId || member._id}</div> : null}
+                {name || member.realId !== member._id ? <div style={styles.secondLine}>{member.realId || member._id}</div> : null}
             </div>
             <IconButton
                 size="small"
@@ -332,7 +331,7 @@ class EnumsSelector extends React.Component {
             open={!0}
             fullWidth
             maxWidth="lg"
-            classes={{ paper: this.props.classes.dialogPaper }}
+            sx={{ '& .MuiDialog-paper': styles.dialogPaper }}
             onClose={() => this.setState({ showAddEnumsDialog: false })}
         >
             <DialogTitle style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -498,6 +497,7 @@ class EnumsSelector extends React.Component {
                     {this.props.edit ? I18n.t('Apply') : I18n.t('Add')}
                 </Button>
                 <Button
+                    variant="contained"
                     color="grey"
                     onClick={() => this.props.onClose(null)}
                     startIcon={<IconCancel />}
@@ -514,7 +514,8 @@ EnumsSelector.propTypes = {
     onClose: PropTypes.func,
     value: PropTypes.object,
     edit: PropTypes.bool,
+    theme: PropTypes.object.isRequired,
     showError: PropTypes.func,
 };
 
-export default withStyles(styles)(EnumsSelector);
+export default EnumsSelector;

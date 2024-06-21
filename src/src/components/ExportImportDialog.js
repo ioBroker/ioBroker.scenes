@@ -1,6 +1,5 @@
 // Common
 import React from 'react';
-import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 
 import Button from '@mui/material/Button';
@@ -25,7 +24,7 @@ import {MdCheck as IconCheck} from 'react-icons/md';
 // Own
 import { Utils, I18n } from '@iobroker/adapter-react-v5';
 
-const styles = theme => ({
+const styles = {
     divWithoutTitle: {
         width: 'calc(100% - 4px)',
         height: 'calc(100% - 4px)',
@@ -37,7 +36,7 @@ const styles = theme => ({
     dialogHeight: {
         height: 'calc(100% - 64px)',
     },
-});
+};
 
 class ExportImportDialog extends React.Component {
     constructor(props) {
@@ -112,7 +111,7 @@ class ExportImportDialog extends React.Component {
     render() {
         return <Dialog
             open={!0}
-            classes={{ paper: this.props.classes.dialogHeight }}
+            sx={{ '& .MuiDialog-paper': styles.dialogHeight }}
             onClose={() => this.props.onClose()}
             aria-labelledby="export-dialog-title"
             fullWidth
@@ -122,7 +121,7 @@ class ExportImportDialog extends React.Component {
             {this.renderWarningDialog()}
             <DialogTitle id="export-dialog-title">{this.props.isImport ? I18n.t('Import scene') : I18n.t('Export scene')}</DialogTitle>
             <DialogContent>
-                <div className={Utils.clsx(this.props.classes.divWithoutTitle, this.state.error && this.props.classes.error)}>
+                <div style={{ ...styles.divWithoutTitle, ...(this.state.error ? styles.error : undefined) }}>
                     <AceEditor
                         autoFocus
                         mode="json"
@@ -194,7 +193,6 @@ class ExportImportDialog extends React.Component {
 }
 
 ExportImportDialog.propTypes = {
-    classes: PropTypes.object,
     sceneObj: PropTypes.object,
     themeType: PropTypes.string,
     onClose: PropTypes.func,
@@ -202,4 +200,4 @@ ExportImportDialog.propTypes = {
     allScenes: PropTypes.bool,
 };
 
-export default withStyles(styles)(ExportImportDialog);
+export default ExportImportDialog;

@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/styles';
 
 import {
     TextField,
@@ -18,14 +17,9 @@ import {
 
 import { Utils, I18n, SelectID as DialogSelectID, Cron } from '@iobroker/adapter-react-v5';
 
-const styles = theme => ({
+const styles = {
     alignRight: {
         textAlign: 'right',
-    },
-    buttonsContainer: {
-        '& button': {
-            margin: `0 ${theme.spacing(1)}`,
-        },
     },
     height: {
         height: '100%',
@@ -36,7 +30,7 @@ const styles = theme => ({
     columnContainer: {
         display: 'flex',
         flexDirection: 'column',
-        paddingTop: 16,
+        marginTop: 16,
     },
     right: {
         float: 'right',
@@ -45,19 +39,19 @@ const styles = theme => ({
         overflowY: 'auto',
         overflowX: 'hidden',
         height: '100%',
-        paddingRight: theme.spacing(1),
+        paddingRight: 8,
         width: '100%',
     },
-    editItem: {
+    editItem: theme => ({
         display: 'block',
-        marginBottom: theme.spacing(2),
+        mb: '16px',
         color: theme.palette.mode === 'dark' ? '#FFF': '#000',
-    },
+    }),
     marginBottom2: {
-        marginBottom: theme.spacing(0.5),
+        mb: '4px',
     },
     p: {
-        margin: `${theme.spacing(1)} 0`,
+        margin: `8px 0`,
     },
     onTrue: {
         background: 'lightgreen',
@@ -65,15 +59,15 @@ const styles = theme => ({
     onFalse: {
         background: '#ff9999',
     },
-    pTrue: {
+    pTrue: theme => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#002502' : '#90ee90',
-        padding: 4,
-    },
-    pFalse: {
+        p: '4px',
+    }),
+    pFalse: theme => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#332100' : '#eec590',
-        padding: 4,
-    },
-});
+        p: '4px',
+    }),
+};
 
 class SceneForm extends React.Component {
     constructor(props) {
@@ -122,7 +116,6 @@ class SceneForm extends React.Component {
 
     renderSelectIdDialog() {
         return this.state.showDialog ? <DialogSelectID
-            classes={undefined}
             key="selectDialog"
             imagePrefix="../.."
             socket={this.props.socket}
@@ -137,10 +130,11 @@ class SceneForm extends React.Component {
     renderOnTrueFalse(name) {
         const on = this.state.native[name];
 
-        return <Box className={this.state.native.onFalse.enabled ? (on === this.state.native.onTrue ? this.props.classes.pTrue : this.props.classes.pFalse) : ''}>
-            <div key="switch" className={this.props.classes.editItem}>
-                <h4 style={this.state.native.onFalse.enabled ? { marginTop: 0 } : null}>{on === this.state.native.onTrue ? (this.state.native.onFalse.enabled ? I18n.t('Trigger for TRUE') : I18n.t('Trigger')) : I18n.t('Trigger for FALSE')}
-                    <span className={this.props.classes.right}>
+        return <Box sx={this.state.native.onFalse.enabled ? (on === this.state.native.onTrue ? styles.pTrue : styles.pFalse) : undefined}>
+            <Box component="div" key="switch" sx={styles.editItem}>
+                <h4 style={this.state.native.onFalse.enabled ? { marginTop: 0 } : null}>
+                    {on === this.state.native.onTrue ? (this.state.native.onFalse.enabled ? I18n.t('Trigger for TRUE') : I18n.t('Trigger')) : I18n.t('Trigger for FALSE')}
+                    <span style={styles.right}>
                         <Switch
                             checked={!!on.trigger.id}
                             onChange={e => {
@@ -162,8 +156,8 @@ class SceneForm extends React.Component {
                         />
                     </span>
                 </h4>
-            </div>
-            <div key="id" className={this.props.classes.editItem}>
+            </Box>
+            <Box component="div" key="id" sx={styles.editItem}>
                 {on.trigger.id ?
                     <Grid container spacing={1}>
                         <Grid item xs={8}>
@@ -233,8 +227,8 @@ class SceneForm extends React.Component {
                         </Grid>
                     </Grid>
                     : null}
-            </div>
-            <div key="cron" className={Utils.clsx(this.props.classes.editItem, this.state.native.onFalse.enabled && this.props.classes.marginBottom2)}>
+            </Box>
+            <Box component="div" key="cron" sx={Utils.getStyle(this.props.theme, styles.editItem, this.state.native.onFalse.enabled && styles.marginBottom2)}>
                 <TextField
                     variant="standard"
                     inputRef={this.inputs.Cron.ref}
@@ -259,7 +253,7 @@ class SceneForm extends React.Component {
                     onClick={() => this.setState({ showCronDialog: name || 'onFalse' })}>
                     ...
                 </Button>
-            </div>
+            </Box>
         </Box>;
     }
 
@@ -297,14 +291,15 @@ class SceneForm extends React.Component {
                 native[this.state.showCronDialog].cron = cron;
                 this.setStateWithParent({ native, showCronDialog: null });
             }}
+            theme={this.props.theme}
             onClose={() => this.setState({ showCronDialog: null })}
         />;
     }
 
     render() {
-        let result = <Box key="sceneForm" className={Utils.clsx(this.props.classes.columnContainer, !this.props.oneColumn && this.props.classes.height)}>
-            <Box className={this.props.classes.scroll}>
-                <Box className={this.props.classes.editItem}>
+        let result = <Box key="sceneForm" style={{ ...styles.columnContainer, ...(!this.props.oneColumn ? { height: 'calc(100% - 16px)' } : undefined) }}>
+            <Box style={styles.scroll}>
+                <Box sx={styles.editItem}>
                     <TextField
                         variant="standard"
                         inputRef={this.inputs.Name.ref}
@@ -322,7 +317,7 @@ class SceneForm extends React.Component {
                         }}
                     />
                 </Box>
-                <Box className={this.props.classes.editItem}>
+                <Box sx={styles.editItem}>
                     <TextField
                         variant="standard"
                         inputRef={this.inputs.Description.ref}
@@ -340,10 +335,10 @@ class SceneForm extends React.Component {
                         }}
                     />
                 </Box>
-                <Box className={this.props.classes.editItem}>
+                <Box sx={styles.editItem}>
                     <Grid container spacing={1}>
                         <Grid item xs={12} sm={6}>
-                            <FormControl className={this.props.classes.width100} variant="standard">
+                            <FormControl fullWidth variant="standard">
                                 <InputLabel shrink>{I18n.t('Instance')}</InputLabel>
                                 <Select
                                     variant="standard"
@@ -377,7 +372,7 @@ class SceneForm extends React.Component {
                         </Grid>
                     </Grid>
                 </Box>
-                <Box className={this.props.classes.editItem}>
+                <Box sx={styles.editItem}>
                     <Grid container spacing={1}>
                         <Grid item xs={12} sm={6}>
                             <FormControlLabel
@@ -410,7 +405,7 @@ class SceneForm extends React.Component {
                                 />
                                 : null}
                             {this.state.native.virtualGroup && !this.state.native.easy ?
-	                            <FormControl className={this.props.classes.width100} variant="standard">
+	                            <FormControl fullWidth variant="standard">
 	                                <InputLabel shrink>{I18n.t('Aggregation')}</InputLabel>
 	                                <Select
                                         variant="standard"
@@ -429,7 +424,7 @@ class SceneForm extends React.Component {
                         </Grid>
                     </Grid>
                 </Box>
-                <Box className={this.props.classes.editItem}>
+                <Box sx={styles.editItem}>
                     <Grid container spacing={1}>
                         <Grid item xs={12} sm={6}>
                             <FormControlLabel
@@ -461,13 +456,13 @@ class SceneForm extends React.Component {
 }
 
 SceneForm.propTypes = {
-    classes: PropTypes.object,
     socket: PropTypes.object,
     scene: PropTypes.object,
     updateScene: PropTypes.func.isRequired,
     instances: PropTypes.array,
+    theme: PropTypes.object.isRequired,
     oneColumn: PropTypes.bool,
     showError: PropTypes.func,
 };
 
-export default withStyles(styles)(SceneForm);
+export default SceneForm;

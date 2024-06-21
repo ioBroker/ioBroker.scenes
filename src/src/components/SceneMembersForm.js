@@ -1,5 +1,4 @@
 import React from 'react'
-import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -58,22 +57,22 @@ const TRUE_DARK_COLOR  = '#528952';
 const FALSE_DARK_COLOR = '#774747';
 const UNCERTAIN_COLOR  = '#bfb7be';
 
-const styles = theme => ({
+const styles = {
     memberTrueFalse: {
         borderRadius: 10,
-        padding: `2px ${theme.spacing(1)}`,
+        padding: `2px 8px`,
         fontSize: 'initial',
         fontWeight: 'initial',
-        margin: `0 ${theme.spacing(1)}`,
+        margin: `0 8px`,
         textAlign: 'right',
         whiteSpace: 'nowrap',
         maxWidth: 300,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
     },
-    memberTrue: {
+    memberTrue: theme => ({
         backgroundColor: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
-    },
+    }),
     memberFalse: {
         backgroundColor: 'pink',
     },
@@ -83,7 +82,7 @@ const styles = theme => ({
     },
     memberCard: {
         padding: 4,
-        margin: `${theme.spacing(1)} 0`,
+        margin: `8px 0`,
     },
     memberFolder: {
         position: 'absolute',
@@ -97,7 +96,7 @@ const styles = theme => ({
         overflowY: 'auto',
         overflowX: 'hidden',
         height: '100%',
-        paddingRight: theme.spacing(1),
+        paddingRight: 8,
         width: '100%',
     },
     height: {
@@ -112,52 +111,52 @@ const styles = theme => ({
     },
     buttonsContainer: {
         '& button': {
-            margin: `0 ${theme.spacing(1)}`,
+            margin: `0 8px`,
         },
     },
     p: {
-        margin: `${theme.spacing(1)} 0`,
+        margin: `8px 0`,
     },
-    pTrue: {
+    pTrue: theme => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#002502' : '#90ee90',
-        padding: 4,
-    },
-    pFalse: {
-        padding: 4,
+        p: '4px',
+    }),
+    pFalse: theme => ({
+        p: '4px',
         backgroundColor: theme.palette.mode === 'dark' ? '#332100' : '#eec590',
-    },
+    }),
     guttersZero: {
         padding: 0,
     },
-    sceneTitle: {
+    sceneTitle: theme => ({
         flexGrow: 1,
         color: theme.palette.mode === 'dark' ? '#FFF': '#000',
-    },
+    }),
     sceneSubTitle: {
         fontSize: 'small',
-        borderRadius: 10,
-        padding: `2px ${theme.spacing(1)}`,
+        borderRadius: '10px',
+        padding: `2px 8px`,
         display: 'inline-flex',
         alignItems: 'center',
     },
-    sceneTrue: {
+    sceneTrue: theme => ({
         background: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
-    },
-    sceneFalse: {
+    }),
+    sceneFalse: theme => ({
         background: theme.palette.mode === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
-    },
+    }),
     sceneUncertain: {
         background: UNCERTAIN_COLOR,
     },
-    btnTestTrue: {
+    btnTestTrue: theme => ({
         background: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
-        marginRight: theme.spacing(1),
-        marginBottom: theme.spacing(0.5),
-    },
-    btnTestFalse: {
+        mr: '8px',
+        mb: '4px',
+    }),
+    btnTestFalse: theme => ({
         background: theme.palette.mode === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
-        marginBottom: theme.spacing(0.5),
-    },
+        mb: '4px',
+    }),
     btnExpandAll: {
         float: 'right'
     },
@@ -184,7 +183,7 @@ const styles = theme => ({
             content: '""',
             width: 6,
             height: 6,
-            borderRadius: 6,
+            borderRadius: '6px',
             background: '#FF0000',
             position: 'absolute',
             top: 5,
@@ -223,20 +222,20 @@ const styles = theme => ({
         minHeight: 48,
     },
     setValue: {
-        width: `calc(70% - ${70 + parseInt(theme.spacing(1), 10)}px)`,
+        width: `calc(70% - ${70 + 8}px)`,
         minWidth: 100,
-        marginRight: theme.spacing(1),
+        marginRight: 8,
     },
     setTolerance: {
-        width: `calc(30% - ${70 + parseInt(theme.spacing(1), 10)}px)`,
+        width: `calc(30% - ${70 + 8}px)`,
         minWidth: 100,
-        marginRight: theme.spacing(1),
+        marginRight: 8,
     },
     disabled: {
         opacity: 0.3
     },
     instanceNotActive: {
-        marginLeft: theme.spacing(1),
+        marginLeft: 8,
         fontSize: 10,
         fontStyle: 'italic',
         color: '#FF0000',
@@ -251,13 +250,13 @@ const styles = theme => ({
     ackTrue: {
         marginLeft: 100,
     },
-    enumTitle: {
+    enumTitle: theme => ({
         color: theme.palette.primary.main,
         border: `1px solid ${theme.palette.primary.main}`,
         padding: '1px 4px 3px 4px',
-        borderRadius: 5,
-    }
-});
+        borderRadius: '5px',
+    }),
+};
 
 class SceneMembersForm extends React.Component {
     static enums = null;
@@ -564,6 +563,7 @@ class SceneMembersForm extends React.Component {
             selected={null}
             onOk={id => this.createSceneMembersWithIDs(id)}
             onClose={() => this.setState({ showDialog: false })}
+            theme={this.props.theme}
         /> : null;
     }
 
@@ -591,6 +591,7 @@ class SceneMembersForm extends React.Component {
             edit={this.state.showAddEnumsDialog !== true}
             socket={this.props.socket}
             value={this.state.showAddEnumsDialog === true ? null : this.state.members[this.state.showAddEnumsDialog].enums}
+            theme={this.props.theme}
         />;
     }
 
@@ -673,8 +674,8 @@ class SceneMembersForm extends React.Component {
             dialogName="memberEdit"
             multiSelect={false}
             title={I18n.t('Select for ') + (this.state.showSelectValueIdDialog === 'true' ? 'TRUE' : 'FALSE')}
-            selected={ setValue }
-            onOk={ id => {
+            selected={setValue}
+            onOk={id => {
                 if (id) {
                     const index = this.state.showSelectValueIdDialogFor;
                     const members = JSON.parse(JSON.stringify(this.state.members));
@@ -692,7 +693,7 @@ class SceneMembersForm extends React.Component {
         />;
     }
 
-    renderSetValue(classes, index, member, onFalseEnabled, isTrue) {
+    renderSetValue(index, member, onFalseEnabled, isTrue) {
         let labelSetValue;
         let labelTolerance;
         let setValue;
@@ -726,9 +727,9 @@ class SceneMembersForm extends React.Component {
 
         const type = member.id ? this.state.objectTypes[member.id] : (member.enums.type || 'boolean');
 
-        return <Box className={Utils.clsx(classes.p, this.state.onFalseEnabled ? (isTrue ? classes.pTrue : classes.pFalse) : '')}>
+        return <Box sx={Utils.getStyle(this.props.theme, styles.p, this.state.onFalseEnabled ? (isTrue ? styles.pTrue : styles.pFalse) : undefined)}>
             {!this.state.easy || fromState ? <FormControlLabel
-                classes={{ root: classes.fromId }}
+                style={styles.fromId}
                 control={<Switch
                     checked={fromState}
                     onChange={e => {
@@ -752,7 +753,7 @@ class SceneMembersForm extends React.Component {
                 label={I18n.t('From ID')}
             /> : null}
             {!fromState && type === 'boolean' ?
-                <FormControl className={classes.setValue} variant="standard">
+                <FormControl style={styles.setValue} variant="standard">
                     <InputLabel>{labelSetValue}</InputLabel>
                     <Select
                         variant="standard"
@@ -782,10 +783,10 @@ class SceneMembersForm extends React.Component {
                         label={labelSetValue}
                         value={setValue || ''}
                         readOnly
-                        className={classes.setValue}
+                        style={styles.setValue}
                         InputProps={{
                             endAdornment: <IconButton
-                                className={this.props.classes.smallClearBtn}
+                                style={styles.smallClearBtn}
                                 size="small"
                                 onClick={() => this.setState({ showSelectValueIdDialog: isTrue ? 'true' : 'false', showSelectValueIdDialogFor: index })}>
                                 <IconList />
@@ -798,11 +799,11 @@ class SceneMembersForm extends React.Component {
                         InputLabelProps={{ shrink: true }}
                         label={labelSetValue}
                         value={setValue === undefined || setValue === null ? '' : setValue}
-                        className={classes.setValue}
+                        style={styles.setValue}
                         InputProps={{
                             endAdornment: setValue ? <IconButton
                                 size="small"
-                                className={classes.smallClearBtn}
+                                style={styles.smallClearBtn}
                                 onClick={() => {
                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                     if (isTrue) {
@@ -846,11 +847,11 @@ class SceneMembersForm extends React.Component {
                         label={`± ${labelTolerance}`}
                         value={setValueTolerance === undefined || setValueTolerance === null ? '' : setValueTolerance}
                         title={I18n.t('Absolute value, not percent')}
-                        className={classes.setTolerance}
+                        style={styles.setTolerance}
                         InputProps={{
                             endAdornment: setValueTolerance ? <IconButton
                                 size="small"
-                                className={classes.smallClearBtn}
+                                style={styles.smallClearBtn}
                                 onClick={() => {
                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                     if (isTrue) {
@@ -883,7 +884,7 @@ class SceneMembersForm extends React.Component {
             }
             {!this.state.easy && !fromState && <FormControlLabel
                 label={I18n.t('Write with ack=true')}
-                classes={{ root: classes.ackTrue }}
+                style={styles.ackTrue}
                 control={<Checkbox
                     checked={!!member.ackTrue}
                     onChange={e => {
@@ -976,7 +977,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        return <span className={this.props.classes.enumTitle}>{title}✎</span>;
+        return <Box component="span" sx={styles.enumTitle}>{title}✎</Box>;
     }
 
     getEnumsState(index) {
@@ -1064,7 +1065,6 @@ class SceneMembersForm extends React.Component {
 
     renderMember = (member, index) => {
         let value = null;
-        const classes = this.props.classes;
         if (member.id && this.state.states[member.id] !== undefined && this.state.states[member.id] !== null) {
             let _valStr = this.state.states[member.id].toString();
 
@@ -1075,37 +1075,41 @@ class SceneMembersForm extends React.Component {
             }
 
             if (member.setIfTrueTolerance && Math.abs(this.state.states[member.id] - member.setIfTrue) <= member.setIfTrueTolerance) {
-                value = <div
+                value = <Box
+                    component="div"
                     title={I18n.t('Actual state value')}
-                    className={Utils.clsx(classes.memberTrueFalse, classes.memberTrue)}
+                    sx={Utils.getStyle(this.props.theme, styles.memberTrueFalse, styles.memberTrue)}
                 >
                     {_valStr}
-                </div>;
+                </Box>;
             } else if (this.state.states[member.id] === member.setIfTrue) {
-                value = <div
+                value = <Box
+                    component="div"
                     title={I18n.t('Actual state value')}
-                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberTrue)}
+                    sx={Utils.getStyle(this.props.theme, styles.memberTrueFalse, styles.memberTrue)}
                 >
                     {_valStr}
-                </div>;
+                </Box>;
             } else if (member.setIfFalse !== undefined && member.setIfFalseTolerance && Math.abs(this.state.states[member.id] - member.setIfFalse) <= member.setIfFalseTolerance) {
-                value = <div
+                value = <Box
+                    component="div"
                     title={I18n.t('Actual state value')}
-                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberFalse)}
+                    sx={Utils.getStyle(this.props.theme, styles.memberTrueFalse, styles.memberFalse)}
                 >
                     {_valStr}
-                </div>;
+                </Box>;
             } else if (member.setIfFalse !== undefined && this.state.states[member.id] === member.setIfFalse) {
-                value = <div
+                value = <Box
+                    component="div"
                     title={I18n.t('Actual state value')}
-                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberFalse)}
+                    sx={Utils.getStyle(this.props.theme, styles.memberTrueFalse, styles.memberFalse)}
                 >
                     {_valStr}
-                </div>;
+                </Box>;
             } else {
                 value = <div
                     title={I18n.t('Actual state value')}
-                    className={ Utils.clsx(classes.memberTrueFalse, classes.memberUncertain)}
+                    style={{ ...styles.memberTrueFalse, ...styles.memberUncertain }}
                 >
                     {_valStr}
                 </div>;
@@ -1122,7 +1126,7 @@ class SceneMembersForm extends React.Component {
 
             value = <div
                 title={I18n.t('Combined state of all states in category')}
-                className={classes.memberTrueFalse}
+                style={styles.memberTrueFalse}
             >
                 {_valStr}
             </div>;
@@ -1198,10 +1202,10 @@ class SceneMembersForm extends React.Component {
 
         const title = member.id || this.getTitleForEnums(index);
 
-        return <Paper key={`${member.id || ''}_${index}`} className={Utils.clsx(classes.memberCard, member.disabled && classes.disabled)}>
-            <div className={classes.memberToolbar}>
+        return <Paper key={`${member.id || ''}_${index}`} style={{ ...styles.memberCard, ...(member.disabled ? styles.disabled : undefined) }}>
+            <div style={styles.memberToolbar}>
                 <IconButton
-                    className={classes.memberFolder}
+                    style={styles.memberFolder}
                     title={I18n.t('Edit')}
                     onClick={() => {
                         const openedMembers = [...this.state.openedMembers];
@@ -1219,14 +1223,13 @@ class SceneMembersForm extends React.Component {
                     {opened ? <IconFolderOpened /> : <IconFolderClosed />}
                 </IconButton>
                 <div
-                    className={classes.memberTitle}
-                    style={member.id ? undefined : { cursor: 'pointer' }}
+                    style={{ ...styles.memberTitle,  cursor: member.id ? undefined : 'pointer' }}
                     onClick={member.id ? undefined : () => this.setState({ showAddEnumsDialog: index })}
                 >
                     {title}
                 </div>
-                <div className={classes.memberDesc}>{member.desc || (member.id && this.state.objectNames[member.id]) || ''}</div>
-                <div className={classes.memberButtons}>
+                <div style={styles.memberDesc}>{member.desc || (member.id && this.state.objectNames[member.id]) || ''}</div>
+                <div style={styles.memberButtons}>
                     <IconButton
                         size="small"
                         style={{ marginLeft: 5 }} aria-label="Delete" title={I18n.t('Delete')}
@@ -1262,7 +1265,7 @@ class SceneMembersForm extends React.Component {
                 <span> <IconClock /> {`${delay + I18n.t('ms')} ${I18n.t('from scene start')}`}</span> : null}
             </div>
             {opened ? <div>
-                <Box className={classes.p}>
+                <Box style={styles.p}>
                     <TextField
                         variant="standard"
                         fullWidth
@@ -1272,7 +1275,7 @@ class SceneMembersForm extends React.Component {
                         InputProps={{
                             endAdornment: member.desc ? <IconButton
                                 size="small"
-                                className={classes.smallClearBtn}
+                                style={styles.smallClearBtn}
                                 onClick={() => {
                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                     members[index].desc = null;
@@ -1289,7 +1292,7 @@ class SceneMembersForm extends React.Component {
                         }}
                     />
                 </Box>
-                {member.id ? null : <Box className={classes.p}>
+                {member.id ? null : <Box style={styles.p}>
                     <FormControl style={{ width: '50%' }} variant="standard">
                         <InputLabel>{I18n.t('Value type')}</InputLabel>
                         <Select
@@ -1315,7 +1318,7 @@ class SceneMembersForm extends React.Component {
                         InputProps={{
                             endAdornment: member.enums.delay ? <IconButton
                                 size="small"
-                                className={classes.smallClearBtn}
+                                style={styles.smallClearBtn}
                                 onClick={() => {
                                     const members = JSON.parse(JSON.stringify(this.state.members));
                                     members[index].enums.delay = null;
@@ -1332,9 +1335,9 @@ class SceneMembersForm extends React.Component {
                         }}
                     />
                 </Box>}
-                {!this.state.virtualGroup ? this.renderSetValue(classes, index, member, onFalseEnabled, true) : null}
-                {!this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(classes, index, member, true, false) : null}
-                {!this.state.easy ? <Box className={classes.p}>
+                {!this.state.virtualGroup ? this.renderSetValue(index, member, onFalseEnabled, true) : null}
+                {!this.state.virtualGroup && this.state.onFalseEnabled ? this.renderSetValue(index, member, true, false) : null}
+                {!this.state.easy ? <Box style={styles.p}>
                     <Grid container spacing={4}>
                         <Grid item xs={12} sm={4}>
                             <TextField
@@ -1385,7 +1388,7 @@ class SceneMembersForm extends React.Component {
                         </Grid>
                     </Grid>
                 </Box> : null}
-                {!this.state.easy ? <Box className={classes.p}>
+                {!this.state.easy ? <Box style={styles.p}>
                     <FormControlLabel
                         label={I18n.t('Do not overwrite state if it has the required value')}
                         title={I18n.t('For example, if the value is already at "%s" and "%s" is the setpoint, then write the value anyway if this checkbox is activated.',
@@ -1402,11 +1405,11 @@ class SceneMembersForm extends React.Component {
                     />
                 </Box> : null}
             </div> :
-            (!this.state.virtualGroup ? <div className={classes.smallOnTrueFalse}>
+            (!this.state.virtualGroup ? <div style={styles.smallOnTrueFalse}>
                 {setIfTrueVisible ? `${onFalseEnabled ? I18n.t('Set if TRUE') : I18n.t('Setpoint')}: ` : ''}
-                {setIfTrueVisible ? <span className={classes.stateValueTrue}>{setIfTrue}</span> : null}
+                {setIfTrueVisible ? <span style={styles.stateValueTrue}>{setIfTrue}</span> : null}
                 {setIfFalseVisible && onFalseEnabled ? `${setIfTrueVisible ? ' / ' : ''}${I18n.t('Set if FALSE')}: ` : null}
-                {setIfFalseVisible && onFalseEnabled ? <span className={classes.stateValueFalse}>{setIfFalse}</span> : null}
+                {setIfFalseVisible && onFalseEnabled ? <span style={styles.stateValueFalse}>{setIfFalse}</span> : null}
             </div> : <div style={{ height: 8 }} />)}
         </Paper>
     };
@@ -1536,17 +1539,19 @@ class SceneMembersForm extends React.Component {
             </div>;
         }
 
-        let result = <div key="SceneMembersForm" className={Utils.clsx(!this.props.oneColumn && this.props.classes.height, this.props.classes.columnContainer)}>
-            <Toolbar classes={{ gutters: this.props.classes.guttersZero }}>
-                <Typography variant="h6" className={Utils.clsx(this.props.classes.sceneTitle)} >
-                    {I18n.t('Scene states')}{!this.state.states[`${this.state.engineId}.alive`] ? <span className={this.props.classes.instanceNotActive}>{I18n.t('Instance not active')}</span> : ''}
+        let result = <div key="SceneMembersForm" style={{ ...(!this.props.oneColumn ? styles.height : undefined), ...styles.columnContainer }}>
+            <Toolbar sx={{ '&. MuiToolbar-gutters': styles.guttersZero }}>
+                <Typography variant="h6" sx={styles.sceneTitle} >
+                    {I18n.t('Scene states')}{!this.state.states[`${this.state.engineId}.alive`] ? <span style={styles.instanceNotActive}>{I18n.t('Instance not active')}</span> : ''}
                     <br />
-                    <div
-                        className={Utils.clsx(
-                            this.props.classes.sceneSubTitle,
-                            !this.state.virtualGroup && sceneState === true && this.props.classes.sceneTrue,
-                            !this.state.virtualGroup && sceneState === false && this.props.classes.sceneFalse,
-                            !this.state.virtualGroup && sceneState === 'uncertain' && this.props.classes.sceneUncertain,
+                    <Box
+                        component="div"
+                        sx={Utils.getStyle(
+                            this.props.theme,
+                            styles.sceneSubTitle,
+                            !this.state.virtualGroup && sceneState === true && styles.sceneTrue,
+                            !this.state.virtualGroup && sceneState === false && styles.sceneFalse,
+                            !this.state.virtualGroup && sceneState === 'uncertain' && styles.sceneUncertain,
                         )}
                         style={takeState ? { cursor: 'pointer' } : null}
                         onClick={takeState ? () => {
@@ -1560,7 +1565,7 @@ class SceneMembersForm extends React.Component {
                         {I18n.t('Scene state:')} {sceneState === true ? 'TRUE' :
                             (sceneState === false ?
                                 (takeState || 'FALSE') : (takeState || sceneState.toString()))}
-                    </div>
+                    </Box>
                 </Typography>
                 <IconButton title={I18n.t('Add new state')} onClick={() => this.setState({ showDialog: true })}>
                     <IconAdd />
@@ -1569,10 +1574,10 @@ class SceneMembersForm extends React.Component {
                     <IconAddBox />
                 </IconButton>
             </Toolbar>
-            <div className={Utils.clsx(this.props.classes.testButtons, this.props.classes.width100)}>
+            <div style={{ ...styles.testButtons, ...styles.width100 }}>
                 {!this.state.selectedSceneChanged && this.state.virtualGroup ? <TextField
                     variant="standard"
-                    className={this.props.classes.width100WithButton}
+                    style={styles.width100WithButton}
                     label={I18n.t('Write to virtual group')}
                     defaultValue={sceneState}
                     onKeyUp={e => e.keyCode === 13 && this.onWriteScene(this.state.writeSceneState)}
@@ -1585,7 +1590,7 @@ class SceneMembersForm extends React.Component {
                 </IconButton> : null}
                 {this.state.sceneEnabled && !this.state.selectedSceneChanged && !this.state.virtualGroup ? <Button
                     color="grey"
-                    className={this.props.classes.btnTestTrue}
+                    sx={styles.btnTestTrue}
                     onClick={() => this.onWriteScene(true)}
                     startIcon={<IconPlay />}
                 >
@@ -1593,7 +1598,7 @@ class SceneMembersForm extends React.Component {
                 </Button> : null}
                 {this.state.sceneEnabled && !this.state.selectedSceneChanged && onFalseEnabled && this.state.members.length ? <Button
                     color="grey"
-                    className={this.props.classes.btnTestFalse}
+                    sx={styles.btnTestFalse}
                     startIcon={<IconPlay />}
                     onClick={() => this.onWriteScene(false)}
                 >
@@ -1601,7 +1606,7 @@ class SceneMembersForm extends React.Component {
                 </Button> : null}
                 {this.state.members.length > 1 && this.state.openedMembers.length ? <IconButton
                     title={I18n.t('Collapse all')}
-                    className={ this.props.classes.btnCollapseAll }
+                    style={styles.btnCollapseAll}
                     onClick={() => {
                         window.localStorage.setItem('Scenes.openedMembers', '[]');
                         this.setState({ openedMembers: [] });
@@ -1611,7 +1616,7 @@ class SceneMembersForm extends React.Component {
                 </IconButton> : null}
                 {this.state.members.length > 1 && this.state.openedMembers.length !== this.state.members.length ? <IconButton
                     title={I18n.t('Expand all')}
-                    className={this.props.classes.btnExpandAll}
+                    style={styles.btnExpandAll}
                     onClick={() => {
                         const openedMembers = this.state.members.map((member, i) => member.id || i);
                         window.localStorage.setItem('Scenes.openedMembers', JSON.stringify(openedMembers));
@@ -1623,10 +1628,10 @@ class SceneMembersForm extends React.Component {
             </div>
             <DragDropContext onDragEnd={this.onDragEnd}>
                 <Droppable droppableId="droppable">
-                    {(provided, snapshot) => <div className={this.props.classes.scroll}
+                    {(provided, snapshot) => <div
                          {...provided.droppableProps}
                          ref={provided.innerRef}
-                         style={this.getListStyle(snapshot.isDraggingOver)}
+                         style={{ ...styles.scroll, ...this.getListStyle(snapshot.isDraggingOver) }}
                     >
                         {this.state.members.map((member, i) =>
                             <Draggable key={`${member.id || ''}_${i}`} draggableId={`${member.id || ''}_${i}`} index={i}>
@@ -1663,7 +1668,6 @@ class SceneMembersForm extends React.Component {
 }
 
 SceneMembersForm.propTypes = {
-    classes: PropTypes.object,
     socket: PropTypes.object,
     scene: PropTypes.object,
     updateSceneMembers: PropTypes.func,
@@ -1671,6 +1675,7 @@ SceneMembersForm.propTypes = {
     onFalseEnabled: PropTypes.bool,
     virtualGroup: PropTypes.bool,
     aggregation: PropTypes.string,
+    theme: PropTypes.object.isRequired,
     members: PropTypes.array,
     ts: PropTypes.number,
     easy: PropTypes.bool,
@@ -1682,4 +1687,4 @@ SceneMembersForm.propTypes = {
     showError: PropTypes.func,
 };
 
-export default withStyles(styles)(SceneMembersForm);
+export default SceneMembersForm;
