@@ -6,7 +6,7 @@
     "@iobroker/adapter-react-v5": "^6.0.3",
     "@iobroker/type-detector": "^3.0.5",
     "@devbookhq/splitter": "^1.4.2",
-    "@mui/material": "^5.15.20",
+    "@mui/material": "^5.15.21",
     "@mui/icons-material": "^5.15.20",
     "babel-eslint": "^10.1.0",
     "@sentry/browser": "^8.10.0",
