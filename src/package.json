@@ -7,7 +7,7 @@
     "@iobroker/type-detector": "^3.0.5",
     "@devbookhq/splitter": "^1.4.2",
     "@mui/material": "^5.15.21",
-    "@mui/icons-material": "^5.15.20",
+    "@mui/icons-material": "^5.15.21",
     "babel-eslint": "^10.1.0",
     "@sentry/browser": "^8.10.0",
     "react-beautiful-dnd": "^13.1.1",
