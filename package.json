@@ -21,7 +21,7 @@
   "dependencies": {
     "node-schedule": "^2.1.1",
     "@iobroker/adapter-core": "^3.1.6",
-    "@iobroker/type-detector": "^3.0.5"
+    "@iobroker/type-detector": "^4.0.1"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^3.8.0",
