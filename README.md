@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### 3.2.2 (2024-08-26)
+### **WORK IN PROGRESS**
 * (bluefox) Packages updated
 
 ### 3.2.1 (2024-06-21)
