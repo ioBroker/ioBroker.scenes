@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "3.2.2",
+    "version": "3.2.3",
     "news": {
+      "3.2.3": {
+        "en": "Packages updated",
+        "de": "Pakete aktualisiert",
+        "ru": "Обновленные пакеты",
+        "pt": "Pacotes atualizados",
+        "nl": "Pakketten bijgewerkt",
+        "fr": "Mise à jour des paquets",
+        "it": "Pacchetti aggiornati",
+        "es": "Paquetes actualizados",
+        "pl": "Aktualizacja pakietów",
+        "uk": "Пакети оновлені",
+        "zh-cn": "更新软件包"
+      },
       "3.2.1": {
         "en": "(bluefox) GUI migrated for the new `adapter-react` library",
         "de": "(bluefox) GUI migriert für die neue `adapter-react` Bibliothek",
