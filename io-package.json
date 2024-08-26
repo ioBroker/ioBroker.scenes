@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "3.2.1",
+    "version": "3.2.2",
     "news": {
+      "3.2.2": {
+        "en": "Packages updated",
+        "de": "Pakete aktualisiert",
+        "ru": "Обновленные пакеты",
+        "pt": "Pacotes atualizados",
+        "nl": "Pakketten bijgewerkt",
+        "fr": "Mise à jour des paquets",
+        "it": "Pacchetti aggiornati",
+        "es": "Paquetes actualizados",
+        "pl": "Aktualizacja pakietów",
+        "uk": "Пакети оновлені",
+        "zh-cn": "更新软件包"
+      },
       "3.2.1": {
         "en": "(bluefox) GUI migrated for the new `adapter-react` library",
         "de": "(bluefox) GUI migriert für die neue `adapter-react` Bibliothek",
@@ -80,19 +93,6 @@
         "pl": "Oczyszczone zadania cron przez re- init\nCRON Okno edytora\nWdrożona scena umożliwiająca / wyłączająca poprzez wiadomości\nWdrożenie zapisu stanów sceny z ack = true\nDodano opis do stanu sceny\nDodano możliwość użycia kategorii / wyliczeń",
         "uk": "Очищені коронні завдання за допомогою повторного\nКронштейн Додано діалогове вікно редактора\nРеалізована сцена дозволяє / відключення через повідомлення\nРеалізовано написання сценових станів з ack=true\nДодано опис до стану сцени\nДодана можливість використання категорій / винагород",
         "zh-cn": "通过重新点印清除 cron 任务\n连 添加编辑器对话框\n通过信息实现场景启用/失效\n执行场景状态的写法\n添加到场景状态的描述\n添加使用类别/编号的可能性"
-      },
-      "2.4.2": {
-        "en": "Preserved empty folders by renaming and moving of scenes",
-        "de": "Leere Ordner durch Umbenennung und Bewegung von Szenen erhalten",
-        "ru": "Сохранившиеся пустые папки путем переименования и перемещения сцен",
-        "pt": "Preservado pastas vazias renomeando e movendo de cenas",
-        "nl": "Bewaarde lege mappen door het hernoemen en verplaatsen van scènes",
-        "fr": "Dossiers vides conservés par renommage et déplacement de scènes",
-        "it": "Preservato cartelle vuote rinominando e muovendo di scene",
-        "es": "Carpetas vacías conservadas renombrando y moviendo escenas",
-        "pl": "Zachowane puste foldery przez zmianę nazwy i przesuwania scen",
-        "uk": "Збережені порожні папки, перенаправлення та переміщення сцен",
-        "zh-cn": "通过重新命名和移动场景保存的空文件夹"
       }
     },
     "title": "Scenes",
