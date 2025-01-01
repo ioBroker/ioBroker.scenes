@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "node-schedule": "^2.1.1",
-    "@iobroker/adapter-core": "^3.2.1",
+    "@iobroker/adapter-core": "^3.2.3",
     "@iobroker/type-detector": "^4.0.1"
   },
   "devDependencies": {
