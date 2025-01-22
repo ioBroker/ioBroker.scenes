@@ -1,4 +1,4 @@
-// Copyright Bluefox <dogafox@gmail.com> 2015-2023
+// Copyright Bluefox <dogafox@gmail.com> 2015-2025
 //
 
 // Structure of one scene
@@ -49,7 +49,6 @@
 //         },
 //     }
 
-
 /* jshint -W097 */
 /* jshint strict: false */
 /* jslint node: true */
@@ -67,9 +66,9 @@ let hasEnums = false;
 function startAdapter(options) {
     options = options || {};
     Object.assign(options, {
-        name:    adapterName, // adapter name
+        name: adapterName, // adapter name
         strictObjectChecks: false, // because existing scenes have type 'boolean'. But it can have value 'uncertain'
-        dirname: __dirname,   // say own position
+        dirname: __dirname, // say own position
         unload: cb => {
             Object.keys(scenesTimeout).forEach(id => scenesTimeout[id] && clearTimeout(scenesTimeout[id]));
             scenesTimeout = {};
@@ -90,9 +89,9 @@ function startAdapter(options) {
                         activateScene(id, state.val);
                     } else {
                         let val = state.val;
-                        if (val === 'true')  val = true;
+                        if (val === 'true') val = true;
                         if (val === 'false') val = false;
-                        if (val === '0')     val = 0;
+                        if (val === '0') val = 0;
 
                         if (val) {
                             // activate scene
@@ -148,7 +147,7 @@ function startAdapter(options) {
                 obj.message = JSON.parse(obj.message);
             } catch (e) {
                 adapter.log.error(`Cannot parse message: ${obj.message}`);
-                adapter.sendTo(obj.from, obj.command, {error: 'Cannot parse message'}, obj.callback);
+                adapter.sendTo(obj.from, obj.command, { error: 'Cannot parse message' }, obj.callback);
                 return true;
             }
         }
@@ -161,7 +160,7 @@ function startAdapter(options) {
 
         if (!sceneId) {
             adapter.log.error(`Cannot find scene ID in message: ${JSON.stringify(obj.message)}`);
-            adapter.sendTo(obj.from, obj.command, {error: 'No scene ID'}, obj.callback);
+            adapter.sendTo(obj.from, obj.command, { error: 'No scene ID' }, obj.callback);
             return true;
         }
 
@@ -173,9 +172,9 @@ function startAdapter(options) {
 
             try {
                 const allSaved = await saveScene(obj.message.sceneId, isForTrue);
-                adapter.sendTo(obj.from, obj.command, {result: 'Current states saved', allSaved}, obj.callback);
+                adapter.sendTo(obj.from, obj.command, { result: 'Current states saved', allSaved }, obj.callback);
             } catch (err) {
-                adapter.sendTo(obj.from, obj.command, {error: err}, obj.callback);
+                adapter.sendTo(obj.from, obj.command, { error: err }, obj.callback);
             }
         } else if (obj.command === 'enable') {
             let sceneObj;
@@ -183,7 +182,7 @@ function startAdapter(options) {
                 sceneObj = await adapter.getForeignObjectAsync(sceneId);
             } catch (e) {
                 adapter.log.error(`Cannot get scene: ${e}`);
-                adapter.sendTo(obj.from, obj.command, {error: `Cannot get scene: ${e}`}, obj.callback);
+                adapter.sendTo(obj.from, obj.command, { error: `Cannot get scene: ${e}` }, obj.callback);
                 return true;
             }
             if (sceneObj) {
@@ -191,9 +190,9 @@ function startAdapter(options) {
                     sceneObj.common.enabled = true;
                     delete sceneObj.ts;
                     await adapter.setForeignObjectAsync(sceneObj._id, sceneObj);
-                    adapter.sendTo(obj.from, obj.command, {result: 'Scene was enabled'}, obj.callback);
+                    adapter.sendTo(obj.from, obj.command, { result: 'Scene was enabled' }, obj.callback);
                 } else {
-                    adapter.sendTo(obj.from, obj.command, {warning: 'Scene already enabled'}, obj.callback);
+                    adapter.sendTo(obj.from, obj.command, { warning: 'Scene already enabled' }, obj.callback);
                 }
             }
         } else if (obj.command === 'disable') {
@@ -202,7 +201,7 @@ function startAdapter(options) {
                 sceneObj = await adapter.getForeignObjectAsync(sceneId);
             } catch (e) {
                 adapter.log.error(`Cannot get scene: ${e}`);
-                adapter.sendTo(obj.from, obj.command, {error: `Cannot get scene: ${e}`}, obj.callback);
+                adapter.sendTo(obj.from, obj.command, { error: `Cannot get scene: ${e}` }, obj.callback);
                 return true;
             }
             if (sceneObj) {
@@ -212,7 +211,7 @@ function startAdapter(options) {
                     await adapter.setForeignObjectAsync(sceneObj._id, sceneObj);
                     adapter.sendTo(obj.from, obj.command, { result: 'Scene was disabled' }, obj.callback);
                 } else {
-                    adapter.sendTo(obj.from, obj.command, {warning: 'Scene already disabled'}, obj.callback);
+                    adapter.sendTo(obj.from, obj.command, { warning: 'Scene already disabled' }, obj.callback);
                 }
             }
         }
@@ -243,7 +242,7 @@ async function saveScene(sceneID, isForTrue) {
         let anyNotSaved = false;
         for (let m = 0; m < obj.native.members.length; m++) {
             const member = obj.native.members[m];
-            let state
+            let state;
             if (member.id) {
                 state = await adapter.getForeignStateAsync(member.id);
                 console.log(`ID ${member.id}=${state ? state.val : state}`);
@@ -272,8 +271,10 @@ async function saveScene(sceneID, isForTrue) {
                             break;
                         }
                     }
-                    state = {val};
-                    adapter.log.info(`Take for member ${m} of (${sceneID}) value "${val}" from ${values.length} states`);
+                    state = { val };
+                    adapter.log.info(
+                        `Take for member ${m} of (${sceneID}) value "${val}" from ${values.length} states`,
+                    );
                 } else if (member.enums.type === 'number') {
                     // calculate average
                     let val = values[0];
@@ -281,13 +282,15 @@ async function saveScene(sceneID, isForTrue) {
                         val += values[i];
                     }
                     val /= values.length;
-                    state = {val};
-                    adapter.log.info(`Take for member ${m} of (${sceneID}) average value "${val}" from ${values.length} states`);
+                    state = { val };
+                    adapter.log.info(
+                        `Take for member ${m} of (${sceneID}) average value "${val}" from ${values.length} states`,
+                    );
                 }
             }
             if (state?.val !== 'uncertain') {
                 if (isForTrue) {
-                    member.setIfTrue  = state ? state.val : null;
+                    member.setIfTrue = state ? state.val : null;
                 } else {
                     member.setIfFalse = state ? state.val : null;
                 }
@@ -314,48 +317,46 @@ function restartAdapter() {
     adapter.log.info('restartAdapter');
 
     // stop all timers
-    Object.keys(checkTimers).forEach(id =>
-        checkTimers[id] && clearTimeout(checkTimers[id]));
+    Object.keys(checkTimers).forEach(id => checkTimers[id] && clearTimeout(checkTimers[id]));
     checkTimers = {};
 
     Object.keys(timers).forEach(id =>
-        timers[id].forEach(tt =>
-            timers[id][tt] && timers[id][tt].timer && clearTimeout(timers[id][tt].timer)));
+        timers[id].forEach(tt => timers[id][tt] && timers[id][tt].timer && clearTimeout(timers[id][tt].timer)),
+    );
     timers = {};
 
-    schedule && Object.keys(cronTasks).forEach(id => {
-        cronTasks[`${id}_true`] && cronTasks[`${id}_true`].cancel();
-        cronTasks[`${id}_false`] && cronTasks[`${id}_false`].cancel();
-    });
+    schedule &&
+        Object.keys(cronTasks).forEach(id => {
+            cronTasks[`${id}_true`] && cronTasks[`${id}_true`].cancel();
+            cronTasks[`${id}_false`] && cronTasks[`${id}_false`].cancel();
+        });
 
     if (!subscription) {
         adapter.unsubscribeForeignStates();
     } else {
         adapter.unsubscribeForeignStates('scene.*');
         // and for all states
-        subscription.forEach(pattern =>
-            adapter.unsubscribeForeignStates(pattern));
+        subscription.forEach(pattern => adapter.unsubscribeForeignStates(pattern));
     }
     subscription = null;
-    scenes       = {};
-    ids          = {};
-    triggers     = {};
-    timers       = {};
-    tIndex       = 1;
-    checkTimers  = {};
-    cronTasks    = {};
+    scenes = {};
+    ids = {};
+    triggers = {};
+    timers = {};
+    tIndex = 1;
+    checkTimers = {};
+    cronTasks = {};
 
-    main()
-        .catch(e => adapter.log.error(`Cannot restart adapter: ${e}`));
+    main().catch(e => adapter.log.error(`Cannot restart adapter: ${e}`));
 }
 
-let subscription  = null;
-let scenes        = {};
-let ids           = {};
-let triggers      = {};
-let timers        = {};
-let checkTimers   = {};
-let cronTasks     = {};
+let subscription = null;
+let scenes = {};
+let ids = {};
+let triggers = {};
+let timers = {};
+let checkTimers = {};
+let cronTasks = {};
 let scenesTimeout = {};
 
 // Check if actual states are exactly as desired in the scene
@@ -371,7 +372,7 @@ function checkScene(sceneId, stateId, state) {
         }
 
         // Do not check states with big delays
-        if (/*delay + */scenes[sceneId].native.members[i].delay > 1000) {
+        if (/*delay + */ scenes[sceneId].native.members[i].delay > 1000) {
             if (stacked) {
                 delay += scenes[sceneId].native.members[i].delay;
             }
@@ -388,162 +389,177 @@ function checkScene(sceneId, stateId, state) {
         }
     }
 
-    checkTimers[sceneId] = checkTimers[sceneId] || setTimeout(async _sceneId => {
-        checkTimers[_sceneId] = null;
-        let activeTrue  = null;
-        let activeFalse = null;
-        let activeValue = null;
+    checkTimers[sceneId] =
+        checkTimers[sceneId] ||
+        setTimeout(
+            async _sceneId => {
+                checkTimers[_sceneId] = null;
+                let activeTrue = null;
+                let activeFalse = null;
+                let activeValue = null;
 
-        const sceneObj       = scenes[_sceneId];
-        const sceneObjNative = sceneObj.native;
-        const isWithFalse    = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
-        let avgCounter = 0;
-        let stacked = false;
-        let delay = 0; // not used actually
-        const burstInterval = sceneObjNative.burstInterval;
+                const sceneObj = scenes[_sceneId];
+                const sceneObjNative = sceneObj.native;
+                const isWithFalse = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
+                let avgCounter = 0;
+                let stacked = false;
+                let delay = 0; // not used actually
+                const burstInterval = sceneObjNative.burstInterval;
 
-        for (let i = 0; i < sceneObjNative.members.length; i++) {
-            if (sceneObjNative.members[i].stackNextDelays) {
-                stacked = true;
-            }
-            // Do not check states with big delays
-            if (/*delay + */sceneObjNative.members[i].delay > 1000) {
-                if (stacked) {
-                    delay += sceneObjNative.members[i].delay;
-                }
-                continue;
-            } else if (stacked) {
-                delay += sceneObjNative.members[i].delay;
-                delay += burstInterval;
-            }
+                for (let i = 0; i < sceneObjNative.members.length; i++) {
+                    if (sceneObjNative.members[i].stackNextDelays) {
+                        stacked = true;
+                    }
+                    // Do not check states with big delays
+                    if (/*delay + */ sceneObjNative.members[i].delay > 1000) {
+                        if (stacked) {
+                            delay += sceneObjNative.members[i].delay;
+                        }
+                        continue;
+                    } else if (stacked) {
+                        delay += sceneObjNative.members[i].delay;
+                        delay += burstInterval;
+                    }
 
-            // There are some states
-            if (activeTrue  === null) {
-                activeTrue  = true;
-            }
-            if (activeFalse === null) {
-                activeFalse = true;
-            }
+                    // There are some states
+                    if (activeTrue === null) {
+                        activeTrue = true;
+                    }
+                    if (activeFalse === null) {
+                        activeFalse = true;
+                    }
 
-            if (sceneObjNative.virtualGroup) {
-                if (activeValue === 'uncertain') {
-                    continue;
-                }
+                    if (sceneObjNative.virtualGroup) {
+                        if (activeValue === 'uncertain') {
+                            continue;
+                        }
 
-                if (activeValue === null) {
-                    activeValue = sceneObjNative.members[i].actual;
-                } else {
-                    // eslint-disable-next-line eslint-disable-line
-                    if (activeValue != sceneObjNative.members[i].actual) {
-                        if (sceneObjNative.aggregation === undefined || sceneObjNative.aggregation === 'uncertain') {
-                            activeValue = 'uncertain';
+                        if (activeValue === null) {
+                            activeValue = sceneObjNative.members[i].actual;
                         } else {
-                            if (sceneObjNative.aggregation === 'any') {
-                                activeValue = activeValue || sceneObjNative.members[i].actual;
-                            } else if (sceneObjNative.aggregation === 'min') {
-                                activeValue = Math.min(activeValue, sceneObjNative.members[i].actual);
-                            } else if (sceneObjNative.aggregation === 'max') {
-                                activeValue = Math.max(activeValue, sceneObjNative.members[i].actual);
+                            // eslint-disable-next-line eslint-disable-line
+                            if (activeValue != sceneObjNative.members[i].actual) {
+                                if (
+                                    sceneObjNative.aggregation === undefined ||
+                                    sceneObjNative.aggregation === 'uncertain'
+                                ) {
+                                    activeValue = 'uncertain';
+                                } else {
+                                    if (sceneObjNative.aggregation === 'any') {
+                                        activeValue = activeValue || sceneObjNative.members[i].actual;
+                                    } else if (sceneObjNative.aggregation === 'min') {
+                                        activeValue = Math.min(activeValue, sceneObjNative.members[i].actual);
+                                    } else if (sceneObjNative.aggregation === 'max') {
+                                        activeValue = Math.max(activeValue, sceneObjNative.members[i].actual);
+                                    } else if (sceneObjNative.aggregation === 'avg') {
+                                        activeValue =
+                                            parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual);
+                                        avgCounter++;
+                                    }
+                                }
                             } else if (sceneObjNative.aggregation === 'avg') {
                                 activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual);
                                 avgCounter++;
                             }
                         }
-                    } else if (sceneObjNative.aggregation === 'avg') {
-                        activeValue = parseFloat(activeValue) + parseFloat(sceneObjNative.members[i].actual);
-                        avgCounter++;
+                    } else {
+                        let setIfTrue;
+                        let setIfFalse;
+                        try {
+                            setIfTrue = await getSetValue(sceneObjNative.members[i].setIfTrue);
+                            setIfFalse = await getSetValue(sceneObjNative.members[i].setIfFalse);
+                        } catch (e) {
+                            adapter.log.warn(`Error while getting True/False states: ${e}`);
+                        }
+
+                        if (setIfTrue !== null && setIfTrue !== undefined) {
+                            if (sceneObjNative.members[i].setIfTrueTolerance) {
+                                if (
+                                    Math.abs(setIfTrue - sceneObjNative.members[i].actual) >
+                                    sceneObjNative.members[i].setIfTrueTolerance
+                                ) {
+                                    activeTrue = false;
+                                }
+                            } else {
+                                // eslint-disable-next-line eslint-disable-line
+                                if (setIfTrue != sceneObjNative.members[i].actual) {
+                                    activeTrue = false;
+                                }
+                            }
+                        }
+
+                        if (isWithFalse && setIfFalse !== null && setIfFalse !== undefined) {
+                            if (sceneObjNative.members[i].setIfFalseTolerance) {
+                                if (
+                                    Math.abs(setIfFalse - sceneObjNative.members[i].actual) >
+                                    sceneObjNative.members[i].setIfFalseTolerance
+                                ) {
+                                    activeFalse = false;
+                                }
+                            } else if (setIfFalse != sceneObjNative.members[i].actual) {
+                                // eslint-disable-next-line eslint-disable-line
+                                activeFalse = false;
+                            }
+                        }
                     }
                 }
-            } else {
-                let setIfTrue;
-                let setIfFalse;
+
                 try {
-                    setIfTrue  = await getSetValue(sceneObjNative.members[i].setIfTrue);
-                    setIfFalse = await getSetValue(sceneObjNative.members[i].setIfFalse);
-                } catch (e) {
-                    adapter.log.warn(`Error while getting True/False states: ${e}`);
-                }
+                    if (sceneObjNative.virtualGroup) {
+                        if (activeValue !== null) {
+                            if (sceneObjNative.aggregation === 'avg' && avgCounter) {
+                                activeValue = activeValue / (avgCounter + 1);
+                            }
 
-                if (setIfTrue !== null && setIfTrue !== undefined) {
-                    if (sceneObjNative.members[i].setIfTrueTolerance) {
-                        if (Math.abs(setIfTrue - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfTrueTolerance) {
-                            activeTrue = false;
+                            if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
+                                sceneObj.value.val = activeValue;
+                                sceneObj.value.ack = true;
+
+                                await adapter.setForeignStateAsync(_sceneId, activeValue, true);
+                            }
                         }
                     } else {
-                        // eslint-disable-next-line eslint-disable-line
-                        if (setIfTrue != sceneObjNative.members[i].actual) {
-                            activeTrue = false;
+                        if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
+                            if (activeTrue) {
+                                if (sceneObj.value.val !== true || !sceneObj.value.ack) {
+                                    sceneObj.value.val = true;
+                                    sceneObj.value.ack = true;
+
+                                    await adapter.setForeignStateAsync(_sceneId, true, true);
+                                }
+                            } else if (activeFalse) {
+                                if (sceneObj.value.val !== false || !sceneObj.value.ack) {
+                                    sceneObj.value.val = false;
+                                    sceneObj.value.ack = true;
+
+                                    await adapter.setForeignStateAsync(_sceneId, false, true);
+                                }
+                            } else {
+                                if (sceneObj.value.val !== 'uncertain' || !sceneObj.value.ack) {
+                                    sceneObj.value.val = 'uncertain';
+                                    sceneObj.value.ack = true;
+
+                                    await adapter.setForeignStateAsync(_sceneId, 'uncertain', true);
+                                }
+                            }
+                        } else {
+                            if (activeTrue !== null) {
+                                if (sceneObj.value.val !== activeTrue || !sceneObj.value.ack) {
+                                    sceneObj.value.val = activeTrue;
+                                    sceneObj.value.ack = true;
+
+                                    await adapter.setForeignStateAsync(_sceneId, activeTrue, true);
+                                }
+                            }
                         }
                     }
+                } catch (err) {
+                    adapter.log.error(`Can not set requested state ${_sceneId}: ${err.message}`);
                 }
-
-                if (isWithFalse && setIfFalse !== null && setIfFalse !== undefined) {
-                    if (sceneObjNative.members[i].setIfFalseTolerance) {
-                        if (Math.abs(setIfFalse - sceneObjNative.members[i].actual) > sceneObjNative.members[i].setIfFalseTolerance) {
-                            activeFalse = false;
-                        }
-                    } else
-                    // eslint-disable-next-line eslint-disable-line
-                    if (setIfFalse != sceneObjNative.members[i].actual) {
-                        activeFalse = false;
-                    }
-                }
-            }
-        }
-
-        try {
-            if (sceneObjNative.virtualGroup) {
-                if (activeValue !== null) {
-                    if (sceneObjNative.aggregation === 'avg' && avgCounter) {
-                        activeValue = activeValue / (avgCounter + 1);
-                    }
-
-                    if (sceneObj.value.val !== activeValue || !sceneObj.value.ack) {
-                        sceneObj.value.val = activeValue;
-                        sceneObj.value.ack = true;
-
-                        await adapter.setForeignStateAsync(_sceneId, activeValue, true);
-                    }
-                }
-            } else {
-                if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
-                    if (activeTrue) {
-                        if (sceneObj.value.val !== true || !sceneObj.value.ack) {
-                            sceneObj.value.val = true;
-                            sceneObj.value.ack = true;
-
-                            await adapter.setForeignStateAsync(_sceneId, true, true);
-                        }
-                    } else if (activeFalse) {
-                        if (sceneObj.value.val !== false || !sceneObj.value.ack) {
-                            sceneObj.value.val = false;
-                            sceneObj.value.ack = true;
-
-                            await adapter.setForeignStateAsync(_sceneId, false, true);
-                        }
-                    } else {
-                        if (sceneObj.value.val !== 'uncertain' || !sceneObj.value.ack) {
-                            sceneObj.value.val = 'uncertain';
-                            sceneObj.value.ack = true;
-
-                            await adapter.setForeignStateAsync(_sceneId, 'uncertain', true);
-                        }
-                    }
-                } else {
-                    if (activeTrue !== null) {
-                        if (sceneObj.value.val !== activeTrue || !sceneObj.value.ack) {
-                            sceneObj.value.val = activeTrue;
-                            sceneObj.value.ack = true;
-
-                            await adapter.setForeignStateAsync(_sceneId, activeTrue, true);
-                        }
-                    }
-                }
-            }
-        } catch (err) {
-            adapter.log.error(`Can not set requested state ${_sceneId}: ${err.message}`);
-        }
-    }, 200, sceneId);
+            },
+            200,
+            sceneId,
+        );
 }
 
 function checkTrigger(sceneId, stateId, state, isTrue) {
@@ -562,7 +578,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
     trigger = trigger.trigger;
 
     if (trigger.id === stateId) {
-        const stateVal = (state && state.val !== undefined && state.val !== null) ? state.val.toString() : '';
+        const stateVal = state && state.val !== undefined && state.val !== null ? state.val.toString() : '';
 
         val = trigger.value;
 
@@ -589,8 +605,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                     if (aVal > fVal) {
                         activateScene(sceneId, isTrue);
                     }
-                } else
-                if (val > stateVal) {
+                } else if (val > stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -602,8 +617,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                     if (aVal < fVal) {
                         activateScene(sceneId, isTrue);
                     }
-                } else
-                if (val < stateVal) {
+                } else if (val < stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -615,8 +629,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                     if (aVal >= fVal) {
                         activateScene(sceneId, isTrue);
                     }
-                } else
-                if (val >= stateVal) {
+                } else if (val >= stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -628,8 +641,7 @@ function checkTrigger(sceneId, stateId, state, isTrue) {
                     if (aVal <= fVal) {
                         activateScene(sceneId, isTrue);
                     }
-                } else
-                if (val <= stateVal) {
+                } else if (val <= stateVal) {
                     activateScene(sceneId, isTrue);
                 }
                 break;
@@ -654,9 +666,9 @@ function getSetValue(value) {
             return Promise.reject(`Value did not contain a state ID: ${value}`);
         }
         // try to read setValue from other stateId
-        return adapter.getForeignStateAsync(m[1])
-            .then(state =>
-                state ? state.val : Promise.reject(`State ${m[1]} is empty`));
+        return adapter
+            .getForeignStateAsync(m[1])
+            .then(state => (state ? state.val : Promise.reject(`State ${m[1]} is empty`)));
     } else {
         return Promise.resolve(value);
     }
@@ -709,33 +721,39 @@ function activateSceneState(sceneId, state, isTrue) {
                 tIndex++;
 
                 // Start timeout
-                const timer = setTimeout(async (id, setValue, _tIndex) => {
-                    adapter.log.debug(`Set delayed state for "${sceneId}": ${id} = ${setValue}`);
+                const timer = setTimeout(
+                    async (id, setValue, _tIndex) => {
+                        adapter.log.debug(`Set delayed state for "${sceneId}": ${id} = ${setValue}`);
 
-                    // execute timeout
-                    if (stateObj.doNotOverwrite) {
-                        adapter.getForeignState(id, (err, state) => {
-                            // Set new state only if differ from the desired state
-                            if (!state || state.val !== setValue) {
-                                adapter.setForeignState(id, setValue, !!stateObj.ackTrue);
-                            }
-                        });
-                    } else {
-                        adapter.setForeignState(id, setValue, !!stateObj.ackTrue);
-                    }
+                        // execute timeout
+                        if (stateObj.doNotOverwrite) {
+                            adapter.getForeignState(id, (err, state) => {
+                                // Set new state only if differ from the desired state
+                                if (!state || state.val !== setValue) {
+                                    adapter.setForeignState(id, setValue, !!stateObj.ackTrue);
+                                }
+                            });
+                        } else {
+                            adapter.setForeignState(id, setValue, !!stateObj.ackTrue);
+                        }
 
-                    if (timers[id]) {
-                        // remove timer from the list
-                        for (let r = 0; r < timers[id].length; r++) {
-                            if (timers[id][r].tIndex === _tIndex) {
-                                timers[id].splice(r, 1);
-                                break;
+                        if (timers[id]) {
+                            // remove timer from the list
+                            for (let r = 0; r < timers[id].length; r++) {
+                                if (timers[id][r].tIndex === _tIndex) {
+                                    timers[id].splice(r, 1);
+                                    break;
+                                }
                             }
                         }
-                    }
-                }, delay, stateObj.id, desiredValue, tIndex);
+                    },
+                    delay,
+                    stateObj.id,
+                    desiredValue,
+                    tIndex,
+                );
 
-                timers[stateObj.id].push({timer, tIndex});
+                timers[stateObj.id].push({ timer, tIndex });
             } else {
                 if (stateObj.stopAllDelays && timers[stateObj.id] && timers[stateObj.id].length) {
                     adapter.log.debug(`Cancel running timers for "${stateObj.id}" (${timers[stateObj.id].length})`);
@@ -756,7 +774,13 @@ function activateSceneState(sceneId, state, isTrue) {
             }
         })
         .catch(e =>
-            adapter.log.error(`Cannot read setValue from ${desiredValue.toString().replace(/^\s*{{/, '').replace(/}}\s*$/, '')}: ${e}`));
+            adapter.log.error(
+                `Cannot read setValue from ${desiredValue
+                    .toString()
+                    .replace(/^\s*{{/, '')
+                    .replace(/}}\s*$/, '')}: ${e}`,
+            ),
+        );
 }
 
 // Set all states of the state with an interval
@@ -842,7 +866,12 @@ function getState(sceneId, stateNumber, callback) {
     const stateId = scenes[sceneId].native.members[stateNumber].id;
     adapter.getForeignState(stateId, (err, state) => {
         // possible scene was renamed
-        if (!scenes[sceneId] || !scenes[sceneId].native || !scenes[sceneId].native.members || !scenes[sceneId].native.members[stateNumber]) {
+        if (
+            !scenes[sceneId] ||
+            !scenes[sceneId].native ||
+            !scenes[sceneId].native.members ||
+            !scenes[sceneId].native.members[stateNumber]
+        ) {
             return;
         }
 
@@ -942,24 +971,24 @@ function getAllEnumIds(enumsSettings) {
 }
 
 const NAMES = {
-    [Types.airCondition]: {boolean: 'POWER', number: 'SET'},
-    [Types.blind]: {number: 'SET'},
-    [Types.cie]: {string: 'CIE', boolean: 'ON'},
-    [Types.ct]: {number: 'TEMPERATURE', boolean: 'ON'},
-    [Types.dimmer]: {boolean: 'ON_SET', number: 'SET'},
-    [Types.gate]: {boolean: 'SET'},
-    [Types.hue]: {boolean: 'ON', number: 'DIMMER|BRIGHTNESS'},
-    [Types.slider]: {number: 'SET'},
-    [Types.light]: {boolean: 'SET'},
-//    [Types.lock]: {boolean: 'SET'}, // not supported yet
-    [Types.media]: {boolean: 'STATE'},
-    [Types.rgb]: {boolean: 'ON', number: 'DIMMER|BRIGHTNESS'},
-    [Types.rgbSingle]: {boolean: 'ON', string: 'RGB'},
-    [Types.rgbwSingle]: {boolean: 'ON', string: 'RGBW'},
-    [Types.socket]: {boolean: 'SET'},
-    [Types.vacuumCleaner]: {boolean: 'POWER'},
-    [Types.volume]: {boolean: 'SET'},
-    [Types.volumeGroup]: {boolean: 'SET'},
+    [Types.airCondition]: { boolean: 'POWER', number: 'SET' },
+    [Types.blind]: { number: 'SET' },
+    [Types.cie]: { string: 'CIE', boolean: 'ON' },
+    [Types.ct]: { number: 'TEMPERATURE', boolean: 'ON' },
+    [Types.dimmer]: { boolean: 'ON_SET', number: 'SET' },
+    [Types.gate]: { boolean: 'SET' },
+    [Types.hue]: { boolean: 'ON', number: 'DIMMER|BRIGHTNESS' },
+    [Types.slider]: { number: 'SET' },
+    [Types.light]: { boolean: 'SET' },
+    //    [Types.lock]: {boolean: 'SET'}, // not supported yet
+    [Types.media]: { boolean: 'STATE' },
+    [Types.rgb]: { boolean: 'ON', number: 'DIMMER|BRIGHTNESS' },
+    [Types.rgbSingle]: { boolean: 'ON', string: 'RGB' },
+    [Types.rgbwSingle]: { boolean: 'ON', string: 'RGBW' },
+    [Types.socket]: { boolean: 'SET' },
+    [Types.vacuumCleaner]: { boolean: 'POWER' },
+    [Types.volume]: { boolean: 'SET' },
+    [Types.volumeGroup]: { boolean: 'SET' },
 };
 
 async function findControlState(obj, type) {
@@ -969,7 +998,7 @@ async function findControlState(obj, type) {
         endkey: `${obj._id}.\u9999`,
     });
     const objects = {};
-    objs.rows.forEach(item => objects[item.id] = item.value);
+    objs.rows.forEach(item => (objects[item.id] = item.value));
     objects[obj._id] = obj;
     const keys = Object.keys(objects);
 
@@ -997,7 +1026,7 @@ async function findControlState(obj, type) {
 
     // initialize iobroker type detector
     const usedIds = [];
-    const ignoreIndicators = ['UNREACH_STICKY'];    // Ignore indicators by name
+    const ignoreIndicators = ['UNREACH_STICKY']; // Ignore indicators by name
     const excludedTypes = ['info'];
     const options = {
         objects,
@@ -1036,7 +1065,9 @@ async function getControlState(id, type, sceneId) {
             // try to use types detector to find the control state
             const controlId = await findControlState(obj, type || 'boolean');
             if (!controlId) {
-                adapter.log.warn(`Cannot find control state of type "${type || 'boolean'}" for "${obj.type}" ${id} in "${sceneId}"`);
+                adapter.log.warn(
+                    `Cannot find control state of type "${type || 'boolean'}" for "${obj.type}" ${id} in "${sceneId}"`,
+                );
                 return null;
             }
             return controlId;
@@ -1058,7 +1089,7 @@ async function enum2scenes(sceneId, index) {
             endkey: 'enum.\u9999',
         });
         enums = {};
-        objs.rows.forEach(item => enums[item.id] = item.value);
+        objs.rows.forEach(item => (enums[item.id] = item.value));
     }
     const patternMember = JSON.parse(JSON.stringify(scenes[sceneId].native.members[index]));
     const enumsSettings = JSON.parse(JSON.stringify(patternMember.enums));
@@ -1097,7 +1128,7 @@ async function initScenes() {
         }
 
         scenes[sceneId].count = 0;
-        scenes[sceneId].value = {val: null, ack: true}; // default state
+        scenes[sceneId].value = { val: null, ack: true }; // default state
 
         // Go through all states in Array
         for (let state = 0; state < scenes[sceneId].native.members.length; state++) {
@@ -1117,7 +1148,9 @@ async function initScenes() {
             if (scenes[sceneId].native.members[state].delay) {
                 const delay = parseInt(scenes[sceneId].native.members[state].delay, 10);
                 if (scenes[sceneId].native.members[state].delay != delay.toString()) {
-                    adapter.log.error(`Invalid delay for scene "${sceneId}": ${scenes[sceneId].native.members[state].delay}`);
+                    adapter.log.error(
+                        `Invalid delay for scene "${sceneId}": ${scenes[sceneId].native.members[state].delay}`,
+                    );
                     scenes[sceneId].native.members[state].delay = 0;
                 } else {
                     scenes[sceneId].native.members[state].delay = delay;
@@ -1139,19 +1172,25 @@ async function initScenes() {
             getState(sceneId, state);
         }
 
-        if (scenes[sceneId].native.onTrue  && scenes[sceneId].native.onTrue.trigger)  {
-            if (scenes[sceneId].native.onTrue.trigger.value === null || scenes[sceneId].native.onTrue.trigger.value === undefined) {
-                scenes[sceneId].native.onTrue.trigger.value  = '';
+        if (scenes[sceneId].native.onTrue && scenes[sceneId].native.onTrue.trigger) {
+            if (
+                scenes[sceneId].native.onTrue.trigger.value === null ||
+                scenes[sceneId].native.onTrue.trigger.value === undefined
+            ) {
+                scenes[sceneId].native.onTrue.trigger.value = '';
             } else {
-                scenes[sceneId].native.onTrue.trigger.value  = scenes[sceneId].native.onTrue.trigger.value.toString();
+                scenes[sceneId].native.onTrue.trigger.value = scenes[sceneId].native.onTrue.trigger.value.toString();
             }
         }
 
         if (scenes[sceneId].native.onFalse && scenes[sceneId].native.onFalse.trigger) {
-            if (scenes[sceneId].native.onFalse.trigger.value === null || scenes[sceneId].native.onFalse.trigger.value === undefined) {
-                scenes[sceneId].native.onFalse.trigger.value  = '';
+            if (
+                scenes[sceneId].native.onFalse.trigger.value === null ||
+                scenes[sceneId].native.onFalse.trigger.value === undefined
+            ) {
+                scenes[sceneId].native.onFalse.trigger.value = '';
             } else {
-                scenes[sceneId].native.onFalse.trigger.value  = scenes[sceneId].native.onFalse.trigger.value.toString();
+                scenes[sceneId].native.onFalse.trigger.value = scenes[sceneId].native.onFalse.trigger.value.toString();
             }
         }
 
@@ -1187,7 +1226,12 @@ async function main() {
     if (states) {
         for (const id in states) {
             // ignore if no states involved
-            if (!states.hasOwnProperty(id) || !states[id].native || !states[id].native.members || !states[id].native.members.length) {
+            if (
+                !states.hasOwnProperty(id) ||
+                !states[id].native ||
+                !states[id].native.members ||
+                !states[id].native.members.length
+            ) {
                 continue;
             }
             // ignore if a scene is disabled
@@ -1245,4 +1289,3 @@ if (module && module.parent) {
     // or start the instance directly
     startAdapter();
 }
-
