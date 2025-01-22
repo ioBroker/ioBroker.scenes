@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 3.2.4 (2025-01-22)
 * (bluefox) Migrated to vite
 * (bluefox) Packages updated
 

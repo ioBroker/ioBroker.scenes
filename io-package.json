@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "3.2.3",
+    "version": "3.2.4",
     "news": {
+      "3.2.4": {
+        "en": "Migrated to vite\nPackages updated",
+        "de": "Gewandert zu Vite\nPakete aktualisiert",
+        "ru": "Migrated to vite\nОбновленные пакеты",
+        "pt": "Migrado para vite\nPacotes atualizados",
+        "nl": "Gemigreerd om te vliegen\nPakketten bijgewerkt",
+        "fr": "Migrés en rite\nMise à jour des paquets",
+        "it": "Migrato a vite\nPacchetti aggiornati",
+        "es": "Migrated to vite\nPaquetes actualizados",
+        "pl": "Migrant to vite\nAktualizacja pakietów",
+        "uk": "Міграція на віте\nПакети оновлені",
+        "zh-cn": "迁移到葡萄园\n更新软件包"
+      },
       "3.2.3": {
         "en": "Packages updated",
         "de": "Pakete aktualisiert",

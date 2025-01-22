@@ -1,64 +1,64 @@
 {
-    "name": "iobroker.scenes",
-    "version": "3.2.3",
-    "description": "Scenes for ioBroker.",
-    "author": {
-        "name": "bluefox",
-        "email": "bluefox@gmail.com"
-    },
-    "homepage": "https://github.com/ioBroker/ioBroker.scenes",
-    "keywords": [
-        "ioBroker",
-        "scenes"
-    ],
-    "engines": {
-        "node": ">=16"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ioBroker/ioBroker.scenes"
-    },
-    "dependencies": {
-        "@iobroker/adapter-core": "^3.2.3",
-        "@iobroker/type-detector": "^4.1.1",
-        "node-schedule": "^2.1.1"
-    },
-    "devDependencies": {
-        "@alcalzone/release-script": "^3.8.0",
-        "@alcalzone/release-script-plugin-iobroker": "^3.7.2",
-        "@alcalzone/release-script-plugin-license": "^3.7.0",
-        "@iobroker/build-tools": "^2.0.14",
-        "@iobroker/eslint-config": "^1.0.0",
-        "@iobroker/testing": "^5.0.2",
-        "chai": "^4.5.0",
-        "mocha": "^11.1.0"
-    },
-    "bugs": {
-        "url": "https://github.com/ioBroker/ioBroker.scenes/issues"
-    },
-    "main": "main.js",
-    "files": [
-        "admin/",
-        "io-package.json",
-        "LICENSE",
-        "main.js"
-    ],
-    "scripts": {
-        "test": "mocha --exit",
-        "prepublishOnly": "node tasks",
-        "build": "node tasks",
-        "beforePush": "node tasks",
-        "release": "release-script",
-        "release-patch": "release-script patch --yes",
-        "release-minor": "release-script minor --yes",
-        "release-major": "release-script major --yes",
-        "update-packages": "npx -y npm-check-updates --upgrade && cd src && npx -y npm-check-updates --upgrade",
-        "npm": "npm i && cd src && npm i -f",
-        "0-clean": "node tasks --0-clean",
-        "1-npm": "node tasks --1-npm",
-        "3-build": "node tasks --3-build",
-        "4-copy": "node tasks --4-copy"
-    },
-    "license": "MIT",
-    "readmeFilename": "README.md"
+  "name": "iobroker.scenes",
+  "version": "3.2.4",
+  "description": "Scenes for ioBroker.",
+  "author": {
+    "name": "bluefox",
+    "email": "bluefox@gmail.com"
+  },
+  "homepage": "https://github.com/ioBroker/ioBroker.scenes",
+  "keywords": [
+    "ioBroker",
+    "scenes"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ioBroker/ioBroker.scenes"
+  },
+  "dependencies": {
+    "@iobroker/adapter-core": "^3.2.3",
+    "@iobroker/type-detector": "^4.1.1",
+    "node-schedule": "^2.1.1"
+  },
+  "devDependencies": {
+    "@alcalzone/release-script": "^3.8.0",
+    "@alcalzone/release-script-plugin-iobroker": "^3.7.2",
+    "@alcalzone/release-script-plugin-license": "^3.7.0",
+    "@iobroker/build-tools": "^2.0.14",
+    "@iobroker/eslint-config": "^1.0.0",
+    "@iobroker/testing": "^5.0.2",
+    "chai": "^4.5.0",
+    "mocha": "^11.1.0"
+  },
+  "bugs": {
+    "url": "https://github.com/ioBroker/ioBroker.scenes/issues"
+  },
+  "main": "main.js",
+  "files": [
+    "admin/",
+    "io-package.json",
+    "LICENSE",
+    "main.js"
+  ],
+  "scripts": {
+    "test": "mocha --exit",
+    "prepublishOnly": "node tasks",
+    "build": "node tasks",
+    "beforePush": "node tasks",
+    "release": "release-script",
+    "release-patch": "release-script patch --yes",
+    "release-minor": "release-script minor --yes",
+    "release-major": "release-script major --yes",
+    "update-packages": "npx -y npm-check-updates --upgrade && cd src && npx -y npm-check-updates --upgrade",
+    "npm": "npm i && cd src && npm i -f",
+    "0-clean": "node tasks --0-clean",
+    "1-npm": "node tasks --1-npm",
+    "3-build": "node tasks --3-build",
+    "4-copy": "node tasks --4-copy"
+  },
+  "license": "MIT",
+  "readmeFilename": "README.md"
 }
