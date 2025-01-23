@@ -36,17 +36,19 @@
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.scenes/issues"
   },
-  "main": "main.js",
+  "main": "build/main.js",
   "files": [
     "admin/",
     "io-package.json",
     "LICENSE",
-    "main.js"
+    "build/"
   ],
   "scripts": {
     "test": "mocha --exit",
     "prepublishOnly": "node tasks",
-    "build": "node tasks",
+    "build:backend": "tsc -p tsconfig.build.json",
+    "build:gui": "tsc && node tasks",
+    "build": "npm run build:backend && npm run build:gui",
     "beforePush": "node tasks",
     "release": "release-script",
     "release-patch": "release-script patch --yes",

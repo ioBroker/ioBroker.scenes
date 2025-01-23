@@ -43,3 +43,7 @@ export type SceneConfig = {
     virtualGroup?: boolean;
     aggregation?: 'uncertain' | 'any' | 'avg' | 'min' | 'max';
 };
+
+export type SceneCommon = ioBroker.StateCommon & { engine: string; enabled: boolean };
+
+export type SceneObject = Omit<ioBroker.StateObject, 'common'> & { common: SceneCommon; native: SceneConfig };

@@ -31,7 +31,7 @@ import {
     type GenericAppState,
 } from '@iobroker/adapter-react-v5';
 
-import SceneForm, { type SceneCommon } from './components/SceneForm';
+import SceneForm from './components/SceneForm';
 import SceneMembersForm from './components/SceneMembersForm';
 import ExportImportDialog from './components/ExportImportDialog';
 import ScenesList, { type SceneFolder } from './components/ScenesList';
@@ -67,7 +67,7 @@ import {
 import { FaClone as IconClone, FaBars as IconMenu } from 'react-icons/fa';
 import pack from '../package.json';
 import type { GenericAppProps } from '@iobroker/adapter-react-v5/build/types';
-import type { SceneConfig, SceneMember } from './types';
+import type { SceneCommon, SceneConfig, SceneMember, SceneObject } from './types';
 
 const MARGIN_MEMBERS = 20;
 
@@ -166,17 +166,17 @@ interface AppState extends GenericAppState {
     lang: ioBroker.Languages;
     ready: boolean;
     selectedSceneId: string;
-    scenes: Record<string, ioBroker.StateObject>;
+    scenes: Record<string, SceneObject>;
     folders: SceneFolder | null;
     changingScene: SceneFolder | string;
     instances: string[];
     selectedSceneChanged: boolean;
     deleteDialog: boolean;
-    selectedSceneData: ioBroker.StateObject | null;
+    selectedSceneData: SceneObject | null;
     exportDialog: boolean;
     importDialog: boolean;
     menuOpened: boolean;
-    showImportWarning: Record<string, ioBroker.StateObject> | null;
+    showImportWarning: Record<string, SceneObject> | null;
     splitSizes: [number, number];
     splitSizes2: [number, number];
     systemConfig: ioBroker.SystemConfigObject;
@@ -283,16 +283,16 @@ class App extends GenericApp<AppProps, AppState> {
             JSON.stringify(this.state.scenes[id].common) !== JSON.stringify(obj?.common) || // changed
             JSON.stringify(this.state.scenes[id].native) !== JSON.stringify(obj?.native) // changed
         ) {
-            const scenes = JSON.parse(JSON.stringify(this.state.scenes));
+            const scenes: Record<string, SceneObject> = JSON.parse(JSON.stringify(this.state.scenes));
             if (obj) {
                 if (scenes[id]) {
-                    scenes[id].common = obj.common;
-                    scenes[id].native = obj.native;
+                    scenes[id].common = obj.common as SceneCommon;
+                    scenes[id].native = obj.native as SceneConfig;
                     scenes[id].ts = obj.ts;
                 } else {
                     scenes[id] = {
-                        common: obj.common,
-                        native: obj.native,
+                        common: obj.common as SceneCommon,
+                        native: obj.native as SceneConfig,
                         type: obj.type,
                         _id: obj._id,
                         ts: obj.ts,
@@ -318,13 +318,12 @@ class App extends GenericApp<AppProps, AppState> {
     };
 
     async sceneSwitch(id: string): Promise<void> {
-        const scenes: Record<string, ioBroker.StateObject> = JSON.parse(JSON.stringify(this.state.scenes));
+        const scenes: Record<string, SceneObject> = JSON.parse(JSON.stringify(this.state.scenes));
 
         if (id === this.state.selectedSceneId) {
             scenes[id] = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         }
 
-        // @ts-expect-error extended
         scenes[id].common.enabled = !scenes[id].common.enabled;
 
         try {
@@ -335,8 +334,8 @@ class App extends GenericApp<AppProps, AppState> {
         }
     }
 
-    static buildTree(scenesObj: Record<string, ioBroker.StateObject>): SceneFolder {
-        const scenes: ioBroker.StateObject[] = Object.values(scenesObj);
+    static buildTree(scenesObj: Record<string, SceneObject>): SceneFolder {
+        const scenes: SceneObject[] = Object.values(scenesObj);
 
         const folders: SceneFolder = { subFolders: {}, scenes: {}, id: '', prefix: '' };
 
@@ -385,7 +384,11 @@ class App extends GenericApp<AppProps, AppState> {
 
     async getData(): Promise<Partial<AppState>> {
         try {
-            const scenes = await this.socket.getObjectViewSystem('state', 'scene.0.', 'scene.\u9999');
+            const scenes: Record<string, SceneObject> = (await this.socket.getObjectViewSystem(
+                'state',
+                'scene.',
+                'scene.\u9999',
+            )) as Record<string, SceneObject>;
             return { scenes, folders: App.buildTree(scenes) };
         } catch (e) {
             this.showError(e);
@@ -427,13 +430,14 @@ class App extends GenericApp<AppProps, AppState> {
                 delete sceneObj.native.burstIntervall;
             }
 
-            sceneObj.native.burstInterval = parseInt(sceneObj.native.burstInterval || 0, 10);
+            sceneObj.native.burstInterval = parseInt(sceneObj.native.burstInterval as unknown as string, 10) || 0;
             sceneObj.native.onFalse = sceneObj.native.onFalse || {};
             sceneObj.native.onTrue = sceneObj.native.onTrue || {};
             sceneObj.native.onFalse.trigger = sceneObj.native.onFalse.trigger || { condition: '==' };
             sceneObj.native.onTrue.trigger = sceneObj.native.onTrue.trigger || { condition: '==' };
             sceneObj.native.members = sceneObj.native.members || [];
             const members = sceneObj.native.members;
+            // @ts-expect-error we do not need it
             delete sceneObj.native.members;
             // place it on the last place
             sceneObj.native.members = members;
@@ -492,7 +496,7 @@ class App extends GenericApp<AppProps, AppState> {
         this.setState({ folders });
     }
 
-    async addSceneToFolderPrefix(scene: ioBroker.StateObject, folderPrefix: string, noRefresh: boolean): Promise<void> {
+    async addSceneToFolderPrefix(scene: SceneObject, folderPrefix: string, noRefresh: boolean): Promise<void> {
         const oldId = scene._id;
         const sceneId = scene._id.split('.').pop();
         scene._id = `scene.0.${folderPrefix}${folderPrefix ? '.' : ''}${sceneId}`;
@@ -539,7 +543,7 @@ class App extends GenericApp<AppProps, AppState> {
             .then(() => {
                 console.log(`Set new ID: ${scene._id}`);
                 // move the scene in state
-                const scenes = JSON.parse(JSON.stringify(this.state.scenes));
+                const scenes: Record<string, SceneObject> = JSON.parse(JSON.stringify(this.state.scenes));
                 delete scenes[oldId];
                 scenes[scene._id] = scene;
                 // find parent folder
@@ -612,14 +616,13 @@ class App extends GenericApp<AppProps, AppState> {
 
         const id = `scene.0.${parentId ? `${parentId}.` : ''}${name}`;
 
-        const template: ioBroker.StateObject = {
+        const template: SceneObject = {
             _id: id,
             common: {
                 name: '',
                 type: 'mixed', // because it can have value 'uncertain'
                 role: 'scene.state',
                 desc: '',
-                // @ts-expect-error extended
                 enabled: true,
                 read: true,
                 write: true,
@@ -641,12 +644,17 @@ class App extends GenericApp<AppProps, AppState> {
     }
 
     cloneScene(id: string): void {
-        const scene = JSON.parse(JSON.stringify(this.state.scenes[id]));
-        scene._id = scene._id.split('.');
-        scene._id.pop();
-        scene._id.push(this.getNewSceneId());
-        scene._id = scene._id.join('.');
-        scene.common.name = `${scene.common.name} ${I18n.t('copy')}`;
+        const scene: SceneObject = JSON.parse(JSON.stringify(this.state.scenes[id]));
+        const parts = scene._id.split('.');
+        parts.pop();
+        parts.push(this.getNewSceneId());
+        scene._id = parts.join('.');
+        const name =
+            typeof scene.common.name === 'object'
+                ? scene.common.name[I18n.getLanguage()] || scene.common.name.en || ''
+                : scene.common.name || '';
+
+        scene.common.name = `${name} ${I18n.t('copy')}`;
 
         this.setState({ changingScene: scene._id }, () =>
             this.saveScene(scene._id, scene)
@@ -656,9 +664,9 @@ class App extends GenericApp<AppProps, AppState> {
         );
     }
 
-    async saveScene(sceneId: string, sceneObj: ioBroker.StateObject): Promise<void> {
+    async saveScene(sceneId: string, sceneObj: SceneObject): Promise<void> {
         if (sceneObj.ts) {
-            const _sceneObj: ioBroker.StateObject = JSON.parse(JSON.stringify(sceneObj));
+            const _sceneObj: SceneObject = JSON.parse(JSON.stringify(sceneObj));
             delete _sceneObj.ts;
             await this.socket.setObject(sceneId, _sceneObj);
         } else {
@@ -667,7 +675,7 @@ class App extends GenericApp<AppProps, AppState> {
     }
 
     async writeScene(): Promise<void> {
-        const scene: ioBroker.StateObject = JSON.parse(JSON.stringify(this.state.selectedSceneData));
+        const scene: SceneObject = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         scene._id = this.state.selectedSceneId;
 
         const folder = getFolderPrefix(scene._id);
@@ -704,7 +712,7 @@ class App extends GenericApp<AppProps, AppState> {
     }
 
     updateScene(common: ioBroker.StateCommon | undefined, native: SceneConfig | undefined, cb?: () => void): void {
-        const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
+        const scene: SceneObject = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         if (common) {
             scene.common = JSON.parse(JSON.stringify(common));
         }
@@ -764,7 +772,7 @@ class App extends GenericApp<AppProps, AppState> {
     }
 
     updateSceneMembers(members: SceneMember[], cb?: () => void): void {
-        const selectedSceneData = JSON.parse(JSON.stringify(this.state.selectedSceneData));
+        const selectedSceneData: SceneObject = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         selectedSceneData.native.members = JSON.parse(JSON.stringify(members));
 
         const selectedSceneChanged =
@@ -908,27 +916,21 @@ class App extends GenericApp<AppProps, AppState> {
             <ExportImportDialog
                 isImport={this.state.importDialog}
                 themeType={this.state.themeType}
-                onClose={(importedScene: Record<string, ioBroker.StateObject>): void => {
+                onClose={(_ignore, importedScene: SceneObject): void => {
                     if (this.state.importDialog && importedScene) {
                         const scene = this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId];
                         // if inability changed
-                        // @ts-expect-error extended
                         if ((importedScene.common.enabled !== false) !== (scene.common.enabled !== false)) {
-                            const scenes = JSON.parse(JSON.stringify(this.state.scenes));
-                            // @ts-expect-error extended
+                            const scenes: Record<string, SceneObject> = JSON.parse(JSON.stringify(this.state.scenes));
                             scenes[this.state.selectedSceneId].common.enabled = importedScene.common.enabled !== false;
                             this.saveScene(this.state.selectedSceneId, scenes[this.state.selectedSceneId]).catch(e =>
                                 this.showError(e),
                             );
                             this.setState({ scenes });
                         }
-                        // @ts-expect-error extended
                         scene.common.enabled = importedScene.common.enabled !== false;
-                        // @ts-expect-error extended
                         scene.common.engine = importedScene.common.engine;
-                        // @ts-expect-error extended
                         if (!scene.common.engine || !this.state.instances.includes(scene.common.engine)) {
-                            // @ts-expect-error extended
                             scene.common.engine = this.state.instances[0];
                         }
                         scene.native = importedScene.native;
@@ -942,7 +944,7 @@ class App extends GenericApp<AppProps, AppState> {
                 sceneObj={
                     this.state.exportDialog
                         ? this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId]
-                        : null
+                        : undefined
                 }
             />
         );
@@ -1012,7 +1014,7 @@ class App extends GenericApp<AppProps, AppState> {
         ) : null;
     }
 
-    async importScenes(importedScenes: Record<string, ioBroker.StateObject>): Promise<void> {
+    async importScenes(importedScenes: Record<string, SceneObject>): Promise<void> {
         // check if all scenes are unique
         const ids = Object.keys(this.state.scenes);
         if (ids.find(id => importedScenes[id])) {
@@ -1166,17 +1168,15 @@ class App extends GenericApp<AppProps, AppState> {
                 showError={e => this.showError(e.toString())}
                 updateSceneMembers={(members, cb) => this.updateSceneMembers(members, cb)}
                 selectedSceneChanged={this.state.selectedSceneChanged}
-                // @ts-expect-error extended
                 sceneEnabled={this.state.selectedSceneData.common.enabled}
                 ts={this.state.selectedSceneData.ts || 0}
                 members={this.state.selectedSceneData.native.members}
                 easy={!!this.state.selectedSceneData.native.easy}
                 socket={this.socket}
-                onFalseEnabled={this.state.selectedSceneData.native.onFalse.enabled}
-                virtualGroup={this.state.selectedSceneData.native.virtualGroup}
-                aggregation={this.state.selectedSceneData.native.aggregation}
+                onFalseEnabled={!!this.state.selectedSceneData.native.onFalse.enabled}
+                virtualGroup={!!this.state.selectedSceneData.native.virtualGroup}
+                aggregation={!!this.state.selectedSceneData.native.aggregation}
                 sceneId={this.state.selectedSceneId}
-                // @ts-expect-error extended
                 engineId={this.state.selectedSceneData.common.engine}
                 intervalBetweenCommands={this.state.selectedSceneData.native.burstInterval || 0}
                 theme={this.state.theme}
@@ -1195,11 +1195,9 @@ class App extends GenericApp<AppProps, AppState> {
                 showError={e => this.showError(e)}
                 oneColumn={!!oneColumn}
                 updateScene={(common?: SceneCommon, native?: SceneConfig, cb?: () => void): void =>
-                    this.updateScene(common as unknown as ioBroker.StateCommon, native, cb)
+                    this.updateScene(common, native, cb)
                 }
-                scene={
-                    this.state.selectedSceneData as unknown as { common: SceneCommon; native: SceneConfig; _id: string }
-                }
+                scene={this.state.selectedSceneData}
                 socket={this.socket}
                 instances={this.state.instances}
                 theme={this.state.theme}

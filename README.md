@@ -152,6 +152,10 @@ sendTo(
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Adapter was migrated to TypeScript
+* (bluefox) Corrected error with the Select ID dialog
+
 ### 3.2.4 (2025-01-22)
 * (bluefox) Migrated to vite
 * (bluefox) Packages updated

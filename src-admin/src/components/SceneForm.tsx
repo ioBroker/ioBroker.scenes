@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 
 import { Utils, I18n, DialogSelectID, Cron, type IobTheme, type AdminConnection } from '@iobroker/adapter-react-v5';
-import type { SceneConfig } from '../types';
+import type { SceneCommon, SceneConfig, SceneObject } from '../types';
 
 const styles: Record<string, any> = {
     alignRight: {
@@ -69,11 +69,9 @@ const styles: Record<string, any> = {
     }),
 };
 
-export type SceneCommon = ioBroker.ObjectCommon & { engine: string; enabled: boolean };
-
 interface SceneFormProps {
     socket: AdminConnection;
-    scene: { common: SceneCommon; native: SceneConfig; _id: string };
+    scene: SceneObject;
     updateScene: (common?: SceneCommon, native?: SceneConfig) => void;
     instances: string[];
     theme: IobTheme;

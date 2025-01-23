@@ -39,11 +39,12 @@ import {
 import { Utils, I18n, type IobTheme, type ThemeType } from '@iobroker/adapter-react-v5';
 
 import ExportImportDialog from './ExportImportDialog';
+import type { SceneObject } from '../types';
 
 const LEVEL_PADDING = 16;
 
 export interface SceneFolder {
-    scenes: Record<string, ioBroker.StateObject>;
+    scenes: Record<string, SceneObject>;
     subFolders: Record<string, SceneFolder>;
     id: string;
     prefix: string;
@@ -220,10 +221,10 @@ interface ScenesListProps {
     onCreateScene: (parentId?: string) => void;
     onCreateFolder: (parent: SceneFolder, id: string) => void;
     onSceneSelect: (id: string) => void;
-    onScenesImport: (scenes: Record<string, ioBroker.StateObject>) => void;
+    onScenesImport: (scenes: Record<string, SceneObject>) => void;
     onMoveScene: (source: string, target: string) => void;
     onSceneEnableDisable: (id: string) => void;
-    scenes: Record<string, ioBroker.StateObject>;
+    scenes: Record<string, SceneObject>;
     selectedSceneId: string;
     selectedSceneChanged: boolean;
     theme: IobTheme;
@@ -463,7 +464,7 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
         this.setState({ opened });
     }
 
-    renderTreeScene(item: ioBroker.StateObject, level: number): React.JSX.Element | null {
+    renderTreeScene(item: SceneObject, level: number): React.JSX.Element | null {
         const scene = this.props.scenes[item._id];
         const name = Utils.getObjectNameFromObj(item, null, { language: I18n.getLanguage() });
 
@@ -484,12 +485,11 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                 sx={Utils.getStyle(
                     this.props.theme,
                     changed && styles.changed,
-                    // @ts-expect-error extended
                     !scene.common.enabled && styles.disabled,
                     {
                         backgroundColor:
                             this.props.selectedSceneId && this.props.selectedSceneId === scene._id
-                                ? this.props.theme.palette.secondary.main + ' !important'
+                                ? `${this.props.theme.palette.secondary.main} !important`
                                 : undefined,
                     },
                 )}
@@ -513,7 +513,6 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                             <CircularProgress size={24} />
                         ) : (
                             <Switch
-                                // @ts-expect-error extended
                                 checked={scene.common.enabled}
                                 onChange={event => this.props.onSceneEnableDisable(event.target.name)}
                                 name={scene._id}
@@ -824,7 +823,7 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                         this.setState({ exportDialog: false, importDialog: false });
                     }
                 }}
-                sceneObj={this.state.exportDialog ? this.props.scenes : null}
+                scenesObj={this.state.exportDialog ? this.props.scenes : undefined}
             />
         );
     }
