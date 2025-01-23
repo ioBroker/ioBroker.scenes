@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {
     Button,
     Card,
@@ -33,10 +32,21 @@ import {
     Check as IconCheck,
 } from '@mui/icons-material';
 
-import { I18n, Icon, TextWithIcon, IconChannel, IconDevice, IconState, Utils } from '@iobroker/adapter-react-v5';
-import ChannelDetector, { Types } from '@iobroker/type-detector';
+import {
+    I18n,
+    Icon,
+    TextWithIcon,
+    IconChannel,
+    IconDevice,
+    IconState,
+    Utils,
+    type IobTheme,
+    type AdminConnection,
+} from '@iobroker/adapter-react-v5';
+import ChannelDetector, { type DetectOptions, Types } from '@iobroker/type-detector';
+import type { SceneEnumsValue } from '../types';
 
-const NAMES = {
+const NAMES: Record<string, { boolean?: string; number?: string; string?: string }> = {
     [Types.airCondition]: { boolean: 'POWER', number: 'SET' },
     [Types.blind]: { number: 'SET' },
     [Types.cie]: { string: 'CIE', boolean: 'ON' },
@@ -57,17 +67,17 @@ const NAMES = {
     [Types.volumeGroup]: { boolean: 'SET' },
 };
 
-const styles = {
+const styles: Record<string, any> = {
     dialogPaper: {
         height: 'calc(100% - 96px)',
     },
-    enumGroupMember: theme => ({
+    enumGroupMember: (theme: IobTheme): any => ({
         display: 'inline-flex',
         m: '4px',
         p: '4px',
         backgroundColor: '#00000010',
         border: '1px solid #FFF',
-        borderColor: theme.palette.text.hint,
+        borderColor: theme.palette.text.secondary,
         color: theme.palette.text.primary,
         alignItems: 'center',
         position: 'relative',
@@ -89,8 +99,30 @@ const styles = {
     },
 };
 
-class EnumsSelector extends React.Component {
-    constructor(props) {
+interface EnumsSelectorProps {
+    value: SceneEnumsValue | null;
+    socket: AdminConnection;
+    onClose: (value?: SceneEnumsValue) => void;
+    edit: boolean;
+    theme: IobTheme;
+    showError: (error: string) => void;
+}
+
+interface EnumsSelectorState {
+    enums: Record<string, ioBroker.EnumObject> | null;
+    funcs: string[];
+    rooms: string[];
+    others: string[];
+    value: SceneEnumsValue;
+    ids: string[];
+    objects: Record<string, ioBroker.StateObject & { realId?: string }>;
+    icons: Record<string, string | null>;
+}
+
+class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorState> {
+    private readonly lang: ioBroker.Languages = I18n.getLanguage();
+
+    constructor(props: EnumsSelectorProps) {
         super(props);
 
         this.state = {
@@ -104,15 +136,15 @@ class EnumsSelector extends React.Component {
                 others: [],
                 exclude: [],
                 type: 'boolean',
+                delay: null,
             },
             ids: [],
             objects: {},
             icons: {},
         };
-        this.lang = I18n.getLanguage();
     }
 
-    componentDidMount() {
+    componentDidMount(): void {
         this.props.socket
             .getEnums()
             .then(enums => {
@@ -134,23 +166,29 @@ class EnumsSelector extends React.Component {
             .catch(e => this.props.showError(e));
     }
 
-    async updateAllIds() {
-        const objects = JSON.parse(JSON.stringify(this.state.objects));
-        const ids = [];
+    async updateAllIds(): Promise<void> {
+        const objects: Record<string, ioBroker.StateObject & { realId?: string }> = JSON.parse(
+            JSON.stringify(this.state.objects),
+        );
+        const ids: string[] = [];
         this.state.value.rooms.forEach(roomId => {
-            const members = this.state.enums[roomId].common.members;
-            for (let r = 0; r < members.length; r++) {
-                if (!ids.includes(members[r])) {
-                    ids.push(members[r]);
+            const members = this.state.enums?.[roomId].common.members;
+            if (members) {
+                for (let r = 0; r < members.length; r++) {
+                    if (!ids.includes(members[r])) {
+                        ids.push(members[r]);
+                    }
                 }
             }
         });
         if (!this.state.value.rooms.length) {
             this.state.value.funcs.forEach(funcId => {
-                const members = this.state.enums[funcId].common.members;
-                for (let r = 0; r < members.length; r++) {
-                    if (!ids.includes(members[r])) {
-                        ids.push(members[r]);
+                const members = this.state.enums?.[funcId].common.members;
+                if (members) {
+                    for (let r = 0; r < members.length; r++) {
+                        if (!ids.includes(members[r])) {
+                            ids.push(members[r]);
+                        }
                     }
                 }
             });
@@ -158,16 +196,18 @@ class EnumsSelector extends React.Component {
             for (let i = ids.length - 1; i >= 0; i--) {
                 const id = ids[i];
                 // find this id in all functions
-                if (!this.state.value.funcs.find(funcId => this.state.enums[funcId].common.members.includes(id))) {
+                if (!this.state.value.funcs.find(funcId => this.state.enums?.[funcId].common.members?.includes(id))) {
                     ids.splice(i, 1);
                 }
             }
         }
         this.state.value.others.forEach(enumId => {
-            const members = this.state.enums[enumId].common.members;
-            for (let r = 0; r < members.length; r++) {
-                if (!ids.includes(members[r])) {
-                    ids.push(members[r]);
+            const members = this.state.enums?.[enumId].common.members;
+            if (members) {
+                for (let r = 0; r < members.length; r++) {
+                    if (!ids.includes(members[r])) {
+                        ids.push(members[r]);
+                    }
                 }
             }
         });
@@ -175,6 +215,7 @@ class EnumsSelector extends React.Component {
         for (let i = ids.length - 1; i >= 0; i--) {
             const obj = objects[ids[i]] || (await this.props.socket.getObject(ids[i]));
             if (obj) {
+                // @ts-expect-error
                 delete obj.native;
                 delete obj.realId;
                 if (obj.type !== 'state') {
@@ -203,7 +244,7 @@ class EnumsSelector extends React.Component {
             }
         }
 
-        const icons = JSON.parse(JSON.stringify(this.state.icons));
+        const icons: Record<string, string | null> = JSON.parse(JSON.stringify(this.state.icons));
         try {
             for (let i = 0; i < ids.length; i++) {
                 const id = ids[i];
@@ -248,13 +289,21 @@ class EnumsSelector extends React.Component {
         this.setState({ ids, icons, objects });
     }
 
-    static getName(name, lang) {
+    static getName(name: ioBroker.StringOrTranslated, lang: ioBroker.Languages): string {
         return name && typeof name === 'object' ? name[lang] || name.en || '' : name || '';
     }
 
-    static async findControlState(obj, type, socket) {
+    static async findControlState(
+        obj: ioBroker.StateObject,
+        type: 'boolean' | 'number' | 'string',
+        socket: AdminConnection,
+    ): Promise<string | null> {
         // read all states of the device
-        const objects = await socket.getObjectViewSystem('state', `${obj._id}.\u0000`, `${obj._id}.\u9999`);
+        const objects: Record<string, ioBroker.StateObject> = await socket.getObjectViewSystem(
+            'state',
+            `${obj._id}.\u0000`,
+            `${obj._id}.\u9999`,
+        );
         objects[obj._id] = obj;
         const keys = Object.keys(objects);
 
@@ -262,24 +311,24 @@ class EnumsSelector extends React.Component {
         const detector = new ChannelDetector();
 
         // initialize iobroker type detector
-        const usedIds = [];
+        const usedIds: string[] = [];
         const ignoreIndicators = ['UNREACH_STICKY']; // Ignore indicators by name
-        const excludedTypes = ['info'];
-        const options = {
+        const excludedTypes: Types[] = [Types.info];
+        const options: DetectOptions = {
+            id: obj._id,
             objects,
             _keysOptional: keys,
             _usedIdsOptional: usedIds,
             ignoreIndicators,
             excludedTypes,
         };
-        options.id = obj._id;
-        let controls = detector.detect(options);
-        if (controls && controls.length) {
+        const controls = detector.detect(options);
+        if (controls?.length) {
             // try to find in all controls
             for (let c = 0; c < controls.length; c++) {
                 const control = controls[c];
                 if (NAMES[control.type] && NAMES[control.type][type]) {
-                    const names = NAMES[control.type][type].split('|');
+                    const names = NAMES[control.type][type]!.split('|');
                     for (let t = 0; t < names.length; t++) {
                         const st = control.states.find(state => state.name === names[t] && state.id);
                         if (st) {
@@ -292,7 +341,7 @@ class EnumsSelector extends React.Component {
         return null;
     }
 
-    renderDevice(id) {
+    renderDevice(id: string): React.JSX.Element {
         const member = this.state.objects[id];
         const name = member.common?.name && EnumsSelector.getName(member.common?.name, this.lang);
         // const textColor = Utils.getInvertedColor(props.enum?.common?.color, props.themeType, true);
@@ -328,7 +377,7 @@ class EnumsSelector extends React.Component {
                 <IconButton
                     size="small"
                     onClick={() => {
-                        const value = JSON.parse(JSON.stringify(this.state.value));
+                        const value: SceneEnumsValue = JSON.parse(JSON.stringify(this.state.value));
                         const pos = value.exclude.indexOf(id);
                         if (pos !== -1) {
                             value.exclude.splice(pos, 1);
@@ -370,7 +419,7 @@ class EnumsSelector extends React.Component {
         );
     }
 
-    render() {
+    render(): React.JSX.Element {
         return (
             <Dialog
                 key="selectDialogEnums"
@@ -378,7 +427,7 @@ class EnumsSelector extends React.Component {
                 fullWidth
                 maxWidth="lg"
                 sx={{ '& .MuiDialog-paper': styles.dialogPaper }}
-                onClose={() => this.setState({ showAddEnumsDialog: false })}
+                onClose={() => this.props.onClose()}
             >
                 <DialogTitle style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                     {I18n.t('Select for')}
@@ -390,8 +439,8 @@ class EnumsSelector extends React.Component {
                         <Select
                             value={this.state.value.type || 'boolean'}
                             onChange={e => {
-                                const value = JSON.parse(JSON.stringify(this.state.value));
-                                value.type = e.target.value;
+                                const value: SceneEnumsValue = JSON.parse(JSON.stringify(this.state.value));
+                                value.type = e.target.value as 'boolean' | 'number' | 'string';
                                 this.setState({ value }, () => this.updateAllIds());
                             }}
                         >
@@ -452,8 +501,10 @@ class EnumsSelector extends React.Component {
                                             disablePadding
                                         >
                                             <ListItemButton
-                                                onClick={e => {
-                                                    const value = JSON.parse(JSON.stringify(this.state.value));
+                                                onClick={() => {
+                                                    const value: SceneEnumsValue = JSON.parse(
+                                                        JSON.stringify(this.state.value),
+                                                    );
                                                     const pos = value.rooms.indexOf(id);
                                                     if (pos !== -1) {
                                                         value.rooms.splice(pos, 1);
@@ -475,7 +526,7 @@ class EnumsSelector extends React.Component {
                                                 <ListItemText
                                                     primary={
                                                         <TextWithIcon
-                                                            value={this.state.enums[id]}
+                                                            value={this.state.enums![id]}
                                                             lang={this.lang}
                                                         />
                                                     }
@@ -512,8 +563,10 @@ class EnumsSelector extends React.Component {
                                             disablePadding
                                         >
                                             <ListItemButton
-                                                onClick={e => {
-                                                    const value = JSON.parse(JSON.stringify(this.state.value));
+                                                onClick={() => {
+                                                    const value: SceneEnumsValue = JSON.parse(
+                                                        JSON.stringify(this.state.value),
+                                                    );
                                                     const pos = value.funcs.indexOf(id);
                                                     if (pos !== -1) {
                                                         value.funcs.splice(pos, 1);
@@ -535,7 +588,7 @@ class EnumsSelector extends React.Component {
                                                 <ListItemText
                                                     primary={
                                                         <TextWithIcon
-                                                            value={this.state.enums[id]}
+                                                            value={this.state.enums![id]}
                                                             lang={this.lang}
                                                         />
                                                     }
@@ -571,7 +624,9 @@ class EnumsSelector extends React.Component {
                                         >
                                             <ListItemButton
                                                 onClick={() => {
-                                                    const value = JSON.parse(JSON.stringify(this.state.value));
+                                                    const value: SceneEnumsValue = JSON.parse(
+                                                        JSON.stringify(this.state.value),
+                                                    );
                                                     const pos = value.others.indexOf(id);
                                                     if (pos !== -1) {
                                                         value.others.splice(pos, 1);
@@ -593,7 +648,7 @@ class EnumsSelector extends React.Component {
                                                 <ListItemText
                                                     primary={
                                                         <TextWithIcon
-                                                            value={this.state.enums[id]}
+                                                            value={this.state.enums![id]}
                                                             lang={this.lang}
                                                         />
                                                     }
@@ -630,7 +685,7 @@ class EnumsSelector extends React.Component {
                     <Button
                         variant="contained"
                         color="grey"
-                        onClick={() => this.props.onClose(null)}
+                        onClick={() => this.props.onClose()}
                         startIcon={<IconCancel />}
                     >
                         {I18n.t('Cancel')}
@@ -640,14 +695,5 @@ class EnumsSelector extends React.Component {
         );
     }
 }
-
-EnumsSelector.propTypes = {
-    socket: PropTypes.object,
-    onClose: PropTypes.func,
-    value: PropTypes.object,
-    edit: PropTypes.bool,
-    theme: PropTypes.object.isRequired,
-    showError: PropTypes.func,
-};
 
 export default EnumsSelector;

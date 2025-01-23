@@ -669,9 +669,9 @@ function getSetValue(value) {
         return adapter
             .getForeignStateAsync(m[1])
             .then(state => (state ? state.val : Promise.reject(`State ${m[1]} is empty`)));
-    } else {
-        return Promise.resolve(value);
     }
+
+    return Promise.resolve(value);
 }
 
 // Set one state of the scene

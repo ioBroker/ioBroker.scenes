@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useDrag, useDrop, DndProvider as DragDropContext } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
@@ -10,7 +9,6 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    ListItemSecondaryAction,
     Button,
     CircularProgress,
     Switch,
@@ -19,6 +17,7 @@ import {
     DialogContent,
     DialogActions,
     TextField,
+    ListItemButton,
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import { FaFolder as IconFolderClosed, FaFolderOpen as IconFolderOpened, FaScroll as IconScript } from 'react-icons/fa';
@@ -37,18 +36,29 @@ import {
     MdFileUpload as IconImport,
 } from 'react-icons/md';
 
-import { Utils, I18n } from '@iobroker/adapter-react-v5';
+import { Utils, I18n, type IobTheme, type ThemeType } from '@iobroker/adapter-react-v5';
 
 import ExportImportDialog from './ExportImportDialog';
 
 const LEVEL_PADDING = 16;
 
-export const Droppable = props => {
+export interface SceneFolder {
+    scenes: Record<string, ioBroker.StateObject>;
+    subFolders: Record<string, SceneFolder>;
+    id: string;
+    prefix: string;
+}
+
+export function Droppable(props: {
+    children: (React.JSX.Element | null)[] | React.JSX.Element;
+    onDrop: (obj: { name: string }) => void;
+    name: string;
+}): React.JSX.Element {
     const { onDrop } = props;
 
     const [{ isOver, isOverAny }, drop] = useDrop({
         accept: ['item'],
-        drop: e => (isOver ? onDrop(e) : undefined),
+        drop: (item: { name: string }): undefined | void => (isOver ? onDrop(item) : undefined),
         collect: monitor => ({
             isOver: monitor.isOver({ shallow: true }),
             isOverAny: monitor.isOver(),
@@ -57,15 +67,24 @@ export const Droppable = props => {
 
     return (
         <div
+            // @ts-expect-error fix later
             ref={drop}
-            className={Utils.clsx(isOver && 'js-folder-dragover', isOverAny && 'js-folder-dragging')}
+            style={{
+                background: isOver ? '#40adff' : undefined,
+                opacity: isOverAny ? 0.7 : undefined,
+            }}
         >
             {props.children}
         </div>
     );
-};
+}
 
-export const Draggable = props => {
+interface DraggableProps {
+    name: string;
+    children: React.JSX.Element | (React.JSX.Element | React.JSX.Element[] | null)[] | null;
+}
+
+export function Draggable(props: DraggableProps): React.JSX.Element {
     const { name } = props;
     const [{ opacity }, drag] = useDrag({
         type: 'item',
@@ -78,15 +97,16 @@ export const Draggable = props => {
     // About transform: https://github.com/react-dnd/react-dnd/issues/832#issuecomment-442071628
     return (
         <div
+            // @ts-expect-error fix later
             ref={drag}
             style={{ opacity, transform: 'translate3d(0, 0, 0)' }}
         >
             {props.children}
         </div>
     );
-};
+}
 
-const styles = {
+const styles: Record<string, any> = {
     scroll: {
         overflowY: 'auto',
         overflowX: 'hidden',
@@ -99,7 +119,7 @@ const styles = {
     heightMinusToolbar: {
         height: 'calc(100% - 48px)',
     },
-    mainToolbar: theme => ({
+    mainToolbar: (theme: IobTheme): React.CSSProperties => ({
         background: theme.palette.primary.main,
     }),
     textInput: {
@@ -130,7 +150,7 @@ const styles = {
     alignRight: {
         textAlign: 'right',
     },
-    itemIconFolder: theme => ({
+    itemIconFolder: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? '#ffca2c' : '#ffca2c',
     }),
     changed: {
@@ -147,17 +167,17 @@ const styles = {
         },
     },
     disabled: {
-        opacity: 0.3,
+        opacity: 0.6,
     },
-    folderItem: theme => ({
+    folderItem: (theme: IobTheme): React.CSSProperties => ({
         fontWeight: 'bold',
         cursor: 'pointer',
         color: theme.palette.mode === 'dark' ? '#FFF' : '#000',
     }),
-    listItemTitle: theme => ({
+    listItemTitle: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? '#FFF' : '#000',
     }),
-    listItemSubTitle: theme => ({
+    listItemSubTitle: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? '#bababa' : '#2a2a2a',
     }),
     list: {
@@ -195,14 +215,51 @@ const styles = {
     },
 };
 
-class ScenesList extends React.Component {
-    constructor(props) {
+interface ScenesListProps {
+    onRenameFolder: (folder: SceneFolder, newName: string) => Promise<void>;
+    onCreateScene: (parentId?: string) => void;
+    onCreateFolder: (parent: SceneFolder, id: string) => void;
+    onSceneSelect: (id: string) => void;
+    onScenesImport: (scenes: Record<string, ioBroker.StateObject>) => void;
+    onMoveScene: (source: string, target: string) => void;
+    onSceneEnableDisable: (id: string) => void;
+    scenes: Record<string, ioBroker.StateObject>;
+    selectedSceneId: string;
+    selectedSceneChanged: boolean;
+    theme: IobTheme;
+    folders: SceneFolder;
+    showDrawer: boolean;
+    themeType: ThemeType;
+    version: string;
+}
+
+interface ScenesListState {
+    opened: string[];
+    search: string;
+    reorder: boolean;
+    showSearch: boolean;
+
+    addFolderDialog: SceneFolder | null;
+    addFolderDialogTitle: string | null;
+
+    editFolderDialog: SceneFolder | null;
+    editFolderDialogTitle: string | null;
+    editFolderDialogTitleOrigin: string;
+
+    showMoveWarning: { source: string; newId: string } | null;
+    exportDialog: boolean;
+    importDialog: boolean;
+    changingScene: string;
+}
+
+class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
+    constructor(props: ScenesListProps) {
         super(props);
 
-        let opened;
+        let opened: string[];
         try {
-            opened = JSON.parse(window.localStorage.getItem('Scenes.opened')) || [];
-        } catch (e) {
+            opened = JSON.parse(window.localStorage.getItem('Scenes.opened') || '[]') || [];
+        } catch {
             opened = [];
         }
 
@@ -217,16 +274,19 @@ class ScenesList extends React.Component {
             showMoveWarning: null,
             exportDialog: false,
             importDialog: false,
+            editFolderDialog: null,
+            editFolderDialogTitleOrigin: '',
+            changingScene: '',
         };
     }
 
-    onAddFolder(parent, id) {
-        let opened = JSON.parse(JSON.stringify(this.state.opened));
+    onAddFolder(parent: SceneFolder, id: string): void {
+        const opened: string[] = JSON.parse(JSON.stringify(this.state.opened));
         opened.push(id);
         this.setState({ addFolderDialog: null, opened }, () => this.props.onCreateFolder(parent, id));
     }
 
-    renderAddFolderDialog() {
+    renderAddFolderDialog(): React.JSX.Element | null {
         return this.state.addFolderDialog ? (
             <Dialog
                 key="addDialog"
@@ -248,10 +308,17 @@ class ScenesList extends React.Component {
                                     .replace(/\./g, '_'),
                             })
                         }
-                        onKeyUp={e =>
-                            e.keyCode === 13 &&
-                            this.onAddFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle)
-                        }
+                        onKeyUp={e => {
+                            if (
+                                e.key === 'Enter' &&
+                                this.state.addFolderDialogTitle &&
+                                !Object.keys(this.props.folders.subFolders).find(
+                                    name => name === this.state.addFolderDialogTitle,
+                                )
+                            ) {
+                                this.onAddFolder(this.state.addFolderDialog!, this.state.addFolderDialogTitle);
+                            }
+                        }}
                     />
                 </DialogContent>
                 <DialogActions sx={{ ...styles.alignRight, ...styles.buttonsContainer }}>
@@ -259,11 +326,11 @@ class ScenesList extends React.Component {
                         variant="contained"
                         disabled={
                             !this.state.addFolderDialogTitle ||
-                            Object.keys(this.props.folders.subFolders).find(
+                            !!Object.keys(this.props.folders.subFolders).find(
                                 name => name === this.state.addFolderDialogTitle,
                             )
                         }
-                        onClick={() => this.onAddFolder(this.state.addFolderDialog, this.state.addFolderDialogTitle)}
+                        onClick={() => this.onAddFolder(this.state.addFolderDialog!, this.state.addFolderDialogTitle!)}
                         color="primary"
                         autoFocus
                         startIcon={<IconCheck />}
@@ -283,11 +350,11 @@ class ScenesList extends React.Component {
         ) : null;
     }
 
-    onRenameFolder(folder, newName) {
-        let pos;
+    async onRenameFolder(folder: SceneFolder, newName: string): Promise<void> {
+        const pos = this.state.opened.indexOf(folder.prefix);
 
         // if selected folder opened, replace its ID in this.state.opened
-        if ((pos = this.state.opened.indexOf(folder.prefix)) !== -1) {
+        if (pos !== -1) {
             const opened = [...this.state.opened];
             opened.splice(pos, 1);
             opened.push(newName);
@@ -295,17 +362,17 @@ class ScenesList extends React.Component {
             this.setState({ opened });
         }
 
-        return this.props
-            .onRenameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle)
-            .then(() => this.setState({ editFolderDialog: null }));
+        await this.props.onRenameFolder(folder, newName);
+
+        return this.setState({ editFolderDialog: null });
     }
 
-    renderEditFolderDialog() {
+    renderEditFolderDialog(): React.JSX.Element | null {
         if (!this.state.editFolderDialog) {
             return null;
         }
 
-        const isUnique = !Object.keys(this.props.folders.subFolders).find(
+        const isUnique = !Object.values(this.props.folders.subFolders).find(
             folder => folder.id === this.state.editFolderDialogTitle,
         );
 
@@ -330,10 +397,19 @@ class ScenesList extends React.Component {
                                     .replace(/\./g, '_'),
                             })
                         }
-                        onKeyUp={e =>
-                            e.keyCode === 13 &&
-                            this.onRenameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle)
-                        }
+                        onKeyUp={e => {
+                            if (
+                                e.key === 'Enter' &&
+                                this.state.editFolderDialogTitle &&
+                                this.state.editFolderDialogTitleOrigin !== this.state.editFolderDialogTitle &&
+                                isUnique
+                            ) {
+                                void this.onRenameFolder(
+                                    this.state.editFolderDialog!,
+                                    this.state.editFolderDialogTitle,
+                                );
+                            }
+                        }}
                     />
                 </DialogContent>
                 <DialogActions sx={{ ...styles.alignRight, ...styles.buttonsContainer }}>
@@ -345,7 +421,7 @@ class ScenesList extends React.Component {
                             !isUnique
                         }
                         onClick={() =>
-                            this.onRenameFolder(this.state.editFolderDialog, this.state.editFolderDialogTitle)
+                            this.onRenameFolder(this.state.editFolderDialog!, this.state.editFolderDialogTitle!)
                         }
                         color="primary"
                         autoFocus
@@ -366,7 +442,7 @@ class ScenesList extends React.Component {
         );
     }
 
-    toggleFolder(folder) {
+    toggleFolder(folder: SceneFolder): void {
         const opened = [...this.state.opened];
         const pos = opened.indexOf(folder.prefix);
         if (pos === -1) {
@@ -376,21 +452,9 @@ class ScenesList extends React.Component {
 
             // If an active scene is inside this folder, select the first scene
             if (Object.keys(folder.scenes).includes(this.props.selectedSceneId)) {
-                // To do ask question
                 if (this.props.selectedSceneChanged) {
-                    this.confirmCb = () => {
-                        this.setState({
-                            selectedSceneId: '',
-                            selectedSceneData: null,
-                            selectedSceneChanged: false,
-                            opened,
-                        });
-                        window.localStorage.setItem('Scenes.opened', JSON.stringify(opened));
-                    };
-                    return this.setState({ sceneChangeDialog: 'empty' });
+                    // To do ask question
                 }
-
-                this.setState({ selectedSceneId: '', selectedSceneData: null, selectedSceneChanged: false });
             }
         }
 
@@ -399,9 +463,11 @@ class ScenesList extends React.Component {
         this.setState({ opened });
     }
 
-    renderTreeScene = (item, level) => {
+    renderTreeScene(item: ioBroker.StateObject, level: number): React.JSX.Element | null {
         const scene = this.props.scenes[item._id];
-        if (!scene || (this.state.search && !item.common.name.includes(this.state.search))) {
+        const name = Utils.getObjectNameFromObj(item, null, { language: I18n.getLanguage() });
+
+        if (!scene || (this.state.search && !name.includes(this.state.search))) {
             return null;
         }
 
@@ -411,15 +477,21 @@ class ScenesList extends React.Component {
             this.props.selectedSceneId && this.props.selectedSceneId === scene._id && this.props.selectedSceneChanged;
 
         const listItem = (
-            <ListItem
+            <ListItemButton
                 style={{ ...styles.noPaddings, paddingLeft: (this.state.reorder ? level : level - 1) * LEVEL_PADDING }}
                 key={item._id}
                 selected={this.props.selectedSceneId ? this.props.selectedSceneId === scene._id : false}
-                button
                 sx={Utils.getStyle(
                     this.props.theme,
                     changed && styles.changed,
+                    // @ts-expect-error extended
                     !scene.common.enabled && styles.disabled,
+                    {
+                        backgroundColor:
+                            this.props.selectedSceneId && this.props.selectedSceneId === scene._id
+                                ? this.props.theme.palette.secondary.main + ' !important'
+                                : undefined,
+                    },
                 )}
                 className={this.state.reorder ? 'item-reorder' : ''}
                 onClick={() => this.props.onSceneSelect(scene._id)}
@@ -436,19 +508,20 @@ class ScenesList extends React.Component {
                     secondary={Utils.getObjectNameFromObj(scene, null, { language: I18n.getLanguage() }, true)}
                 />
                 {!this.state.reorder ? (
-                    <ListItemSecondaryAction>
+                    <div>
                         {this.state.changingScene === scene._id ? (
                             <CircularProgress size={24} />
                         ) : (
                             <Switch
+                                // @ts-expect-error extended
                                 checked={scene.common.enabled}
                                 onChange={event => this.props.onSceneEnableDisable(event.target.name)}
                                 name={scene._id}
                             />
                         )}
-                    </ListItemSecondaryAction>
+                    </div>
                 ) : null}
-            </ListItem>
+            </ListItemButton>
         );
 
         if (this.state.reorder) {
@@ -462,9 +535,9 @@ class ScenesList extends React.Component {
             );
         }
         return listItem;
-    };
+    }
 
-    onDragFinish(source, target) {
+    onDragFinish(source: string, target: string): void {
         let newId = `${target}.${source.split('.').pop()}`;
         console.log(`Rename ${source} => ${newId}`);
         if (source !== newId) {
@@ -477,19 +550,19 @@ class ScenesList extends React.Component {
         }
     }
 
-    static isFolderNotEmpty(folder) {
-        const subNotEmpty = Object.keys(folder.subFolders).find(id =>
+    static isFolderNotEmpty(folder: SceneFolder): boolean {
+        const subNotEmpty = !!Object.keys(folder.subFolders).find(id =>
             ScenesList.isFolderNotEmpty(folder.subFolders[id]),
         );
-        return subNotEmpty || Object.keys(folder.scenes).length;
+        return subNotEmpty || !!Object.keys(folder.scenes).length;
     }
 
-    renderTree(parent, level) {
-        let result = [];
+    renderTree(parent: SceneFolder, level?: number): React.JSX.Element[] {
+        const result = [];
         level = level || 0;
-        let opened = this.state.reorder || (this.state.opened ? this.state.opened.includes(parent.prefix) : false);
+        const opened = this.state.reorder || (this.state.opened ? this.state.opened.includes(parent.prefix) : false);
 
-        const reactChildren = [];
+        const reactChildren: React.JSX.Element[] = [];
         if (parent && (opened || !parent.id)) {
             // root cannot be closed and have id === ''
             const values = Object.values(parent.scenes);
@@ -498,13 +571,17 @@ class ScenesList extends React.Component {
             // add first sub-folders
             subFolders
                 .sort((a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0))
-                .forEach(subFolder => reactChildren.push(this.renderTree(subFolder, level + 1)));
+                .forEach(subFolder =>
+                    reactChildren.push(this.renderTree(subFolder, level + 1) as unknown as React.JSX.Element),
+                );
 
             // Add as second scenes
             if (values.length || subFolders.length) {
                 values
                     .sort((a, b) => (a._id > b._id ? 1 : a._id < b._id ? -1 : 0))
-                    .forEach(scene => reactChildren.push(this.renderTreeScene(scene, level + 1)));
+                    .forEach(scene =>
+                        reactChildren.push(this.renderTreeScene(scene, level + 1) as unknown as React.JSX.Element),
+                    );
             } else {
                 reactChildren.push(
                     <ListItem key="no scenes">
@@ -552,7 +629,7 @@ class ScenesList extends React.Component {
                         }
                     />
                     {!this.state.reorder ? (
-                        <ListItemSecondaryAction>
+                        <div>
                             {opened ? (
                                 <IconButton
                                     onClick={() => this.props.onCreateScene(parent.id)}
@@ -579,7 +656,7 @@ class ScenesList extends React.Component {
                             >
                                 {opened ? <IconExpand /> : <IconCollapse />}
                             </IconButton>
-                        </ListItemSecondaryAction>
+                        </div>
                     ) : null}
                 </ListItem>
             );
@@ -604,7 +681,7 @@ class ScenesList extends React.Component {
         return result;
     }
 
-    renderListToolbar() {
+    renderListToolbar(): React.JSX.Element {
         return (
             <Toolbar
                 key="toolbar"
@@ -686,7 +763,7 @@ class ScenesList extends React.Component {
         );
     }
 
-    renderMoveWarningDialog() {
+    renderMoveWarningDialog(): React.JSX.Element | null {
         if (!this.state.showMoveWarning) {
             return null;
         }
@@ -703,7 +780,10 @@ class ScenesList extends React.Component {
                     <Button
                         variant="contained"
                         onClick={() => {
-                            this.props.onMoveScene(this.state.showMoveWarning.source, this.state.showMoveWarning.newId);
+                            this.props.onMoveScene(
+                                this.state.showMoveWarning!.source,
+                                this.state.showMoveWarning!.newId,
+                            );
                             this.setState({ showMoveWarning: null });
                         }}
                         color="primary"
@@ -725,7 +805,7 @@ class ScenesList extends React.Component {
         );
     }
 
-    renderExportImportDialog() {
+    renderExportImportDialog(): React.JSX.Element | null {
         if (!this.state.exportDialog && !this.state.importDialog) {
             return null;
         }
@@ -733,7 +813,7 @@ class ScenesList extends React.Component {
         return (
             <ExportImportDialog
                 key="exportImportDialog"
-                isImport={!!this.state.importDialog}
+                isImport={this.state.importDialog}
                 themeType={this.props.themeType}
                 allScenes
                 onClose={importedScenes => {
@@ -749,7 +829,7 @@ class ScenesList extends React.Component {
         );
     }
 
-    render() {
+    render(): (React.JSX.Element | null)[] {
         return [
             this.renderListToolbar(),
             <div
@@ -767,23 +847,5 @@ class ScenesList extends React.Component {
         ];
     }
 }
-
-ScenesList.propTypes = {
-    onRenameFolder: PropTypes.func,
-    onCreateScene: PropTypes.func,
-    onCreateFolder: PropTypes.func,
-    onSceneSelect: PropTypes.func,
-    onScenesImport: PropTypes.func,
-    onMoveScene: PropTypes.func,
-    onSceneEnableDisable: PropTypes.func,
-    scenes: PropTypes.object,
-    selectedSceneId: PropTypes.string,
-    selectedSceneChanged: PropTypes.bool,
-    theme: PropTypes.object.isRequired,
-    folders: PropTypes.object,
-    showDrawer: PropTypes.bool,
-    themeType: PropTypes.string,
-    version: PropTypes.string,
-};
 
 export default ScenesList;

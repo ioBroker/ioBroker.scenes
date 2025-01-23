@@ -1,9 +1,8 @@
 // Common
 import React from 'react';
-import * as Sentry from '@sentry/browser';
 
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
-import ReactSplit, { SplitDirection, GutterTheme } from '@devbookhq/splitter';
+import ReactSplit, { SplitDirection } from '@devbookhq/splitter';
 
 // MaterialUi
 import {
@@ -21,24 +20,40 @@ import {
 } from '@mui/material';
 
 // Own
-import { AdminConnection, I18n, Loader, Utils, withWidth, GenericApp } from '@iobroker/adapter-react-v5';
+import {
+    AdminConnection,
+    I18n,
+    Loader,
+    Utils,
+    withWidth,
+    GenericApp,
+    type IobTheme,
+    type GenericAppState,
+} from '@iobroker/adapter-react-v5';
 
-import SceneForm from './components/SceneForm';
+import SceneForm, { type SceneCommon } from './components/SceneForm';
 import SceneMembersForm from './components/SceneMembersForm';
 import ExportImportDialog from './components/ExportImportDialog';
-import ScenesList from './components/ScenesList';
+import ScenesList, { type SceneFolder } from './components/ScenesList';
 
-import enLang from './i18n/en';
-import deLang from './i18n/de';
-import ruLang from './i18n/ru';
-import ptLang from './i18n/pt';
-import nlLang from './i18n/nl';
-import frLang from './i18n/fr';
-import itLang from './i18n/it';
-import esLang from './i18n/es';
-import plLang from './i18n/pl';
-import ukLang from './i18n/uk';
-import zhLang from './i18n/zh-cn';
+import enLang from './i18n/en.json';
+import deLang from './i18n/de.json';
+import ruLang from './i18n/ru.json';
+import ptLang from './i18n/pt.json';
+import nlLang from './i18n/nl.json';
+import frLang from './i18n/fr.json';
+import itLang from './i18n/it.json';
+import esLang from './i18n/es.json';
+import plLang from './i18n/pl.json';
+import ukLang from './i18n/uk.json';
+import zhLang from './i18n/zh-cn.json';
+
+declare global {
+    interface Window {
+        sentryDSN: string;
+        adapterName: string | undefined;
+    }
+}
 
 // icons
 import {
@@ -51,11 +66,13 @@ import {
 } from 'react-icons/md';
 import { FaClone as IconClone, FaBars as IconMenu } from 'react-icons/fa';
 import pack from '../package.json';
+import type { GenericAppProps } from '@iobroker/adapter-react-v5/build/types';
+import type { SceneConfig, SceneMember } from './types';
 
 const MARGIN_MEMBERS = 20;
 
-const styles = {
-    root: theme => ({
+const styles: Record<string, any> = {
+    root: (theme: IobTheme): React.CSSProperties => ({
         width: '100%',
         height: 'calc(100% + 4px)',
         backgroundColor: theme.palette.mode === 'dark' ? '#000' : '#fff',
@@ -92,7 +109,7 @@ const styles = {
     alignRight: {
         textAlign: 'right',
     },
-    membersCell: theme => ({
+    membersCell: (theme: IobTheme): any => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#566770' : '#ADD8E6',
         mt: `${MARGIN_MEMBERS}px`,
         mr: '8px',
@@ -105,10 +122,10 @@ const styles = {
         borderRadius: '4px',
         height: `calc(100% - ${theme.spacing(1)})`,
     }),
-    sceneTitle: theme => ({
+    sceneTitle: (theme: IobTheme): any => ({
         color: theme.palette.mode === 'dark' ? '#FFF' : '#000',
         flexGrow: 1,
-        paddingLeft: theme.spacing(1),
+        pl: 1,
     }),
     sceneSubTitle: {
         fontSize: 10,
@@ -116,13 +133,13 @@ const styles = {
         fontStyle: 'italic',
         marginTop: -7,
     },
-    toolbarButtons: theme => ({
-        marginRight: theme.spacing(1),
-    }),
-    settingsBackground: theme => ({
+    toolbarButtons: {
+        marginRight: 8,
+    },
+    settingsBackground: (theme: IobTheme): React.CSSProperties => ({
         background: theme.palette.mode === 'dark' ? '#3a3a3a' : '#eee',
     }),
-    gutter: theme => ({
+    gutter: (theme: IobTheme): any => ({
         background: theme.palette.mode === 'dark' ? '#3a3a3a !important' : '#eee !important',
         '& .__dbk__dragger': {
             background: theme.palette.mode === 'dark' ? 'white !important' : 'black !important',
@@ -133,27 +150,42 @@ const styles = {
     },
 };
 
-function getUrlQuery() {
-    const parts = (window.location.search || '').replace(/^\?/, '').split('&');
-    const query = {};
-    parts.forEach(item => {
-        const [name, val] = item.split('=');
-        query[decodeURIComponent(name)] = val !== undefined ? decodeURIComponent(val) : true;
-    });
-    return query;
-}
-
-function getFolderPrefix(sceneId) {
-    let result = sceneId.split('.');
+function getFolderPrefix(sceneId: string): string {
+    const result = sceneId.split('.');
     result.shift();
     result.shift();
     result.pop();
-    result = result.join('.');
-    return result;
+    return result.join('.');
 }
 
-class App extends GenericApp {
-    constructor(props) {
+interface AppProps extends GenericAppProps {
+    width: string;
+}
+
+interface AppState extends GenericAppState {
+    lang: ioBroker.Languages;
+    ready: boolean;
+    selectedSceneId: string;
+    scenes: Record<string, ioBroker.StateObject>;
+    folders: SceneFolder | null;
+    changingScene: SceneFolder | string;
+    instances: string[];
+    selectedSceneChanged: boolean;
+    deleteDialog: boolean;
+    selectedSceneData: ioBroker.StateObject | null;
+    exportDialog: boolean;
+    importDialog: boolean;
+    menuOpened: boolean;
+    showImportWarning: Record<string, ioBroker.StateObject> | null;
+    splitSizes: [number, number];
+    splitSizes2: [number, number];
+    systemConfig: ioBroker.SystemConfigObject;
+    sceneChangeDialog: string;
+}
+
+class App extends GenericApp<AppProps, AppState> {
+    private confirmCb: null | (() => void) = null;
+    constructor(props: AppProps) {
         const extendedProps = { ...props };
         extendedProps.translations = {
             en: enLang,
@@ -168,40 +200,37 @@ class App extends GenericApp {
             uk: ukLang,
             'zh-cn': zhLang,
         };
+        // @ts-expect-error fix later
         extendedProps.Connection = AdminConnection;
+        extendedProps.sentryDSN = window.sentryDSN;
 
         super(props, extendedProps);
-
-        const query = getUrlQuery();
-
-        this.port = query.port || (window.location.port === '3000' ? 8081 : window.location.port);
-        this.host = query.host || window.location.hostname;
-
-        window.iobForceHost = this.host;
     }
 
-    onConnectionReady() {
-        let splitSizes = window.localStorage.getItem('Scenes.splitSizes');
-        if (splitSizes) {
+    onConnectionReady(): void {
+        const splitSizesStr = window.localStorage.getItem('Scenes.splitSizes');
+        let splitSizes: [number, number] = [30, 70];
+        if (splitSizesStr) {
             try {
-                splitSizes = JSON.parse(splitSizes);
-            } catch (e) {
+                splitSizes = JSON.parse(splitSizesStr);
+            } catch {
                 // ignore
             }
         }
         splitSizes = splitSizes || [30, 70];
 
-        let splitSizes2 = window.localStorage.getItem('Scenes.splitSizes2');
-        if (splitSizes2) {
+        const splitSizesStr2 = window.localStorage.getItem('Scenes.splitSizes2');
+        let splitSizes2: [number, number] = [30, 70];
+        if (splitSizesStr2) {
             try {
-                splitSizes2 = JSON.parse(splitSizes2);
-            } catch (e) {
+                splitSizes2 = JSON.parse(splitSizesStr2);
+            } catch {
                 // ignore
             }
         }
         splitSizes2 = splitSizes2 || [40, 60];
 
-        const newState = {
+        const newState: Partial<AppState> = {
             lang: this.socket.systemLang,
             ready: false,
             selectedSceneId: window.localStorage.getItem('Scenes.selectedSceneId') || '',
@@ -210,12 +239,13 @@ class App extends GenericApp {
             changingScene: '',
             instances: [],
             selectedSceneChanged: false,
-            deleteDialog: null,
+            deleteDialog: false,
             selectedSceneData: null,
             exportDialog: false,
             importDialog: false,
             menuOpened: false,
             showImportWarning: null,
+            sceneChangeDialog: '',
             splitSizes,
             splitSizes2,
         };
@@ -228,39 +258,18 @@ class App extends GenericApp {
                 return this.socket
                     .getAdapterInstances(window.adapterName)
                     .then(instances => {
-                        const sentryEnabled =
-                            systemConfig.common.diag !== 'none' &&
-                            instances.find(item => !item.common.disableDataReporting);
                         newState.instances = instances.map(item => item._id);
 
-                        // if not local development
-                        if (window.sentryDSN && sentryEnabled && window.location.host !== 'localhost:3000') {
-                            Sentry.init({
-                                dsn: window.sentryDSN,
-                                release: `iobroker.${window.adapterName}@${pack.version}`,
-                                integrations: [Sentry.dedupeIntegration()],
-                            });
-
-                            // BF 2021.08.31: may be this is not required as executed in adapter-react
-                            this.socket.getObject('system.meta.uuid').then(uuidObj => {
-                                if (uuidObj && uuidObj.native && uuidObj.native.uuid) {
-                                    const scope = Sentry.getCurrentScope();
-                                    scope.setUser({ id: uuidObj.native.uuid });
-                                }
-                                this.setState(newState, () => this.refreshData());
-                            });
-                        } else {
-                            this.setState(newState, () => this.refreshData());
-                        }
+                        this.setState(newState as AppState, () => this.refreshData());
                     })
                     .then(() => this.socket.subscribeObject('scene.0.*', this.onObjectChange));
             })
             .catch(e => this.showError(e));
     }
 
-    onObjectChange = (id, obj) => {
+    onObjectChange = (id: string, obj: ioBroker.StateObject | null | undefined): void => {
         if (obj) {
-            const members = obj.native?.members;
+            const members = (obj.native as SceneConfig)?.members;
             // place members on the last place
             if (members) {
                 delete obj.native.members;
@@ -271,8 +280,8 @@ class App extends GenericApp {
         if (
             !this.state.scenes[id] || // new
             (!obj && this.state.scenes[id]) || // deleted
-            JSON.stringify(this.state.scenes[id].common) !== JSON.stringify(obj.common) || // changed
-            JSON.stringify(this.state.scenes[id].native) !== JSON.stringify(obj.native) // changed
+            JSON.stringify(this.state.scenes[id].common) !== JSON.stringify(obj?.common) || // changed
+            JSON.stringify(this.state.scenes[id].native) !== JSON.stringify(obj?.native) // changed
         ) {
             const scenes = JSON.parse(JSON.stringify(this.state.scenes));
             if (obj) {
@@ -293,7 +302,7 @@ class App extends GenericApp {
                 delete scenes[id];
             }
             if (!obj && id === this.state.selectedSceneId) {
-                this.setState({ scenes, folders: this.buildTree(scenes) });
+                this.setState({ scenes, folders: App.buildTree(scenes) });
                 // select a first scene
                 setTimeout(
                     _newSceneId => this.changeSelectedScene(_newSceneId),
@@ -303,33 +312,37 @@ class App extends GenericApp {
             } else if (id === this.state.selectedSceneId) {
                 this.setState({ scenes, selectedSceneData: JSON.parse(JSON.stringify(scenes[id])) });
             } else {
-                this.setState({ scenes, folders: this.buildTree(scenes) });
+                this.setState({ scenes, folders: App.buildTree(scenes) });
             }
         }
     };
 
-    sceneSwitch(id) {
-        let scenes = JSON.parse(JSON.stringify(this.state.scenes));
+    async sceneSwitch(id: string): Promise<void> {
+        const scenes: Record<string, ioBroker.StateObject> = JSON.parse(JSON.stringify(this.state.scenes));
 
         if (id === this.state.selectedSceneId) {
             scenes[id] = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         }
 
+        // @ts-expect-error extended
         scenes[id].common.enabled = !scenes[id].common.enabled;
 
-        return this.saveScene(id, scenes[id])
-            .then(() => this.refreshData(id))
-            .catch(e => this.showError(e));
+        try {
+            await this.saveScene(id, scenes[id]);
+            await this.refreshData(id);
+        } catch (e) {
+            return this.showError(e);
+        }
     }
 
-    buildTree(scenes) {
-        scenes = Object.values(scenes);
+    static buildTree(scenesObj: Record<string, ioBroker.StateObject>): SceneFolder {
+        const scenes: ioBroker.StateObject[] = Object.values(scenesObj);
 
-        let folders = { subFolders: {}, scenes: {}, id: '', prefix: '' };
+        const folders: SceneFolder = { subFolders: {}, scenes: {}, id: '', prefix: '' };
 
         // create missing folders
         scenes.forEach(scene => {
-            let id = scene._id;
+            const id = scene._id;
             const parts = id.split('.');
             parts.shift();
             parts.shift();
@@ -356,163 +369,167 @@ class App extends GenericApp {
         return folders;
     }
 
-    findFolder(parent, folder) {
+    findFolder(parent: SceneFolder, folder: SceneFolder): SceneFolder | null {
         if (parent.prefix === folder.prefix) {
             return parent;
         }
-        for (let index in parent.subFolders) {
-            let result = this.findFolder(parent.subFolders[index], folder);
+        for (const index in parent.subFolders) {
+            const result = this.findFolder(parent.subFolders[index], folder);
             if (result) {
                 return result;
             }
         }
+
+        return null;
     }
 
-    getData() {
-        let scenes;
-        return this.socket
-            .getObjectViewSystem('state', 'scene.0.', 'scene.\u9999')
-            .then(_scenes => {
-                scenes = _scenes;
-                return { scenes, folders: this.buildTree(scenes) };
-            })
-            .catch(e => this.showError(e));
+    async getData(): Promise<Partial<AppState>> {
+        try {
+            const scenes = await this.socket.getObjectViewSystem('state', 'scene.0.', 'scene.\u9999');
+            return { scenes, folders: App.buildTree(scenes) };
+        } catch (e) {
+            this.showError(e);
+            return {};
+        }
     }
 
-    refreshData(changingScene) {
-        const that = this;
+    async refreshData(changingScene?: SceneFolder | string): Promise<void> {
         const emptyFolders = this.state.folders ? this.collectEmptyFolders(this.state.folders) : [];
 
-        return new Promise(resolve => {
+        await new Promise<void>(resolve => {
             if (changingScene) {
                 this.setState({ changingScene }, () => resolve());
             } else {
                 this.setState({ ready: false }, () => resolve());
             }
-        })
-            .then(() => this.getData())
-            .then(newState => {
-                newState.ready = true;
-                newState.changingScene = '';
-                newState.selectedSceneChanged = false;
+        });
 
-                // Fill missing data
-                Object.keys(newState.scenes).forEach(id => {
-                    const sceneObj = {
-                        common: newState.scenes[id].common || {},
-                        native: newState.scenes[id].native || {},
-                        type: newState.scenes[id].type,
-                        _id: id,
-                        ts: newState.scenes[id].ts,
-                    };
+        const newState = await this.getData();
+        newState.ready = true;
+        newState.changingScene = '';
+        newState.selectedSceneChanged = false;
+        newState.scenes = newState.scenes || {};
 
-                    // rename attribute
-                    if (sceneObj.native.burstIntervall !== undefined) {
-                        sceneObj.native.burstInterval = sceneObj.native.burstIntervall;
-                        delete sceneObj.native.burstIntervall;
-                    }
+        // Fill missing data
+        const keys = Object.keys(newState.scenes);
+        for (const id of keys) {
+            const sceneObj = {
+                common: newState.scenes[id].common || {},
+                native: newState.scenes[id].native || {},
+                type: newState.scenes[id].type,
+                _id: id,
+                ts: newState.scenes[id].ts,
+            };
 
-                    sceneObj.native.burstInterval = parseInt(sceneObj.native.burstInterval || 0, 10);
-                    sceneObj.native.onFalse = sceneObj.native.onFalse || {};
-                    sceneObj.native.onTrue = sceneObj.native.onTrue || {};
-                    sceneObj.native.onFalse.trigger = sceneObj.native.onFalse.trigger || { condition: '==' };
-                    sceneObj.native.onTrue.trigger = sceneObj.native.onTrue.trigger || { condition: '==' };
-                    sceneObj.native.members = sceneObj.native.members || [];
-                    const members = sceneObj.native.members;
-                    delete sceneObj.native.members;
-                    // place it on the last place
-                    sceneObj.native.members = members;
-                    newState.scenes[id] = sceneObj;
-                });
+            // rename attribute
+            if (sceneObj.native.burstIntervall !== undefined) {
+                sceneObj.native.burstInterval = sceneObj.native.burstIntervall;
+                delete sceneObj.native.burstIntervall;
+            }
 
-                if (!newState.scenes[this.state.selectedSceneId]) {
-                    newState.selectedSceneId = Object.keys(newState.scenes).shift() || '';
-                }
+            sceneObj.native.burstInterval = parseInt(sceneObj.native.burstInterval || 0, 10);
+            sceneObj.native.onFalse = sceneObj.native.onFalse || {};
+            sceneObj.native.onTrue = sceneObj.native.onTrue || {};
+            sceneObj.native.onFalse.trigger = sceneObj.native.onFalse.trigger || { condition: '==' };
+            sceneObj.native.onTrue.trigger = sceneObj.native.onTrue.trigger || { condition: '==' };
+            sceneObj.native.members = sceneObj.native.members || [];
+            const members = sceneObj.native.members;
+            delete sceneObj.native.members;
+            // place it on the last place
+            sceneObj.native.members = members;
+            newState.scenes[id] = sceneObj;
+        }
 
-                if (
-                    (newState.selectedSceneId || that.state.selectedSceneId) &&
-                    newState.scenes[newState.selectedSceneId || that.state.selectedSceneId]
-                ) {
-                    newState.selectedSceneData = JSON.parse(
-                        JSON.stringify(newState.scenes[newState.selectedSceneId || that.state.selectedSceneId]),
-                    );
-                } else {
-                    newState.selectedSceneData = null;
-                }
+        if (!newState.scenes[this.state.selectedSceneId]) {
+            newState.selectedSceneId = Object.keys(newState.scenes).shift() || '';
+        }
 
-                // add empty folders
-                if (emptyFolders?.length) {
-                    emptyFolders.forEach(folder => {
-                        let prefix = folder.prefix.split('.');
-                        let parent = newState.folders;
-                        for (let i = 0; i < prefix.length; i++) {
-                            if (parent.subFolders[prefix[i]]) {
-                                parent = parent.subFolders[prefix[i]];
-                            } else {
-                                parent.subFolders[prefix[i]] = {
-                                    subFolders: {},
-                                    scenes: {},
-                                    id: prefix[i],
-                                    prefix: prefix.slice(0, i + 1).join('.'),
-                                };
-                            }
+        const selectedSceneId = newState.selectedSceneId || this.state.selectedSceneId;
+        if (selectedSceneId && newState.scenes[selectedSceneId]) {
+            newState.selectedSceneData = JSON.parse(JSON.stringify(newState.scenes[selectedSceneId]));
+        } else {
+            newState.selectedSceneData = null;
+        }
+
+        // add empty folders
+        if (emptyFolders?.length) {
+            emptyFolders.forEach(folder => {
+                const prefix = folder.prefix.split('.');
+                let parent = newState.folders;
+                if (parent) {
+                    for (let i = 0; i < prefix.length; i++) {
+                        if (parent.subFolders[prefix[i]]) {
+                            parent = parent.subFolders[prefix[i]];
+                        } else {
+                            parent.subFolders[prefix[i]] = {
+                                subFolders: {},
+                                scenes: {},
+                                id: prefix[i],
+                                prefix: prefix.slice(0, i + 1).join('.'),
+                            };
                         }
-                    });
+                    }
                 }
-
-                that.setState(newState);
             });
+        }
+
+        this.setState(newState as AppState);
     }
 
-    addFolder(parentFolder, id) {
-        let folders = JSON.parse(JSON.stringify(this.state.folders));
-        let _parentFolder = this.findFolder(folders, parentFolder);
+    addFolder(parentFolder: SceneFolder, id: string): void {
+        const folders: SceneFolder = JSON.parse(JSON.stringify(this.state.folders));
+        const _parentFolder = this.findFolder(folders, parentFolder);
 
-        _parentFolder.subFolders[id] = {
-            scenes: {},
-            subFolders: {},
-            id,
-            prefix: _parentFolder.prefix ? `${_parentFolder.prefix}.${id}` : id,
-        };
+        if (_parentFolder) {
+            _parentFolder.subFolders[id] = {
+                scenes: {},
+                subFolders: {},
+                id,
+                prefix: _parentFolder.prefix ? `${_parentFolder.prefix}.${id}` : id,
+            };
+        }
 
         this.setState({ folders });
     }
 
-    addSceneToFolderPrefix = (scene, folderPrefix, noRefresh) => {
-        let oldId = scene._id;
-        let sceneId = scene._id.split('.').pop();
+    async addSceneToFolderPrefix(scene: ioBroker.StateObject, folderPrefix: string, noRefresh: boolean): Promise<void> {
+        const oldId = scene._id;
+        const sceneId = scene._id.split('.').pop();
         scene._id = `scene.0.${folderPrefix}${folderPrefix ? '.' : ''}${sceneId}`;
 
-        return this.socket
-            .delObject(oldId)
-            .then(() => {
-                console.log(`Deleted ${oldId}`);
-                return this.saveScene(scene._id, scene);
-            })
-            .catch(e => this.showError(e))
-            .then(() => {
-                console.log(`Set new ID: ${scene._id}`);
-                return (
-                    !noRefresh &&
-                    this.refreshData(sceneId)
-                        .then(() => this.changeSelectedScene(scene._id))
-                        .catch(e => this.showError(e))
-                );
-            });
-    };
+        try {
+            await this.socket.delObject(oldId);
+            console.log(`Deleted ${oldId}`);
+            await this.saveScene(scene._id, scene);
+        } catch (e) {
+            this.showError(e);
+        }
 
-    moveScript(oldId, newId) {
+        console.log(`Set new ID: ${scene._id}`);
+
+        if (!noRefresh) {
+            try {
+                await this.refreshData(sceneId);
+                await this.changeSelectedScene(scene._id);
+            } catch (e) {
+                this.showError(e);
+            }
+        }
+    }
+
+    moveScript(oldId: string, newId: string): void {
         const scene = this.state.scenes[oldId];
         if (this.state.selectedSceneId === oldId) {
-            return this.setState({ selectedSceneId: newId }, () => this.moveScript(oldId, newId));
+            this.setState({ selectedSceneId: newId }, () => this.moveScript(oldId, newId));
+            return;
         }
 
         const oldPrefix = getFolderPrefix(scene._id);
-        const folders = JSON.parse(JSON.stringify(this.state.folders));
-        const oldParentFolder = this.findFolder(folders, { prefix: oldPrefix });
+        const folders: SceneFolder = JSON.parse(JSON.stringify(this.state.folders));
+        const oldParentFolder = this.findFolder(folders, { prefix: oldPrefix } as SceneFolder);
         scene._id = newId;
 
-        return this.socket
+        void this.socket
             .delObject(oldId)
             .then(() => {
                 console.log(`Deleted ${oldId}`);
@@ -527,7 +544,7 @@ class App extends GenericApp {
                 scenes[scene._id] = scene;
                 // find parent folder
                 const newPrefix = getFolderPrefix(scene._id);
-                const newParentFolder = this.findFolder(folders, { prefix: newPrefix });
+                const newParentFolder = this.findFolder(folders, { prefix: newPrefix } as SceneFolder);
                 if (newParentFolder && oldParentFolder) {
                     newParentFolder.scenes[scene._id] = scene;
                     delete oldParentFolder.scenes[oldId];
@@ -541,7 +558,7 @@ class App extends GenericApp {
             });
     }
 
-    collectEmptyFolders(folders, result) {
+    collectEmptyFolders(folders: SceneFolder, result?: SceneFolder[]): SceneFolder[] {
         folders = folders || this.state.folders;
         result = result || [];
         if (!ScenesList.isFolderNotEmpty(folders)) {
@@ -551,65 +568,69 @@ class App extends GenericApp {
         return result;
     }
 
-    renameFolder(folder, newName) {
-        return new Promise(resolve => this.setState({ changingScene: folder }, () => resolve())).then(() => {
-            let newSelectedId;
+    async renameFolder(folder: SceneFolder, newName: string): Promise<void> {
+        await new Promise<void>(resolve => this.setState({ changingScene: folder }, () => resolve()));
+        let newSelectedId: string;
 
-            let prefix = folder.prefix.split('.');
-            prefix[prefix.length - 1] = newName;
-            prefix = prefix.join('.');
+        const prefixArr = folder.prefix.split('.');
+        prefixArr[prefixArr.length - 1] = newName;
+        const prefix = prefixArr.join('.');
 
-            if (Object.keys(folder.scenes).find(id => id === this.state.selectedSceneId)) {
-                newSelectedId = `scene.0.${prefix}.${this.state.selectedSceneId.split('.').pop()}`;
-            }
+        if (Object.keys(folder.scenes).find(id => id === this.state.selectedSceneId)) {
+            newSelectedId = `scene.0.${prefix}.${this.state.selectedSceneId.split('.').pop()}`;
+        }
 
-            const promises = Object.keys(folder.scenes).map(sceneId =>
-                this.addSceneToFolderPrefix(folder.scenes[sceneId], prefix, true),
-            );
+        const promises = Object.keys(folder.scenes).map(sceneId =>
+            this.addSceneToFolderPrefix(folder.scenes[sceneId], prefix, true),
+        );
 
-            // collect empty folders, because they will disappear after reload from DB
-            folder.id = newName;
-            folder.prefix = prefix;
+        // collect empty folders, because they will disappear after reload from DB
+        folder.id = newName;
+        folder.prefix = prefix;
 
-            return Promise.all(promises)
-                .then(() => this.refreshData(folder))
-                .then(() => newSelectedId && this.setState({ selectedSceneId: newSelectedId }));
-        });
+        await Promise.all(promises)
+            .then(() => this.refreshData(folder))
+            .then(() => newSelectedId && this.setState({ selectedSceneId: newSelectedId }));
     }
 
-    createScene(name, parentId) {
-        let template = {
+    createScene(name: string, parentId: string | undefined): void {
+        const native: SceneConfig = {
+            onTrue: {
+                trigger: {},
+                cron: null,
+                astro: null,
+            },
+            onFalse: {
+                enabled: false,
+                trigger: {},
+                cron: null,
+                astro: null,
+            },
+            easy: true,
+            members: [],
+        };
+
+        const id = `scene.0.${parentId ? `${parentId}.` : ''}${name}`;
+
+        const template: ioBroker.StateObject = {
+            _id: id,
             common: {
                 name: '',
                 type: 'mixed', // because it can have value 'uncertain'
                 role: 'scene.state',
                 desc: '',
+                // @ts-expect-error extended
                 enabled: true,
                 read: true,
                 write: true,
                 def: false,
                 engine: 'system.adapter.scenes.0',
             },
-            native: {
-                onTrue: {
-                    trigger: {},
-                    cron: null,
-                    astro: null,
-                },
-                onFalse: {
-                    enabled: false,
-                    trigger: {},
-                    cron: null,
-                    astro: null,
-                },
-                easy: true,
-                members: [],
-            },
+            native,
             type: 'state',
         };
 
         template.common.name = name;
-        let id = `scene.0.${parentId ? `${parentId}.` : ''}${template.common.name}`;
 
         this.setState({ changingScene: id }, () =>
             this.saveScene(id, template)
@@ -619,8 +640,8 @@ class App extends GenericApp {
         );
     }
 
-    cloneScene(id) {
-        let scene = JSON.parse(JSON.stringify(this.state.scenes[id]));
+    cloneScene(id: string): void {
+        const scene = JSON.parse(JSON.stringify(this.state.scenes[id]));
         scene._id = scene._id.split('.');
         scene._id.pop();
         scene._id.push(this.getNewSceneId());
@@ -635,9 +656,9 @@ class App extends GenericApp {
         );
     }
 
-    async saveScene(sceneId, sceneObj) {
+    async saveScene(sceneId: string, sceneObj: ioBroker.StateObject): Promise<void> {
         if (sceneObj.ts) {
-            const _sceneObj = JSON.parse(JSON.stringify(sceneObj));
+            const _sceneObj: ioBroker.StateObject = JSON.parse(JSON.stringify(sceneObj));
             delete _sceneObj.ts;
             await this.socket.setObject(sceneId, _sceneObj);
         } else {
@@ -645,12 +666,16 @@ class App extends GenericApp {
         }
     }
 
-    async writeScene() {
-        const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
+    async writeScene(): Promise<void> {
+        const scene: ioBroker.StateObject = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         scene._id = this.state.selectedSceneId;
 
         const folder = getFolderPrefix(scene._id);
-        const newId = `scene.0.${folder ? `${folder}.` : ''}${scene.common.name.replace(Utils.FORBIDDEN_CHARS, '_').replace(/\./g, '_').replace(/\s/g, '_')}`;
+        const name =
+            typeof scene.common.name === 'object'
+                ? scene.common.name[I18n.getLanguage()] || scene.common.name.en || ''
+                : scene.common.name || '';
+        const newId = `scene.0.${folder ? `${folder}.` : ''}${name.replace(Utils.FORBIDDEN_CHARS, '_').replace(/\./g, '_').replace(/\s/g, '_')}`;
 
         if (scene._id !== newId) {
             // check if the scene name is unique
@@ -678,23 +703,23 @@ class App extends GenericApp {
         }
     }
 
-    updateScene(common, native, cb) {
+    updateScene(common: ioBroker.StateCommon | undefined, native: SceneConfig | undefined, cb?: () => void): void {
         const scene = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         if (common) {
             scene.common = JSON.parse(JSON.stringify(common));
         }
         if (native) {
-            const members = scene.native.members;
+            const members = (scene.native as SceneConfig).members;
             scene.native = JSON.parse(JSON.stringify(native));
             scene.native.members = members;
         }
 
-        let selectedSceneChanged =
+        const selectedSceneChanged =
             JSON.stringify(this.state.scenes[this.state.selectedSceneId]) !== JSON.stringify(scene);
         this.setState({ selectedSceneChanged, selectedSceneData: scene }, () => cb && cb());
     }
 
-    async deleteScene(id) {
+    async deleteScene(id: string): Promise<void> {
         try {
             await this.socket.delObject(id);
             if (this.state.selectedSceneId === id) {
@@ -712,7 +737,7 @@ class App extends GenericApp {
                     }
                 }
                 if (!nextId && ids.length) {
-                    nextId = ids.shift();
+                    nextId = ids.shift() || '';
                 }
 
                 await this.changeSelectedScene(nextId);
@@ -724,12 +749,12 @@ class App extends GenericApp {
         }
     }
 
-    getNewSceneId() {
+    getNewSceneId(): string {
         let newId = 0;
 
         for (const id in this.state.scenes) {
-            let shortId = id.split('.').pop();
-            let matches = shortId.match(/^scene([0-9]+)$/);
+            const shortId = id.split('.').pop() || '';
+            const matches = shortId.match(/^scene([0-9]+)$/);
             if (matches && parseInt(matches[1], 10) >= newId) {
                 newId = parseInt(matches[1]) + 1;
             }
@@ -738,20 +763,20 @@ class App extends GenericApp {
         return `scene${newId}`;
     }
 
-    updateSceneMembers(members, cb) {
+    updateSceneMembers(members: SceneMember[], cb?: () => void): void {
         const selectedSceneData = JSON.parse(JSON.stringify(this.state.selectedSceneData));
         selectedSceneData.native.members = JSON.parse(JSON.stringify(members));
 
-        let selectedSceneChanged =
+        const selectedSceneChanged =
             JSON.stringify(this.state.scenes[this.state.selectedSceneId]) !== JSON.stringify(selectedSceneData);
         this.setState({ selectedSceneChanged, selectedSceneData }, () => cb && cb());
     }
 
-    changeSelectedScene(newId, ignoreUnsaved, cb) {
+    changeSelectedScene(newId: string, ignoreUnsaved?: boolean, cb?: () => void): Promise<void> {
         return new Promise(resolve => {
             if (this.state.selectedSceneId !== newId) {
                 if (this.state.selectedSceneChanged && !ignoreUnsaved) {
-                    this.confirmCb = cb;
+                    this.confirmCb = cb || null;
                     this.setState({ sceneChangeDialog: newId }, () => resolve());
                 } else {
                     window.localStorage.setItem('Scenes.selectedSceneId', newId);
@@ -778,7 +803,7 @@ class App extends GenericApp {
         });
     }
 
-    renderSceneChangeDialog() {
+    renderSceneChangeDialog(): React.JSX.Element | null {
         const that = this;
         return this.state.sceneChangeDialog ? (
             <Dialog
@@ -806,7 +831,7 @@ class App extends GenericApp {
                         color="secondary"
                         autoFocus
                         onClick={() =>
-                            // save scene
+                            // save a scene
                             this.writeScene()
                                 .then(() =>
                                     that.changeSelectedScene(
@@ -841,7 +866,7 @@ class App extends GenericApp {
         ) : null;
     }
 
-    renderDeleteDialog() {
+    renderDeleteDialog(): React.JSX.Element | null {
         return this.state.deleteDialog ? (
             <Dialog
                 open={!0}
@@ -874,34 +899,42 @@ class App extends GenericApp {
         ) : null;
     }
 
-    renderExportImportDialog() {
+    renderExportImportDialog(): React.JSX.Element | null {
         if (!this.state.exportDialog && !this.state.importDialog) {
             return null;
         }
 
         return (
             <ExportImportDialog
-                isImport={!!this.state.importDialog}
+                isImport={this.state.importDialog}
                 themeType={this.state.themeType}
-                onClose={importedScene => {
+                onClose={(importedScene: Record<string, ioBroker.StateObject>): void => {
                     if (this.state.importDialog && importedScene) {
                         const scene = this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId];
                         // if inability changed
+                        // @ts-expect-error extended
                         if ((importedScene.common.enabled !== false) !== (scene.common.enabled !== false)) {
                             const scenes = JSON.parse(JSON.stringify(this.state.scenes));
+                            // @ts-expect-error extended
                             scenes[this.state.selectedSceneId].common.enabled = importedScene.common.enabled !== false;
                             this.saveScene(this.state.selectedSceneId, scenes[this.state.selectedSceneId]).catch(e =>
                                 this.showError(e),
                             );
                             this.setState({ scenes });
                         }
+                        // @ts-expect-error extended
                         scene.common.enabled = importedScene.common.enabled !== false;
+                        // @ts-expect-error extended
                         scene.common.engine = importedScene.common.engine;
+                        // @ts-expect-error extended
                         if (!scene.common.engine || !this.state.instances.includes(scene.common.engine)) {
+                            // @ts-expect-error extended
                             scene.common.engine = this.state.instances[0];
                         }
                         scene.native = importedScene.native;
-                        this.updateScene(scene.common, scene.native, () => this.setState({ importDialog: false }));
+                        this.updateScene(scene.common, scene.native as SceneConfig, () =>
+                            this.setState({ importDialog: false }),
+                        );
                     } else {
                         this.setState({ exportDialog: false, importDialog: false });
                     }
@@ -915,7 +948,7 @@ class App extends GenericApp {
         );
     }
 
-    renderImportWarningDialog() {
+    renderImportWarningDialog(): React.JSX.Element | null {
         return this.state.showImportWarning ? (
             <Dialog
                 open={!0}
@@ -927,7 +960,7 @@ class App extends GenericApp {
                         variant="contained"
                         color="grey"
                         onClick={async () => {
-                            const importedScenes = this.state.showImportWarning;
+                            const importedScenes = this.state.showImportWarning!;
                             const ids = Object.keys(importedScenes);
                             for (let s = 0; s < ids.length; s++) {
                                 // if exists
@@ -937,7 +970,7 @@ class App extends GenericApp {
                                     while (this.state.scenes[newId]) {
                                         newId += '_import';
                                     }
-                                    importedScenes[ids[s]].common.name = newId.split('.').pop();
+                                    importedScenes[ids[s]].common.name = newId.split('.').pop() || '';
                                     await this.saveScene(newId, importedScenes[ids[s]]);
                                 } else {
                                     await this.saveScene(ids[s], importedScenes[ids[s]]);
@@ -954,13 +987,13 @@ class App extends GenericApp {
                         color="secondary"
                         autoFocus
                         onClick={async () => {
-                            const importedScenes = this.state.showImportWarning;
+                            const importedScenes = this.state.showImportWarning!;
                             const ids = Object.keys(importedScenes);
                             for (let s = 0; s < ids.length; s++) {
                                 await this.saveScene(ids[s], importedScenes[ids[s]]);
                             }
                             this.setState({ showImportWarning: null });
-                            this.refreshData();
+                            void this.refreshData();
                         }}
                         startIcon={<IconSave />}
                     >
@@ -979,7 +1012,7 @@ class App extends GenericApp {
         ) : null;
     }
 
-    async importScenes(importedScenes) {
+    async importScenes(importedScenes: Record<string, ioBroker.StateObject>): Promise<void> {
         // check if all scenes are unique
         const ids = Object.keys(this.state.scenes);
         if (ids.find(id => importedScenes[id])) {
@@ -993,7 +1026,7 @@ class App extends GenericApp {
         }
     }
 
-    renderSceneTopToolbar(showDrawer) {
+    renderSceneTopToolbar(showDrawer: boolean): React.JSX.Element {
         return (
             <Toolbar
                 variant="dense"
@@ -1065,7 +1098,7 @@ class App extends GenericApp {
         );
     }
 
-    renderSceneBottomToolbar() {
+    renderSceneBottomToolbar(): React.JSX.Element {
         return (
             <Toolbar
                 variant="dense"
@@ -1100,12 +1133,12 @@ class App extends GenericApp {
         );
     }
 
-    renderDrawerContent(showDrawer) {
+    renderDrawerContent(showDrawer: boolean): React.JSX.Element {
         return (
             <ScenesList
                 themeType={this.state.themeType}
                 scenes={this.state.scenes}
-                folders={this.state.folders}
+                folders={this.state.folders || ({} as SceneFolder)}
                 selectedSceneId={this.state.selectedSceneId}
                 selectedSceneChanged={this.state.selectedSceneChanged}
                 theme={this.state.theme}
@@ -1122,14 +1155,18 @@ class App extends GenericApp {
         );
     }
 
-    renderSceneMembers(oneColumn) {
+    renderSceneMembers(oneColumn?: boolean): React.JSX.Element | null {
+        if (!this.state.selectedSceneData) {
+            return null;
+        }
         return (
             <SceneMembersForm
                 key={`selected${this.state.selectedSceneId}`}
-                oneColumn={oneColumn}
-                showError={e => this.showError(e)}
+                oneColumn={!!oneColumn}
+                showError={e => this.showError(e.toString())}
                 updateSceneMembers={(members, cb) => this.updateSceneMembers(members, cb)}
                 selectedSceneChanged={this.state.selectedSceneChanged}
+                // @ts-expect-error extended
                 sceneEnabled={this.state.selectedSceneData.common.enabled}
                 ts={this.state.selectedSceneData.ts || 0}
                 members={this.state.selectedSceneData.native.members}
@@ -1139,6 +1176,7 @@ class App extends GenericApp {
                 virtualGroup={this.state.selectedSceneData.native.virtualGroup}
                 aggregation={this.state.selectedSceneData.native.aggregation}
                 sceneId={this.state.selectedSceneId}
+                // @ts-expect-error extended
                 engineId={this.state.selectedSceneData.common.engine}
                 intervalBetweenCommands={this.state.selectedSceneData.native.burstInterval || 0}
                 theme={this.state.theme}
@@ -1146,18 +1184,22 @@ class App extends GenericApp {
         );
     }
 
-    renderSceneSettings(oneColumn) {
+    renderSceneSettings(oneColumn?: boolean): React.JSX.Element | null {
         if (!this.state.selectedSceneData) {
-            this.state.selectedSceneData = JSON.parse(JSON.stringify(this.state.scenes[this.state.selectedSceneId]));
+            return null;
         }
 
         return (
             <SceneForm
                 key={this.state.selectedSceneId}
                 showError={e => this.showError(e)}
-                oneColumn={oneColumn}
-                updateScene={(common, native, cb) => this.updateScene(common, native, cb)}
-                scene={this.state.selectedSceneData}
+                oneColumn={!!oneColumn}
+                updateScene={(common?: SceneCommon, native?: SceneConfig, cb?: () => void): void =>
+                    this.updateScene(common as unknown as ioBroker.StateCommon, native, cb)
+                }
+                scene={
+                    this.state.selectedSceneData as unknown as { common: SceneCommon; native: SceneConfig; _id: string }
+                }
                 socket={this.socket}
                 instances={this.state.instances}
                 theme={this.state.theme}
@@ -1165,7 +1207,7 @@ class App extends GenericApp {
         );
     }
 
-    renderInOneColumn() {
+    renderInOneColumn(): (React.JSX.Element | null)[] {
         return [
             <Drawer
                 key="drawer"
@@ -1196,8 +1238,10 @@ class App extends GenericApp {
         ];
     }
 
-    renderInMoreThanOneColumn() {
-        const showDrawer = this.props.width === 'sm';
+    renderInMoreThanOneColumn(): React.JSX.Element {
+        const _width: 'xs' | 'sm' | 'lg' | 'xl' | 'md' = this.props.width as 'xs' | 'sm' | 'lg' | 'xl' | 'md';
+        const isXs = _width === 'xs';
+        const showDrawer = _width === 'sm';
 
         if (showDrawer) {
             const renderedScene =
@@ -1209,7 +1253,7 @@ class App extends GenericApp {
                     >
                         <Grid
                             item
-                            xs={this.props.width === 'xs' ? 12 : 5}
+                            xs={isXs ? 12 : 5}
                             style={styles.heightMinus2Toolbars}
                         >
                             {this.renderSceneTopToolbar(true)}
@@ -1220,7 +1264,7 @@ class App extends GenericApp {
                         </Grid>
                         <Grid
                             item
-                            xs={this.props.width === 'xs' ? 12 : 7}
+                            xs={isXs ? 12 : 7}
                             style={styles.height}
                         >
                             <div style={styles.heightMinusMargin}>
@@ -1269,11 +1313,10 @@ class App extends GenericApp {
                     direction={SplitDirection.Horizontal}
                     initialSizes={this.state.splitSizes2}
                     minWidths={[400, 350]}
-                    onResizeFinished={(gutterIdx, splitSizes2) => {
+                    onResizeFinished={(_gutterIdx, splitSizes2: [number, number]): void => {
                         this.setState({ splitSizes2 });
                         window.localStorage.setItem('Scenes.splitSizes2', JSON.stringify(splitSizes2));
                     }}
-                    theme={this.state.themeName === 'dark' ? GutterTheme.Dark : GutterTheme.Light}
                     gutterClassName={this.state.themeName === 'dark' ? `Dark visGutter` : `Light visGutter`}
                 >
                     <div style={styles.heightMinus2Toolbars}>
@@ -1299,11 +1342,10 @@ class App extends GenericApp {
                 direction={SplitDirection.Horizontal}
                 initialSizes={this.state.splitSizes}
                 minWidths={[290, 450]}
-                onResizeFinished={(gutterIdx, splitSizes) => {
+                onResizeFinished={(_gutterIdx, splitSizes: [number, number]): void => {
                     this.setState({ splitSizes });
                     window.localStorage.setItem('Scenes.splitSizes', JSON.stringify(splitSizes));
                 }}
-                theme={this.state.themeName === 'dark' ? GutterTheme.Dark : GutterTheme.Light}
                 gutterClassName={this.state.themeName === 'dark' ? 'Dark visGutter' : 'Light visGutter'}
             >
                 <div style={{ ...styles.columnContainer, ...styles.height }}>{this.renderDrawerContent(false)}</div>
@@ -1321,7 +1363,7 @@ class App extends GenericApp {
         );
     }
 
-    render() {
+    render(): React.JSX.Element {
         if (!this.state.ready) {
             return (
                 <StyledEngineProvider injectFirst>

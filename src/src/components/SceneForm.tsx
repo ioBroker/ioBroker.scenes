@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import {
     TextField,
@@ -15,9 +14,10 @@ import {
     Button,
 } from '@mui/material';
 
-import { Utils, I18n, DialogSelectID, Cron } from '@iobroker/adapter-react-v5';
+import { Utils, I18n, DialogSelectID, Cron, type IobTheme, type AdminConnection } from '@iobroker/adapter-react-v5';
+import type { SceneConfig } from '../types';
 
-const styles = {
+const styles: Record<string, any> = {
     alignRight: {
         textAlign: 'right',
     },
@@ -42,7 +42,7 @@ const styles = {
         paddingRight: 8,
         width: '100%',
     },
-    editItem: theme => ({
+    editItem: (theme: IobTheme): any => ({
         display: 'block',
         mb: '16px',
         color: theme.palette.mode === 'dark' ? '#FFF' : '#000',
@@ -59,22 +59,53 @@ const styles = {
     onFalse: {
         background: '#ff9999',
     },
-    pTrue: theme => ({
+    pTrue: (theme: IobTheme): any => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#002502' : '#90ee90',
         p: '4px',
     }),
-    pFalse: theme => ({
+    pFalse: (theme: IobTheme): any => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#332100' : '#eec590',
         p: '4px',
     }),
 };
 
-class SceneForm extends React.Component {
-    constructor(props) {
+export type SceneCommon = ioBroker.ObjectCommon & { engine: string; enabled: boolean };
+
+interface SceneFormProps {
+    socket: AdminConnection;
+    scene: { common: SceneCommon; native: SceneConfig; _id: string };
+    updateScene: (common?: SceneCommon, native?: SceneConfig) => void;
+    instances: string[];
+    theme: IobTheme;
+    oneColumn: boolean;
+    showError: (error: string) => void;
+}
+
+interface SceneFormState {
+    common: SceneCommon;
+    native: SceneConfig;
+    showDialog: ((id: string | string[]) => void) | null;
+    sceneId: string;
+    showCronDialog: 'onTrue' | 'onFalse' | null;
+}
+
+class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
+    private readonly inputs: {
+        Trigger: { ref: React.RefObject<any>; start: number; end: number };
+        Value: { ref: React.RefObject<any>; start: number; end: number };
+        Cron: { ref: React.RefObject<any>; start: number; end: number };
+        Name: { ref: React.RefObject<any>; start: number; end: number };
+        Description: { ref: React.RefObject<any>; start: number; end: number };
+    };
+
+    constructor(props: SceneFormProps) {
         super(props);
 
-        const sceneObj = props.scene ? JSON.parse(JSON.stringify(props.scene)) : {};
+        const sceneObj: { common: SceneCommon; native: SceneConfig; _id: string } = props.scene
+            ? JSON.parse(JSON.stringify(props.scene))
+            : { common: {}, native: {} as SceneConfig, _id: '' };
 
+        // @ts-expect-error we do not need this information
         delete sceneObj.native.members;
 
         this.state = {
@@ -85,21 +116,21 @@ class SceneForm extends React.Component {
             showCronDialog: null,
         };
 
-        const inputs = ['Trigger', 'Value', 'Cron', 'Name', 'Description'];
-        this.inputs = {};
-        inputs.map(
-            name =>
-                (this.inputs[name] = {
-                    ref: React.createRef(),
-                    start: 0,
-                    end: 0,
-                }),
-        );
+        this.inputs = {
+            Trigger: { ref: React.createRef(), start: 0, end: 0 },
+            Value: { ref: React.createRef(), start: 0, end: 0 },
+            Cron: { ref: React.createRef(), start: 0, end: 0 },
+            Name: { ref: React.createRef(), start: 0, end: 0 },
+            Description: { ref: React.createRef(), start: 0, end: 0 },
+        };
     }
 
-    static getDerivedStateFromProps(props, state) {
-        const sceneObj = props.scene ? JSON.parse(JSON.stringify(props.scene)) : {};
+    static getDerivedStateFromProps(props: SceneFormProps, state: SceneFormState): Partial<SceneFormState> | null {
+        const sceneObj: { common: SceneCommon; native: SceneConfig; _id: string } = props.scene
+            ? JSON.parse(JSON.stringify(props.scene))
+            : { common: {}, native: {}, _id: '' };
 
+        // @ts-expect-error we do not need this information
         delete sceneObj.native.members;
 
         if (
@@ -115,11 +146,11 @@ class SceneForm extends React.Component {
         return null;
     }
 
-    setStateWithParent = (newState, cb) => {
-        this.setState(newState, () => this.props.updateScene(newState.common, newState.native, cb));
+    setStateWithParent = (newState: { native?: SceneConfig; common?: SceneCommon; showCronDialog?: null }): void => {
+        this.setState(newState as SceneFormState, () => this.props.updateScene(newState.common, newState.native));
     };
 
-    renderSelectIdDialog() {
+    renderSelectIdDialog(): React.JSX.Element | null {
         return this.state.showDialog ? (
             <DialogSelectID
                 key="selectDialog"
@@ -127,14 +158,15 @@ class SceneForm extends React.Component {
                 socket={this.props.socket}
                 dialogName="memberEdit"
                 title={I18n.t('Select for ')}
-                selected={null}
+                selected=""
                 onOk={this.state.showDialog}
-                onClose={() => this.setState({ showDialog: false })}
+                onClose={() => this.setState({ showDialog: null })}
+                theme={this.props.theme}
             />
         ) : null;
     }
 
-    renderOnTrueFalse(name) {
+    renderOnTrueFalse(name: 'onTrue' | 'onFalse'): React.JSX.Element {
         const on = this.state.native[name];
 
         return (
@@ -152,7 +184,7 @@ class SceneForm extends React.Component {
                     key="switch"
                     sx={styles.editItem}
                 >
-                    <h4 style={this.state.native.onFalse.enabled ? { marginTop: 0 } : null}>
+                    <h4 style={this.state.native.onFalse.enabled ? { marginTop: 0 } : undefined}>
                         {on === this.state.native.onTrue
                             ? this.state.native.onFalse.enabled
                                 ? I18n.t('Trigger for TRUE')
@@ -164,15 +196,23 @@ class SceneForm extends React.Component {
                                 onChange={e => {
                                     if (e.target.checked) {
                                         this.setState({
-                                            showDialog: id => {
-                                                const native = JSON.parse(JSON.stringify(this.state.native));
+                                            showDialog: (_id: string | string[]): void => {
+                                                let id: string;
+                                                if (Array.isArray(_id)) {
+                                                    id = _id[0];
+                                                } else {
+                                                    id = _id;
+                                                }
+                                                const native: SceneConfig = JSON.parse(
+                                                    JSON.stringify(this.state.native),
+                                                );
                                                 native[name].trigger.id = id;
                                                 native[name].trigger.condition = native[name].trigger.condition || '==';
                                                 this.setStateWithParent({ native });
                                             },
                                         });
                                     } else {
-                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                        const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
                                         native[name].trigger.id = '';
                                         this.setStateWithParent({ native });
                                     }
@@ -207,8 +247,16 @@ class SceneForm extends React.Component {
                                     onChange={() => this.saveCursorPosition('Trigger')}
                                     onClick={() =>
                                         this.setState({
-                                            showDialog: id => {
-                                                const native = JSON.parse(JSON.stringify(this.state.native));
+                                            showDialog: (_id: string | string[]): void => {
+                                                let id: string;
+                                                if (Array.isArray(_id)) {
+                                                    id = _id[0];
+                                                } else {
+                                                    id = _id;
+                                                }
+                                                const native: SceneConfig = JSON.parse(
+                                                    JSON.stringify(this.state.native),
+                                                );
                                                 native[name].trigger.id = id;
                                                 native[name].trigger.condition = native[name].trigger.condition || '==';
                                                 this.setStateWithParent({ native });
@@ -228,8 +276,15 @@ class SceneForm extends React.Component {
                                         variant="standard"
                                         value={on.trigger.condition || '=='}
                                         onChange={e => {
-                                            const native = JSON.parse(JSON.stringify(this.state.native));
-                                            native[name].trigger.condition = e.target.value;
+                                            const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
+                                            native[name].trigger.condition = e.target.value as
+                                                | '=='
+                                                | '!='
+                                                | '<'
+                                                | '<='
+                                                | '>'
+                                                | '>='
+                                                | 'update';
                                             this.setStateWithParent({ native });
                                         }}
                                     >
@@ -258,7 +313,7 @@ class SceneForm extends React.Component {
                                     onKeyDown={() => this.saveCursorPosition('Value')}
                                     onChange={e => {
                                         this.saveCursorPosition('Value');
-                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                        const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
                                         native[name].trigger.value = e.target.value;
                                         this.setStateWithParent({ native });
                                     }}
@@ -273,7 +328,7 @@ class SceneForm extends React.Component {
                     sx={Utils.getStyle(
                         this.props.theme,
                         styles.editItem,
-                        this.state.native.onFalse.enabled && styles.marginBottom2,
+                        this.state.native.onFalse.enabled ? styles.marginBottom2 : undefined,
                     )}
                 >
                     <TextField
@@ -291,7 +346,7 @@ class SceneForm extends React.Component {
                         onKeyDown={() => this.saveCursorPosition('Cron')}
                         onChange={e => {
                             this.saveCursorPosition('Cron');
-                            const native = JSON.parse(JSON.stringify(this.state.native));
+                            const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
                             native[name].cron = e.target.value;
                             this.setStateWithParent({ native });
                         }}
@@ -308,15 +363,15 @@ class SceneForm extends React.Component {
         );
     }
 
-    saveCursorPosition = name => {
+    saveCursorPosition = (name: 'Name' | 'Trigger' | 'Value' | 'Cron' | 'Description'): void => {
         this.inputs[name].start = this.inputs[name].ref.current.selectionStart;
         this.inputs[name].end = this.inputs[name].ref.current.selectionEnd;
     };
 
-    componentDidUpdate() {
+    componentDidUpdate(): void {
         // If there was a request to update the selection via setState...
         // Update the selection.
-        Object.keys(this.inputs).forEach(name => {
+        Object.keys(this.inputs).forEach((name: 'Name' | 'Trigger' | 'Value' | 'Cron' | 'Description'): void => {
             if (this.inputs[name].ref.current) {
                 if (this.inputs[name].ref.current.selectionStart !== this.inputs[name].start) {
                     this.inputs[name].ref.current.selectionStart = this.inputs[name].start;
@@ -328,7 +383,7 @@ class SceneForm extends React.Component {
         });
     }
 
-    renderCronDialog() {
+    renderCronDialog(): React.JSX.Element | null {
         if (!this.state.showCronDialog) {
             return null;
         }
@@ -336,11 +391,11 @@ class SceneForm extends React.Component {
         return (
             <Cron
                 key="cronDialog"
-                cron={this.state.native[this.state.showCronDialog].cron}
+                cron={this.state.native[this.state.showCronDialog].cron || undefined}
                 noWizard
                 onOk={cron => {
-                    const native = JSON.parse(JSON.stringify(this.state.native));
-                    native[this.state.showCronDialog].cron = cron;
+                    const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
+                    native[this.state.showCronDialog!].cron = cron;
                     this.setStateWithParent({ native, showCronDialog: null });
                 }}
                 theme={this.props.theme}
@@ -349,8 +404,8 @@ class SceneForm extends React.Component {
         );
     }
 
-    render() {
-        let result = (
+    render(): (React.JSX.Element | null)[] {
+        const result = (
             <Box
                 key="sceneForm"
                 style={{
@@ -438,14 +493,20 @@ class SceneForm extends React.Component {
                                 <TextField
                                     variant="standard"
                                     fullWidth
-                                    InputLabelProps={{ shrink: true }}
                                     label={I18n.t('Interval between commands')}
-                                    min={0}
+                                    slotProps={{
+                                        htmlInput: {
+                                            min: 0,
+                                        },
+                                        inputLabel: {
+                                            shrink: true,
+                                        },
+                                    }}
                                     value={this.state.native.burstInterval || 0}
                                     helperText="ms"
                                     type="number"
                                     onChange={e => {
-                                        const native = JSON.parse(JSON.stringify(this.state.native));
+                                        const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
                                         native.burstInterval = parseInt(e.target.value, 10);
                                         this.setStateWithParent({ native });
                                     }}
@@ -471,7 +532,9 @@ class SceneForm extends React.Component {
                                         <Checkbox
                                             checked={this.state.native.virtualGroup}
                                             onChange={e => {
-                                                const native = JSON.parse(JSON.stringify(this.state.native));
+                                                const native: SceneConfig = JSON.parse(
+                                                    JSON.stringify(this.state.native),
+                                                );
                                                 native.virtualGroup = e.target.checked;
                                                 this.setStateWithParent({ native });
                                             }}
@@ -492,7 +555,9 @@ class SceneForm extends React.Component {
                                             <Checkbox
                                                 checked={this.state.native.onFalse.enabled}
                                                 onChange={e => {
-                                                    const native = JSON.parse(JSON.stringify(this.state.native));
+                                                    const native: SceneConfig = JSON.parse(
+                                                        JSON.stringify(this.state.native),
+                                                    );
                                                     native.onFalse.enabled = e.target.checked;
                                                     this.setStateWithParent({ native });
                                                 }}
@@ -510,8 +575,15 @@ class SceneForm extends React.Component {
                                             variant="standard"
                                             value={this.state.native.aggregation || 'uncertain'}
                                             onChange={e => {
-                                                const native = JSON.parse(JSON.stringify(this.state.native));
-                                                native.aggregation = e.target.value;
+                                                const native: SceneConfig = JSON.parse(
+                                                    JSON.stringify(this.state.native),
+                                                );
+                                                native.aggregation = e.target.value as
+                                                    | 'uncertain'
+                                                    | 'any'
+                                                    | 'avg'
+                                                    | 'min'
+                                                    | 'max';
                                                 this.setStateWithParent({ native });
                                             }}
                                         >
@@ -546,7 +618,9 @@ class SceneForm extends React.Component {
                                         <Checkbox
                                             checked={this.state.native.easy}
                                             onChange={e => {
-                                                const native = JSON.parse(JSON.stringify(this.state.native));
+                                                const native: SceneConfig = JSON.parse(
+                                                    JSON.stringify(this.state.native),
+                                                );
                                                 native.easy = e.target.checked;
                                                 this.setStateWithParent({ native });
                                             }}
@@ -567,15 +641,5 @@ class SceneForm extends React.Component {
         return [result, this.renderSelectIdDialog(), this.renderCronDialog()];
     }
 }
-
-SceneForm.propTypes = {
-    socket: PropTypes.object,
-    scene: PropTypes.object,
-    updateScene: PropTypes.func.isRequired,
-    instances: PropTypes.array,
-    theme: PropTypes.object.isRequired,
-    oneColumn: PropTypes.bool,
-    showError: PropTypes.func,
-};
 
 export default SceneForm;

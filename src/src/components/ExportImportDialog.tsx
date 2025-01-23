@@ -1,10 +1,10 @@
 // Common
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Alert, Snackbar } from '@mui/material';
 
 import AceEditor from 'react-ace';
+import type { Editor } from 'ace-builds';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-clouds_midnight';
 import 'ace-builds/src-noconflict/theme-chrome';
@@ -14,9 +14,9 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import { Close as IconClose, Check as IconCheck } from '@mui/icons-material';
 
 // Own
-import { Utils, I18n, IconCopy } from '@iobroker/adapter-react-v5';
+import { Utils, I18n, IconCopy, type ThemeType } from '@iobroker/adapter-react-v5';
 
-const styles = {
+const styles: Record<'divWithoutTitle' | 'error' | 'dialogHeight', React.CSSProperties> = {
     divWithoutTitle: {
         width: 'calc(100% - 4px)',
         height: 'calc(100% - 4px)',
@@ -30,34 +30,51 @@ const styles = {
     },
 };
 
-class ExportImportDialog extends React.Component {
-    constructor(props) {
+interface ExportImportDialogProps {
+    sceneObj: Record<string, ioBroker.StateObject> | null;
+    themeType: ThemeType;
+    onClose: (scenes?: Record<string, ioBroker.StateObject>) => void;
+    isImport: boolean;
+    allScenes?: boolean;
+}
+
+interface ExportImportDialogState {
+    showWarning: null | Record<string, ioBroker.StateObject>;
+    text: string;
+    error: boolean;
+    toast: string;
+}
+
+class ExportImportDialog extends React.Component<ExportImportDialogProps, ExportImportDialogState> {
+    private codeEditor: Editor | null = null;
+
+    constructor(props: ExportImportDialogProps) {
         super(props);
 
         this.state = {
             text: props.sceneObj ? JSON.stringify(props.sceneObj, null, 2) : '',
             error: false,
             toast: '',
-            showWarning: false,
+            showWarning: null,
         };
     }
 
-    onChange(value) {
-        const newState = { text: value };
+    onChange(value: string): void {
+        const newState: Partial<ExportImportDialogState> = { text: value };
         try {
             JSON.parse(value);
             if (this.state.error) {
                 newState.error = false;
             }
 
-            this.setState(newState);
-        } catch (e) {
+            this.setState(newState as ExportImportDialogState);
+        } catch {
             newState.error = true;
-            this.setState(newState);
+            this.setState(newState as ExportImportDialogState);
         }
     }
 
-    renderToast() {
+    renderToast(): React.JSX.Element {
         return (
             <Snackbar
                 open={!!this.state.toast}
@@ -75,14 +92,14 @@ class ExportImportDialog extends React.Component {
         );
     }
 
-    renderWarningDialog() {
+    renderWarningDialog(): React.JSX.Element | null {
         if (!this.state.showWarning) {
             return null;
         }
         return (
             <Dialog
                 open={!0}
-                onClose={() => this.setState({ showWarning: false })}
+                onClose={() => this.setState({ showWarning: null })}
             >
                 <DialogTitle>{I18n.t('Scene will be overwritten and cannot be undone!')}</DialogTitle>
                 <DialogContent>{I18n.t('Are you sure?')}</DialogContent>
@@ -90,8 +107,8 @@ class ExportImportDialog extends React.Component {
                     <Button
                         variant="contained"
                         onClick={() => {
-                            this.props.onClose(this.state.showWarning);
-                            this.setState({ showWarning: false });
+                            this.props.onClose(this.state.showWarning!);
+                            this.setState({ showWarning: null });
                         }}
                         color="primary"
                         autoFocus
@@ -102,7 +119,7 @@ class ExportImportDialog extends React.Component {
                     <Button
                         color="grey"
                         variant="contained"
-                        onClick={() => this.setState({ showWarning: false })}
+                        onClick={() => this.setState({ showWarning: null })}
                         startIcon={<IconClose />}
                     >
                         {I18n.t('Close')}
@@ -112,7 +129,7 @@ class ExportImportDialog extends React.Component {
         );
     }
 
-    render() {
+    render(): React.JSX.Element {
         return (
             <Dialog
                 open={!0}
@@ -130,7 +147,6 @@ class ExportImportDialog extends React.Component {
                 <DialogContent>
                     <div style={{ ...styles.divWithoutTitle, ...(this.state.error ? styles.error : undefined) }}>
                         <AceEditor
-                            autoFocus
                             mode="json"
                             width="100%"
                             height="100%"
@@ -155,13 +171,13 @@ class ExportImportDialog extends React.Component {
                             disabled={!this.state.text || this.state.error}
                             onClick={() => {
                                 try {
-                                    const scene = JSON.parse(this.state.text);
+                                    const scenes: Record<string, ioBroker.StateObject> = JSON.parse(this.state.text);
                                     if (this.props.allScenes) {
-                                        this.props.onClose(scene);
+                                        this.props.onClose(scenes);
                                     } else {
-                                        this.setState({ showWarning: scene });
+                                        this.setState({ showWarning: scenes });
                                     }
-                                } catch (e) {
+                                } catch {
                                     this.setState({ toast: I18n.t('Cannot parse') });
                                 }
                             }}
@@ -200,13 +216,5 @@ class ExportImportDialog extends React.Component {
         );
     }
 }
-
-ExportImportDialog.propTypes = {
-    sceneObj: PropTypes.object,
-    themeType: PropTypes.string,
-    onClose: PropTypes.func,
-    isImport: PropTypes.bool,
-    allScenes: PropTypes.bool,
-};
 
 export default ExportImportDialog;

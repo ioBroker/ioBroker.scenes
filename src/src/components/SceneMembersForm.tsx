@@ -1,6 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, type DropResult } from 'react-beautiful-dnd';
 
 import {
     TextField,
@@ -25,7 +24,14 @@ import {
 } from '@mui/material';
 
 // own components
-import { I18n, Utils, SelectID as DialogSelectID, Message as MessageDialog } from '@iobroker/adapter-react-v5';
+import {
+    I18n,
+    Utils,
+    SelectID as DialogSelectID,
+    Message as MessageDialog,
+    type IobTheme,
+    type AdminConnection,
+} from '@iobroker/adapter-react-v5';
 
 // icons
 import {
@@ -33,9 +39,6 @@ import {
     Delete as IconDelete,
     Add as IconAdd,
     PlayArrow as IconPlay,
-} from '@mui/icons-material';
-import { FaFolder as IconFolderClosed, FaFolderOpen as IconFolderOpened } from 'react-icons/fa';
-import {
     Close as IconCancel,
     ExpandMore as IconExpandAll,
     ExpandLess as IconCollapseAll,
@@ -43,8 +46,10 @@ import {
     AddBox as IconAddBox,
     Save,
 } from '@mui/icons-material';
+import { FaFolder as IconFolderClosed, FaFolderOpen as IconFolderOpened } from 'react-icons/fa';
 
 import EnumsSelector from './EnumsSelector';
+import type { SceneEnumsValue, SceneMember } from '../types';
 
 const TRUE_COLOR = '#90ee90';
 const FALSE_COLOR = '#ff9999';
@@ -52,7 +57,7 @@ const TRUE_DARK_COLOR = '#528952';
 const FALSE_DARK_COLOR = '#774747';
 const UNCERTAIN_COLOR = '#bfb7be';
 
-const styles = {
+const styles: Record<string, any> = {
     memberTrueFalse: {
         borderRadius: 10,
         padding: `2px 8px`,
@@ -65,7 +70,7 @@ const styles = {
         overflow: 'hidden',
         textOverflow: 'ellipsis',
     },
-    memberTrue: theme => ({
+    memberTrue: (theme: IobTheme): React.CSSProperties => ({
         backgroundColor: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
     }),
     memberFalse: {
@@ -112,18 +117,18 @@ const styles = {
     p: {
         margin: `8px 0`,
     },
-    pTrue: theme => ({
+    pTrue: (theme: IobTheme): any => ({
         backgroundColor: theme.palette.mode === 'dark' ? '#002502' : '#90ee90',
         p: '4px',
     }),
-    pFalse: theme => ({
+    pFalse: (theme: IobTheme): any => ({
         p: '4px',
         backgroundColor: theme.palette.mode === 'dark' ? '#332100' : '#eec590',
     }),
     guttersZero: {
         padding: 0,
     },
-    sceneTitle: theme => ({
+    sceneTitle: (theme: IobTheme): React.CSSProperties => ({
         flexGrow: 1,
         color: theme.palette.mode === 'dark' ? '#FFF' : '#000',
     }),
@@ -134,21 +139,21 @@ const styles = {
         display: 'inline-flex',
         alignItems: 'center',
     },
-    sceneTrue: theme => ({
+    sceneTrue: (theme: IobTheme): React.CSSProperties => ({
         background: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
     }),
-    sceneFalse: theme => ({
+    sceneFalse: (theme: IobTheme): React.CSSProperties => ({
         background: theme.palette.mode === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
     }),
     sceneUncertain: {
         background: UNCERTAIN_COLOR,
     },
-    btnTestTrue: theme => ({
+    btnTestTrue: (theme: IobTheme): any => ({
         background: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
         mr: '8px',
         mb: '4px',
     }),
-    btnTestFalse: theme => ({
+    btnTestFalse: (theme: IobTheme): any => ({
         background: theme.palette.mode === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
         mb: '4px',
     }),
@@ -245,7 +250,7 @@ const styles = {
     ackTrue: {
         marginLeft: 100,
     },
-    enumTitle: theme => ({
+    enumTitle: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.primary.main,
         border: `1px solid ${theme.palette.primary.main}`,
         padding: '1px 4px 3px 4px',
@@ -253,18 +258,72 @@ const styles = {
     }),
 };
 
-class SceneMembersForm extends React.Component {
-    static enums = null;
+interface SceneMembersFormProps {
+    members: SceneMember[];
+    socket: AdminConnection;
+    sceneId: string;
+    ts: number;
+    onFalseEnabled: boolean;
+    virtualGroup: boolean;
+    aggregation: boolean;
+    sceneEnabled: boolean;
+    selectedSceneChanged: boolean;
+    engineId: string;
+    theme: IobTheme;
+    showError: (error: string | Error) => void;
+    updateSceneMembers: (members: SceneMember[], cb?: () => void) => void;
+    easy: boolean;
+    oneColumn: boolean;
+    intervalBetweenCommands: number;
+}
+
+interface SceneMembersFormState {
+    states: Record<string, ioBroker.StateValue | null>;
+    openedMembers: (string | number)[];
+    objectTypes: Record<string, ioBroker.CommonType>;
+    objectNames: Record<string, string>;
+    members: SceneMember[];
+    ts: number;
+    easy: boolean;
+    writeSceneState: string;
+    deleteDialog: string | number | null;
+    onFalseEnabled: boolean;
+    virtualGroup: boolean;
+    aggregation: boolean;
+    sceneEnabled: boolean;
+    selectedSceneChanged: boolean;
+    engineId: string;
+    suppressDeleteConfirm: boolean;
+    showSelectValueIdDialog: 'true' | 'false' | null;
+    showSelectValueIdDialogFor: number | null;
+    showAddEnumsDialog: true | number | null;
+    showDialog: boolean;
+    askTrueFalse: boolean;
+    message: string;
+}
+
+class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembersFormState> {
+    static enums: Record<string, ioBroker.EnumObject> | null = null;
 
     static objects = null;
 
-    constructor(props) {
+    private engineId: string;
+
+    private readonly cacheEnumsState: (
+        | { realIds: string[]; type: 'boolean' | 'number' | 'string'; ids: string }
+        | true
+    )[];
+
+    private readonly delButtonRef: React.RefObject<any>;
+
+    constructor(props: SceneMembersFormProps) {
         super(props);
 
-        let openedMembers = window.localStorage.getItem('Scenes.openedMembers') || '[]';
+        const openedMembersStr = window.localStorage.getItem('Scenes.openedMembers') || '[]';
+        let openedMembers: (string | number)[];
         try {
-            openedMembers = JSON.parse(openedMembers);
-        } catch (e) {
+            openedMembers = JSON.parse(openedMembersStr);
+        } catch {
             openedMembers = [];
         }
 
@@ -285,9 +344,12 @@ class SceneMembersForm extends React.Component {
             selectedSceneChanged: props.selectedSceneChanged,
             engineId: props.engineId,
             suppressDeleteConfirm: false,
-            showSelectValueIdDialog: false,
+            showSelectValueIdDialog: null,
             showSelectValueIdDialogFor: null,
             showAddEnumsDialog: null,
+            showDialog: false,
+            askTrueFalse: false,
+            message: '',
         };
 
         this.delButtonRef = React.createRef();
@@ -299,7 +361,7 @@ class SceneMembersForm extends React.Component {
         this.onDragEnd = this.onDragEnd.bind(this);
     }
 
-    async componentDidMount() {
+    async componentDidMount(): Promise<void> {
         if (!SceneMembersForm.enums) {
             try {
                 SceneMembersForm.enums = await this.props.socket.getEnums();
@@ -309,11 +371,12 @@ class SceneMembersForm extends React.Component {
         }
 
         const newState = await this.readObjects();
-        this.setState(newState, () => {
+        this.setState(newState as SceneMembersFormState, async () => {
             // subscribe on scene state
-            this.props.socket.subscribeState(this.props.sceneId, this.memberStateChange);
-            this.state.engineId &&
-                this.props.socket.subscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
+            await this.props.socket.subscribeState(this.props.sceneId, this.memberStateChange);
+            if (this.state.engineId) {
+                await this.props.socket.subscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
+            }
 
             // subscribe on all states
             this.state.members.forEach(
@@ -322,26 +385,28 @@ class SceneMembersForm extends React.Component {
         });
     }
 
-    componentWillUnmount() {
+    componentWillUnmount(): void {
         this.props.socket.unsubscribeState(this.props.sceneId, this.memberStateChange);
-        this.state.engineId &&
+        if (this.state.engineId) {
             this.props.socket.unsubscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
+        }
 
         this.state.members.forEach((member, i) => {
             if (member.id) {
                 this.props.socket.unsubscribeState(member.id, this.memberStateChange);
-            } else if (member.enums) {
-                this.cacheEnumsState[i] &&
-                    this.cacheEnumsState[i].realIds &&
-                    this.cacheEnumsState[i].realIds.forEach(id =>
-                        this.props.socket.unsubscribeState(id, this.memberStateChange),
-                    );
+            } else if (member.enums && typeof this.cacheEnumsState[i] === 'object') {
+                this.cacheEnumsState[i]?.realIds?.forEach(id =>
+                    this.props.socket.unsubscribeState(id, this.memberStateChange),
+                );
             }
         });
     }
 
-    static getDerivedStateFromProps(props, state) {
-        const newState = {};
+    static getDerivedStateFromProps(
+        props: SceneMembersFormProps,
+        state: SceneMembersFormState,
+    ): Partial<SceneMembersFormState> | null {
+        const newState: Partial<SceneMembersFormState> = {};
         let changed = false;
 
         if (props.onFalseEnabled !== state.onFalseEnabled) {
@@ -381,27 +446,29 @@ class SceneMembersForm extends React.Component {
         return changed ? newState : null;
     }
 
-    onDragEnd(result) {
+    onDragEnd(result: DropResult): void {
         // dropped outside the list
         if (!result.destination) {
             return;
         }
-        const members = JSON.parse(JSON.stringify(this.state.members));
+        const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
         const [removed] = members.splice(result.source.index, 1);
         members.splice(result.destination.index, 0, removed);
 
         this.setStateWithParent({ members });
     }
 
-    async readObjects() {
+    async readObjects(): Promise<Partial<SceneMembersFormState>> {
         if (this.state.members) {
-            const objectTypes = {};
-            const objectNames = {};
+            const objectTypes: Record<string, ioBroker.CommonType> = {};
+            const objectNames: Record<string, string> = {};
             try {
                 for (let m = 0; m < this.state.members.length; m++) {
                     const member = this.state.members[m];
-                    const obj = member.id && (await this.props.socket.getObject(member.id));
-                    if (obj && obj.common && obj.common.type) {
+                    const obj: ioBroker.StateObject | null | undefined = member.id
+                        ? ((await this.props.socket.getObject(member.id)) as ioBroker.StateObject | null | undefined)
+                        : null;
+                    if (obj?.common?.type) {
                         objectTypes[obj._id] = obj.common.type;
                         objectNames[obj._id] = Utils.getObjectNameFromObj(
                             obj,
@@ -415,22 +482,22 @@ class SceneMembersForm extends React.Component {
                 this.props.showError(e);
             }
             return { objectTypes, objectNames };
-        } else {
-            return {};
         }
+
+        return {};
     }
 
-    memberStateChange = (id, state) => {
+    memberStateChange = (id: string, state: ioBroker.State | null | undefined): void => {
         const val = state ? state.val : null;
         if (this.state.states[id] === val && (this.state.objectTypes[id] || val === null || val === undefined)) {
             return;
         }
-        const states = JSON.parse(JSON.stringify(this.state.states));
+        const states: Record<string, ioBroker.StateValue | null> = JSON.parse(JSON.stringify(this.state.states));
         states[id] = val;
-        const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
+        const objectTypes: Record<string, ioBroker.CommonType> = JSON.parse(JSON.stringify(this.state.objectTypes));
 
         if (!objectTypes[id] && states[id] !== null && states[id] !== undefined) {
-            objectTypes[id] = typeof states[id];
+            objectTypes[id] = typeof states[id] as ioBroker.CommonType;
         }
 
         if (objectTypes[id] === 'boolean') {
@@ -441,19 +508,21 @@ class SceneMembersForm extends React.Component {
                 states[id] = false;
             }
         } else if (objectTypes[id] === 'number') {
-            states[id] = parseFloat(states[id]);
+            states[id] = states[id] === null ? null : parseFloat(states[id] as string);
         }
 
         this.setState({ states, objectTypes });
     };
 
-    createSceneMembersWithIDs = ids => {
+    createSceneMembersWithIDs = (ids: string[]): void => {
         this.setState({ showDialog: false }, async () => {
             if (ids.length) {
                 const openedMembers = [...this.state.openedMembers];
-                const objectTypes = JSON.parse(JSON.stringify(this.state.objectTypes));
-                const objectNames = JSON.parse(JSON.stringify(this.state.objectNames));
-                const members = JSON.parse(JSON.stringify(this.state.members));
+                const objectTypes: Record<string, ioBroker.CommonType> = JSON.parse(
+                    JSON.stringify(this.state.objectTypes),
+                );
+                const objectNames: Record<string, string> = JSON.parse(JSON.stringify(this.state.objectNames));
+                const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                 try {
                     for (let i = 0; i < ids.length; i++) {
                         const id = ids[i];
@@ -462,7 +531,7 @@ class SceneMembersForm extends React.Component {
                             continue;
                         }
 
-                        const template = {
+                        const template: SceneMember = {
                             id,
                             setIfTrue: null,
                             setIfFalse: null,
@@ -481,7 +550,7 @@ class SceneMembersForm extends React.Component {
                             );
                         }
 
-                        if (obj && obj.common && obj.common.type) {
+                        if (obj?.common?.type) {
                             objectTypes[id] = obj.common.type;
 
                             if (objectTypes[id] === 'boolean') {
@@ -514,14 +583,14 @@ class SceneMembersForm extends React.Component {
         });
     };
 
-    createSceneMembersWithEnums = enums => {
-        this.setState({ showDialog: false }, async () => {
+    createSceneMembersWithEnums = (enums: SceneEnumsValue): void => {
+        this.setState({ showDialog: false }, () => {
             if (enums) {
                 const openedMembers = [...this.state.openedMembers];
-                const members = JSON.parse(JSON.stringify(this.state.members));
+                const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
 
                 try {
-                    const template = {
+                    const template: SceneMember = {
                         enums,
                         setIfTrue: null,
                         setIfFalse: null,
@@ -544,26 +613,32 @@ class SceneMembersForm extends React.Component {
         });
     };
 
-    deleteSceneMember = id => {
-        let members = JSON.parse(JSON.stringify(this.state.members));
+    deleteSceneMember(id: string | number): void {
+        const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
 
-        for (let i = 0; i < members.length; i++) {
-            if (members[i].id === id) {
-                members.splice(i, 1);
+        if (typeof id === 'number') {
+            members.splice(id, 1);
+        } else {
+            for (let i = 0; i < members.length; i++) {
+                if (members[i].id === id) {
+                    members.splice(i, 1);
+                }
             }
         }
 
-        this.setStateWithParent({ members, deleteDialog: null }, () =>
-            this.props.socket.unsubscribeState(id, this.memberStateChange),
-        );
-    };
-
-    setStateWithParent(newState, cb) {
-        const that = this;
-        this.setState(newState, () => this.props.updateSceneMembers(that.state.members, cb));
+        this.setStateWithParent({ members, deleteDialog: null }, () => {
+            if (typeof id === 'string') {
+                this.props.socket.unsubscribeState(id, this.memberStateChange);
+            }
+        });
     }
 
-    renderSelectIdDialog() {
+    setStateWithParent(newState: Partial<SceneMembersFormState>, cb?: () => void): void {
+        const that = this;
+        this.setState(newState as SceneMembersFormState, () => this.props.updateSceneMembers(that.state.members, cb));
+    }
+
+    renderSelectIdDialog(): React.JSX.Element | null {
         return this.state.showDialog ? (
             <DialogSelectID
                 imagePrefix="../.."
@@ -572,15 +647,23 @@ class SceneMembersForm extends React.Component {
                 dialogName="memberEdit"
                 multiSelect
                 title={I18n.t('Select for ')}
-                selected={null}
-                onOk={id => this.createSceneMembersWithIDs(id)}
+                selected=""
+                onOk={(_id: string | string[]): void => {
+                    let id: string[];
+                    if (Array.isArray(_id)) {
+                        id = _id;
+                    } else {
+                        id = [_id];
+                    }
+                    this.createSceneMembersWithIDs(id);
+                }}
                 onClose={() => this.setState({ showDialog: false })}
                 theme={this.props.theme}
             />
         ) : null;
     }
 
-    renderSelectEnumsDialog() {
+    renderSelectEnumsDialog(): React.JSX.Element | null {
         if (this.state.showAddEnumsDialog === null) {
             return null;
         }
@@ -594,8 +677,8 @@ class SceneMembersForm extends React.Component {
                         if (this.state.showAddEnumsDialog === true) {
                             this.createSceneMembersWithEnums(enums);
                         } else {
-                            const members = JSON.parse(JSON.stringify(this.state.members));
-                            members[this.state.showAddEnumsDialog].enums = enums;
+                            const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
+                            members[this.state.showAddEnumsDialog!].enums = enums;
                             this.setStateWithParent({ members });
                         }
                     }
@@ -607,14 +690,14 @@ class SceneMembersForm extends React.Component {
                 value={
                     this.state.showAddEnumsDialog === true
                         ? null
-                        : this.state.members[this.state.showAddEnumsDialog].enums
+                        : this.state.members[this.state.showAddEnumsDialog].enums || null
                 }
                 theme={this.props.theme}
             />
         );
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate(): void {
         this.state.deleteDialog !== null &&
             setTimeout(() => {
                 if (this.delButtonRef.current) {
@@ -623,9 +706,9 @@ class SceneMembersForm extends React.Component {
             }, 50);
     }
 
-    renderDeleteDialog() {
+    renderDeleteDialog(): React.JSX.Element | null {
         if (this.state.deleteDialog === null) {
-            return;
+            return null;
         }
 
         return (
@@ -657,7 +740,7 @@ class SceneMembersForm extends React.Component {
                             if (this.state.suppressDeleteConfirm) {
                                 window.localStorage.setItem('scenes.suppressDeleteConfirm', Date.now().toString());
                             }
-                            this.deleteSceneMember(this.state.deleteDialog);
+                            this.deleteSceneMember(this.state.deleteDialog!);
                         }}
                         startIcon={<IconDelete />}
                     >
@@ -677,15 +760,15 @@ class SceneMembersForm extends React.Component {
         );
     }
 
-    renderSelectStateIdDialog() {
+    renderSelectStateIdDialog(): React.JSX.Element | null {
         if (!this.state.showSelectValueIdDialog) {
             return null;
         }
-        let setValue;
+        let setValue: string | undefined | boolean | null | number;
         if (this.state.showSelectValueIdDialog === 'true') {
-            setValue = this.state.members[this.state.showSelectValueIdDialogFor].setIfTrue;
+            setValue = this.state.members[this.state.showSelectValueIdDialogFor!].setIfTrue;
         } else {
-            setValue = this.state.members[this.state.showSelectValueIdDialogFor].setIfFalse;
+            setValue = this.state.members[this.state.showSelectValueIdDialogFor!].setIfFalse;
         }
         const m = typeof setValue === 'string' && setValue.match(/^{{([^}]*)}}$/);
         if (m) {
@@ -700,28 +783,29 @@ class SceneMembersForm extends React.Component {
                 dialogName="memberEdit"
                 multiSelect={false}
                 title={I18n.t('Select for ') + (this.state.showSelectValueIdDialog === 'true' ? 'TRUE' : 'FALSE')}
-                selected={setValue}
+                selected={setValue as string}
                 onOk={id => {
                     if (id) {
-                        const index = this.state.showSelectValueIdDialogFor;
-                        const members = JSON.parse(JSON.stringify(this.state.members));
+                        const index = this.state.showSelectValueIdDialogFor!;
+                        const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                         if (this.state.showSelectValueIdDialog === 'true') {
                             members[index].setIfTrue = `{{${id}}}`;
                         } else {
                             members[index].setIfFalse = `{{${id}}}`;
                         }
 
-                        this.setState({ showSelectValueIdDialog: false, showSelectValueIdDialogFor: null }, () =>
+                        this.setState({ showSelectValueIdDialog: null, showSelectValueIdDialogFor: null }, () =>
                             this.setStateWithParent({ members }),
                         );
                     }
                 }}
-                onClose={() => this.setState({ showSelectValueIdDialog: false, showSelectValueIdDialogFor: null })}
+                theme={this.props.theme}
+                onClose={() => this.setState({ showSelectValueIdDialog: null, showSelectValueIdDialogFor: null })}
             />
         );
     }
 
-    renderSetValue(index, member, onFalseEnabled, isTrue) {
+    renderSetValue(index: number, member: SceneMember, onFalseEnabled: boolean, isTrue: boolean): React.JSX.Element {
         let labelSetValue;
         let labelTolerance;
         let setValue;
@@ -753,7 +837,7 @@ class SceneMembersForm extends React.Component {
             setValueTolerance = member.setIfFalseTolerance;
         }
 
-        const type = member.id ? this.state.objectTypes[member.id] : member.enums.type || 'boolean';
+        const type = member.id ? this.state.objectTypes[member.id] : member.enums!.type || 'boolean';
 
         return (
             <Box
@@ -770,7 +854,7 @@ class SceneMembersForm extends React.Component {
                             <Switch
                                 checked={fromState}
                                 onChange={e => {
-                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                                     if (e.target.checked) {
                                         if (isTrue) {
                                             members[index].setIfTrue = '{{}}';
@@ -807,7 +891,7 @@ class SceneMembersForm extends React.Component {
                                       : 'null'
                             }
                             onChange={e => {
-                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                                 if (isTrue) {
                                     members[index].setIfTrue =
                                         e.target.value === 'true' ? true : e.target.value === 'false' ? false : null;
@@ -830,57 +914,70 @@ class SceneMembersForm extends React.Component {
                             <TextField
                                 variant="standard"
                                 fullWidth
-                                InputLabelProps={{ shrink: true }}
                                 label={labelSetValue}
                                 value={setValue || ''}
-                                readOnly
-                                style={styles.setValue}
-                                InputProps={{
-                                    endAdornment: (
-                                        <IconButton
-                                            style={styles.smallClearBtn}
-                                            size="small"
-                                            onClick={() =>
-                                                this.setState({
-                                                    showSelectValueIdDialog: isTrue ? 'true' : 'false',
-                                                    showSelectValueIdDialogFor: index,
-                                                })
-                                            }
-                                        >
-                                            <IconList />
-                                        </IconButton>
-                                    ),
+                                slotProps={{
+                                    htmlInput: {
+                                        readOnly: true,
+                                    },
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
+                                    input: {
+                                        readOnly: true,
+                                        endAdornment: (
+                                            <IconButton
+                                                style={styles.smallClearBtn}
+                                                size="small"
+                                                onClick={() =>
+                                                    this.setState({
+                                                        showSelectValueIdDialog: isTrue ? 'true' : 'false',
+                                                        showSelectValueIdDialogFor: index,
+                                                    })
+                                                }
+                                            >
+                                                <IconList />
+                                            </IconButton>
+                                        ),
+                                    },
                                 }}
+                                style={styles.setValue}
                             />
                         ) : (
                             <TextField
                                 variant="standard"
                                 fullWidth
-                                InputLabelProps={{ shrink: true }}
                                 label={labelSetValue}
                                 value={setValue === undefined || setValue === null ? '' : setValue}
                                 style={styles.setValue}
-                                InputProps={{
-                                    endAdornment: setValue ? (
-                                        <IconButton
-                                            size="small"
-                                            style={styles.smallClearBtn}
-                                            onClick={() => {
-                                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                                if (isTrue) {
-                                                    members[index].setIfTrue = null;
-                                                } else {
-                                                    members[index].setIfFalse = null;
-                                                }
-                                                this.setStateWithParent({ members });
-                                            }}
-                                        >
-                                            <IconCancel />
-                                        </IconButton>
-                                    ) : undefined,
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
+                                    input: {
+                                        endAdornment: setValue ? (
+                                            <IconButton
+                                                size="small"
+                                                style={styles.smallClearBtn}
+                                                onClick={() => {
+                                                    const members: SceneMember[] = JSON.parse(
+                                                        JSON.stringify(this.state.members),
+                                                    );
+                                                    if (isTrue) {
+                                                        members[index].setIfTrue = null;
+                                                    } else {
+                                                        members[index].setIfFalse = null;
+                                                    }
+                                                    this.setStateWithParent({ members });
+                                                }}
+                                            >
+                                                <IconCancel />
+                                            </IconButton>
+                                        ) : undefined,
+                                    },
                                 }}
                                 onChange={e => {
-                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                                     if (type === 'number' && e.target.value !== '') {
                                         if (isTrue) {
                                             members[index].setIfTrue = parseFloat(e.target.value.replace(',', '.'));
@@ -907,7 +1004,6 @@ class SceneMembersForm extends React.Component {
                         {!this.state.easy && type !== 'boolean' ? (
                             <TextField
                                 variant="standard"
-                                InputLabelProps={{ shrink: true }}
                                 label={`± ${labelTolerance}`}
                                 value={
                                     setValueTolerance === undefined || setValueTolerance === null
@@ -916,37 +1012,44 @@ class SceneMembersForm extends React.Component {
                                 }
                                 title={I18n.t('Absolute value, not percent')}
                                 style={styles.setTolerance}
-                                InputProps={{
-                                    endAdornment: setValueTolerance ? (
-                                        <IconButton
-                                            size="small"
-                                            style={styles.smallClearBtn}
-                                            onClick={() => {
-                                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                                if (isTrue) {
-                                                    members[index].setIfTrueTolerance = null;
-                                                } else {
-                                                    members[index].setIfFalseTolerance = null;
-                                                }
-                                                this.setStateWithParent({ members });
-                                            }}
-                                        >
-                                            <IconCancel />
-                                        </IconButton>
-                                    ) : undefined,
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
+                                    input: {
+                                        endAdornment: setValueTolerance ? (
+                                            <IconButton
+                                                size="small"
+                                                style={styles.smallClearBtn}
+                                                onClick={() => {
+                                                    const members: SceneMember[] = JSON.parse(
+                                                        JSON.stringify(this.state.members),
+                                                    );
+                                                    if (isTrue) {
+                                                        members[index].setIfTrueTolerance = null;
+                                                    } else {
+                                                        members[index].setIfFalseTolerance = null;
+                                                    }
+                                                    this.setStateWithParent({ members });
+                                                }}
+                                            >
+                                                <IconCancel />
+                                            </IconButton>
+                                        ) : undefined,
+                                    },
                                 }}
                                 onChange={e => {
-                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                                     if (isTrue) {
                                         members[index].setIfTrueTolerance =
                                             e.target.value === '' ? null : parseFloat(e.target.value.replace(',', '.'));
-                                        if (isNaN(members[index].setIfTrueTolerance)) {
+                                        if (isNaN(members[index].setIfTrueTolerance as number)) {
                                             members[index].setIfTrueTolerance = null;
                                         }
                                     } else {
                                         members[index].setIfFalseTolerance =
                                             e.target.value === '' ? null : parseFloat(e.target.value.replace(',', '.'));
-                                        if (isNaN(members[index].setIfFalseTolerance)) {
+                                        if (isNaN(members[index].setIfFalseTolerance as number)) {
                                             members[index].setIfFalseTolerance = null;
                                         }
                                     }
@@ -964,7 +1067,7 @@ class SceneMembersForm extends React.Component {
                             <Checkbox
                                 checked={!!member.ackTrue}
                                 onChange={e => {
-                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                                     members[index].ackTrue = e.target.checked;
                                     this.setStateWithParent({ members });
                                 }}
@@ -976,29 +1079,33 @@ class SceneMembersForm extends React.Component {
         );
     }
 
-    static getObjectName(id, obj) {
+    static getObjectName(id: string, obj: ioBroker.Object | null | undefined): string {
         return obj ? Utils.getObjectNameFromObj(obj, null, { language: I18n.getLanguage() }, false) : id;
     }
 
-    static getAllEnumIds(enumsSettings) {
-        const ids = [];
+    static getAllEnumIds(enumsSettings?: SceneEnumsValue): string[] {
+        const ids: string[] = [];
         if (!SceneMembersForm.enums) {
             return ids;
         }
-        enumsSettings.rooms.forEach(roomId => {
-            const members = SceneMembersForm.enums[roomId].common.members;
-            for (let r = 0; r < members.length; r++) {
-                if (!ids.includes(members[r])) {
-                    ids.push(members[r]);
-                }
-            }
-        });
-        if (!enumsSettings.rooms.length) {
-            enumsSettings.funcs.forEach(funcId => {
-                const members = SceneMembersForm.enums[funcId].common.members;
+        enumsSettings?.rooms.forEach((roomId: string): void => {
+            const members = SceneMembersForm.enums?.[roomId].common.members;
+            if (members) {
                 for (let r = 0; r < members.length; r++) {
                     if (!ids.includes(members[r])) {
                         ids.push(members[r]);
+                    }
+                }
+            }
+        });
+        if (!enumsSettings?.rooms.length) {
+            enumsSettings?.funcs.forEach(funcId => {
+                const members = SceneMembersForm.enums?.[funcId].common.members;
+                if (members) {
+                    for (let r = 0; r < members.length; r++) {
+                        if (!ids.includes(members[r])) {
+                            ids.push(members[r]);
+                        }
                     }
                 }
             });
@@ -1006,57 +1113,63 @@ class SceneMembersForm extends React.Component {
             for (let i = ids.length - 1; i >= 0; i--) {
                 const id = ids[i];
                 // find this id in all functions
-                if (!enumsSettings.funcs.find(funcId => SceneMembersForm.enums[funcId].common.members.includes(id))) {
+                if (
+                    !enumsSettings.funcs.find(funcId => SceneMembersForm.enums?.[funcId].common.members?.includes(id))
+                ) {
                     ids.splice(i, 1);
                 }
             }
         }
-        enumsSettings.others.forEach(enumId => {
-            const members = SceneMembersForm.enums[enumId].common.members;
-            for (let r = 0; r < members.length; r++) {
-                if (!ids.includes(members[r])) {
-                    ids.push(members[r]);
+        enumsSettings?.others.forEach(enumId => {
+            const members = SceneMembersForm.enums?.[enumId].common.members;
+            if (members) {
+                for (let r = 0; r < members.length; r++) {
+                    if (!ids.includes(members[r])) {
+                        ids.push(members[r]);
+                    }
                 }
             }
         });
-        for (let e = 0; e < enumsSettings.exclude.length; e++) {
-            const index = ids.indexOf(enumsSettings.exclude[e]);
-            if (index !== -1) {
-                ids.splice(index, 1);
+        if (enumsSettings?.exclude) {
+            for (let e = 0; e < enumsSettings.exclude.length; e++) {
+                const index = ids.indexOf(enumsSettings.exclude[e]);
+                if (index !== -1) {
+                    ids.splice(index, 1);
+                }
             }
         }
         ids.sort();
         return ids;
     }
 
-    getTitleForEnums(index) {
+    getTitleForEnums(index: number): React.JSX.Element {
         const enumsSettings = this.state.members[index].enums;
         let title = '';
-        if (enumsSettings.rooms?.length) {
+        if (enumsSettings?.rooms?.length) {
             title += enumsSettings.rooms
                 .map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id]))
                 .join(', ');
             if (enumsSettings.funcs?.length) {
                 title += ` 🗗 ${enumsSettings.funcs.map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id])).join(', ')}`;
             }
-        } else if (enumsSettings.funcs?.length) {
+        } else if (enumsSettings?.funcs?.length) {
             title += enumsSettings.funcs
                 .map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id]))
                 .join(', ');
         }
 
-        if (enumsSettings.others?.length) {
-            title += ` + ${enumsSettings.map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id])).others.join(', ')}`;
+        if (enumsSettings?.others?.length) {
+            title += ` + ${enumsSettings.others.map(id => SceneMembersForm.getObjectName(id, SceneMembersForm.enums?.[id])).join(', ')}`;
         }
-        if (enumsSettings.exclude?.length) {
+        if (enumsSettings?.exclude?.length) {
             title += ` - ${enumsSettings.exclude.length} ${I18n.t('state(s)')}`;
         }
 
         if (this.cacheEnumsState[index]) {
             if (this.cacheEnumsState[index] === true) {
-                title += ` ... - ${enumsSettings.type || 'boolean'}`;
+                title += ` ... - ${enumsSettings?.type || 'boolean'}`;
             } else {
-                title += ` [${this.cacheEnumsState[index].realIds.length}] - ${enumsSettings.type || 'boolean'}`;
+                title += ` [${this.cacheEnumsState[index].realIds.length}] - ${enumsSettings?.type || 'boolean'}`;
             }
         }
 
@@ -1070,22 +1183,26 @@ class SceneMembersForm extends React.Component {
         );
     }
 
-    getEnumsState(index) {
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    getEnumsState(index: number): ioBroker.StateValue | 'uncertain' | null {
         const enumsSettings = this.state.members[index].enums;
         const ids = SceneMembersForm.getAllEnumIds(enumsSettings);
-        let realIds = [];
+        let realIds: string[] = [];
         if (
             !this.cacheEnumsState[index] ||
-            this.cacheEnumsState[index].ids !== JSON.stringify(ids) ||
-            this.cacheEnumsState[index].type !== enumsSettings.type
+            (this.cacheEnumsState[index] as { type: ioBroker.CommonType; ids: string }).ids !== JSON.stringify(ids) ||
+            (this.cacheEnumsState[index] as { type: ioBroker.CommonType; ids: string }).type !== enumsSettings?.type
         ) {
             if (this.cacheEnumsState[index] === true) {
-                return;
+                return null;
             }
             this.cacheEnumsState[index] = true;
             setTimeout(async () => {
                 for (let i = 0; i < ids.length; i++) {
-                    const obj = await this.props.socket.getObject(ids[i]);
+                    const obj: ioBroker.StateObject | null | undefined = (await this.props.socket.getObject(ids[i])) as
+                        | ioBroker.StateObject
+                        | null
+                        | undefined;
                     if (!obj) {
                         continue;
                     }
@@ -1094,12 +1211,12 @@ class SceneMembersForm extends React.Component {
                             // try to use types detector to find the control state
                             const controlId = await EnumsSelector.findControlState(
                                 obj,
-                                enumsSettings.type || 'boolean',
+                                enumsSettings?.type || 'boolean',
                                 this.props.socket,
                             );
                             if (!controlId) {
                                 console.warn(
-                                    `Cannot find control state of type "${enumsSettings.type || 'boolean'}" for "${obj.type}" ${ids[i]}`,
+                                    `Cannot find control state of type "${enumsSettings?.type || 'boolean'}" for "${obj.type}" ${ids[i]}`,
                                 );
                                 continue;
                             }
@@ -1112,48 +1229,41 @@ class SceneMembersForm extends React.Component {
                     }
                 }
 
-                // const states = JSON.parse(JSON.stringify(this.state.states));
                 if (this.cacheEnumsState[index] !== true) {
                     const oldIds = JSON.parse(this.cacheEnumsState[index].ids);
                     // unsubscribe unused IDs
                     for (let i = 0; i < oldIds.length; i++) {
                         if (!realIds.includes(oldIds[i])) {
-                            await this.props.socket.unsubscribeState(oldIds[i], this.memberStateChange);
+                            this.props.socket.unsubscribeState(oldIds[i], this.memberStateChange);
                         }
                     }
                     // subscribe on new IDs
                     for (let i = 0; i < realIds.length; i++) {
                         if (!oldIds.includes(realIds[i])) {
-                            // states[realIds[i]] = await this.props.socket.getState(realIds[i]);
                             await this.props.socket.subscribeState(realIds[i], this.memberStateChange);
                         }
                     }
                 } else {
                     for (let i = 0; i < realIds.length; i++) {
-                        // states[realIds[i]] = await this.props.socket.getState(realIds[i]);
                         await this.props.socket.subscribeState(realIds[i], this.memberStateChange);
                     }
                 }
-                this.cacheEnumsState[index] = { ids: JSON.stringify(ids), realIds, type: enumsSettings.type };
+                this.cacheEnumsState[index] = {
+                    ids: JSON.stringify(ids),
+                    realIds,
+                    type: enumsSettings?.type || 'boolean',
+                };
                 this.forceUpdate();
             }, 200);
-        } else {
+        } else if (typeof this.cacheEnumsState[index] === 'object') {
             realIds = this.cacheEnumsState[index].realIds;
         }
 
-        if (realIds.length === 0) {
+        if (!realIds?.length) {
             return null;
         }
-        if (!enumsSettings.type || enumsSettings.type === 'boolean' || enumsSettings.type === 'string') {
-            let val = this.state.states[realIds[0]];
-            for (let i = 1; i < realIds.length; i++) {
-                if (this.state.states[realIds[i]] !== val) {
-                    return 'uncertain';
-                }
-            }
-            return val;
-        } else {
-            let val = this.state.states[realIds[0]];
+        if (!enumsSettings?.type || enumsSettings.type === 'boolean' || enumsSettings.type === 'string') {
+            const val = this.state.states[realIds[0]];
             for (let i = 1; i < realIds.length; i++) {
                 if (this.state.states[realIds[i]] !== val) {
                     return 'uncertain';
@@ -1161,12 +1271,21 @@ class SceneMembersForm extends React.Component {
             }
             return val;
         }
+
+        const val = this.state.states[realIds[0]];
+        for (let i = 1; i < realIds.length; i++) {
+            if (this.state.states[realIds[i]] !== val) {
+                return 'uncertain';
+            }
+        }
+        return val;
     }
 
-    renderMember = (member, index) => {
-        let value = null;
+    renderMember(member: SceneMember, index: number): React.JSX.Element {
+        let value: React.JSX.Element | null = null;
         if (member.id && this.state.states[member.id] !== undefined && this.state.states[member.id] !== null) {
-            let _valStr = this.state.states[member.id].toString();
+            let _valStr: string =
+                this.state.states[member.id] === null ? 'null' : this.state.states[member.id]!.toString();
 
             if (_valStr === 'true') {
                 _valStr = 'TRUE';
@@ -1174,9 +1293,45 @@ class SceneMembersForm extends React.Component {
                 _valStr = 'FALSE';
             }
 
+            let setIfTrue = 0;
+            if (member.setIfTrueTolerance) {
+                if (member.setIfTrue && typeof member.setIfTrue === 'string') {
+                    if (member.setIfTrue.startsWith('{{')) {
+                        const m = member.setIfTrue.match(/^{{([^}]*)}}$/);
+                        if (m && this.state.states[m[1]] !== undefined && this.state.states[m[1]] !== null) {
+                            setIfTrue = parseFloat(this.state.states[m[1]] as string);
+                        } else {
+                            setIfTrue = 0;
+                        }
+                    } else {
+                        setIfTrue = parseFloat(member.setIfTrue);
+                    }
+                } else if (typeof member.setIfTrue === 'number') {
+                    setIfTrue = member.setIfTrue;
+                }
+            }
+            let setIfFalse = 0;
+            if (member.setIfFalseTolerance) {
+                if (member.setIfFalse && typeof member.setIfFalse === 'string') {
+                    if (member.setIfFalse.startsWith('{{')) {
+                        const m = member.setIfFalse.match(/^{{([^}]*)}}$/);
+                        if (m && this.state.states[m[1]] !== undefined && this.state.states[m[1]] !== null) {
+                            setIfFalse = parseFloat(this.state.states[m[1]] as string);
+                        } else {
+                            setIfFalse = 0;
+                        }
+                    } else {
+                        setIfFalse = parseFloat(member.setIfFalse);
+                    }
+                } else if (typeof member.setIfFalse === 'number') {
+                    setIfFalse = member.setIfFalse;
+                }
+            }
+
+            // TODO if member.setIfTrue.startsWith('{{') => read value from state
             if (
                 member.setIfTrueTolerance &&
-                Math.abs(this.state.states[member.id] - member.setIfTrue) <= member.setIfTrueTolerance
+                Math.abs((this.state.states[member.id] as number) - setIfTrue) <= member.setIfTrueTolerance
             ) {
                 value = (
                     <Box
@@ -1200,7 +1355,7 @@ class SceneMembersForm extends React.Component {
             } else if (
                 member.setIfFalse !== undefined &&
                 member.setIfFalseTolerance &&
-                Math.abs(this.state.states[member.id] - member.setIfFalse) <= member.setIfFalseTolerance
+                Math.abs((this.state.states[member.id] as number) - setIfFalse) <= member.setIfFalseTolerance
             ) {
                 value = (
                     <Box
@@ -1275,7 +1430,7 @@ class SceneMembersForm extends React.Component {
             }
         }
 
-        const varType = member.id ? this.state.objectTypes[member.id] : member.enums.type || 'boolean';
+        const varType = member.id ? this.state.objectTypes[member.id] : member.enums?.type || 'boolean';
 
         if (onFalseEnabled && setIfTrueVisible && setIfTrue === '' && (varType === 'number' || varType === 'boolean')) {
             setIfTrueVisible = false;
@@ -1365,9 +1520,10 @@ class SceneMembersForm extends React.Component {
                             onClick={() => {
                                 const suppressDeleteConfirm =
                                     window.localStorage.getItem('scenes.suppressDeleteConfirm');
+
                                 if (suppressDeleteConfirm) {
                                     if (Date.now() - parseInt(suppressDeleteConfirm, 10) < 300000) {
-                                        this.deleteSceneMember(member.id);
+                                        this.deleteSceneMember(member.id || index);
                                     } else {
                                         window.localStorage.removeItem('scenes.suppressDeleteConfirm');
                                         this.setState({ deleteDialog: member.id || index });
@@ -1382,7 +1538,7 @@ class SceneMembersForm extends React.Component {
                         <Switch
                             checked={!member.disabled}
                             onChange={e => {
-                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                                 members[index].disabled = !e.target.checked;
                                 this.setStateWithParent({ members });
                             }}
@@ -1405,26 +1561,32 @@ class SceneMembersForm extends React.Component {
                             <TextField
                                 variant="standard"
                                 fullWidth
-                                InputLabelProps={{ shrink: true }}
                                 label={I18n.t('Description')}
                                 value={member.desc || ''}
-                                InputProps={{
-                                    endAdornment: member.desc ? (
-                                        <IconButton
-                                            size="small"
-                                            style={styles.smallClearBtn}
-                                            onClick={() => {
-                                                const members = JSON.parse(JSON.stringify(this.state.members));
-                                                members[index].desc = null;
-                                                this.setStateWithParent({ members });
-                                            }}
-                                        >
-                                            <IconCancel />
-                                        </IconButton>
-                                    ) : undefined,
+                                slotProps={{
+                                    inputLabel: {
+                                        shrink: true,
+                                    },
+                                    input: {
+                                        endAdornment: member.desc ? (
+                                            <IconButton
+                                                size="small"
+                                                style={styles.smallClearBtn}
+                                                onClick={() => {
+                                                    const members: SceneMember[] = JSON.parse(
+                                                        JSON.stringify(this.state.members),
+                                                    );
+                                                    members[index].desc = null;
+                                                    this.setStateWithParent({ members });
+                                                }}
+                                            >
+                                                <IconCancel />
+                                            </IconButton>
+                                        ) : undefined,
+                                    },
                                 }}
                                 onChange={e => {
-                                    const members = JSON.parse(JSON.stringify(this.state.members));
+                                    const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                                     members[index].desc = e.target.value;
                                     this.setStateWithParent({ members });
                                 }}
@@ -1438,10 +1600,23 @@ class SceneMembersForm extends React.Component {
                                 >
                                     <InputLabel>{I18n.t('Value type')}</InputLabel>
                                     <Select
-                                        value={member.enums.type || 'boolean'}
+                                        value={member.enums?.type || 'boolean'}
                                         onChange={e => {
-                                            const members = JSON.parse(JSON.stringify(this.state.members));
-                                            members[index].enums.type = e.target.value;
+                                            const members: SceneMember[] = JSON.parse(
+                                                JSON.stringify(this.state.members),
+                                            );
+                                            members[index].enums = members[index].enums || {
+                                                funcs: [],
+                                                rooms: [],
+                                                others: [],
+                                                exclude: [],
+                                                type: 'boolean',
+                                                delay: null,
+                                            };
+                                            members[index].enums.type = e.target.value as
+                                                | 'boolean'
+                                                | 'number'
+                                                | 'string';
                                             this.setStateWithParent({ members });
                                         }}
                                     >
@@ -1453,27 +1628,49 @@ class SceneMembersForm extends React.Component {
                                 <TextField
                                     variant="standard"
                                     style={{ width: 'calc(50% - 8px)', marginLeft: 8 }}
-                                    InputLabelProps={{ shrink: true }}
                                     label={I18n.t('Delay between commands (ms)')}
-                                    value={member.enums.delay || 0}
+                                    value={member.enums?.delay || 0}
                                     type="number"
-                                    InputProps={{
-                                        endAdornment: member.enums.delay ? (
-                                            <IconButton
-                                                size="small"
-                                                style={styles.smallClearBtn}
-                                                onClick={() => {
-                                                    const members = JSON.parse(JSON.stringify(this.state.members));
-                                                    members[index].enums.delay = null;
-                                                    this.setStateWithParent({ members });
-                                                }}
-                                            >
-                                                <IconCancel />
-                                            </IconButton>
-                                        ) : undefined,
+                                    slotProps={{
+                                        inputLabel: {
+                                            shrink: true,
+                                        },
+                                        input: {
+                                            endAdornment: member.enums?.delay ? (
+                                                <IconButton
+                                                    size="small"
+                                                    style={styles.smallClearBtn}
+                                                    onClick={() => {
+                                                        const members: SceneMember[] = JSON.parse(
+                                                            JSON.stringify(this.state.members),
+                                                        );
+                                                        members[index].enums = members[index].enums || {
+                                                            funcs: [],
+                                                            rooms: [],
+                                                            others: [],
+                                                            exclude: [],
+                                                            type: 'boolean',
+                                                            delay: null,
+                                                        };
+                                                        members[index].enums.delay = null;
+                                                        this.setStateWithParent({ members });
+                                                    }}
+                                                >
+                                                    <IconCancel />
+                                                </IconButton>
+                                            ) : undefined,
+                                        },
                                     }}
                                     onChange={e => {
-                                        const members = JSON.parse(JSON.stringify(this.state.members));
+                                        const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
+                                        members[index].enums = members[index].enums || {
+                                            funcs: [],
+                                            rooms: [],
+                                            others: [],
+                                            exclude: [],
+                                            type: 'boolean',
+                                            delay: null,
+                                        };
                                         members[index].enums.delay = e.target.value;
                                         this.setStateWithParent({ members });
                                     }}
@@ -1498,21 +1695,29 @@ class SceneMembersForm extends React.Component {
                                         <TextField
                                             variant="standard"
                                             fullWidth
-                                            InputLabelProps={{ shrink: true }}
                                             label={I18n.t('Delay (ms)')}
                                             title={I18n.t(
                                                 'Additionally to the interval between commands. E.g. if the interval %s, this state will be set after %s ms from scene start',
                                                 this.props.intervalBetweenCommands,
                                                 this.props.intervalBetweenCommands * index + (member.delay || 0),
                                             )}
+                                            slotProps={{
+                                                inputLabel: {
+                                                    shrink: true,
+                                                },
+                                                htmlInput: {
+                                                    min: 0,
+                                                },
+                                            }}
                                             helperText={
                                                 stacked ? I18n.t('from previous state') : I18n.t('from start of scene')
                                             }
                                             value={member.delay || 0}
-                                            min={0}
                                             type="number"
                                             onChange={e => {
-                                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                                const members: SceneMember[] = JSON.parse(
+                                                    JSON.stringify(this.state.members),
+                                                );
                                                 members[index].delay = parseInt(e.target.value, 10);
                                                 this.setStateWithParent({ members });
                                             }}
@@ -1552,7 +1757,9 @@ class SceneMembersForm extends React.Component {
                                                 <Checkbox
                                                     checked={member.stopAllDelays}
                                                     onChange={e => {
-                                                        const members = JSON.parse(JSON.stringify(this.state.members));
+                                                        const members: SceneMember[] = JSON.parse(
+                                                            JSON.stringify(this.state.members),
+                                                        );
                                                         members[index].stopAllDelays = e.target.checked;
                                                         this.setStateWithParent({ members });
                                                     }}
@@ -1580,7 +1787,9 @@ class SceneMembersForm extends React.Component {
                                         <Checkbox
                                             checked={!!member.doNotOverwrite}
                                             onChange={e => {
-                                                const members = JSON.parse(JSON.stringify(this.state.members));
+                                                const members: SceneMember[] = JSON.parse(
+                                                    JSON.stringify(this.state.members),
+                                                );
                                                 members[index].doNotOverwrite = e.target.checked;
                                                 this.setStateWithParent({ members });
                                             }}
@@ -1606,9 +1815,9 @@ class SceneMembersForm extends React.Component {
                 )}
             </Paper>
         );
-    };
+    }
 
-    onWriteScene(val) {
+    onWriteScene(val: boolean | number | string): void {
         if (val === 'true') {
             val = true;
         } else if (val === 'false') {
@@ -1620,18 +1829,24 @@ class SceneMembersForm extends React.Component {
         this.props.socket.setState(this.props.sceneId, val).catch(e => this.props.showError(e));
     }
 
-    getItemStyle = (isDragging, draggableStyle) => ({
-        // some basic styles to make the items look a bit nicer
-        userSelect: 'none',
-        background: isDragging ? 'lightgreen' : 'inherit',
+    static getItemStyle(isDragging: boolean, draggableStyle: React.CSSProperties): React.CSSProperties {
+        return {
+            // some basic styles to make the items look a bit nicer
+            userSelect: 'none',
+            backgroundColor: isDragging ? 'lightgreen' : 'inherit',
 
-        // styles we need to apply on draggable
-        ...draggableStyle,
-    });
+            // styles we need to apply on draggable
+            ...draggableStyle,
+        };
+    }
 
-    getListStyle = isDraggingOver => ({ background: isDraggingOver ? 'lightblue' : 'inherit' });
+    static getListStyle(isDraggingOver: boolean): React.CSSProperties {
+        return {
+            background: isDraggingOver ? 'lightblue' : 'inherit',
+        };
+    }
 
-    renderMessageDialog() {
+    renderMessageDialog(): React.JSX.Element | null {
         if (!this.state.message) {
             return null;
         }
@@ -1645,8 +1860,8 @@ class SceneMembersForm extends React.Component {
         );
     }
 
-    saveActualState(isForTrue) {
-        this.props.socket
+    saveActualState(isForTrue: boolean): void {
+        void this.props.socket
             .sendTo(this.state.engineId, 'save', { sceneId: this.props.sceneId, isForTrue: isForTrue || false })
             .then(result => {
                 if (result.error) {
@@ -1662,7 +1877,7 @@ class SceneMembersForm extends React.Component {
             });
     }
 
-    renderTrueFalseDialog() {
+    renderTrueFalseDialog(): React.JSX.Element | null {
         if (!this.state.askTrueFalse) {
             return null;
         }
@@ -1709,7 +1924,7 @@ class SceneMembersForm extends React.Component {
         );
     }
 
-    render = () => {
+    render(): (React.JSX.Element | null)[] {
         let sceneState = this.state.states[this.props.sceneId];
         if (this.state.selectedSceneChanged) {
             sceneState = I18n.t('Save scene before test');
@@ -1718,9 +1933,12 @@ class SceneMembersForm extends React.Component {
         }
 
         if (this.engineId !== this.state.engineId) {
-            this.engineId && this.props.socket.unsubscribeState(`${this.engineId}.alive`, this.memberStateChange);
-            this.state.engineId &&
-                this.props.socket.subscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
+            if (this.engineId) {
+                this.props.socket.unsubscribeState(`${this.engineId}.alive`, this.memberStateChange);
+            }
+            if (this.state.engineId) {
+                void this.props.socket.subscribeState(`${this.state.engineId}.alive`, this.memberStateChange);
+            }
             this.engineId = this.state.engineId;
         }
 
@@ -1740,7 +1958,7 @@ class SceneMembersForm extends React.Component {
             );
         }
 
-        let result = (
+        const result = (
             <div
                 key="SceneMembersForm"
                 style={{ ...(!this.props.oneColumn ? styles.height : undefined), ...styles.columnContainer }}
@@ -1766,7 +1984,7 @@ class SceneMembersForm extends React.Component {
                                 !this.state.virtualGroup && sceneState === false && styles.sceneFalse,
                                 !this.state.virtualGroup && sceneState === 'uncertain' && styles.sceneUncertain,
                             )}
-                            style={takeState ? { cursor: 'pointer' } : null}
+                            style={takeState ? { cursor: 'pointer' } : undefined}
                             onClick={
                                 takeState
                                     ? () => {
@@ -1871,7 +2089,7 @@ class SceneMembersForm extends React.Component {
                             <div
                                 {...provided.droppableProps}
                                 ref={provided.innerRef}
-                                style={{ ...styles.scroll, ...this.getListStyle(snapshot.isDraggingOver) }}
+                                style={{ ...styles.scroll, ...SceneMembersForm.getListStyle(snapshot.isDraggingOver) }}
                             >
                                 {this.state.members.map((member, i) => (
                                     <Draggable
@@ -1884,9 +2102,9 @@ class SceneMembersForm extends React.Component {
                                                 ref={provided.innerRef}
                                                 {...provided.draggableProps}
                                                 {...provided.dragHandleProps}
-                                                style={this.getItemStyle(
+                                                style={SceneMembersForm.getItemStyle(
                                                     snapshot.isDragging,
-                                                    provided.draggableProps.style,
+                                                    provided.draggableProps.style as React.CSSProperties,
                                                 )}
                                             >
                                                 {this.renderMember(member, i)}
@@ -1911,27 +2129,7 @@ class SceneMembersForm extends React.Component {
             this.renderMessageDialog(),
             this.renderTrueFalseDialog(),
         ];
-    };
+    }
 }
-
-SceneMembersForm.propTypes = {
-    socket: PropTypes.object,
-    scene: PropTypes.object,
-    updateSceneMembers: PropTypes.func,
-    sceneId: PropTypes.string,
-    onFalseEnabled: PropTypes.bool,
-    virtualGroup: PropTypes.bool,
-    aggregation: PropTypes.string,
-    theme: PropTypes.object.isRequired,
-    members: PropTypes.array,
-    ts: PropTypes.number,
-    easy: PropTypes.bool,
-    sceneEnabled: PropTypes.bool,
-    selectedSceneChanged: PropTypes.bool,
-    intervalBetweenCommands: PropTypes.number,
-    engineId: PropTypes.string,
-    oneColumn: PropTypes.bool,
-    showError: PropTypes.func,
-};
 
 export default SceneMembersForm;
