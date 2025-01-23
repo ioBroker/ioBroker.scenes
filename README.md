@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 4.0.1 (2025-01-23)
 * (bluefox) Adapter was migrated to TypeScript
 * (bluefox) Corrected error with the Select ID dialog
 

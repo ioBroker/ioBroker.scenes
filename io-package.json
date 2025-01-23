@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "news": {
+      "4.0.1": {
+        "en": "Adapter was migrated to TypeScript\nCorrected error with the Select ID dialog",
+        "de": "Adapter wurde auf TypeScript migriert\nFehler behoben mit dem Dialog ID auswählen",
+        "ru": "Адаптер был перенесен на TypeScript\nИсправлена ошибка с диалогом Select ID",
+        "pt": "Adapter foi migrado para TypeScript\nErro corrigido com a caixa de diálogo Selecionar ID",
+        "nl": "Adapter is gemigreerd naar TypeScript\nFout gecorrigeerd met het dialoogvenster ID selecteren",
+        "fr": "L'adaptateur a été migré vers TypeScript\nErreur corrigée avec la boîte de dialogue Select ID",
+        "it": "L'adattatore è stato migrato a TypeScript\nErrore corretto con la finestra di dialogo Seleziona ID",
+        "es": "Adaptador fue migrado a TipoScript\nError corregido con el diálogo Seleccionar ID",
+        "pl": "Adapter został przeniesiony do TypeScript\nSkorygowany błąd przy pomocy okna dialogowego Wybierz ID",
+        "uk": "Адаптер був мігрований до TypeScript\nВиправлена помилка з діалогове вікно ідентифікатора Виберіть",
+        "zh-cn": "适配器已迁移到类型脚本\n选择 ID 对话框纠正错误"
+      },
       "3.2.4": {
         "en": "Migrated to vite\nPackages updated",
         "de": "Gewandert zu Vite\nPakete aktualisiert",
