@@ -29,6 +29,7 @@
     "@alcalzone/release-script-plugin-license": "^3.7.0",
     "@iobroker/build-tools": "^2.0.14",
     "@iobroker/eslint-config": "^1.0.0",
+    "@iobroker/legacy-testing": "^2.0.2",
     "@iobroker/testing": "^5.0.2",
     "@iobroker/types": "^7.0.6",
     "@types/node-schedule": "^2.1.7",
