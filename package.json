@@ -30,6 +30,8 @@
     "@iobroker/build-tools": "^2.0.14",
     "@iobroker/eslint-config": "^1.0.0",
     "@iobroker/testing": "^5.0.2",
+    "@iobroker/types": "^7.0.6",
+    "@types/node-schedule": "^2.1.7",
     "chai": "^4.5.0",
     "mocha": "^11.1.0"
   },
