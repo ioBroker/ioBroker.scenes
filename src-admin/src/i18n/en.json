@@ -31,7 +31,7 @@
     "Trigger ID": "Trigger ID",
     "Condition": "Condition",
     "on update": "on update",
-    "Value": "Value",
+    "Value": "",
     "On time (CRON expression)": "On time (CRON expression)",
     "Trigger for FALSE": "Trigger for FALSE",
     "Off time (CRON expression)": "Off time (CRON expression)",
