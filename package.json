@@ -31,7 +31,7 @@
     "@iobroker/eslint-config": "^1.0.0",
     "@iobroker/legacy-testing": "^2.0.2",
     "@iobroker/testing": "^5.0.4",
-    "@iobroker/types": "^7.0.6",
+    "@iobroker/types": "^7.0.7",
     "@types/node-schedule": "^2.1.7",
     "chai": "^4.5.0",
     "mocha": "^11.1.0"
