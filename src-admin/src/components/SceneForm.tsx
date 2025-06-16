@@ -237,9 +237,13 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     variant="standard"
                                     inputRef={this.inputs.Trigger.ref}
                                     fullWidth
-                                    InputLabelProps={{ shrink: true }}
+                                    slotProps={{
+                                        inputLabel: {
+                                            shrink: true,
+                                        },
+                                    }}
                                     label={I18n.t('Trigger ID')}
-                                    value={on.trigger.id}
+                                    value={on.trigger.id || ''}
                                     onFocus={() => this.saveCursorPosition('Trigger')}
                                     onKeyDown={() => this.saveCursorPosition('Trigger')}
                                     onChange={() => this.saveCursorPosition('Trigger')}
@@ -304,7 +308,11 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     variant="standard"
                                     inputRef={this.inputs.Value.ref}
                                     fullWidth
-                                    InputLabelProps={{ shrink: true }}
+                                    slotProps={{
+                                        inputLabel: {
+                                            shrink: true,
+                                        },
+                                    }}
                                     label={I18n.t('Value')}
                                     value={on.trigger.value || ''}
                                     onFocus={() => this.saveCursorPosition('Value')}
@@ -333,7 +341,11 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                         variant="standard"
                         inputRef={this.inputs.Cron.ref}
                         style={{ width: 'calc(100% - 52px)' }}
-                        InputLabelProps={{ shrink: true }}
+                        slotProps={{
+                            inputLabel: {
+                                shrink: true,
+                            },
+                        }}
                         label={
                             name === 'onTrue'
                                 ? I18n.t('On time (CRON expression)')
@@ -417,9 +429,13 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                             variant="standard"
                             inputRef={this.inputs.Name.ref}
                             fullWidth
-                            InputLabelProps={{ shrink: true }}
+                            slotProps={{
+                                inputLabel: {
+                                    shrink: true,
+                                },
+                            }}
                             label={I18n.t('Scene name')}
-                            value={this.state.common.name}
+                            value={this.state.common.name || ''}
                             onFocus={() => this.saveCursorPosition('Name')}
                             onKeyDown={() => this.saveCursorPosition('Name')}
                             onChange={e => {
@@ -435,9 +451,13 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                             variant="standard"
                             inputRef={this.inputs.Description.ref}
                             fullWidth
-                            InputLabelProps={{ shrink: true }}
+                            slotProps={{
+                                inputLabel: {
+                                    shrink: true,
+                                },
+                            }}
                             label={I18n.t('Scene description')}
-                            value={this.state.common.desc}
+                            value={this.state.common.desc || ''}
                             onFocus={() => this.saveCursorPosition('Description')}
                             onKeyDown={() => this.saveCursorPosition('Description')}
                             onChange={e => {
@@ -465,7 +485,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     <InputLabel shrink>{I18n.t('Instance')}</InputLabel>
                                     <Select
                                         variant="standard"
-                                        value={this.state.common.engine}
+                                        value={this.state.common.engine || this.props.instances[0] || ''}
                                         onChange={e => {
                                             const common = JSON.parse(JSON.stringify(this.state.common));
                                             common.engine = e.target.value;
@@ -528,7 +548,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     label={I18n.t('Virtual group')}
                                     control={
                                         <Checkbox
-                                            checked={this.state.native.virtualGroup}
+                                            checked={!!this.state.native.virtualGroup}
                                             onChange={e => {
                                                 const native: SceneConfig = JSON.parse(
                                                     JSON.stringify(this.state.native),
@@ -551,7 +571,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                         label={I18n.t('Set value if false')}
                                         control={
                                             <Checkbox
-                                                checked={this.state.native.onFalse.enabled}
+                                                checked={!!this.state.native.onFalse.enabled}
                                                 onChange={e => {
                                                     const native: SceneConfig = JSON.parse(
                                                         JSON.stringify(this.state.native),
@@ -614,7 +634,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     label={I18n.t('Easy mode')}
                                     control={
                                         <Checkbox
-                                            checked={this.state.native.easy}
+                                            checked={!!this.state.native.easy}
                                             onChange={e => {
                                                 const native: SceneConfig = JSON.parse(
                                                     JSON.stringify(this.state.native),

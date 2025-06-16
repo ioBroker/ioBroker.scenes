@@ -133,9 +133,6 @@ const styles: Record<string, any> = {
         fontStyle: 'italic',
         marginTop: -7,
     },
-    toolbarButtons: {
-        marginRight: 8,
-    },
     settingsBackground: (theme: IobTheme): React.CSSProperties => ({
         background: theme.palette.mode === 'dark' ? '#3a3a3a' : '#eee',
     }),
@@ -1105,12 +1102,16 @@ class App extends GenericApp<AppProps, AppState> {
             <Toolbar
                 variant="dense"
                 key="bottomToolbar"
+                style={{
+                    padding: 0,
+                    gap: 8,
+                    marginRight: 8,
+                }}
                 sx={{ '& .MuiToolbar-gutters': styles.noGutters }}
             >
                 <div style={{ flexGrow: 1 }} />
                 {this.state.selectedSceneChanged ? (
                     <Button
-                        sx={styles.toolbarButtons}
                         variant="contained"
                         color="secondary"
                         onClick={() => this.writeScene()}
@@ -1123,7 +1124,6 @@ class App extends GenericApp<AppProps, AppState> {
                 {this.state.selectedSceneChanged ? (
                     <Button
                         color="grey"
-                        sx={styles.toolbarButtons}
                         variant="contained"
                         startIcon={<IconCancel />}
                         onClick={() => this.refreshData(this.state.selectedSceneId)}
@@ -1317,9 +1317,9 @@ class App extends GenericApp<AppProps, AppState> {
                     }}
                     gutterClassName={this.state.themeName === 'dark' ? `Dark visGutter` : `Light visGutter`}
                 >
-                    <div style={styles.heightMinus2Toolbars}>
+                    <div style={{ height: '100%' }}>
                         {this.renderSceneTopToolbar(false)}
-                        <div style={{ ...styles.height, paddingLeft: 8, paddingRight: 8 }}>
+                        <div style={{ height: 'calc(100% - 96px - 16px)', paddingLeft: 8, paddingRight: 8 }}>
                             {this.state.selectedSceneId ? this.renderSceneSettings() : null}
                         </div>
                         {this.renderSceneBottomToolbar()}

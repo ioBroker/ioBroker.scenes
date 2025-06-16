@@ -64,7 +64,7 @@ const styles: Record<string, any> = {
         fontSize: 'initial',
         fontWeight: 'initial',
         margin: `0 8px`,
-        textAlign: 'right',
+        textAlign: 'center',
         whiteSpace: 'nowrap',
         maxWidth: 300,
         overflow: 'hidden',
