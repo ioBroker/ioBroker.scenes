@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "news": {
+      "4.0.2": {
+        "en": "Small improvements for layout",
+        "de": "Kleine Verbesserungen im Layout",
+        "ru": "Небольшие улучшения для макета",
+        "pt": "Pequenas melhorias para a disposição",
+        "nl": "Kleine verbeteringen voor lay-out",
+        "fr": "Petites améliorations pour la mise en page",
+        "it": "Piccoli miglioramenti per il layout",
+        "es": "Pequeñas mejoras para el diseño",
+        "pl": "Niewielka poprawa układu",
+        "uk": "Невеликі поліпшення для планування",
+        "zh-cn": "对布局的小改进"
+      },
       "4.0.1": {
         "en": "Adapter was migrated to TypeScript\nCorrected error with the Select ID dialog",
         "de": "Adapter wurde auf TypeScript migriert\nFehler behoben mit dem Dialog ID auswählen",
@@ -69,19 +82,6 @@
         "zh-cn": "如果配置文件为空, 已更正错误"
       },
       "3.0.3": {
-        "en": "Saving of the scene states from GUI was implemented",
-        "de": "Das Speichern der Szenenzustände von GUI wurde implementiert",
-        "ru": "Было реализовано спасение состояния сцены из GUI",
-        "pt": "A economia dos estados de cena da GUI foi implementada",
-        "nl": "Het opslaan van de scène states van GUI werd geïmplementeerd",
-        "fr": "Sauver les états de scène de l'interface utilisateur",
-        "it": "Il salvataggio degli stati della scena dalla GUI è stato implementato",
-        "es": "Ahorro de los estados de escena de GUI fue implementado",
-        "pl": "Uratowanie stanów sceny z GUI zostało wdrożone",
-        "uk": "Збереження сценічних станів з GUI було реалізовано",
-        "zh-cn": "从图形界面中保存场景状态已执行"
-      },
-      "3.0.2": {
         "en": "Saving of the scene states from GUI was implemented",
         "de": "Das Speichern der Szenenzustände von GUI wurde implementiert",
         "ru": "Было реализовано спасение состояния сцены из GUI",

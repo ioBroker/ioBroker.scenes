@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 4.0.2 (2025-06-16)
 * (bluefox) Small improvements for layout
 
 ### 4.0.1 (2025-01-23)
