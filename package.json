@@ -12,7 +12,7 @@
     "scenes"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
     "@iobroker/types": "^7.0.7",
     "@types/node-schedule": "^2.1.7",
     "chai": "^4.5.0",
-    "mocha": "^11.6.0"
+    "mocha": "^11.7.1"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.scenes/issues"

@@ -29,19 +29,6 @@
         "uk": "Адаптер був мігрований до TypeScript\nВиправлена помилка з діалогове вікно ідентифікатора Виберіть",
         "zh-cn": "适配器已迁移到类型脚本\n选择 ID 对话框纠正错误"
       },
-      "3.2.4": {
-        "en": "Migrated to vite\nPackages updated",
-        "de": "Gewandert zu Vite\nPakete aktualisiert",
-        "ru": "Migrated to vite\nОбновленные пакеты",
-        "pt": "Migrado para vite\nPacotes atualizados",
-        "nl": "Gemigreerd om te vliegen\nPakketten bijgewerkt",
-        "fr": "Migrés en rite\nMise à jour des paquets",
-        "it": "Migrato a vite\nPacchetti aggiornati",
-        "es": "Migrated to vite\nPaquetes actualizados",
-        "pl": "Migrant to vite\nAktualizacja pakietów",
-        "uk": "Міграція на віте\nПакети оновлені",
-        "zh-cn": "迁移到葡萄园\n更新软件包"
-      },
       "3.2.3": {
         "en": "Packages updated",
         "de": "Pakete aktualisiert",
@@ -95,7 +82,6 @@
         "zh-cn": "从图形界面中保存场景状态已执行"
       }
     },
-    "title": "Scenes",
     "titleLang": {
       "en": "Scenes",
       "de": "Szenen",
@@ -105,7 +91,9 @@
       "fr": "Scénarios",
       "it": "scenari",
       "es": "Escenarios",
-      "pl": "Scenariusze"
+      "pl": "Scenariusze",
+      "uk": "Сценарії",
+      "zh-cn": "场景"
     },
     "desc": {
       "en": "This adapter allows to create scenes from several datapoints.",
@@ -116,7 +104,9 @@
       "fr": "Cet adaptateur permet de créer des scènes à partir de plusieurs points de données",
       "it": "Questo adattatore consente di creare scene da diversi datapoint",
       "es": "Este adaptador permite crear escenas desde varios puntos de datos",
-      "pl": "Ten adapter umożliwia tworzenie scen z kilku punktów danych"
+      "pl": "Ten adapter umożliwia tworzenie scen z kilku punktów danych",
+      "uk": "Цей адаптер дозволяє створювати сцени з декількох точок даних",
+      "zh-cn": "此适配器允许从多个数据点创建场景"
     },
     "authors": [
       "bluefox <dogafox@gmail.com>"
