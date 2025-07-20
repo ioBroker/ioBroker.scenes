@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "4.0.2",
+    "version": "4.0.3",
     "news": {
+      "4.0.3": {
+        "en": "Canceled the cron tasks on the instance stop",
+        "de": "Die Cron-Aufgaben auf der Instanz stoppen",
+        "ru": "Отменены задачи cron на остановке экземпляра",
+        "pt": "Cancelou as tarefas do cron na parada da instância",
+        "nl": "Annuleerde de cron taken op de instantie stop",
+        "fr": "Annulé les tâches de cron sur l'arrêt de l'instance",
+        "it": "Annullato i compiti del cron sull'arresto dell'istanza",
+        "es": "Cancelado las tareas del cron en la parada de instancia",
+        "pl": "Anulował zadania cron na instance stop",
+        "uk": "Скасовано завдання синхрону на зупинці екземпляра",
+        "zh-cn": "取消实例停止的 cron 任务"
+      },
       "4.0.2": {
         "en": "Small improvements for layout",
         "de": "Kleine Verbesserungen im Layout",

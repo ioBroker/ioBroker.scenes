@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 4.0.3 (2025-07-20)
 * (agross) Canceled the cron tasks on the instance stop
 
 ### 4.0.2 (2025-06-16)

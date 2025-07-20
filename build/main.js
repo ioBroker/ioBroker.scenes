@@ -337,10 +337,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
         this.checkTimers = {};
         Object.keys(this.timers).forEach(id => this.timers[id].forEach(tt => tt?.timer && clearTimeout(tt.timer)));
         this.timers = {};
-        Object.keys(this.cronTasks).forEach(id => {
-            this.cronTasks[`${id}_true`]?.cancel();
-            this.cronTasks[`${id}_false`]?.cancel();
-        });
+        Object.keys(this.cronTasks).forEach(id => this.cronTasks[id]?.cancel());
         if (!this.subscription) {
             this.unsubscribeForeignStates('*');
         }
