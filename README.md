@@ -152,6 +152,9 @@ sendTo(
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (agross) Canceled the cron tasks on the instance stop
+
 ### 4.0.2 (2025-06-16)
 * (bluefox) Small improvements for layout
 
