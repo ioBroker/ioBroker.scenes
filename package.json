@@ -34,7 +34,7 @@
     "@iobroker/types": "^7.0.7",
     "@types/node-schedule": "^2.1.8",
     "chai": "^4.5.0",
-    "mocha": "^11.7.1"
+    "mocha": "^11.7.3"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.scenes/issues"
