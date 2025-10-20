@@ -784,8 +784,15 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                 multiSelect={false}
                 title={I18n.t('Select for ') + (this.state.showSelectValueIdDialog === 'true' ? 'TRUE' : 'FALSE')}
                 selected={setValue as string}
-                onOk={id => {
-                    if (id) {
+                onOk={_id => {
+                    if (_id) {
+                        let id: string;
+                        if (Array.isArray(_id)) {
+                            id = _id[0];
+                        } else {
+                            id = _id;
+                        }
+
                         const index = this.state.showSelectValueIdDialogFor!;
                         const members: SceneMember[] = JSON.parse(JSON.stringify(this.state.members));
                         if (this.state.showSelectValueIdDialog === 'true') {

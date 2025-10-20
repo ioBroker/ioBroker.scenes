@@ -152,6 +152,9 @@ sendTo(
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Corrected the selection of multiple IDs in the scene editor
+
 ### 4.0.3 (2025-07-20)
 * (agross) Canceled the cron tasks on the instance stop
 
