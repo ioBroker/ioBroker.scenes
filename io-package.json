@@ -164,8 +164,7 @@
         "uk": "Сцени",
         "zh-cn": "场景"
       },
-      "singleton": true,
-      "fa-icon": "theaters"
+      "singleton": true
     },
     "plugins": {
       "sentry": {
