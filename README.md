@@ -152,6 +152,9 @@ sendTo(
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+- (iobroker-bot) Adapter requires node.js >= 20 now.
 ### 4.0.4 (2025-10-20)
 * (bluefox) Corrected the selection of multiple IDs in the scene editor
 
