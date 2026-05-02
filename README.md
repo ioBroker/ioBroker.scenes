@@ -152,6 +152,9 @@ sendTo(
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22 now
+
 ### 4.0.4 (2025-10-20)
 * (bluefox) Corrected the selection of multiple IDs in the scene editor
 
