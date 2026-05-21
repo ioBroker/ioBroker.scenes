@@ -152,6 +152,10 @@ sendTo(
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
+
 ### 4.0.4 (2025-10-20)
 * (bluefox) Corrected the selection of multiple IDs in the scene editor
 
