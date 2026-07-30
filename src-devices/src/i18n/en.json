@@ -1,0 +1,18 @@
+{
+    "sc_Scene": "Scene",
+    "sc_Scene state": "Scene state",
+    "sc_Name": "Name",
+    "sc_Icon": "Icon",
+    "sc_Active icon": "Active icon",
+    "sc_Confirmation": "Confirmation",
+    "sc_No confirmation": "None",
+    "sc_Confirm dialog": "Confirm dialog",
+    "sc_PIN code": "PIN code",
+    "sc_Confirmation text": "Confirmation text",
+    "sc_PIN": "PIN",
+    "sc_Are you sure": "Are you sure you want to activate this scene?",
+    "sc_Wrong PIN": "Wrong PIN",
+    "sc_Cancel": "Cancel",
+    "sc_Size": "Size",
+    "sc_Color": "Color"
+}

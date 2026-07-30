@@ -14,7 +14,7 @@ import {
     Button,
 } from '@mui/material';
 
-import { Utils, I18n, DialogSelectID, Cron, type IobTheme, type AdminConnection } from '@iobroker/adapter-react-v5';
+import { Utils, I18n, DialogSelectID, Cron, type IobTheme, type AdminConnection } from '@iobroker/gui-components';
 import type { SceneCommon, SceneConfig, SceneObject } from '../types';
 
 const styles: Record<string, any> = {
@@ -30,10 +30,22 @@ const styles: Record<string, any> = {
     columnContainer: {
         display: 'flex',
         flexDirection: 'column',
-        marginTop: 16,
+        // padding, not margin: a top margin here collapsed out of the scroll
+        // container and had to be subtracted from the height again, which left a
+        // dead 16px strip above the Save/Cancel toolbar
+        paddingTop: 16,
+        boxSizing: 'border-box',
+    },
+    // the switch is taller than the heading's line box; as a float it overflowed
+    // the h4 and crowded the element below, so the heading is a flex row instead
+    headingRow: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 8,
     },
     right: {
-        float: 'right',
+        marginLeft: 'auto',
     },
     scroll: {
         overflowY: 'auto',
@@ -49,6 +61,12 @@ const styles: Record<string, any> = {
     }),
     marginBottom2: {
         mb: '4px',
+    },
+    // CRON input + "..." button on one baseline, without magic width offsets
+    cronRow: {
+        display: 'flex',
+        alignItems: 'flex-end',
+        gap: '4px',
     },
     p: {
         margin: `8px 0`,
@@ -149,7 +167,8 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
     };
 
     renderSelectIdDialog(): React.JSX.Element | null {
-        return this.state.showDialog ? (
+        const onOk = this.state.showDialog;
+        return onOk ? (
             <DialogSelectID
                 key="selectDialog"
                 imagePrefix="../.."
@@ -157,7 +176,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                 dialogName="memberEdit"
                 title={I18n.t('Select for ')}
                 selected=""
-                onOk={this.state.showDialog}
+                onOk={selected => selected !== undefined && onOk(selected)}
                 onClose={() => this.setState({ showDialog: null })}
                 theme={this.props.theme}
             />
@@ -182,7 +201,12 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                     key="switch"
                     sx={styles.editItem}
                 >
-                    <h4 style={this.state.native.onFalse.enabled ? { marginTop: 0 } : undefined}>
+                    <h4
+                        style={{
+                            ...styles.headingRow,
+                            ...(this.state.native.onFalse.enabled ? { marginTop: 0 } : undefined),
+                        }}
+                    >
                         {on === this.state.native.onTrue
                             ? this.state.native.onFalse.enabled
                                 ? I18n.t('Trigger for TRUE')
@@ -229,10 +253,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                             container
                             spacing={1}
                         >
-                            <Grid
-                                item
-                                xs={8}
-                            >
+                            <Grid size={{ xs: 12, sm: 8 }}>
                                 <TextField
                                     variant="standard"
                                     inputRef={this.inputs.Trigger.ref}
@@ -268,25 +289,18 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                 />
                             </Grid>
 
-                            <Grid
-                                item
-                                xs={2}
-                            >
-                                <FormControl variant="standard">
+                            <Grid size={{ xs: 6, sm: 2 }}>
+                                <FormControl
+                                    fullWidth
+                                    variant="standard"
+                                >
                                     <InputLabel shrink>{I18n.t('Condition')}</InputLabel>
                                     <Select
                                         variant="standard"
                                         value={on.trigger.condition || '=='}
                                         onChange={e => {
                                             const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
-                                            native[name].trigger.condition = e.target.value as
-                                                | '=='
-                                                | '!='
-                                                | '<'
-                                                | '<='
-                                                | '>'
-                                                | '>='
-                                                | 'update';
+                                            native[name].trigger.condition = e.target.value;
                                             this.setStateWithParent({ native });
                                         }}
                                     >
@@ -300,10 +314,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     </Select>
                                 </FormControl>
                             </Grid>
-                            <Grid
-                                item
-                                xs={2}
-                            >
+                            <Grid size={{ xs: 6, sm: 2 }}>
                                 <TextField
                                     variant="standard"
                                     inputRef={this.inputs.Value.ref}
@@ -334,13 +345,14 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                     sx={Utils.getStyle(
                         this.props.theme,
                         styles.editItem,
+                        styles.cronRow,
                         this.state.native.onFalse.enabled ? styles.marginBottom2 : undefined,
                     )}
                 >
                     <TextField
                         variant="standard"
                         inputRef={this.inputs.Cron.ref}
-                        style={{ width: 'calc(100% - 52px)' }}
+                        style={{ flexGrow: 1, minWidth: 0 }}
                         slotProps={{
                             inputLabel: {
                                 shrink: true,
@@ -362,7 +374,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                         }}
                     />
                     <Button
-                        style={{ minWidth: 48, marginLeft: 4, marginTop: 10 }}
+                        style={{ minWidth: 48, flexShrink: 0 }}
                         variant="contained"
                         onClick={() => this.setState({ showCronDialog: name || 'onFalse' })}
                     >
@@ -381,7 +393,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
     componentDidUpdate(): void {
         // If there was a request to update the selection via setState...
         // Update the selection.
-        Object.keys(this.inputs).forEach((name: 'Name' | 'Trigger' | 'Value' | 'Cron' | 'Description'): void => {
+        (Object.keys(this.inputs) as ('Name' | 'Trigger' | 'Value' | 'Cron' | 'Description')[]).forEach(name => {
             if (this.inputs[name].ref.current) {
                 if (this.inputs[name].ref.current.selectionStart !== this.inputs[name].start) {
                     this.inputs[name].ref.current.selectionStart = this.inputs[name].start;
@@ -420,7 +432,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                 key="sceneForm"
                 style={{
                     ...styles.columnContainer,
-                    ...(!this.props.oneColumn ? { height: 'calc(100% - 16px)' } : undefined),
+                    ...(!this.props.oneColumn ? { height: '100%' } : undefined),
                 }}
             >
                 <Box style={styles.scroll}>
@@ -473,11 +485,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                             container
                             spacing={1}
                         >
-                            <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                            >
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <FormControl
                                     fullWidth
                                     variant="standard"
@@ -503,11 +511,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     </Select>
                                 </FormControl>
                             </Grid>
-                            <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                            >
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
                                     variant="standard"
                                     fullWidth
@@ -537,11 +541,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                             container
                             spacing={1}
                         >
-                            <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                            >
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <FormControlLabel
                                     style={{ paddingTop: 10 }}
                                     title={I18n.t('virtual_group_tooltip')}
@@ -560,11 +560,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     }
                                 />
                             </Grid>
-                            <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                            >
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 {!this.state.native.virtualGroup ? (
                                     <FormControlLabel
                                         style={{ paddingTop: 10 }}
@@ -596,12 +592,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                                 const native: SceneConfig = JSON.parse(
                                                     JSON.stringify(this.state.native),
                                                 );
-                                                native.aggregation = e.target.value as
-                                                    | 'uncertain'
-                                                    | 'any'
-                                                    | 'avg'
-                                                    | 'min'
-                                                    | 'max';
+                                                native.aggregation = e.target.value;
                                                 this.setStateWithParent({ native });
                                             }}
                                         >
@@ -624,11 +615,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                             container
                             spacing={1}
                         >
-                            <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                            >
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <FormControlLabel
                                     style={{ paddingTop: 10 }}
                                     label={I18n.t('Easy mode')}

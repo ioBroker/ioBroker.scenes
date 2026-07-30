@@ -1,5 +1,5 @@
 import React from 'react';
-import { DragDropContext, Droppable, Draggable, type DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 
 import {
     TextField,
@@ -31,7 +31,7 @@ import {
     Message as MessageDialog,
     type IobTheme,
     type AdminConnection,
-} from '@iobroker/adapter-react-v5';
+} from '@iobroker/gui-components';
 
 // icons
 import {
@@ -69,6 +69,7 @@ const styles: Record<string, any> = {
         maxWidth: 300,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
+        flexShrink: 0,
     },
     memberTrue: (theme: IobTheme): React.CSSProperties => ({
         backgroundColor: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
@@ -85,12 +86,7 @@ const styles: Record<string, any> = {
         margin: `8px 0`,
     },
     memberFolder: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-    },
-    right: {
-        float: 'right',
+        flexShrink: 0,
     },
     scroll: {
         overflowY: 'auto',
@@ -125,9 +121,6 @@ const styles: Record<string, any> = {
         p: '4px',
         backgroundColor: theme.palette.mode === 'dark' ? '#332100' : '#eec590',
     }),
-    guttersZero: {
-        padding: 0,
-    },
     sceneTitle: (theme: IobTheme): React.CSSProperties => ({
         flexGrow: 1,
         color: theme.palette.mode === 'dark' ? '#FFF' : '#000',
@@ -150,24 +143,26 @@ const styles: Record<string, any> = {
     },
     btnTestTrue: (theme: IobTheme): any => ({
         background: theme.palette.mode === 'dark' ? TRUE_DARK_COLOR : TRUE_COLOR,
-        mr: '8px',
-        mb: '4px',
+        flexShrink: 0,
     }),
     btnTestFalse: (theme: IobTheme): any => ({
         background: theme.palette.mode === 'dark' ? FALSE_DARK_COLOR : FALSE_COLOR,
-        mb: '4px',
+        flexShrink: 0,
     }),
+    // pushed to the right edge of the flex row, instead of floating out of flow
     btnExpandAll: {
-        float: 'right',
+        marginLeft: 'auto',
     },
     btnCollapseAll: {
-        float: 'right',
+        marginLeft: 'auto',
     },
     smallOnTrueFalse: {
         fontSize: 'small',
         textAlign: 'right',
         width: '100%',
         display: 'inline-block',
+        paddingRight: 8,
+        boxSizing: 'border-box',
     },
     stateValueTrue: {
         color: '#60a060',
@@ -191,45 +186,73 @@ const styles: Record<string, any> = {
         },
     },
     memberDesc: {
-        display: 'inline-block',
         fontSize: 10,
         fontStyle: 'italic',
-        marginLeft: 50,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
     },
     memberTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        marginLeft: 50,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+    },
+    // takes all the space between the folder icon and the buttons.
+    // minWidth: 0 is essential: without it a flex item never shrinks below its
+    // content, so long state IDs would push the buttons out of the card
+    memberTitleBox: {
+        flexGrow: 1,
+        minWidth: 0,
     },
     memberToolbar: {
         width: '100%',
-        position: 'relative',
-        minHeight: 72,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
     },
     memberButtons: {
-        textAlign: 'right',
-        position: 'absolute',
-        top: 2,
-        right: 2,
+        display: 'flex',
+        alignItems: 'center',
+        flexShrink: 0,
+    },
+    memberDelay: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+        fontSize: 12,
+        opacity: 0.7,
+        paddingLeft: 8,
     },
     width100WithButton: {
-        width: 'calc(100% - 48px)',
+        flexGrow: 1,
+        minWidth: 0,
     },
     width100: {
         width: '100%',
     },
     testButtons: {
         minHeight: 48,
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 4,
+    },
+    // the setpoint/tolerance row: wraps instead of overflowing when the panel is narrow
+    valueRow: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'flex-end',
+        gap: '8px',
     },
     setValue: {
-        width: `calc(70% - ${70 + 8}px)`,
-        minWidth: 100,
-        marginRight: 8,
+        flex: '2 1 200px',
+        minWidth: 140,
     },
     setTolerance: {
-        width: `calc(30% - ${70 + 8}px)`,
-        minWidth: 100,
-        marginRight: 8,
+        flex: '1 1 120px',
+        minWidth: 120,
     },
     disabled: {
         opacity: 0.3,
@@ -241,14 +264,14 @@ const styles: Record<string, any> = {
         color: '#FF0000',
     },
     fromId: {
-        marginTop: 8,
+        flexShrink: 0,
     },
     smallClearBtn: {
         width: 32,
         height: 32,
     },
     ackTrue: {
-        marginLeft: 100,
+        flexShrink: 0,
     },
     enumTitle: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.primary.main,
@@ -310,8 +333,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
     private engineId: string;
 
     private readonly cacheEnumsState: (
-        | { realIds: string[]; type: 'boolean' | 'number' | 'string'; ids: string }
-        | true
+        { realIds: string[]; type: 'boolean' | 'number' | 'string'; ids: string } | true
     )[];
 
     private readonly delButtonRef: React.RefObject<any>;
@@ -648,7 +670,10 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                 multiSelect
                 title={I18n.t('Select for ')}
                 selected=""
-                onOk={(_id: string | string[]): void => {
+                onOk={(_id: string | string[] | undefined): void => {
+                    if (_id === undefined) {
+                        return;
+                    }
                     let id: string[];
                     if (Array.isArray(_id)) {
                         id = _id;
@@ -851,6 +876,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                 sx={Utils.getStyle(
                     this.props.theme,
                     styles.p,
+                    styles.valueRow,
                     this.state.onFalseEnabled ? (isTrue ? styles.pTrue : styles.pFalse) : undefined,
                 )}
             >
@@ -1207,9 +1233,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
             setTimeout(async () => {
                 for (let i = 0; i < ids.length; i++) {
                     const obj: ioBroker.StateObject | null | undefined = (await this.props.socket.getObject(ids[i])) as
-                        | ioBroker.StateObject
-                        | null
-                        | undefined;
+                        ioBroker.StateObject | null | undefined;
                     if (!obj) {
                         continue;
                     }
@@ -1484,6 +1508,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
         delay += member.delay || 0;
 
         const title = member.id || this.getTitleForEnums(index);
+        const desc = member.desc || (member.id && this.state.objectNames[member.id]) || '';
 
         return (
             <Paper
@@ -1509,14 +1534,22 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                     >
                         {opened ? <IconFolderOpened /> : <IconFolderClosed />}
                     </IconButton>
-                    <div
-                        style={{ ...styles.memberTitle, cursor: member.id ? undefined : 'pointer' }}
-                        onClick={member.id ? undefined : () => this.setState({ showAddEnumsDialog: index })}
-                    >
-                        {title}
-                    </div>
-                    <div style={styles.memberDesc}>
-                        {member.desc || (member.id && this.state.objectNames[member.id]) || ''}
+                    <div style={styles.memberTitleBox}>
+                        <div
+                            style={{ ...styles.memberTitle, cursor: member.id ? undefined : 'pointer' }}
+                            title={member.id || undefined}
+                            onClick={member.id ? undefined : () => this.setState({ showAddEnumsDialog: index })}
+                        >
+                            {title}
+                        </div>
+                        {desc ? (
+                            <div
+                                style={styles.memberDesc}
+                                title={desc}
+                            >
+                                {desc}
+                            </div>
+                        ) : null}
                     </div>
                     <div style={styles.memberButtons}>
                         <IconButton
@@ -1554,14 +1587,12 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                         {value}
                     </div>
                 </div>
-                <div>
-                    {!member.disabled && (this.props.intervalBetweenCommands || member.delay) ? (
-                        <span>
-                            {' '}
-                            <IconClock /> {`${delay + I18n.t('ms')} ${I18n.t('from scene start')}`}
-                        </span>
-                    ) : null}
-                </div>
+                {!member.disabled && (this.props.intervalBetweenCommands || member.delay) ? (
+                    <div style={styles.memberDelay}>
+                        <IconClock fontSize="inherit" />
+                        {`${delay + I18n.t('ms')} ${I18n.t('from scene start')}`}
+                    </div>
+                ) : null}
                 {opened ? (
                     <div>
                         <Box style={styles.p}>
@@ -1620,10 +1651,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                                                 type: 'boolean',
                                                 delay: null,
                                             };
-                                            members[index].enums.type = e.target.value as
-                                                | 'boolean'
-                                                | 'number'
-                                                | 'string';
+                                            members[index].enums.type = e.target.value;
                                             this.setStateWithParent({ members });
                                         }}
                                     >
@@ -1694,11 +1722,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                                     container
                                     spacing={4}
                                 >
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        sm={4}
-                                    >
+                                    <Grid size={{ xs: 12, sm: 4 }}>
                                         <TextField
                                             variant="standard"
                                             fullWidth
@@ -1730,11 +1754,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                                             }}
                                         />
                                     </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        sm={4}
-                                    >
+                                    <Grid size={{ xs: 12, sm: 4 }}>
                                         {!stacked ? (
                                             <FormControlLabel
                                                 label={I18n.t('Stack next delays')}
@@ -1753,11 +1773,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                                             />
                                         ) : null}
                                     </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        sm={4}
-                                    >
+                                    <Grid size={{ xs: 12, sm: 4 }}>
                                         <FormControlLabel
                                             label={I18n.t('Stop already started commands')}
                                             control={
@@ -1970,7 +1986,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                 key="SceneMembersForm"
                 style={{ ...(!this.props.oneColumn ? styles.height : undefined), ...styles.columnContainer }}
             >
-                <Toolbar sx={{ '&. MuiToolbar-gutters': styles.guttersZero }}>
+                <Toolbar disableGutters>
                     <Typography
                         variant="h6"
                         sx={styles.sceneTitle}

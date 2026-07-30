@@ -29,7 +29,8 @@ import {
     GenericApp,
     type IobTheme,
     type GenericAppState,
-} from '@iobroker/adapter-react-v5';
+    type GenericAppProps,
+} from '@iobroker/gui-components';
 
 import SceneForm from './components/SceneForm';
 import SceneMembersForm from './components/SceneMembersForm';
@@ -66,24 +67,28 @@ import {
 } from 'react-icons/md';
 import { FaClone as IconClone, FaBars as IconMenu } from 'react-icons/fa';
 import pack from '../package.json';
-import type { GenericAppProps } from '@iobroker/adapter-react-v5/build/types';
 import type { SceneCommon, SceneConfig, SceneMember, SceneObject } from './types';
 
 const MARGIN_MEMBERS = 20;
+const TOOLBAR_HEIGHT = 48;
+// the bottom toolbar only carries the Save/Cancel buttons, so it is sized to them
+// plus a small inset instead of using the full dense-toolbar height
+const BOTTOM_BUTTON_HEIGHT = 38;
+const BOTTOM_TOOLBAR_INSET = 2;
+const BOTTOM_TOOLBAR_HEIGHT = BOTTOM_BUTTON_HEIGHT + 2 * BOTTOM_TOOLBAR_INSET;
+const PANEL_CHROME_HEIGHT = TOOLBAR_HEIGHT + BOTTOM_TOOLBAR_HEIGHT;
 
 const styles: Record<string, any> = {
     root: (theme: IobTheme): React.CSSProperties => ({
         width: '100%',
-        height: 'calc(100% + 4px)',
+        // must not exceed 100%: #root clips the overflow, so the extra 4px that
+        // used to be added here cut off the bottom of the Save/Cancel buttons
+        height: '100%',
         backgroundColor: theme.palette.mode === 'dark' ? '#000' : '#fff',
         overflowX: 'hidden',
     }),
     width100: {
         width: '100%',
-    },
-    noGutters: {
-        pl: 0,
-        pr: 0,
     },
     height: {
         height: '100%',
@@ -264,7 +269,7 @@ class App extends GenericApp<AppProps, AppState> {
             .catch(e => this.showError(e));
     }
 
-    onObjectChange = (id: string, obj: ioBroker.StateObject | null | undefined): void => {
+    onObjectChange = (id: string, obj: ioBroker.Object | null | undefined): void => {
         if (obj) {
             const members = (obj.native as SceneConfig)?.members;
             // place members on the last place
@@ -290,7 +295,7 @@ class App extends GenericApp<AppProps, AppState> {
                     scenes[id] = {
                         common: obj.common as SceneCommon,
                         native: obj.native as SceneConfig,
-                        type: obj.type,
+                        type: obj.type as 'state',
                         _id: obj._id,
                         ts: obj.ts,
                     };
@@ -913,7 +918,7 @@ class App extends GenericApp<AppProps, AppState> {
             <ExportImportDialog
                 isImport={this.state.importDialog}
                 themeType={this.state.themeType}
-                onClose={(_ignore, importedScene: SceneObject): void => {
+                onClose={(_ignore?: Record<string, SceneObject>, importedScene?: SceneObject): void => {
                     if (this.state.importDialog && importedScene) {
                         const scene = this.state.selectedSceneData || this.state.scenes[this.state.selectedSceneId];
                         // if inability changed
@@ -1030,7 +1035,7 @@ class App extends GenericApp<AppProps, AppState> {
             <Toolbar
                 variant="dense"
                 key="topToolbar"
-                sx={{ '& .MuiToolbar-gutters': styles.noGutters }}
+                disableGutters
             >
                 {this.props.width !== 'md' && this.props.width !== 'sm' && this.props.width !== 'xs' ? (
                     <Typography
@@ -1102,12 +1107,19 @@ class App extends GenericApp<AppProps, AppState> {
             <Toolbar
                 variant="dense"
                 key="bottomToolbar"
+                disableGutters
                 style={{
-                    padding: 0,
                     gap: 8,
                     marginRight: 8,
+                    minHeight: BOTTOM_TOOLBAR_HEIGHT,
+                    // keeps the buttons off the panel edges. border-box is
+                    // required: there is no global box-sizing reset here, so the
+                    // padding would otherwise add to minHeight and push the
+                    // toolbar past the panel
+                    paddingTop: BOTTOM_TOOLBAR_INSET,
+                    paddingBottom: BOTTOM_TOOLBAR_INSET,
+                    boxSizing: 'border-box',
                 }}
-                sx={{ '& .MuiToolbar-gutters': styles.noGutters }}
             >
                 <div style={{ flexGrow: 1 }} />
                 {this.state.selectedSceneChanged ? (
@@ -1225,7 +1237,7 @@ class App extends GenericApp<AppProps, AppState> {
                         overflowY: 'auto',
                         overflowX: 'hidden',
                         padding: 8,
-                        height: 'calc(100% - 112px)',
+                        height: `calc(100% - ${PANEL_CHROME_HEIGHT}px)`,
                     }}
                 >
                     {this.renderSceneSettings(true)}
@@ -1250,8 +1262,7 @@ class App extends GenericApp<AppProps, AppState> {
                         sx={Utils.getStyle(this.state.theme, styles.height, styles.settingsBackground)}
                     >
                         <Grid
-                            item
-                            xs={isXs ? 12 : 5}
+                            size={isXs ? 12 : 5}
                             style={styles.heightMinus2Toolbars}
                         >
                             {this.renderSceneTopToolbar(true)}
@@ -1261,8 +1272,7 @@ class App extends GenericApp<AppProps, AppState> {
                             {this.renderSceneBottomToolbar()}
                         </Grid>
                         <Grid
-                            item
-                            xs={isXs ? 12 : 7}
+                            size={isXs ? 12 : 7}
                             style={styles.height}
                         >
                             <div style={styles.heightMinusMargin}>
@@ -1293,8 +1303,7 @@ class App extends GenericApp<AppProps, AppState> {
                         </Drawer>
                         {this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ? (
                             <Grid
-                                item
-                                xs={12}
+                                size={12}
                                 sx={Utils.getStyle(this.state.theme, styles.height, styles.settingsBackground)}
                             >
                                 {renderedScene}
@@ -1311,7 +1320,8 @@ class App extends GenericApp<AppProps, AppState> {
                     direction={SplitDirection.Horizontal}
                     initialSizes={this.state.splitSizes2}
                     minWidths={[400, 350]}
-                    onResizeFinished={(_gutterIdx, splitSizes2: [number, number]): void => {
+                    onResizeFinished={(_gutterIdx: number, newSizes: number[]): void => {
+                        const splitSizes2 = newSizes as [number, number];
                         this.setState({ splitSizes2 });
                         window.localStorage.setItem('Scenes.splitSizes2', JSON.stringify(splitSizes2));
                     }}
@@ -1319,7 +1329,13 @@ class App extends GenericApp<AppProps, AppState> {
                 >
                     <div style={{ height: '100%' }}>
                         {this.renderSceneTopToolbar(false)}
-                        <div style={{ height: 'calc(100% - 96px - 16px)', paddingLeft: 8, paddingRight: 8 }}>
+                        <div
+                            style={{
+                                height: `calc(100% - ${PANEL_CHROME_HEIGHT}px)`,
+                                paddingLeft: 8,
+                                paddingRight: 8,
+                            }}
+                        >
                             {this.state.selectedSceneId ? this.renderSceneSettings() : null}
                         </div>
                         {this.renderSceneBottomToolbar()}
@@ -1340,7 +1356,8 @@ class App extends GenericApp<AppProps, AppState> {
                 direction={SplitDirection.Horizontal}
                 initialSizes={this.state.splitSizes}
                 minWidths={[290, 450]}
-                onResizeFinished={(_gutterIdx, splitSizes: [number, number]): void => {
+                onResizeFinished={(_gutterIdx: number, newSizes: number[]): void => {
+                    const splitSizes = newSizes as [number, number];
                     this.setState({ splitSizes });
                     window.localStorage.setItem('Scenes.splitSizes', JSON.stringify(splitSizes));
                 }}

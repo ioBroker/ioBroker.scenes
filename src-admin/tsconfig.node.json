@@ -1,0 +1,18 @@
+// Type-checking for the build tooling (vite.config.ts), which runs in Node and is
+// not part of the browser sources covered by tsconfig.json.
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "target": "ES2022",
+        "lib": ["ES2022", "DOM"],
+        "allowSyntheticDefaultImports": true,
+        "verbatimModuleSyntax": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "noEmit": true,
+        // do not implicitly pull in every package under node_modules/@types
+        "types": []
+    },
+    "include": ["vite.config.ts"]
+}

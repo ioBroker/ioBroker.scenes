@@ -10,10 +10,25 @@
     />
     <meta name="theme-color" content="#000000" />
     <link rel="manifest" href="manifest.json" />
-    <script type="text/javascript" onerror="setTimeout(function(){window.location.reload()}, 5000)" src="./lib/js/socket.io.js"></script>
+    <script>
+        var script = document.createElement('script');
+        window.registerSocketOnLoad = function (cb) {
+            window.socketLoadedHandler = cb;
+        };
+        const parts = (window.location.search || '').replace(/^\?/, '').split('&');
+        const query = {};
+        parts.forEach(item => {
+            const [name, val] = item.split('=');
+            query[decodeURIComponent(name)] = val !== undefined ? decodeURIComponent(val) : true;
+        });
+        script.onload = function () { typeof window.socketLoadedHandler === 'function' && window.socketLoadedHandler(); };
+        script.src = parseInt(window.location.port, 10) >= 3000 && parseInt(window.location.port, 10) <= 3100 ? `${window.location.protocol}//${query.host || window.location.hostname}:${query.port || 8081}/lib/js/socket.io.js` : '../../lib/js/socket.io.js';
+
+        document.head.appendChild(script);
+    </script>
     <title>Scenes [ioBroker]</title>
-  <script type="module" crossorigin src="./assets/index-BL6AP0mL.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CUNFpdmZ.css">
+  <script type="module" crossorigin src="./assets/index-DI_WyHe9.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CUC67mJV.css">
 </head>
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

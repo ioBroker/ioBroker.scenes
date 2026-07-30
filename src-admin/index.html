@@ -22,7 +22,7 @@
             query[decodeURIComponent(name)] = val !== undefined ? decodeURIComponent(val) : true;
         });
         script.onload = function () { typeof window.socketLoadedHandler === 'function' && window.socketLoadedHandler(); };
-        script.src = window.location.port === '3000' ? `${window.location.protocol}//${query.host || window.location.hostname}:${query.port || 8081}/lib/js/socket.io.js` : '../../lib/js/socket.io.js';
+        script.src = parseInt(window.location.port, 10) >= 3000 && parseInt(window.location.port, 10) <= 3100 ? `${window.location.protocol}//${query.host || window.location.hostname}:${query.port || 8081}/lib/js/socket.io.js` : '../../lib/js/socket.io.js';
 
         document.head.appendChild(script);
     </script>

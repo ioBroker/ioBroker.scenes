@@ -70,7 +70,7 @@ export class ScenesAdapter extends Adapter {
 
     onStateChange(id: string, state: ioBroker.State | null | undefined): void {
         if (state) {
-            if (this.scenes[id] && state) {
+            if (this.scenes[id]) {
                 this.sceneValue[id] = { val: state.val as boolean, ack: state.ack };
             }
             if (!state.ack) {
@@ -185,6 +185,8 @@ export class ScenesAdapter extends Adapter {
                 } else {
                     this.sendTo(obj.from, obj.command, { warning: 'Scene already enabled' }, obj.callback);
                 }
+            } else {
+                this.sendTo(obj.from, obj.command, { error: 'Scene not found' }, obj.callback);
             }
         } else if (obj.command === 'disable') {
             let sceneObj: SceneObject;
@@ -204,6 +206,8 @@ export class ScenesAdapter extends Adapter {
                 } else {
                     this.sendTo(obj.from, obj.command, { warning: 'Scene already disabled' }, obj.callback);
                 }
+            } else {
+                this.sendTo(obj.from, obj.command, { error: 'Scene not found' }, obj.callback);
             }
         }
     }
@@ -230,7 +234,7 @@ export class ScenesAdapter extends Adapter {
                 let state;
                 if (member.id) {
                     state = await this.getForeignStateAsync(member.id);
-                    console.log(`ID ${member.id}=${state ? state.val : state}`);
+                    this.log.debug(`ID ${member.id}=${state ? state.val : state}`);
                 } else if (member.enums) {
                     // enum => get all states and their values
                     const ids = this.getAllEnumIds(member.enums);
@@ -247,7 +251,9 @@ export class ScenesAdapter extends Adapter {
                         }
                     }
                     // determine common state
-                    if (member.enums.type === 'boolean' || member.enums.type === 'string') {
+                    if (!values.length) {
+                        this.log.warn(`No values found for enum member ${m} of (${sceneID})`);
+                    } else if (member.enums.type === 'boolean' || member.enums.type === 'string') {
                         // all states must be true or false
                         let val = values[0];
                         for (let i = 1; i < values.length; i++) {
@@ -296,7 +302,7 @@ export class ScenesAdapter extends Adapter {
                 throw new Error('Cannot save scene');
             }
         } else {
-            throw new Error(obj ? 'Scene not found' : 'Scene has no members');
+            throw new Error(obj ? 'Scene has no members' : 'Scene not found');
         }
     }
 
@@ -342,177 +348,171 @@ export class ScenesAdapter extends Adapter {
             }
         }
 
-        this.checkTimers[sceneId] =
-            this.checkTimers[sceneId] ||
-            setTimeout(
-                async _sceneId => {
-                    this.checkTimers[_sceneId] = null;
-                    let activeTrue = null;
-                    let activeFalse = null;
-                    let activeValue: ioBroker.StateValue = null;
+        this.checkTimers[sceneId] ||= setTimeout(
+            async _sceneId => {
+                this.checkTimers[_sceneId] = null;
+                let activeTrue = null;
+                let activeFalse = null;
+                let activeValue: ioBroker.StateValue = null;
 
-                    const sceneObj = this.scenes[_sceneId];
-                    const sceneObjNative = sceneObj.native;
-                    const isWithFalse = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
-                    let avgCounter = 0;
+                const sceneObj = this.scenes[_sceneId];
+                const sceneObjNative = sceneObj.native;
+                const isWithFalse = sceneObjNative.onFalse && sceneObjNative.onFalse.enabled;
+                let avgCounter = 0;
 
-                    for (let i = 0; i < sceneObjNative.members.length; i++) {
-                        const member: SceneMemberEx = sceneObjNative.members[i];
-                        // There are some states
-                        if (activeTrue === null) {
-                            activeTrue = true;
+                for (let i = 0; i < sceneObjNative.members.length; i++) {
+                    const member: SceneMemberEx = sceneObjNative.members[i];
+                    // There are some states
+                    if (activeTrue === null) {
+                        activeTrue = true;
+                    }
+                    if (activeFalse === null) {
+                        activeFalse = true;
+                    }
+
+                    if (sceneObjNative.virtualGroup) {
+                        if (activeValue === 'uncertain') {
+                            continue;
                         }
-                        if (activeFalse === null) {
-                            activeFalse = true;
-                        }
 
-                        if (sceneObjNative.virtualGroup) {
-                            if (activeValue === 'uncertain') {
-                                continue;
-                            }
-
-                            if (activeValue === null) {
-                                activeValue = member.actual || null;
-                            } else {
-                                if (activeValue != member.actual) {
-                                    if (
-                                        sceneObjNative.aggregation === undefined ||
-                                        sceneObjNative.aggregation === 'uncertain'
-                                    ) {
-                                        activeValue = 'uncertain';
-                                    } else {
-                                        if (sceneObjNative.aggregation === 'any') {
-                                            activeValue =
-                                                activeValue || (member.actual === undefined ? null : member.actual);
-                                        } else if (sceneObjNative.aggregation === 'min') {
-                                            activeValue = Math.min(
-                                                activeValue as number,
-                                                parseFloat(member.actual as string) || 0,
-                                            );
-                                        } else if (sceneObjNative.aggregation === 'max') {
-                                            activeValue = Math.max(
-                                                activeValue as number,
-                                                parseFloat(member.actual as string) || 0,
-                                            );
-                                        } else if (sceneObjNative.aggregation === 'avg') {
-                                            activeValue =
-                                                parseFloat(activeValue as string) +
-                                                (parseFloat(member.actual as string) || 0);
-                                            avgCounter++;
-                                        }
-                                    }
-                                } else if (sceneObjNative.aggregation === 'avg') {
-                                    activeValue =
-                                        parseFloat(activeValue as string) + (parseFloat(member.actual as string) || 0);
-                                    avgCounter++;
-                                }
-                            }
+                        if (activeValue === null) {
+                            activeValue = member.actual || null;
                         } else {
-                            let setIfTrue: ioBroker.StateValue | undefined;
-                            let setIfFalse: ioBroker.StateValue | undefined;
-                            try {
-                                setIfTrue = await this.getSetValue(member.setIfTrue);
-                                setIfFalse = await this.getSetValue(member.setIfFalse);
-                            } catch (e) {
-                                this.log.warn(`Error while getting True/False states: ${e}`);
-                            }
-
-                            if (setIfTrue !== null && setIfTrue !== undefined) {
-                                if (member.setIfTrueTolerance) {
-                                    if (
-                                        Math.abs(
-                                            (parseFloat(setIfTrue as string) || 0) -
-                                                (parseFloat(member.actual as string) || 0),
-                                        ) > member.setIfTrueTolerance
-                                    ) {
-                                        activeTrue = false;
-                                    }
+                            if (activeValue != member.actual) {
+                                if (
+                                    sceneObjNative.aggregation === undefined ||
+                                    sceneObjNative.aggregation === 'uncertain'
+                                ) {
+                                    activeValue = 'uncertain';
                                 } else {
-                                    if (setIfTrue != member.actual) {
-                                        activeTrue = false;
+                                    if (sceneObjNative.aggregation === 'any') {
+                                        activeValue =
+                                            activeValue || (member.actual === undefined ? null : member.actual);
+                                    } else if (sceneObjNative.aggregation === 'min') {
+                                        activeValue = Math.min(
+                                            activeValue as number,
+                                            parseFloat(member.actual as string) || 0,
+                                        );
+                                    } else if (sceneObjNative.aggregation === 'max') {
+                                        activeValue = Math.max(
+                                            activeValue as number,
+                                            parseFloat(member.actual as string) || 0,
+                                        );
+                                    } else if (sceneObjNative.aggregation === 'avg') {
+                                        activeValue =
+                                            parseFloat(activeValue as string) +
+                                            (parseFloat(member.actual as string) || 0);
+                                        avgCounter++;
                                     }
                                 }
+                            } else if (sceneObjNative.aggregation === 'avg') {
+                                activeValue =
+                                    parseFloat(activeValue as string) + (parseFloat(member.actual as string) || 0);
+                                avgCounter++;
                             }
+                        }
+                    } else {
+                        let setIfTrue: ioBroker.StateValue | undefined;
+                        let setIfFalse: ioBroker.StateValue | undefined;
+                        try {
+                            setIfTrue = await this.getSetValue(member.setIfTrue);
+                            setIfFalse = await this.getSetValue(member.setIfFalse);
+                        } catch (e) {
+                            this.log.warn(`Error while getting True/False states: ${e}`);
+                        }
 
-                            if (isWithFalse && setIfFalse !== null && setIfFalse !== undefined) {
-                                if (member.setIfFalseTolerance) {
-                                    if (
-                                        Math.abs(
-                                            (parseFloat(setIfFalse as string) || 0) -
-                                                (parseFloat(member.actual as string) || 0),
-                                        ) > member.setIfFalseTolerance
-                                    ) {
-                                        activeFalse = false;
-                                    }
-                                } else if (setIfFalse != member.actual) {
+                        if (setIfTrue !== null && setIfTrue !== undefined) {
+                            if (member.setIfTrueTolerance) {
+                                if (
+                                    Math.abs(
+                                        (parseFloat(setIfTrue as string) || 0) -
+                                            (parseFloat(member.actual as string) || 0),
+                                    ) > member.setIfTrueTolerance
+                                ) {
+                                    activeTrue = false;
+                                }
+                            } else {
+                                if (setIfTrue != member.actual) {
+                                    activeTrue = false;
+                                }
+                            }
+                        }
+
+                        if (isWithFalse && setIfFalse !== null && setIfFalse !== undefined) {
+                            if (member.setIfFalseTolerance) {
+                                if (
+                                    Math.abs(
+                                        (parseFloat(setIfFalse as string) || 0) -
+                                            (parseFloat(member.actual as string) || 0),
+                                    ) > member.setIfFalseTolerance
+                                ) {
                                     activeFalse = false;
                                 }
+                            } else if (setIfFalse != member.actual) {
+                                activeFalse = false;
                             }
                         }
                     }
+                }
 
-                    try {
-                        if (sceneObjNative.virtualGroup) {
-                            if (activeValue !== null) {
-                                if (sceneObjNative.aggregation === 'avg' && avgCounter) {
-                                    activeValue = (parseFloat(activeValue as string) || 0) / (avgCounter + 1);
-                                }
+                try {
+                    if (sceneObjNative.virtualGroup) {
+                        if (activeValue !== null) {
+                            if (sceneObjNative.aggregation === 'avg' && avgCounter) {
+                                activeValue = (parseFloat(activeValue as string) || 0) / (avgCounter + 1);
+                            }
 
-                                if (this.sceneValue[_sceneId].val !== activeValue || !this.sceneValue[_sceneId].ack) {
-                                    this.sceneValue[_sceneId].val = activeValue as number;
+                            if (this.sceneValue[_sceneId].val !== activeValue || !this.sceneValue[_sceneId].ack) {
+                                this.sceneValue[_sceneId].val = activeValue as number;
+                                this.sceneValue[_sceneId].ack = true;
+
+                                await this.setForeignStateAsync(_sceneId, activeValue, true);
+                            }
+                        }
+                    } else {
+                        if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
+                            if (activeTrue) {
+                                if (this.sceneValue[_sceneId].val !== true || !this.sceneValue[_sceneId].ack) {
+                                    this.sceneValue[_sceneId].val = true;
                                     this.sceneValue[_sceneId].ack = true;
 
-                                    await this.setForeignStateAsync(_sceneId, activeValue, true);
+                                    await this.setForeignStateAsync(_sceneId, true, true);
+                                }
+                            } else if (activeFalse) {
+                                if (this.sceneValue[_sceneId].val !== false || !this.sceneValue[_sceneId].ack) {
+                                    this.sceneValue[_sceneId].val = false;
+                                    this.sceneValue[_sceneId].ack = true;
+
+                                    await this.setForeignStateAsync(_sceneId, false, true);
+                                }
+                            } else {
+                                if (this.sceneValue[_sceneId].val !== 'uncertain' || !this.sceneValue[_sceneId].ack) {
+                                    this.sceneValue[_sceneId].val = 'uncertain';
+                                    this.sceneValue[_sceneId].ack = true;
+
+                                    await this.setForeignStateAsync(_sceneId, 'uncertain', true);
                                 }
                             }
                         } else {
-                            if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
-                                if (activeTrue) {
-                                    if (this.sceneValue[_sceneId].val !== true || !this.sceneValue[_sceneId].ack) {
-                                        this.sceneValue[_sceneId].val = true;
-                                        this.sceneValue[_sceneId].ack = true;
+                            if (activeTrue !== null) {
+                                if (this.sceneValue[_sceneId].val !== activeTrue || !this.sceneValue[_sceneId].ack) {
+                                    this.sceneValue[_sceneId].val = activeTrue;
+                                    this.sceneValue[_sceneId].ack = true;
 
-                                        await this.setForeignStateAsync(_sceneId, true, true);
-                                    }
-                                } else if (activeFalse) {
-                                    if (this.sceneValue[_sceneId].val !== false || !this.sceneValue[_sceneId].ack) {
-                                        this.sceneValue[_sceneId].val = false;
-                                        this.sceneValue[_sceneId].ack = true;
-
-                                        await this.setForeignStateAsync(_sceneId, false, true);
-                                    }
-                                } else {
-                                    if (
-                                        this.sceneValue[_sceneId].val !== 'uncertain' ||
-                                        !this.sceneValue[_sceneId].ack
-                                    ) {
-                                        this.sceneValue[_sceneId].val = 'uncertain';
-                                        this.sceneValue[_sceneId].ack = true;
-
-                                        await this.setForeignStateAsync(_sceneId, 'uncertain', true);
-                                    }
-                                }
-                            } else {
-                                if (activeTrue !== null) {
-                                    if (
-                                        this.sceneValue[_sceneId].val !== activeTrue ||
-                                        !this.sceneValue[_sceneId].ack
-                                    ) {
-                                        this.sceneValue[_sceneId].val = activeTrue;
-                                        this.sceneValue[_sceneId].ack = true;
-
-                                        await this.setForeignStateAsync(_sceneId, activeTrue, true);
-                                    }
+                                    await this.setForeignStateAsync(_sceneId, activeTrue, true);
                                 }
                             }
                         }
-                    } catch (err) {
-                        this.log.error(`Can not set requested state ${_sceneId}: ${err.message}`);
                     }
-                },
-                200,
-                sceneId,
-            );
+                } catch (err) {
+                    this.log.error(
+                        `Can not set requested state ${_sceneId}: ${err instanceof Error ? err.message : err}`,
+                    );
+                }
+            },
+            200,
+            sceneId,
+        );
     }
 
     checkTrigger(sceneId: string, stateId: string, state: ioBroker.State, isTrue: boolean): void {
@@ -562,7 +562,7 @@ export class ScenesAdapter extends Adapter {
                         if (aVal > fVal) {
                             this.activateScene(sceneId, isTrue);
                         }
-                    } else if (val !== null && val !== undefined && val > stateVal) {
+                    } else if (val !== null && val !== undefined && stateVal > val) {
                         this.activateScene(sceneId, isTrue);
                     }
                     break;
@@ -574,7 +574,7 @@ export class ScenesAdapter extends Adapter {
                         if (aVal < fVal) {
                             this.activateScene(sceneId, isTrue);
                         }
-                    } else if (val !== null && val !== undefined && val < stateVal) {
+                    } else if (val !== null && val !== undefined && stateVal < val) {
                         this.activateScene(sceneId, isTrue);
                     }
                     break;
@@ -586,7 +586,7 @@ export class ScenesAdapter extends Adapter {
                         if (aVal >= fVal) {
                             this.activateScene(sceneId, isTrue);
                         }
-                    } else if (val !== null && val !== undefined && val >= stateVal) {
+                    } else if (val !== null && val !== undefined && stateVal >= val) {
                         this.activateScene(sceneId, isTrue);
                     }
                     break;
@@ -598,7 +598,7 @@ export class ScenesAdapter extends Adapter {
                         if (aVal <= fVal) {
                             this.activateScene(sceneId, isTrue);
                         }
-                    } else if (val !== null && val !== undefined && val <= stateVal) {
+                    } else if (val !== null && val !== undefined && stateVal <= val) {
                         this.activateScene(sceneId, isTrue);
                     }
                     break;
@@ -728,7 +728,7 @@ export class ScenesAdapter extends Adapter {
                     }
                     // Set the desired state
                     if (stateObj.doNotOverwrite) {
-                        this.getForeignState(stateObj.id, (err, state) => {
+                        void this.getForeignState(stateObj.id, (err, state) => {
                             // Set new state only if differ from the desired state
                             if (!state || state.val !== desiredValue) {
                                 this.setForeignState(stateObj.id!, desiredValue, !!stateObj.ackTrue);
@@ -741,8 +741,7 @@ export class ScenesAdapter extends Adapter {
             })
             .catch(e =>
                 this.log.error(
-                    `Cannot read setValue from ${desiredValue
-                        .toString()
+                    `Cannot read setValue from ${String(desiredValue)
                         .replace(/^\s*{{/, '')
                         .replace(/}}\s*$/, '')}: ${e}`,
                 ),
