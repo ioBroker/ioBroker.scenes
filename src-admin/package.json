@@ -11,7 +11,7 @@
         "@iobroker/type-detector": "^5.0.13",
         "@mui/icons-material": "^9.2.0",
         "@mui/material": "^9.2.0",
-        "@vitejs/plugin-react": "^6.0.4",
+        "@vitejs/plugin-react": "^6.0.5",
         "react": "^19.2.8",
         "react-ace": "^14.0.1",
         "react-dnd": "^16.0.1",
