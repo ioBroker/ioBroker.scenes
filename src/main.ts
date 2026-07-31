@@ -376,7 +376,7 @@ export class ScenesAdapter extends Adapter {
                         }
 
                         if (activeValue === null) {
-                            activeValue = member.actual || null;
+                            activeValue = member.actual ?? null;
                         } else {
                             if (activeValue != member.actual) {
                                 if (

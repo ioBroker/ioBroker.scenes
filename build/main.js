@@ -398,7 +398,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                         continue;
                     }
                     if (activeValue === null) {
-                        activeValue = member.actual || null;
+                        activeValue = member.actual ?? null;
                     }
                     else {
                         if (activeValue != member.actual) {
