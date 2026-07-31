@@ -30,6 +30,7 @@ import {
     type IobTheme,
     type GenericAppState,
     type GenericAppProps,
+    ScrollbarStyles,
 } from '@iobroker/gui-components';
 
 import SceneForm from './components/SceneForm';
@@ -84,7 +85,8 @@ const styles: Record<string, any> = {
         // must not exceed 100%: #root clips the overflow, so the extra 4px that
         // used to be added here cut off the bottom of the Save/Cancel buttons
         height: '100%',
-        backgroundColor: theme.palette.mode === 'dark' ? '#000' : '#fff',
+        // from the palette: pure black was harsher than any surface of the modern themes
+        backgroundColor: theme.palette.background.default,
         overflowX: 'hidden',
     }),
     width100: {
@@ -139,12 +141,13 @@ const styles: Record<string, any> = {
         marginTop: -7,
     },
     settingsBackground: (theme: IobTheme): React.CSSProperties => ({
-        background: theme.palette.mode === 'dark' ? '#3a3a3a' : '#eee',
+        // the surface of the theme instead of a fixed grey, so it fits the list next to it
+        background: theme.palette.background.paper,
     }),
     gutter: (theme: IobTheme): any => ({
-        background: theme.palette.mode === 'dark' ? '#3a3a3a !important' : '#eee !important',
+        background: `${theme.palette.background.paper} !important`,
         '& .__dbk__dragger': {
-            background: theme.palette.mode === 'dark' ? 'white !important' : 'black !important',
+            background: `${theme.palette.text.disabled} !important`,
         },
     }),
     drawer: {
@@ -1325,7 +1328,7 @@ class App extends GenericApp<AppProps, AppState> {
                         this.setState({ splitSizes2 });
                         window.localStorage.setItem('Scenes.splitSizes2', JSON.stringify(splitSizes2));
                     }}
-                    gutterClassName={this.state.themeName === 'dark' ? `Dark visGutter` : `Light visGutter`}
+                    gutterClassName={this.state.themeType === 'dark' ? `Dark visGutter` : `Light visGutter`}
                 >
                     <div style={{ height: '100%' }}>
                         {this.renderSceneTopToolbar(false)}
@@ -1361,7 +1364,7 @@ class App extends GenericApp<AppProps, AppState> {
                     this.setState({ splitSizes });
                     window.localStorage.setItem('Scenes.splitSizes', JSON.stringify(splitSizes));
                 }}
-                gutterClassName={this.state.themeName === 'dark' ? 'Dark visGutter' : 'Light visGutter'}
+                gutterClassName={this.state.themeType === 'dark' ? 'Dark visGutter' : 'Light visGutter'}
             >
                 <div style={{ ...styles.columnContainer, ...styles.height }}>{this.renderDrawerContent(false)}</div>
                 {this.state.selectedSceneId && this.state.scenes[this.state.selectedSceneId] ? (
@@ -1394,6 +1397,7 @@ class App extends GenericApp<AppProps, AppState> {
         return (
             <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={this.state.theme}>
+                    <ScrollbarStyles theme={this.state.theme} />
                     <Box
                         component="div"
                         sx={styles.root}

@@ -121,7 +121,10 @@ const styles: Record<string, any> = {
         height: 'calc(100% - 48px)',
     },
     mainToolbar: (theme: IobTheme): React.CSSProperties => ({
-        background: theme.palette.primary.main,
+        // A surface, not the accent colour.  is a saturated blue in the modern themes,
+        // which turned the whole bar into a colour block and left the grey version text unreadable.
+        background: theme.palette.background.paper,
+        borderBottom: `1px solid ${theme.palette.divider}`,
     }),
     textInput: {
         display: 'block',
@@ -186,13 +189,13 @@ const styles: Record<string, any> = {
     // the selected row is filled with secondary.main, so the text must contrast
     // with that colour and not with the page background
     listItemTitleSelected: (theme: IobTheme): React.CSSProperties => ({
-        color: theme.palette.secondary.contrastText,
+        color: theme.palette.primary.contrastText,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
     }),
     listItemSubTitleSelected: (theme: IobTheme): React.CSSProperties => ({
-        color: theme.palette.secondary.contrastText,
+        color: theme.palette.primary.contrastText,
         opacity: 0.75,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -522,7 +525,12 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                     changed && styles.changed,
                     !scene.common.enabled && styles.disabled,
                     {
-                        backgroundColor: selected ? `${this.props.theme.palette.secondary.main} !important` : undefined,
+                        // Same visual language as the selected entry in the admin menu: a gradient built
+                        // from the palette instead of a flat secondary colour. `background` (not
+                        // `backgroundColor`) plus !important, otherwise MUI's own .Mui-selected wins.
+                        background: selected
+                            ? `linear-gradient(90deg, ${this.props.theme.palette.primary.light} 0%, ${this.props.theme.palette.primary.main} 100%) !important`
+                            : undefined,
                     },
                 )}
                 className={this.state.reorder ? 'item-reorder' : ''}
@@ -533,7 +541,7 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                         ...styles.itemIconRoot,
                         // the icon inherits a dark colour that is unreadable on the
                         // selected row's secondary.main background
-                        ...(selected ? { color: this.props.theme.palette.secondary.contrastText } : undefined),
+                        ...(selected ? { color: this.props.theme.palette.primary.contrastText } : undefined),
                     }}
                 >
                     <IconScript style={styles.itemIcon} />
