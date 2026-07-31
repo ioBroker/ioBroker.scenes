@@ -403,12 +403,19 @@ export class ScenesAdapter extends Adapter {
                                             parseFloat(activeValue as string) +
                                             (parseFloat(member.actual as string) || 0);
                                         avgCounter++;
+                                    } else if (sceneObjNative.aggregation === 'sum') {
+                                        activeValue =
+                                            parseFloat(activeValue as string) +
+                                            (parseFloat(member.actual as string) || 0);
                                     }
                                 }
                             } else if (sceneObjNative.aggregation === 'avg') {
                                 activeValue =
                                     parseFloat(activeValue as string) + (parseFloat(member.actual as string) || 0);
                                 avgCounter++;
+                            } else if (sceneObjNative.aggregation === 'sum') {
+                                activeValue =
+                                    parseFloat(activeValue as string) + (parseFloat(member.actual as string) || 0);
                             }
                         }
                     } else {

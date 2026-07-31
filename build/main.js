@@ -423,12 +423,21 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                                             (parseFloat(member.actual) || 0);
                                     avgCounter++;
                                 }
+                                else if (sceneObjNative.aggregation === 'sum') {
+                                    activeValue =
+                                        parseFloat(activeValue) +
+                                            (parseFloat(member.actual) || 0);
+                                }
                             }
                         }
                         else if (sceneObjNative.aggregation === 'avg') {
                             activeValue =
                                 parseFloat(activeValue) + (parseFloat(member.actual) || 0);
                             avgCounter++;
+                        }
+                        else if (sceneObjNative.aggregation === 'sum') {
+                            activeValue =
+                                parseFloat(activeValue) + (parseFloat(member.actual) || 0);
                         }
                     }
                 }
