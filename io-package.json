@@ -1,197 +1,203 @@
 {
-    "common": {
-        "name": "scenes",
-        "version": "4.0.4",
-        "news": {
-            "4.0.4": {
-                "en": "Corrected the selection of multiple IDs in the scene editor",
-                "de": "Die Auswahl mehrerer IDs im Szeneneditor korrigiert",
-                "ru": "Исправлен выбор нескольких идентификаторов в редакторе сцены",
-                "pt": "Corrigido a seleção de vários IDs no editor de cena",
-                "nl": "De selectie van meerdere ID's in de scène-editor gecorrigeerd",
-                "fr": "Correction de la sélection de plusieurs ID dans l'éditeur de scène",
-                "it": "Corretto la selezione di più ID nell'editor della scena",
-                "es": "Corregido la selección de múltiples IDs en el editor de escena",
-                "pl": "Poprawił wybór wielu identyfikatorów w edytorze sceny",
-                "uk": "Виправлено вибір декількох ідентифікаторів у редакторі сцени",
-                "zh-cn": "更正了场景编辑器中选择的多个ID"
-            },
-            "4.0.3": {
-                "en": "Canceled the cron tasks on the instance stop",
-                "de": "Die Cron-Aufgaben auf der Instanz stoppen",
-                "ru": "Отменены задачи cron на остановке экземпляра",
-                "pt": "Cancelou as tarefas do cron na parada da instância",
-                "nl": "Annuleerde de cron taken op de instantie stop",
-                "fr": "Annulé les tâches de cron sur l'arrêt de l'instance",
-                "it": "Annullato i compiti del cron sull'arresto dell'istanza",
-                "es": "Cancelado las tareas del cron en la parada de instancia",
-                "pl": "Anulował zadania cron na instance stop",
-                "uk": "Скасовано завдання синхрону на зупинці екземпляра",
-                "zh-cn": "取消实例停止的 cron 任务"
-            },
-            "4.0.2": {
-                "en": "Small improvements for layout",
-                "de": "Kleine Verbesserungen im Layout",
-                "ru": "Небольшие улучшения для макета",
-                "pt": "Pequenas melhorias para a disposição",
-                "nl": "Kleine verbeteringen voor lay-out",
-                "fr": "Petites améliorations pour la mise en page",
-                "it": "Piccoli miglioramenti per il layout",
-                "es": "Pequeñas mejoras para el diseño",
-                "pl": "Niewielka poprawa układu",
-                "uk": "Невеликі поліпшення для планування",
-                "zh-cn": "对布局的小改进"
-            },
-            "4.0.1": {
-                "en": "Adapter was migrated to TypeScript\nCorrected error with the Select ID dialog",
-                "de": "Adapter wurde auf TypeScript migriert\nFehler behoben mit dem Dialog ID auswählen",
-                "ru": "Адаптер был перенесен на TypeScript\nИсправлена ошибка с диалогом Select ID",
-                "pt": "Adapter foi migrado para TypeScript\nErro corrigido com a caixa de diálogo Selecionar ID",
-                "nl": "Adapter is gemigreerd naar TypeScript\nFout gecorrigeerd met het dialoogvenster ID selecteren",
-                "fr": "L'adaptateur a été migré vers TypeScript\nErreur corrigée avec la boîte de dialogue Select ID",
-                "it": "L'adattatore è stato migrato a TypeScript\nErrore corretto con la finestra di dialogo Seleziona ID",
-                "es": "Adaptador fue migrado a TipoScript\nError corregido con el diálogo Seleccionar ID",
-                "pl": "Adapter został przeniesiony do TypeScript\nSkorygowany błąd przy pomocy okna dialogowego Wybierz ID",
-                "uk": "Адаптер був мігрований до TypeScript\nВиправлена помилка з діалогове вікно ідентифікатора Виберіть",
-                "zh-cn": "适配器已迁移到类型脚本\n选择 ID 对话框纠正错误"
-            },
-            "3.2.3": {
-                "en": "Packages updated",
-                "de": "Pakete aktualisiert",
-                "ru": "Обновленные пакеты",
-                "pt": "Pacotes atualizados",
-                "nl": "Pakketten bijgewerkt",
-                "fr": "Mise à jour des paquets",
-                "it": "Pacchetti aggiornati",
-                "es": "Paquetes actualizados",
-                "pl": "Aktualizacja pakietów",
-                "uk": "Пакети оновлені",
-                "zh-cn": "更新软件包"
-            },
-            "3.2.1": {
-                "en": "GUI migrated for the new `adapter-react` library",
-                "de": "GUI migriert für die neue `adapter-react` Bibliothek",
-                "ru": "GUI мигрировал в новую библиотеку `adapter-react'",
-                "pt": "GUI migrado para a nova biblioteca `adapter-react`",
-                "nl": "GUI is gemigreerd voor de nieuwe \"adapter-reageren\" bibliotheek",
-                "fr": "GUI migré pour la nouvelle bibliothèque `adaptation-réaction`",
-                "it": "GUI migrata per la nuova libreria `adapter-react`",
-                "es": "GUI migrated for the new `adapter-react` library",
-                "pl": "GUI wyemigrował do nowej biblioteki 'adapter-response'",
-                "uk": "GUI мігрантував нову бібліотеку `adapter-react`",
-                "zh-cn": "GUI 迁移到新的“适应器反应”库"
-            },
-            "3.0.4": {
-                "en": "Corrected error if profile is empty",
-                "de": "Fehler behoben, wenn das Profil leer ist",
-                "ru": "Исправлена ошибка, если профиль пуст",
-                "pt": "Erro correto se o perfil estiver vazio",
-                "nl": "Gecorrigeerde fout als profiel leeg is",
-                "fr": "Erreur corrigée si le profil est vide",
-                "it": "Errore corretto se il profilo è vuoto",
-                "es": "Error corregido si el perfil está vacío",
-                "pl": "Skorygowany błąd jeśli profil jest pusty",
-                "uk": "Виправлена помилка, якщо профіль порожній",
-                "zh-cn": "如果配置文件为空, 已更正错误"
-            }
-        },
-        "titleLang": {
-            "en": "Scenes",
-            "de": "Szenen",
-            "ru": "Сцены",
-            "pt": "Cenários",
-            "nl": "scenario's",
-            "fr": "Scénarios",
-            "it": "scenari",
-            "es": "Escenarios",
-            "pl": "Scenariusze",
-            "uk": "Сценарії",
-            "zh-cn": "场景"
-        },
-        "desc": {
-            "en": "This adapter allows to create scenes from several datapoints.",
-            "de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
-            "ru": "Позволяет создавать и активировать cцены.",
-            "pt": "Este adaptador permite criar cenas de vários pontos de dados",
-            "nl": "Met deze adapter kunnen scènes van verschillende datapunten worden gemaakt",
-            "fr": "Cet adaptateur permet de créer des scènes à partir de plusieurs points de données",
-            "it": "Questo adattatore consente di creare scene da diversi datapoint",
-            "es": "Este adaptador permite crear escenas desde varios puntos de datos",
-            "pl": "Ten adapter umożliwia tworzenie scen z kilku punktów danych",
-            "uk": "Цей адаптер дозволяє створювати сцени з декількох точок даних",
-            "zh-cn": "此适配器允许从多个数据点创建场景"
-        },
-        "authors": ["bluefox <dogafox@gmail.com>"],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "mode": "daemon",
-        "readme": "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
-        "loglevel": "info",
-        "icon": "scenes.png",
-        "enabled": true,
-        "messagebox": true,
-        "adminUI": {
-            "config": "none"
-        },
-        "eraseOnUpload": true,
-        "keywords": ["Scenes", "Szenen", "Сцены"],
-        "compact": true,
-        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
-        "localLinks": {
-            "_default": "/adapter/scenes/tab.html"
-        },
-        "type": "logic",
-        "adminTab": {
-            "name": {
-                "en": "Scenes",
-                "de": "Szenen",
-                "ru": "Cцeны",
-                "pt": "Cenas",
-                "nl": "Scènes",
-                "fr": "Scènes",
-                "it": "scene",
-                "es": "Escenas",
-                "pl": "Sceny",
-                "uk": "Сцени",
-                "zh-cn": "场景"
-            },
-            "singleton": true
-        },
-        "plugins": {
-            "sentry": {
-                "dsn": "https://a66ab7f27f2744c5a722875d343471ad@sentry.iobroker.net/44"
-            }
-        },
-        "deviceWidgets": {
-            "components": [
-                {
-                    "name": "ScenesWidget",
-                    "label": {
-                        "de": "Szenen-Button",
-                        "en": "Scene Button",
-                        "ru": "Кнопка сцены"
-                    },
-                    "description": {
-                        "de": "Szene per Klick aktivieren",
-                        "en": "Activate a scene with one click",
-                        "ru": "Активировать сцену одним нажатием"
-                    },
-                    "icon": "scenes.png"
-                }
-            ]
-        },
-        "connectionType": "local",
-        "dataSource": "push",
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "tier": 1
+  "common": {
+    "name": "scenes",
+    "version": "5.0.0",
+    "news": {
+      "5.0.0": {
+        "en": "Updated packages\nAdded widget for \"devices\" adapter\nGUI migrated to React 19 + MUI 9",
+        "de": "Aktualisierte Pakete\nWidget für den Adapter „Geräte“ hinzugefügt\nGUI migriert auf React 19 + MUI 9",
+        "ru": "Обновлены пакеты\nДобавлен виджет для адаптера \"устройства\".\nГрафический интерфейс пользователя переведён на React 19 + MUI 9",
+        "pt": "Pacotes atualizados\nAdicionado widget para o adaptador \"dispositivos\".\nInterface gráfica migrada para React 19 + MUI 9",
+        "nl": "Bijgewerkte pakketten\nWidget toegevoegd voor de \"apparaten\"-adapter\nGUI gemigreerd naar React 19 + MUI 9",
+        "fr": "Paquets mis à jour\nAjout d'un widget pour l'adaptateur « appareils ».\nInterface graphique migrée vers React 19 + MUI 9",
+        "it": "Pacchetti aggiornati\nAggiunto widget per l'adattatore \"dispositivi\".\nInterfaccia grafica migrata a React 19 + MUI 9",
+        "es": "Paquetes actualizados\nSe agregó un widget para el adaptador \"dispositivos\".\nLa interfaz gráfica de usuario se migró a React 19 + MUI 9.",
+        "pl": "Zaktualizowane pakiety\nDodano widget dla adaptera „urządzenia”\nMigracja GUI do React 19 + MUI 9",
+        "uk": "Оновлені пакети\nДодано віджет для адаптера \"пристрої\"\nГрафічний інтерфейс перенесено на React 19 + MUI 9",
+        "zh-cn": "更新包\n为“设备”适配器添加了小部件\nGUI 已迁移至 React 19 + MUI 9"
+      },
+      "4.0.4": {
+        "en": "Corrected the selection of multiple IDs in the scene editor",
+        "de": "Die Auswahl mehrerer IDs im Szeneneditor korrigiert",
+        "ru": "Исправлен выбор нескольких идентификаторов в редакторе сцены",
+        "pt": "Corrigido a seleção de vários IDs no editor de cena",
+        "nl": "De selectie van meerdere ID's in de scène-editor gecorrigeerd",
+        "fr": "Correction de la sélection de plusieurs ID dans l'éditeur de scène",
+        "it": "Corretto la selezione di più ID nell'editor della scena",
+        "es": "Corregido la selección de múltiples IDs en el editor de escena",
+        "pl": "Poprawił wybór wielu identyfikatorów w edytorze sceny",
+        "uk": "Виправлено вибір декількох ідентифікаторів у редакторі сцени",
+        "zh-cn": "更正了场景编辑器中选择的多个ID"
+      },
+      "4.0.3": {
+        "en": "Canceled the cron tasks on the instance stop",
+        "de": "Die Cron-Aufgaben auf der Instanz stoppen",
+        "ru": "Отменены задачи cron на остановке экземпляра",
+        "pt": "Cancelou as tarefas do cron na parada da instância",
+        "nl": "Annuleerde de cron taken op de instantie stop",
+        "fr": "Annulé les tâches de cron sur l'arrêt de l'instance",
+        "it": "Annullato i compiti del cron sull'arresto dell'istanza",
+        "es": "Cancelado las tareas del cron en la parada de instancia",
+        "pl": "Anulował zadania cron na instance stop",
+        "uk": "Скасовано завдання синхрону на зупинці екземпляра",
+        "zh-cn": "取消实例停止的 cron 任务"
+      },
+      "4.0.2": {
+        "en": "Small improvements for layout",
+        "de": "Kleine Verbesserungen im Layout",
+        "ru": "Небольшие улучшения для макета",
+        "pt": "Pequenas melhorias para a disposição",
+        "nl": "Kleine verbeteringen voor lay-out",
+        "fr": "Petites améliorations pour la mise en page",
+        "it": "Piccoli miglioramenti per il layout",
+        "es": "Pequeñas mejoras para el diseño",
+        "pl": "Niewielka poprawa układu",
+        "uk": "Невеликі поліпшення для планування",
+        "zh-cn": "对布局的小改进"
+      },
+      "4.0.1": {
+        "en": "Adapter was migrated to TypeScript\nCorrected error with the Select ID dialog",
+        "de": "Adapter wurde auf TypeScript migriert\nFehler behoben mit dem Dialog ID auswählen",
+        "ru": "Адаптер был перенесен на TypeScript\nИсправлена ошибка с диалогом Select ID",
+        "pt": "Adapter foi migrado para TypeScript\nErro corrigido com a caixa de diálogo Selecionar ID",
+        "nl": "Adapter is gemigreerd naar TypeScript\nFout gecorrigeerd met het dialoogvenster ID selecteren",
+        "fr": "L'adaptateur a été migré vers TypeScript\nErreur corrigée avec la boîte de dialogue Select ID",
+        "it": "L'adattatore è stato migrato a TypeScript\nErrore corretto con la finestra di dialogo Seleziona ID",
+        "es": "Adaptador fue migrado a TipoScript\nError corregido con el diálogo Seleccionar ID",
+        "pl": "Adapter został przeniesiony do TypeScript\nSkorygowany błąd przy pomocy okna dialogowego Wybierz ID",
+        "uk": "Адаптер був мігрований до TypeScript\nВиправлена помилка з діалогове вікно ідентифікатора Виберіть",
+        "zh-cn": "适配器已迁移到类型脚本\n选择 ID 对话框纠正错误"
+      },
+      "3.2.3": {
+        "en": "Packages updated",
+        "de": "Pakete aktualisiert",
+        "ru": "Обновленные пакеты",
+        "pt": "Pacotes atualizados",
+        "nl": "Pakketten bijgewerkt",
+        "fr": "Mise à jour des paquets",
+        "it": "Pacchetti aggiornati",
+        "es": "Paquetes actualizados",
+        "pl": "Aktualizacja pakietów",
+        "uk": "Пакети оновлені",
+        "zh-cn": "更新软件包"
+      },
+      "3.2.1": {
+        "en": "GUI migrated for the new `adapter-react` library",
+        "de": "GUI migriert für die neue `adapter-react` Bibliothek",
+        "ru": "GUI мигрировал в новую библиотеку `adapter-react'",
+        "pt": "GUI migrado para a nova biblioteca `adapter-react`",
+        "nl": "GUI is gemigreerd voor de nieuwe \"adapter-reageren\" bibliotheek",
+        "fr": "GUI migré pour la nouvelle bibliothèque `adaptation-réaction`",
+        "it": "GUI migrata per la nuova libreria `adapter-react`",
+        "es": "GUI migrated for the new `adapter-react` library",
+        "pl": "GUI wyemigrował do nowej biblioteki 'adapter-response'",
+        "uk": "GUI мігрантував нову бібліотеку `adapter-react`",
+        "zh-cn": "GUI 迁移到新的“适应器反应”库"
+      }
     },
-    "native": {},
-    "instanceObjects": []
+    "titleLang": {
+      "en": "Scenes",
+      "de": "Szenen",
+      "ru": "Сцены",
+      "pt": "Cenários",
+      "nl": "scenario's",
+      "fr": "Scénarios",
+      "it": "scenari",
+      "es": "Escenarios",
+      "pl": "Scenariusze",
+      "uk": "Сценарії",
+      "zh-cn": "场景"
+    },
+    "desc": {
+      "en": "This adapter allows to create scenes from several datapoints.",
+      "de": "Adapter erlaubt die Szenen zu erzeugen und die zu aktivieren.",
+      "ru": "Позволяет создавать и активировать cцены.",
+      "pt": "Este adaptador permite criar cenas de vários pontos de dados",
+      "nl": "Met deze adapter kunnen scènes van verschillende datapunten worden gemaakt",
+      "fr": "Cet adaptateur permet de créer des scènes à partir de plusieurs points de données",
+      "it": "Questo adattatore consente di creare scene da diversi datapoint",
+      "es": "Este adaptador permite crear escenas desde varios puntos de datos",
+      "pl": "Ten adapter umożliwia tworzenie scen z kilku punktów danych",
+      "uk": "Цей адаптер дозволяє створювати сцени з декількох точок даних",
+      "zh-cn": "此适配器允许从多个数据点创建场景"
+    },
+    "authors": [
+      "bluefox <dogafox@gmail.com>"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "mode": "daemon",
+    "readme": "https://github.com/ioBroker/ioBroker.scenes/blob/master/README.md",
+    "loglevel": "info",
+    "icon": "scenes.png",
+    "enabled": true,
+    "messagebox": true,
+    "adminUI": {
+      "config": "none"
+    },
+    "eraseOnUpload": true,
+    "keywords": [
+      "Scenes",
+      "Szenen",
+      "Сцены"
+    ],
+    "compact": true,
+    "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.scenes/master/admin/scenes.png",
+    "localLinks": {
+      "_default": "/adapter/scenes/tab.html"
+    },
+    "type": "logic",
+    "adminTab": {
+      "name": {
+        "en": "Scenes",
+        "de": "Szenen",
+        "ru": "Cцeны",
+        "pt": "Cenas",
+        "nl": "Scènes",
+        "fr": "Scènes",
+        "it": "scene",
+        "es": "Escenas",
+        "pl": "Sceny",
+        "uk": "Сцени",
+        "zh-cn": "场景"
+      },
+      "singleton": true
+    },
+    "plugins": {
+      "sentry": {
+        "dsn": "https://a66ab7f27f2744c5a722875d343471ad@sentry.iobroker.net/44"
+      }
+    },
+    "deviceWidgets": {
+      "components": [
+        {
+          "name": "ScenesWidget",
+          "label": {
+            "de": "Szenen-Button",
+            "en": "Scene Button",
+            "ru": "Кнопка сцены"
+          },
+          "description": {
+            "de": "Szene per Klick aktivieren",
+            "en": "Activate a scene with one click",
+            "ru": "Активировать сцену одним нажатием"
+          },
+          "icon": "scenes.png"
+        }
+      ]
+    },
+    "connectionType": "local",
+    "dataSource": "push",
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "tier": 1
+  },
+  "native": {},
+  "instanceObjects": []
 }
