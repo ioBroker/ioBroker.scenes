@@ -17,6 +17,7 @@ import {
     DialogActions,
     Drawer,
     Box,
+    CssBaseline,
 } from '@mui/material';
 
 // Own
@@ -1386,7 +1387,13 @@ class App extends GenericApp<AppProps, AppState> {
             return (
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={this.state.theme}>
-                        <Loader themeName={this.state.themeName} />
+                        <CssBaseline />
+                        {/* themeType, not themeName: the loader only ships CSS for light/dark/colored/blue,
+                            so "modernDark" would match nothing and fall back to a transparent background */}
+                        <Loader
+                            themeType={this.state.themeType}
+                            backgroundColor={this.state.theme.palette.background.default}
+                        />
                     </ThemeProvider>
                 </StyledEngineProvider>
             );
@@ -1397,6 +1404,7 @@ class App extends GenericApp<AppProps, AppState> {
         return (
             <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={this.state.theme}>
+                    <CssBaseline />
                     <ScrollbarStyles theme={this.state.theme} />
                     <Box
                         component="div"

@@ -44,7 +44,10 @@ import type { SceneObject } from '../types';
 const LEVEL_PADDING = 16;
 // base indent of every row; kept as padding rather than a margin on the list so
 // the selection highlight spans the full width
-const ROW_PADDING = 8;
+// The selected row is a pill inset by PILL_MARGIN on both sides, so the row itself needs that
+// much less padding - otherwise icon and text would move when the pill was introduced.
+const PILL_MARGIN = 4;
+const ROW_PADDING = 8 - PILL_MARGIN;
 
 export interface SceneFolder {
     scenes: Record<string, SceneObject>;
@@ -227,8 +230,7 @@ const styles: Record<string, any> = {
         height: 32,
     },
     mainList: {
-        // full width on purpose: the 8px inset lives in the rows' paddingLeft
-        // (ROW_PADDING) so that the selection highlight reaches both edges
+        // the rows are inset by PILL_MARGIN, the selection is a pill - see the scene row below
         '& .js-folder-dragover>li.folder-reorder': {
             background: '#40adff',
         },
@@ -525,9 +527,11 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                     changed && styles.changed,
                     !scene.common.enabled && styles.disabled,
                     {
-                        // Same visual language as the selected entry in the admin menu: a gradient built
-                        // from the palette instead of a flat secondary colour. `background` (not
-                        // `backgroundColor`) plus !important, otherwise MUI's own .Mui-selected wins.
+                        // Same visual language as the selected entry in the admin menu: an inset pill with
+                        // a gradient from the palette. `background` (not `backgroundColor`) plus
+                        // !important, otherwise MUI's own .Mui-selected wins.
+                        mx: `${PILL_MARGIN}px`,
+                        borderRadius: '8px',
                         background: selected
                             ? `linear-gradient(90deg, ${this.props.theme.palette.primary.light} 0%, ${this.props.theme.palette.primary.main} 100%) !important`
                             : undefined,
@@ -649,7 +653,12 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                 <ListItem
                     key={parent.prefix}
                     disableGutters
-                    sx={Utils.getStyle(this.props.theme, styles.width100, styles.folderItem, styles.noPaddings)}
+                    sx={Utils.getStyle(this.props.theme, styles.width100, styles.folderItem, styles.noPaddings, {
+                        // the same inset as the scene rows, otherwise their icons would not line up.
+                        // The width has to shrink with it, `width100` plus margins would overflow.
+                        mx: `${PILL_MARGIN}px`,
+                        width: `calc(100% - ${2 * PILL_MARGIN}px)`,
+                    })}
                     className={this.state.reorder ? 'folder-reorder' : ''}
                     style={{
                         paddingLeft: ROW_PADDING + (this.state.reorder ? level : level - 1) * LEVEL_PADDING,

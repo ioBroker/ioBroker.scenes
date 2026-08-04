@@ -11,6 +11,29 @@
     <meta name="theme-color" content="#000000" />
     <link rel="manifest" href="manifest.json" />
     <script>
+        // Paint the theme background before React mounts, otherwise the page flashes white
+        (function () {
+            var themeName;
+            try {
+                themeName = window.localStorage.getItem('App.themeName');
+            } catch (e) {
+                // localStorage can be blocked in an iframe
+            }
+            if (!themeName || themeName === 'auto') {
+                themeName = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'modernDark' : 'modernLight';
+            }
+            // must stay in sync with the palettes of @iobroker/gui-components
+            var backgrounds = {
+                modernDark: '#0A121D',
+                modernLight: '#F4F7FB',
+                dark: '#121212',
+                blue: '#151d21',
+                light: '#ffffff',
+                colored: '#ffffff',
+            };
+            document.documentElement.style.backgroundColor = backgrounds[themeName] || '#ffffff';
+        })();
+
         var script = document.createElement('script');
         window.registerSocketOnLoad = function (cb) {
             window.socketLoadedHandler = cb;
@@ -27,7 +50,7 @@
         document.head.appendChild(script);
     </script>
     <title>Scenes [ioBroker]</title>
-  <script type="module" crossorigin src="./assets/index-BDVd4Hhr.js"></script>
+  <script type="module" crossorigin src="./assets/index-D6zOMXjJ.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-CUC67mJV.css">
 </head>
 <body>

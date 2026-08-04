@@ -10,10 +10,10 @@
     "devDependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@iobroker/gui-components": "^10.0.9",
+        "@iobroker/gui-components": "^10.0.12",
         "@iobroker/dm-utils": "^3.2.0",
         "@iobroker/dm-widgets": "^2.0.0",
-        "@iobroker/json-config": "^9.0.12",
+        "@iobroker/json-config": "^9.0.16",
         "@module-federation/runtime": "^2.8.1",
         "@module-federation/vite": "^1.20.1",
         "@mui/icons-material": "^9.2.0",
