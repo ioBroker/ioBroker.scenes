@@ -152,7 +152,7 @@ sendTo(
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 5.0.1 (2026-08-06)
 * (bluefox) Updated packages
 * (bluefox) Added widget for "devices" adapter
 * (bluefox) GUI migrated to React 19 + MUI 9
