@@ -3,19 +3,6 @@
     "name": "scenes",
     "version": "5.0.0",
     "news": {
-      "5.0.0": {
-        "en": "Updated packages\nAdded widget for \"devices\" adapter\nGUI migrated to React 19 + MUI 9",
-        "de": "Aktualisierte Pakete\nWidget für den Adapter „Geräte“ hinzugefügt\nGUI migriert auf React 19 + MUI 9",
-        "ru": "Обновлены пакеты\nДобавлен виджет для адаптера \"устройства\".\nГрафический интерфейс пользователя переведён на React 19 + MUI 9",
-        "pt": "Pacotes atualizados\nAdicionado widget para o adaptador \"dispositivos\".\nInterface gráfica migrada para React 19 + MUI 9",
-        "nl": "Bijgewerkte pakketten\nWidget toegevoegd voor de \"apparaten\"-adapter\nGUI gemigreerd naar React 19 + MUI 9",
-        "fr": "Paquets mis à jour\nAjout d'un widget pour l'adaptateur « appareils ».\nInterface graphique migrée vers React 19 + MUI 9",
-        "it": "Pacchetti aggiornati\nAggiunto widget per l'adattatore \"dispositivi\".\nInterfaccia grafica migrata a React 19 + MUI 9",
-        "es": "Paquetes actualizados\nSe agregó un widget para el adaptador \"dispositivos\".\nLa interfaz gráfica de usuario se migró a React 19 + MUI 9.",
-        "pl": "Zaktualizowane pakiety\nDodano widget dla adaptera „urządzenia”\nMigracja GUI do React 19 + MUI 9",
-        "uk": "Оновлені пакети\nДодано віджет для адаптера \"пристрої\"\nГрафічний інтерфейс перенесено на React 19 + MUI 9",
-        "zh-cn": "更新包\n为“设备”适配器添加了小部件\nGUI 已迁移至 React 19 + MUI 9"
-      },
       "4.0.4": {
         "en": "Corrected the selection of multiple IDs in the scene editor",
         "de": "Die Auswahl mehrerer IDs im Szeneneditor korrigiert",
