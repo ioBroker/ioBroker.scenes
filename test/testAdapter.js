@@ -1,18 +1,17 @@
-const expect = require('chai').expect;
+const assert = require('node:assert');
 const setup = require('@iobroker/legacy-testing');
 
 let objects = null;
 let states = null;
 let onStateChanged = null;
-let sendToID = 1;
 
 const adapterShortName = setup.adapterName.substring(setup.adapterName.indexOf('.') + 1);
 
 function checkConnectionOfAdapter(cb, counter) {
-    counter = counter || 0;
-    console.log('Try check #' + counter);
+    counter ||= 0;
+    console.log(`Try check #${counter}`);
     if (counter > 30) {
-        if (cb) cb('Cannot check connection');
+        cb?.('Cannot check connection');
         return;
     }
 
@@ -21,62 +20,15 @@ function checkConnectionOfAdapter(cb, counter) {
             console.error(err);
         }
         if (state?.val) {
-            if (cb) {
-                cb();
-            }
+            cb?.();
         } else {
             setTimeout(() => checkConnectionOfAdapter(cb, counter + 1), 1000);
         }
     });
 }
 
-function checkValueOfState(id, value, cb, counter) {
-    counter = counter || 0;
-    if (counter > 20) {
-        if (cb) cb(`Cannot check value Of State ${id}`);
-        return;
-    }
-
-    states.getState(id, (err, state) => {
-        if (err) {
-            console.error(err);
-        }
-        if (value === null && !state) {
-            if (cb) {
-                cb();
-            }
-        } else if (state && (value === undefined || state.val === value)) {
-            if (cb) {
-                cb();
-            }
-        } else {
-            setTimeout(() => checkValueOfState(id, value, cb, counter + 1), 500);
-        }
-    });
-}
-
-function sendTo(target, command, message, callback) {
-    onStateChanged = (id, state) => {
-        if (id === 'messagebox.system.adapter.test.0') {
-            callback(state.message);
-        }
-    };
-
-    states.pushMessage('system.adapter.' + target, {
-        command: command,
-        message: message,
-        from: 'system.adapter.test.0',
-        callback: {
-            message: message,
-            id: sendToID++,
-            ack: false,
-            time: new Date().getTime(),
-        },
-    });
-}
-
-describe('Test ' + adapterShortName + ' adapter', function () {
-    before('Test ' + adapterShortName + ' adapter: Start js-controller', function (_done) {
+describe(`Test ${adapterShortName} adapter`, function () {
+    before(`Test ${adapterShortName} adapter: Start js-controller`, function (_done) {
         this.timeout(600000); // because of first installation from npm
 
         setup.setupController(async () => {
@@ -115,7 +67,7 @@ describe('Test ' + adapterShortName + ' adapter', function () {
             if (res) {
                 console.log(res);
             }
-            expect(res).not.to.be.equal('Cannot check connection');
+            assert(res !== 'Cannot check connection');
             objects.setObject(
                 'system.adapter.test.0',
                 {

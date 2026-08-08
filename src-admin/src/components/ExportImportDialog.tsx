@@ -14,7 +14,7 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import { Close as IconClose, Check as IconCheck } from '@mui/icons-material';
 
 // Own
-import { Utils, I18n, IconCopy, type ThemeType } from '@iobroker/adapter-react-v5';
+import { Utils, I18n, IconCopy, type ThemeType } from '@iobroker/gui-components';
 import type { SceneObject } from '../types';
 
 const styles: Record<'divWithoutTitle' | 'error' | 'dialogHeight', React.CSSProperties> = {

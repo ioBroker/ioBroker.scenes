@@ -14,7 +14,7 @@ export default [
         languageOptions: {
             parserOptions: {
                 projectService: {
-                    allowDefaultProject: ['*.mjs'],
+                    allowDefaultProject: ['*.mjs', 'vite.config.ts'],
                 },
                 tsconfigRootDir: import.meta.dirname,
             },
@@ -29,12 +29,6 @@ export default [
         },
     },
     {
-        ignores: [
-            'build/**/*',
-            'node_modules/**/*',
-            'src/serviceWorker.js',
-            'vite.config.mjs',
-            'public/worker-json.js',
-        ],
+        ignores: ['build/**/*', 'node_modules/**/*', 'src/serviceWorker.js', 'public/worker-json.js'],
     },
 ];

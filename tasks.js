@@ -1,5 +1,5 @@
 /**
- * Copyright 2018-2024 bluefox <dogafox@gmail.com>
+ * Copyright 2018-2026 bluefox <dogafox@gmail.com>
  *
  * MIT License
  *
@@ -8,6 +8,21 @@
 
 const { existsSync, copyFileSync } = require('node:fs');
 const { deleteFoldersRecursive, npmInstall, buildReact, copyFiles, patchHtmlFile } = require('@iobroker/build-tools');
+
+const SRC_DEVICES = 'src-devices/';
+const srcDevices = `${__dirname}/${SRC_DEVICES}`;
+
+function cleanDevices() {
+    deleteFoldersRecursive(`${srcDevices}build`);
+    deleteFoldersRecursive(`${__dirname}/admin/dm-widgets`);
+}
+
+function copyAllFilesDevices() {
+    copyFiles([`${SRC_DEVICES}build/customDevices.js`], `admin/dm-widgets`);
+    copyFiles([`${SRC_DEVICES}build/assets/*.*`], `admin/dm-widgets/assets`);
+    copyFiles([`${SRC_DEVICES}build/img/*`], `admin/dm-widgets/img`);
+    copyFiles([`${SRC_DEVICES}img/scenes.png`], `admin/dm-widgets`);
+}
 
 async function copyAllFiles() {
     deleteFoldersRecursive(`${__dirname}/admin`);
@@ -51,6 +66,10 @@ if (process.argv.includes('--0-clean')) {
     }
     npm.then(() => buildReact(`${__dirname}/src-admin`, { rootDir: `${__dirname}/src-admin`, vite: true }))
         .then(() => copyAllFiles())
+        .then(() => cleanDevices())
+        .then(() => npmInstall(srcDevices))
+        .then(() => buildReact(srcDevices, { rootDir: __dirname, vite: true }))
+        .then(() => copyAllFilesDevices())
         .catch(e => {
             console.log(`Error: ${e.toString()}`);
             process.exit(2);
