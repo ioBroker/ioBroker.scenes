@@ -34,7 +34,7 @@
     "@iobroker/types": "^7.2.2",
     "@types/node-schedule": "^2.1.8",
     "mocha": "^11.8.0",
-    "typescript": "~6.0.3"
+    "typescript": "~7.0.2"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.scenes/issues"
