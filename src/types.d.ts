@@ -41,7 +41,7 @@ export type SceneConfig = {
     burstInterval?: number;
     members: SceneMember[];
     virtualGroup?: boolean;
-    aggregation?: 'uncertain' | 'any' | 'avg' | 'min' | 'max';
+    aggregation?: 'uncertain' | 'any' | 'avg' | 'min' | 'max' | 'sum';
 };
 
 export type SceneCommon = ioBroker.StateCommon & { engine: string; enabled: boolean };
