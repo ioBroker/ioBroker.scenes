@@ -152,7 +152,9 @@ sendTo(
 -->
 
 ## Changelog
+
 ### **WORK IN PROGRESS**
+* (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
 * (@SimonFischer04) Corrected the virtual group aggregation for the "any" mode
 
 ### 5.0.1 (2026-08-06)
