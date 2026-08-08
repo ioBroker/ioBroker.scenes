@@ -596,7 +596,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                                 this.setStateWithParent({ native });
                                             }}
                                         >
-                                            {['uncertain', 'any', 'avg', 'min', 'max'].map(id => (
+                                            {['uncertain', 'any', 'avg', 'min', 'max', 'sum'].map(id => (
                                                 <MenuItem
                                                     key={id}
                                                     value={id}
