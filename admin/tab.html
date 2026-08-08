@@ -10,10 +10,48 @@
     />
     <meta name="theme-color" content="#000000" />
     <link rel="manifest" href="manifest.json" />
-    <script type="text/javascript" onerror="setTimeout(function(){window.location.reload()}, 5000)" src="./lib/js/socket.io.js"></script>
+    <script>
+        // Paint the theme background before React mounts, otherwise the page flashes white
+        (function () {
+            var themeName;
+            try {
+                themeName = window.localStorage.getItem('App.themeName');
+            } catch (e) {
+                // localStorage can be blocked in an iframe
+            }
+            if (!themeName || themeName === 'auto') {
+                themeName = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'modernDark' : 'modernLight';
+            }
+            // must stay in sync with the palettes of @iobroker/gui-components
+            var backgrounds = {
+                modernDark: '#0A121D',
+                modernLight: '#F4F7FB',
+                dark: '#121212',
+                blue: '#151d21',
+                light: '#ffffff',
+                colored: '#ffffff',
+            };
+            document.documentElement.style.backgroundColor = backgrounds[themeName] || '#ffffff';
+        })();
+
+        var script = document.createElement('script');
+        window.registerSocketOnLoad = function (cb) {
+            window.socketLoadedHandler = cb;
+        };
+        const parts = (window.location.search || '').replace(/^\?/, '').split('&');
+        const query = {};
+        parts.forEach(item => {
+            const [name, val] = item.split('=');
+            query[decodeURIComponent(name)] = val !== undefined ? decodeURIComponent(val) : true;
+        });
+        script.onload = function () { typeof window.socketLoadedHandler === 'function' && window.socketLoadedHandler(); };
+        script.src = parseInt(window.location.port, 10) >= 3000 && parseInt(window.location.port, 10) <= 3100 ? `${window.location.protocol}//${query.host || window.location.hostname}:${query.port || 8081}/lib/js/socket.io.js` : '../../lib/js/socket.io.js';
+
+        document.head.appendChild(script);
+    </script>
     <title>Scenes [ioBroker]</title>
-  <script type="module" crossorigin src="./assets/index-BL6AP0mL.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CUNFpdmZ.css">
+  <script type="module" crossorigin src="./assets/index-DUfpy28g.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CUC67mJV.css">
 </head>
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

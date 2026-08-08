@@ -36,12 +36,18 @@ import {
     MdFileUpload as IconImport,
 } from 'react-icons/md';
 
-import { Utils, I18n, type IobTheme, type ThemeType } from '@iobroker/adapter-react-v5';
+import { Utils, I18n, type IobTheme, type ThemeType } from '@iobroker/gui-components';
 
 import ExportImportDialog from './ExportImportDialog';
 import type { SceneObject } from '../types';
 
 const LEVEL_PADDING = 16;
+// base indent of every row; kept as padding rather than a margin on the list so
+// the selection highlight spans the full width
+// The selected row is a pill inset by PILL_MARGIN on both sides, so the row itself needs that
+// much less padding - otherwise icon and text would move when the pill was introduced.
+const PILL_MARGIN = 4;
+const ROW_PADDING = 8 - PILL_MARGIN;
 
 export interface SceneFolder {
     scenes: Record<string, SceneObject>;
@@ -114,21 +120,17 @@ const styles: Record<string, any> = {
         height: '100%',
         width: '100%',
     },
-    right: {
-        float: 'right',
-    },
     heightMinusToolbar: {
         height: 'calc(100% - 48px)',
     },
     mainToolbar: (theme: IobTheme): React.CSSProperties => ({
-        background: theme.palette.primary.main,
+        // A surface, not the accent colour.  is a saturated blue in the modern themes,
+        // which turned the whole bar into a colour block and left the grey version text unreadable.
+        background: theme.palette.background.paper,
+        borderBottom: `1px solid ${theme.palette.divider}`,
     }),
     textInput: {
         display: 'block',
-    },
-    noGutters: {
-        paddingLeft: 0,
-        paddingRight: 0,
     },
     noPaddings: {
         paddingTop: 0,
@@ -177,10 +179,46 @@ const styles: Record<string, any> = {
     }),
     listItemTitle: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? '#FFF' : '#000',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
     }),
     listItemSubTitle: (theme: IobTheme): React.CSSProperties => ({
         color: theme.palette.mode === 'dark' ? '#bababa' : '#2a2a2a',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
     }),
+    // the selected row is filled with secondary.main, so the text must contrast
+    // with that colour and not with the page background
+    listItemTitleSelected: (theme: IobTheme): React.CSSProperties => ({
+        color: theme.palette.primary.contrastText,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+    }),
+    listItemSubTitleSelected: (theme: IobTheme): React.CSSProperties => ({
+        color: theme.palette.primary.contrastText,
+        opacity: 0.75,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+    }),
+    // without minWidth a flex item never shrinks below its content, so long
+    // scene IDs would push the enable/disable switch out of the list
+    listItemText: {
+        minWidth: 0,
+    },
+    ellipsis: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+    },
+    itemButtons: {
+        display: 'flex',
+        alignItems: 'center',
+        flexShrink: 0,
+    },
     list: {
         width: '100%',
         padding: 0,
@@ -192,8 +230,7 @@ const styles: Record<string, any> = {
         height: 32,
     },
     mainList: {
-        width: `calc(100% - 8px)`,
-        ml: '8px',
+        // the rows are inset by PILL_MARGIN, the selection is a pill - see the scene row below
         '& .js-folder-dragover>li.folder-reorder': {
             background: '#40adff',
         },
@@ -474,41 +511,59 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
 
         level = level || 0;
 
-        const changed =
-            this.props.selectedSceneId && this.props.selectedSceneId === scene._id && this.props.selectedSceneChanged;
+        const selected = !!this.props.selectedSceneId && this.props.selectedSceneId === scene._id;
+        const changed = selected && this.props.selectedSceneChanged;
 
         const listItem = (
             <ListItemButton
-                style={{ ...styles.noPaddings, paddingLeft: (this.state.reorder ? level : level - 1) * LEVEL_PADDING }}
+                style={{
+                    ...styles.noPaddings,
+                    paddingLeft: ROW_PADDING + (this.state.reorder ? level : level - 1) * LEVEL_PADDING,
+                }}
                 key={item._id}
-                selected={this.props.selectedSceneId ? this.props.selectedSceneId === scene._id : false}
+                selected={selected}
                 sx={Utils.getStyle(
                     this.props.theme,
                     changed && styles.changed,
                     !scene.common.enabled && styles.disabled,
                     {
-                        backgroundColor:
-                            this.props.selectedSceneId && this.props.selectedSceneId === scene._id
-                                ? `${this.props.theme.palette.secondary.main} !important`
-                                : undefined,
+                        // Same visual language as the selected entry in the admin menu: an inset pill with
+                        // a gradient from the palette. `background` (not `backgroundColor`) plus
+                        // !important, otherwise MUI's own .Mui-selected wins.
+                        mx: `${PILL_MARGIN}px`,
+                        borderRadius: '8px',
+                        background: selected
+                            ? `linear-gradient(90deg, ${this.props.theme.palette.primary.light} 0%, ${this.props.theme.palette.primary.main} 100%) !important`
+                            : undefined,
                     },
                 )}
                 className={this.state.reorder ? 'item-reorder' : ''}
                 onClick={() => this.props.onSceneSelect(scene._id)}
             >
-                <ListItemIcon style={styles.itemIconRoot}>
+                <ListItemIcon
+                    style={{
+                        ...styles.itemIconRoot,
+                        // the icon inherits a dark colour that is unreadable on the
+                        // selected row's secondary.main background
+                        ...(selected ? { color: this.props.theme.palette.primary.contrastText } : undefined),
+                    }}
+                >
                     <IconScript style={styles.itemIcon} />
                 </ListItemIcon>
                 <ListItemText
                     sx={{
-                        '& .MuiListItemText-primary': styles.listItemTitle,
-                        '& .MuiListItemText-secondary': styles.listItemSubTitle,
+                        ...styles.listItemText,
+                        '& .MuiListItemText-primary': selected ? styles.listItemTitleSelected : styles.listItemTitle,
+                        '& .MuiListItemText-secondary': selected
+                            ? styles.listItemSubTitleSelected
+                            : styles.listItemSubTitle,
                     }}
+                    title={`${Utils.getObjectNameFromObj(scene, null, { language: I18n.getLanguage() })}\n${Utils.getObjectNameFromObj(scene, null, { language: I18n.getLanguage() }, true)}`}
                     primary={Utils.getObjectNameFromObj(scene, null, { language: I18n.getLanguage() })}
                     secondary={Utils.getObjectNameFromObj(scene, null, { language: I18n.getLanguage() }, true)}
                 />
                 {!this.state.reorder ? (
-                    <div>
+                    <div style={styles.itemButtons}>
                         {this.state.changingScene === scene._id ? (
                             <CircularProgress size={24} />
                         ) : (
@@ -597,13 +652,16 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
             const folder = (
                 <ListItem
                     key={parent.prefix}
-                    sx={Utils.getStyle(this.props.theme, styles.width100, styles.folderItem, {
-                        '& .MuiListItem-gutters': styles.noGutters,
-                        '& .MuiListItem-root': styles.noPaddings,
+                    disableGutters
+                    sx={Utils.getStyle(this.props.theme, styles.width100, styles.folderItem, styles.noPaddings, {
+                        // the same inset as the scene rows, otherwise their icons would not line up.
+                        // The width has to shrink with it, `width100` plus margins would overflow.
+                        mx: `${PILL_MARGIN}px`,
+                        width: `calc(100% - ${2 * PILL_MARGIN}px)`,
                     })}
                     className={this.state.reorder ? 'folder-reorder' : ''}
                     style={{
-                        paddingLeft: (this.state.reorder ? level : level - 1) * LEVEL_PADDING,
+                        paddingLeft: ROW_PADDING + (this.state.reorder ? level : level - 1) * LEVEL_PADDING,
                         opacity: empty ? 0.5 : 1,
                     }}
                 >
@@ -622,13 +680,18 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                         )}
                     </ListItemIcon>
                     <ListItemText
+                        sx={{
+                            ...styles.listItemText,
+                            '& .MuiListItemText-primary': styles.ellipsis,
+                        }}
+                        title={parent.id || I18n.t('Root')}
                         primary={parent.id || I18n.t('Root')}
                         secondary={
                             empty ? <span style={styles.hint}>{I18n.t('Folder not saved yet')}</span> : undefined
                         }
                     />
                     {!this.state.reorder ? (
-                        <div>
+                        <div style={styles.itemButtons}>
                             {opened ? (
                                 <IconButton
                                     onClick={() => this.props.onCreateScene(parent.id)}
@@ -707,11 +770,9 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                 ) : null}
 
                 {!this.state.reorder ? (
-                    <span style={styles.right}>
-                        <IconButton onClick={() => this.setState({ showSearch: !this.state.showSearch })}>
-                            <SearchIcon />
-                        </IconButton>
-                    </span>
+                    <IconButton onClick={() => this.setState({ showSearch: !this.state.showSearch })}>
+                        <SearchIcon />
+                    </IconButton>
                 ) : null}
 
                 {this.state.showSearch && !this.state.reorder ? (
@@ -749,7 +810,7 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
                     <IconButton
                         key="reorder"
                         title={I18n.t('Reorder scenes in folders')}
-                        style={{ color: this.state.reorder ? 'red' : undefined, float: 'right' }}
+                        style={{ color: this.state.reorder ? 'red' : undefined }}
                         onClick={e => {
                             e.stopPropagation();
                             this.setState({ reorder: !this.state.reorder });

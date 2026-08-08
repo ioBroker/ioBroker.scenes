@@ -1,0 +1,42 @@
+{
+    "name": "iobroker-devices-component-scenes",
+    "private": true,
+    "version": "5.0.1",
+    "scripts": {
+        "start": "vite",
+        "build": "vite build"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
+        "@iobroker/gui-components": "^10.0.15",
+        "@iobroker/dm-utils": "^3.2.0",
+        "@iobroker/dm-widgets": "^2.0.0",
+        "@iobroker/json-config": "^9.0.18",
+        "@module-federation/runtime": "^2.8.2",
+        "@module-federation/vite": "^1.20.5",
+        "@mui/icons-material": "^9.3.1",
+        "@mui/material": "^9.3.1",
+        "@originjs/vite-plugin-federation": "^1.4.1",
+        "@types/react": "^19.2.18",
+        "@types/react-dom": "^19.2.4",
+        "@vitejs/plugin-react": "^6.0.5",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "vite": "^8.2.1",
+        "vite-plugin-commonjs": "^0.10.4"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+}

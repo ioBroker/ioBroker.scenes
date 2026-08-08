@@ -42,7 +42,7 @@ import {
     Utils,
     type IobTheme,
     type AdminConnection,
-} from '@iobroker/adapter-react-v5';
+} from '@iobroker/gui-components';
 import ChannelDetector, { type DetectOptions, Types } from '@iobroker/type-detector';
 import type { SceneEnumsValue } from '../types';
 
@@ -392,26 +392,14 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                             title={I18n.t('Include')}
                             placement="top"
                         >
-                            <AddIcon
-                                style={
-                                    {
-                                        /* color: textColor */
-                                    }
-                                }
-                            />
+                            <AddIcon style={{/* color: textColor */}} />
                         </Tooltip>
                     ) : (
                         <Tooltip
                             title={I18n.t('Exclude')}
                             placement="top"
                         >
-                            <ClearIcon
-                                style={
-                                    {
-                                        /* color: textColor */
-                                    }
-                                }
-                            />
+                            <ClearIcon style={{/* color: textColor */}} />
                         </Tooltip>
                     )}
                 </IconButton>
@@ -440,7 +428,7 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                             value={this.state.value.type || 'boolean'}
                             onChange={e => {
                                 const value: SceneEnumsValue = JSON.parse(JSON.stringify(this.state.value));
-                                value.type = e.target.value as 'boolean' | 'number' | 'string';
+                                value.type = e.target.value;
                                 this.setState({ value }, () => this.updateAllIds());
                             }}
                         >
@@ -463,9 +451,7 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                         </div>
                         {this.state.others.length ? (
                             <Grid
-                                item
-                                xs={12}
-                                md={4}
+                                size={{ xs: 12, md: 4 }}
                                 style={{ height: '100%', overflowY: 'auto' }}
                             >
                                 {I18n.t('Additional')}
@@ -479,9 +465,7 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                     >
                         {this.state.enums ? (
                             <Grid
-                                item
-                                xs={12}
-                                md={this.state.others.length ? 4 : 6}
+                                size={{ xs: 12, md: this.state.others.length ? 4 : 6 }}
                                 style={{ height: '100%', overflowY: 'auto', marginTop: 0 }}
                             >
                                 <List
@@ -541,9 +525,7 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                         )}
                         {this.state.enums ? (
                             <Grid
-                                item
-                                xs={12}
-                                md={this.state.others.length ? 4 : 6}
+                                size={{ xs: 12, md: this.state.others.length ? 4 : 6 }}
                                 style={{ height: '100%', overflowY: 'auto', marginTop: 0 }}
                             >
                                 <List
@@ -601,9 +583,7 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                         ) : null}
                         {this.state.others.length ? (
                             <Grid
-                                item
-                                xs={12}
-                                md={4}
+                                size={{ xs: 12, md: 4 }}
                                 style={{ height: '100%', overflowY: 'auto' }}
                             >
                                 <List

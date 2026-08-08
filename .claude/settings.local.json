@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(yml|yaml\\)$\")",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

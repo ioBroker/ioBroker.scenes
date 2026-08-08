@@ -34,3 +34,25 @@ updates:
     versioning-strategy: 'increase'
     cooldown:
       default-days: 7
+
+  - package-ecosystem: "npm"
+    directory: "/src-admin"
+    schedule:
+      interval: "cron"
+      timezone: "Europe/Berlin"
+      cronjob: "17 3 27 * *"
+    open-pull-requests-limit: 20
+    versioning-strategy: "increase"
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: "npm"
+    directory: "/src-devices"
+    schedule:
+      interval: "cron"
+      timezone: "Europe/Berlin"
+      cronjob: "17 3 27 * *"
+    open-pull-requests-limit: 20
+    versioning-strategy: "increase"
+    cooldown:
+      default-days: 7
