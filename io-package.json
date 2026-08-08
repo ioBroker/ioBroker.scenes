@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "5.0.1",
+    "version": "5.0.2",
     "news": {
+      "5.0.2": {
+        "en": "Adapter requires js-controller >= 6.0.11 now.\nCorrected the virtual group aggregation for the \"any\" mode\nAdded \"sum\" as virtual group function",
+        "de": "Adapter benötigt js-Controller >= 6.0.11 jetzt.\nKorrigiert die virtuelle Gruppenaggregation für den Modus \"any\"\nAdded \"sum\" als virtuelle Gruppenfunktion",
+        "ru": "Адаптер требует js-контроллер >= 6.0.11 сейчас.\nИсправлена агрегация виртуальных групп для режима «любой»\nДобавлена «сумма» в виде функции виртуальной группы",
+        "pt": "O adaptador requer js-controlador >= 6.0.11 agora.\nCorrigido a agregação de grupo virtual para o modo \"qualquer\"\nAdicionado \"soma\" como função de grupo virtual",
+        "nl": "Voor de adapter is nu js-controller > 6.0.11 nodig.\nDe virtual group-aggregatie voor de \"any\" modus gecorrigeerd\nToegevoegd \"som\" als virtuele groepsfunctie",
+        "fr": "Adaptateur nécessite js-controller >= 6.0.11 maintenant.\nCorrection de l'agrégation de groupe virtuel pour le mode \"any\"\nAjout de \"sum\" comme fonction de groupe virtuel",
+        "it": "Adattatore richiede js-controller >= 6.0.11 ora.\nCorretto l'aggregazione del gruppo virtuale per la modalità \"qualsiasi\"\nAggiunto \"sum\" come funzione di gruppo virtuale",
+        "es": "Adaptador requiere js-controller >= 6.0.11 ahora.\nCorregido la agregación del grupo virtual para el modo \"cualquier\"\nAñadido \"sum\" como función de grupo virtual",
+        "pl": "Adapter wymaga sterownika js- > = 6.0.11 teraz.\nKorekta wirtualnej agregacji grupy dla trybu \"any\"\nDodano \"sum\" jako funkcję wirtualnej grupy",
+        "uk": "Адаптер вимагає js-controller >=6.0.11 тепер.\nВиправлено агрегацію віртуальної групи за режим «будь-який»\nДодано функцію віртуальної групи",
+        "zh-cn": "适配器需要js控制器 >= 6.0.11 现在.\n更正“ 任意” 模式的虚拟组汇总\n添加“ sum” 作为虚拟组函数"
+      },
       "5.0.1": {
         "en": "Updated packages\nAdded widget for \"devices\" adapter\nGUI migrated to React 19 + MUI 9",
         "de": "Aktualisierte Pakete\nWidget für den Adapter „Geräte“ hinzugefügt\nGUI migriert auf React 19 + MUI 9",
@@ -80,19 +93,6 @@
         "pl": "Aktualizacja pakietów",
         "uk": "Пакети оновлені",
         "zh-cn": "更新软件包"
-      },
-      "3.2.1": {
-        "en": "GUI migrated for the new `adapter-react` library",
-        "de": "GUI migriert für die neue `adapter-react` Bibliothek",
-        "ru": "GUI мигрировал в новую библиотеку `adapter-react'",
-        "pt": "GUI migrado para a nova biblioteca `adapter-react`",
-        "nl": "GUI is gemigreerd voor de nieuwe \"adapter-reageren\" bibliotheek",
-        "fr": "GUI migré pour la nouvelle bibliothèque `adaptation-réaction`",
-        "it": "GUI migrata per la nuova libreria `adapter-react`",
-        "es": "GUI migrated for the new `adapter-react` library",
-        "pl": "GUI wyemigrował do nowej biblioteki 'adapter-response'",
-        "uk": "GUI мігрантував нову бібліотеку `adapter-react`",
-        "zh-cn": "GUI 迁移到新的“适应器反应”库"
       }
     },
     "titleLang": {
