@@ -13,7 +13,7 @@
         "@iobroker/gui-components": "^10.0.15",
         "@iobroker/dm-utils": "^3.2.0",
         "@iobroker/dm-widgets": "^2.0.0",
-        "@iobroker/json-config": "^9.0.18",
+        "@iobroker/json-config": "^9.0.21",
         "@module-federation/runtime": "^2.8.2",
         "@module-federation/vite": "^1.20.5",
         "@mui/icons-material": "^9.3.1",
