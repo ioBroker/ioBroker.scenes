@@ -29,6 +29,15 @@ const NAMES: Record<string, { boolean?: string; number?: string; string?: string
 
 type SceneMemberEx = SceneMember & { actual?: ioBroker.StateValue };
 
+/**
+ * How many activations of one scene are allowed within DEFAULT_LOOP_PROTECTION_INTERVAL by default.
+ * A real loop produces thousands of activations per second, so the limit is high enough,
+ * that a user, who moves a slider of a number scene, does not disable his scene by accident.
+ */
+const DEFAULT_LOOP_PROTECTION_COUNT = 100;
+/** Default length of the time window for the loop protection in ms */
+const DEFAULT_LOOP_PROTECTION_INTERVAL = 10000;
+
 export class ScenesAdapter extends Adapter {
     private scenesTimeout: Record<string, NodeJS.Timeout | null> = {};
     private hasEnums = false;
@@ -44,6 +53,12 @@ export class ScenesAdapter extends Adapter {
     private checkTimers: Record<string, NodeJS.Timeout | null> = {};
     private cronTasks: Record<string, Job | null> = {};
     private tIndex = 1; // never ending counter
+    // last seen value of every trigger state, to detect real value changes
+    private triggerValues: Record<string, ioBroker.StateValue> = {};
+    // timestamps of the last activations of a scene, used by the loop protection
+    private activations: Record<string, number[]> = {};
+    // scenes that were switched off by the loop protection and wait for the object update
+    private blockedScenes: string[] = [];
 
     public constructor(options: Partial<AdapterOptions> = {}) {
         super({
@@ -106,9 +121,12 @@ export class ScenesAdapter extends Adapter {
             }
 
             if (this.triggers[id]) {
+                // detect the change only once per update, as one state can be the trigger of many scenes
+                const isChanged = this.rememberTriggerValue(id, state);
+
                 for (let t = 0; t < this.triggers[id].length; t++) {
-                    this.checkTrigger(this.triggers[id][t], id, state, true);
-                    this.checkTrigger(this.triggers[id][t], id, state, false);
+                    this.checkTrigger(this.triggers[id][t], id, state, true, isChanged);
+                    this.checkTrigger(this.triggers[id][t], id, state, false, isChanged);
                 }
             }
         }
@@ -329,6 +347,8 @@ export class ScenesAdapter extends Adapter {
         this.scenes = {};
         this.ids = {};
         this.triggers = {};
+        this.triggerValues = {};
+        this.activations = {};
         this.timers = {};
         this.tIndex = 1;
         this.checkTimers = {};
@@ -522,7 +542,28 @@ export class ScenesAdapter extends Adapter {
         );
     }
 
-    checkTrigger(sceneId: string, stateId: string, state: ioBroker.State, isTrue: boolean): void {
+    /**
+     * Remember the actual value of a trigger state and report if it differs from the previously seen one.
+     * Used for the "only on change" option, so a state that is written again with the same value does not activate the scene once more.
+     *
+     * @param stateId ID of the trigger state
+     * @param state new state of the trigger
+     * @returns true if the value was really changed
+     */
+    rememberTriggerValue(stateId: string, state: ioBroker.State): boolean {
+        const isKnown = Object.prototype.hasOwnProperty.call(this.triggerValues, stateId);
+        const previousValue = this.triggerValues[stateId];
+        this.triggerValues[stateId] = state.val;
+
+        if (!isKnown) {
+            // the very first update after start: js-controller sets lc === ts only if the value was really changed
+            return state.lc === undefined || state.ts === undefined || state.lc === state.ts;
+        }
+
+        return previousValue !== state.val;
+    }
+
+    checkTrigger(sceneId: string, stateId: string, state: ioBroker.State, isTrue: boolean, isChanged = true): void {
         let val;
         let fVal;
         let aVal;
@@ -540,6 +581,14 @@ export class ScenesAdapter extends Adapter {
         const trigger = triggerObj.trigger;
 
         if (trigger.id === stateId) {
+            // "update" must react on every write, all other conditions may be limited to real value changes
+            if (!isChanged && trigger.condition !== 'update' && trigger.onlyOnChange !== false) {
+                this.log.debug(
+                    `checkTrigger: ignore "${stateId}" for "${sceneId}", because the value (${state.val}) was not changed`,
+                );
+                return;
+            }
+
             const stateVal = state && state.val !== undefined && state.val !== null ? state.val.toString() : '';
 
             val = trigger.value;
@@ -779,11 +828,85 @@ export class ScenesAdapter extends Adapter {
         }, interval);
     }
 
+    /**
+     * Switch a scene off, because something is wrong with it.
+     *
+     * @param sceneId ID of the scene
+     * @param reason why the scene must be disabled. Used for the log output
+     */
+    async disableScene(sceneId: string, reason: string): Promise<void> {
+        this.log.error(`Scene "${sceneId}" will be disabled: ${reason}`);
+
+        try {
+            const sceneObj = (await this.getForeignObjectAsync(sceneId)) as SceneObject;
+            if (!sceneObj) {
+                return;
+            }
+            if (sceneObj.common.enabled !== false) {
+                sceneObj.common.enabled = false;
+                delete sceneObj.ts;
+                // the object change restarts the adapter and the disabled scene will not be loaded anymore
+                await this.setForeignObjectAsync(sceneId, sceneObj);
+            }
+        } catch (e) {
+            this.log.error(`Cannot disable scene "${sceneId}": ${e instanceof Error ? e.message : e}`);
+        }
+    }
+
+    /**
+     * Count the activations of a scene and disable it if it was activated too often in a short time.
+     * Normally this means, that the user built a loop: the scene writes a state, that triggers the same scene again.
+     *
+     * @param sceneId ID of the scene
+     * @returns true if the scene is blocked and must not be activated
+     */
+    checkLoopProtection(sceneId: string): boolean {
+        if (this.blockedScenes.includes(sceneId)) {
+            return true;
+        }
+
+        const native = this.scenes[sceneId].native;
+        if (native.loopProtection === false) {
+            return false;
+        }
+
+        const interval =
+            parseInt(native.loopProtectionInterval as unknown as string, 10) || DEFAULT_LOOP_PROTECTION_INTERVAL;
+        const maxCount = parseInt(native.loopProtectionCount as unknown as string, 10) || DEFAULT_LOOP_PROTECTION_COUNT;
+        const now = Date.now();
+
+        const activations = (this.activations[sceneId] ||= []);
+        // forget all activations outside of the time window
+        while (activations.length && activations[0] <= now - interval) {
+            activations.shift();
+        }
+        activations.push(now);
+
+        if (activations.length <= maxCount) {
+            return false;
+        }
+
+        // block the scene immediately, as the object change is processed asynchronously
+        this.blockedScenes.push(sceneId);
+        delete this.activations[sceneId];
+
+        void this.disableScene(
+            sceneId,
+            `it was activated ${activations.length} times in ${interval} ms. Most likely the scene changes a state, that triggers this scene again`,
+        );
+
+        return true;
+    }
+
     activateScene(sceneId: string, isTrue: boolean): void {
         this.log.debug(`activateScene: execute for "${sceneId}" (${isTrue})`);
 
         if (!this.scenes[sceneId]) {
             this.log.error(`Unexpected error: Scene "${sceneId}" does not exist!`);
+            return;
+        }
+
+        if (this.checkLoopProtection(sceneId)) {
             return;
         }
 
@@ -1230,6 +1353,12 @@ export class ScenesAdapter extends Adapter {
 
                 this.scenes[id] = states[id];
                 this.scenes[id].native = this.scenes[id].native || {};
+
+                // the scene was enabled again, so the loop protection may start from scratch
+                const blockedIndex = this.blockedScenes.indexOf(id);
+                if (blockedIndex !== -1) {
+                    this.blockedScenes.splice(blockedIndex, 1);
+                }
 
                 // rename attribute
                 if (this.scenes[id].native.burstIntervall !== undefined) {

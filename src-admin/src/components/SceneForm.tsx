@@ -71,6 +71,10 @@ const styles: Record<string, any> = {
     p: {
         margin: `8px 0`,
     },
+    // the checkbox must stand on the same base line as the standard inputs beside it
+    triggerCheckbox: {
+        marginTop: '12px',
+    },
     onTrue: {
         background: 'lightgreen',
     },
@@ -103,9 +107,24 @@ interface SceneFormState {
     showDialog: ((id: string | string[]) => void) | null;
     sceneId: string;
     showCronDialog: 'onTrue' | 'onFalse' | null;
+    /** Objects of the trigger IDs, to show the possible values and the type of the trigger state */
+    triggerObjects: Record<string, ioBroker.StateObject | null>;
 }
 
+/** Default count of the allowed activations. Must be the same as in the backend */
+const DEFAULT_LOOP_PROTECTION_COUNT = 100;
+/** Default time window for the loop protection in ms. Must be the same as in the backend */
+const DEFAULT_LOOP_PROTECTION_INTERVAL = 10000;
+
+/** Conditions that can be used with any state */
+const CONDITIONS = ['==', '!=', '>', '<', '>=', '<=', 'update'];
+/** Conditions that make sense for booleans and for states with a list of allowed values */
+const CONDITIONS_DISCRETE = ['==', '!=', 'update'];
+
 class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
+    /** IDs, for which the object was already requested, to not read the same object again and again */
+    private readonly requestedTriggers: string[] = [];
+
     private readonly inputs: {
         Trigger: { ref: React.RefObject<any>; start: number; end: number };
         Value: { ref: React.RefObject<any>; start: number; end: number };
@@ -130,6 +149,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
             showDialog: null,
             sceneId: props.scene._id,
             showCronDialog: null,
+            triggerObjects: {},
         };
 
         this.inputs = {
@@ -139,6 +159,70 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
             Name: { ref: React.createRef(), start: 0, end: 0 },
             Description: { ref: React.createRef(), start: 0, end: 0 },
         };
+    }
+
+    componentDidMount(): void {
+        this.readTriggerObjects();
+    }
+
+    /** Read the objects of both trigger IDs, to know the type and the possible values of the trigger states */
+    readTriggerObjects(): void {
+        (['onTrue', 'onFalse'] as const).forEach(name => {
+            const id = this.state.native[name]?.trigger?.id;
+            if (!id || this.requestedTriggers.includes(id)) {
+                return;
+            }
+            this.requestedTriggers.push(id);
+
+            this.props.socket
+                .getObject(id)
+                .then(obj =>
+                    this.setState(state => ({
+                        triggerObjects: {
+                            ...state.triggerObjects,
+                            [id]: (obj as ioBroker.StateObject) || null,
+                        },
+                    })),
+                )
+                .catch(e => {
+                    console.error(`Cannot read object ${id}: ${e}`);
+                    this.setState(state => ({ triggerObjects: { ...state.triggerObjects, [id]: null } }));
+                });
+        });
+    }
+
+    /**
+     * Convert `common.states` of an object into a list for the select
+     *
+     * @param states states as they are stored in the object
+     */
+    static parseStates(states: unknown): { value: string; label: string }[] | null {
+        if (states === undefined || states === null) {
+            return null;
+        }
+        let result: { value: string; label: string }[] = [];
+
+        if (typeof states === 'string') {
+            // "value:text;value:text"
+            states.split(';').forEach(item => {
+                const parts = item.split(':');
+                if (parts[0] !== undefined && parts[0] !== '') {
+                    result.push({ value: parts[0].trim(), label: (parts[1] ?? parts[0]).trim() });
+                }
+            });
+        } else if (Array.isArray(states)) {
+            result = states.map(value => ({
+                value: (value as string | number).toString(),
+                label: `${value as string}`,
+            }));
+        } else if (typeof states === 'object') {
+            result = Object.keys(states as Record<string, string>).map(value => ({
+                value,
+                label: `${(states as Record<string, string>)[value]}`,
+            }));
+        }
+
+        return result.length ? result : null;
     }
 
     static getDerivedStateFromProps(props: SceneFormProps, state: SceneFormState): Partial<SceneFormState> | null {
@@ -183,8 +267,109 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
         ) : null;
     }
 
+    /**
+     * Render the input for the trigger value: a select for booleans and for states with `common.states`,
+     * a number input for numbers and a normal text input for everything else
+     *
+     * @param name which trigger is rendered
+     * @param triggerObj object of the trigger state or null if it is unknown
+     */
+    renderTriggerValue(name: 'onTrue' | 'onFalse', triggerObj: ioBroker.StateObject | null): React.JSX.Element {
+        const trigger = this.state.native[name].trigger;
+        const value = trigger.value === undefined || trigger.value === null ? '' : trigger.value.toString();
+
+        const onChange = (newValue: string): void => {
+            const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
+            native[name].trigger.value = newValue;
+            this.setStateWithParent({ native });
+        };
+
+        const states = SceneForm.parseStates(triggerObj?.common?.states);
+        const type = triggerObj?.common?.type;
+
+        if (states || type === 'boolean') {
+            // Take the values from the object, and for booleans just TRUE and FALSE
+            const options = states || [
+                { value: 'false', label: 'FALSE' },
+                { value: 'true', label: 'TRUE' },
+            ];
+            // Do not lose a value that is not in the list (e.g., if the object was changed later)
+            if (value !== '' && !options.find(item => item.value === value)) {
+                options.push({ value, label: value });
+            }
+
+            return (
+                <FormControl
+                    fullWidth
+                    variant="standard"
+                >
+                    <InputLabel shrink>{I18n.t('Value')}</InputLabel>
+                    <Select
+                        variant="standard"
+                        displayEmpty
+                        value={value}
+                        onChange={e => onChange(e.target.value)}
+                    >
+                        <MenuItem value="">
+                            <em>{I18n.t('Not set')}</em>
+                        </MenuItem>
+                        {options.map(item => (
+                            <MenuItem
+                                key={item.value}
+                                value={item.value}
+                            >
+                                {item.label}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            );
+        }
+
+        // "selectionStart" cannot be read or written for number inputs, so the cursor position is only kept for text
+        const isNumber = type === 'number';
+
+        return (
+            <TextField
+                variant="standard"
+                inputRef={isNumber ? undefined : this.inputs.Value.ref}
+                fullWidth
+                type={isNumber ? 'number' : 'text'}
+                slotProps={{
+                    inputLabel: {
+                        shrink: true,
+                    },
+                }}
+                label={I18n.t('Value')}
+                helperText={triggerObj?.common?.unit || ''}
+                value={value}
+                onFocus={isNumber ? undefined : () => this.saveCursorPosition('Value')}
+                onKeyDown={isNumber ? undefined : () => this.saveCursorPosition('Value')}
+                onChange={e => {
+                    if (!isNumber) {
+                        this.saveCursorPosition('Value');
+                    }
+                    onChange(e.target.value);
+                }}
+            />
+        );
+    }
+
     renderOnTrueFalse(name: 'onTrue' | 'onFalse'): React.JSX.Element {
         const on = this.state.native[name];
+        const triggerObj = (on.trigger.id && this.state.triggerObjects[on.trigger.id]) || null;
+        // for booleans and for states with a list of allowed values the comparison operators make no sense
+        const conditions = [
+            ...(triggerObj?.common?.type === 'boolean' ||
+            (SceneForm.parseStates(triggerObj?.common?.states) && triggerObj?.common?.type !== 'number')
+                ? CONDITIONS_DISCRETE
+                : CONDITIONS),
+        ];
+        const condition = on.trigger.condition || '==';
+        // never hide a condition that is already configured, even if it does not fit to the type
+        if (!conditions.includes(condition)) {
+            conditions.push(condition);
+        }
 
         return (
             <Box
@@ -253,7 +438,7 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                             container
                             spacing={1}
                         >
-                            <Grid size={{ xs: 12, sm: 8 }}>
+                            <Grid size={{ xs: 12, sm: 5 }}>
                                 <TextField
                                     variant="standard"
                                     inputRef={this.inputs.Trigger.ref}
@@ -297,44 +482,47 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                                     <InputLabel shrink>{I18n.t('Condition')}</InputLabel>
                                     <Select
                                         variant="standard"
-                                        value={on.trigger.condition || '=='}
+                                        value={condition}
                                         onChange={e => {
                                             const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
                                             native[name].trigger.condition = e.target.value;
                                             this.setStateWithParent({ native });
                                         }}
                                     >
-                                        <MenuItem value="==">==</MenuItem>
-                                        <MenuItem value="!=">!=</MenuItem>
-                                        <MenuItem value=">">&gt;</MenuItem>
-                                        <MenuItem value="<">&lt;</MenuItem>
-                                        <MenuItem value=">=">&gt;=</MenuItem>
-                                        <MenuItem value="<=">&lt;=</MenuItem>
-                                        <MenuItem value="update">{I18n.t('on update')}</MenuItem>
+                                        {conditions.map(item => (
+                                            <MenuItem
+                                                key={item}
+                                                value={item}
+                                            >
+                                                {item === 'update' ? I18n.t('on update') : item}
+                                            </MenuItem>
+                                        ))}
                                     </Select>
                                 </FormControl>
                             </Grid>
                             <Grid size={{ xs: 6, sm: 2 }}>
-                                <TextField
-                                    variant="standard"
-                                    inputRef={this.inputs.Value.ref}
-                                    fullWidth
-                                    slotProps={{
-                                        inputLabel: {
-                                            shrink: true,
-                                        },
-                                    }}
-                                    label={I18n.t('Value')}
-                                    value={on.trigger.value || ''}
-                                    onFocus={() => this.saveCursorPosition('Value')}
-                                    onKeyDown={() => this.saveCursorPosition('Value')}
-                                    onChange={e => {
-                                        this.saveCursorPosition('Value');
-                                        const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
-                                        native[name].trigger.value = e.target.value;
-                                        this.setStateWithParent({ native });
-                                    }}
-                                />
+                                {condition === 'update' ? null : this.renderTriggerValue(name, triggerObj)}
+                            </Grid>
+                            <Grid size={{ xs: 12, sm: 3 }}>
+                                {condition === 'update' ? null : (
+                                    <FormControlLabel
+                                        style={styles.triggerCheckbox}
+                                        title={I18n.t('only_on_change_tooltip')}
+                                        label={I18n.t('Only on change')}
+                                        control={
+                                            <Checkbox
+                                                checked={on.trigger.onlyOnChange !== false}
+                                                onChange={e => {
+                                                    const native: SceneConfig = JSON.parse(
+                                                        JSON.stringify(this.state.native),
+                                                    );
+                                                    native[name].trigger.onlyOnChange = e.target.checked;
+                                                    this.setStateWithParent({ native });
+                                                }}
+                                            />
+                                        }
+                                    />
+                                )}
                             </Grid>
                         </Grid>
                     ) : null}
@@ -391,6 +579,9 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
     };
 
     componentDidUpdate(): void {
+        // The trigger ID could be changed in the meantime
+        this.readTriggerObjects();
+
         // If there was a request to update the selection via setState...
         // Update the selection.
         (Object.keys(this.inputs) as ('Name' | 'Trigger' | 'Value' | 'Cron' | 'Description')[]).forEach(name => {
@@ -635,6 +826,92 @@ class SceneForm extends React.Component<SceneFormProps, SceneFormState> {
                             </Grid>
                         </Grid>
                     </Box>
+                    {/*
+                        The loop protection is always active, only its settings are hidden in the easy mode.
+                        It stands after the "Easy mode" checkbox, so that the checkbox does not jump away
+                        from the mouse pointer, when the settings appear.
+                    */}
+                    {!this.state.native.easy ? (
+                        <Box sx={styles.editItem}>
+                            <Grid
+                                container
+                                spacing={1}
+                            >
+                                <Grid size={{ xs: 12, sm: 4 }}>
+                                    <FormControlLabel
+                                        style={{ paddingTop: 10 }}
+                                        title={I18n.t('loop_protection_tooltip')}
+                                        label={I18n.t('Loop protection')}
+                                        control={
+                                            <Checkbox
+                                                checked={this.state.native.loopProtection !== false}
+                                                onChange={e => {
+                                                    const native: SceneConfig = JSON.parse(
+                                                        JSON.stringify(this.state.native),
+                                                    );
+                                                    native.loopProtection = e.target.checked;
+                                                    this.setStateWithParent({ native });
+                                                }}
+                                            />
+                                        }
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 6, sm: 4 }}>
+                                    <TextField
+                                        variant="standard"
+                                        fullWidth
+                                        disabled={this.state.native.loopProtection === false}
+                                        label={I18n.t('Max activations')}
+                                        title={I18n.t('loop_protection_tooltip')}
+                                        type="number"
+                                        slotProps={{
+                                            htmlInput: {
+                                                min: 1,
+                                            },
+                                            inputLabel: {
+                                                shrink: true,
+                                            },
+                                        }}
+                                        value={this.state.native.loopProtectionCount ?? DEFAULT_LOOP_PROTECTION_COUNT}
+                                        onChange={e => {
+                                            const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
+                                            native.loopProtectionCount =
+                                                parseInt(e.target.value, 10) || DEFAULT_LOOP_PROTECTION_COUNT;
+                                            this.setStateWithParent({ native });
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid size={{ xs: 6, sm: 4 }}>
+                                    <TextField
+                                        variant="standard"
+                                        fullWidth
+                                        disabled={this.state.native.loopProtection === false}
+                                        label={I18n.t('In time window')}
+                                        title={I18n.t('loop_protection_tooltip')}
+                                        type="number"
+                                        helperText="ms"
+                                        slotProps={{
+                                            htmlInput: {
+                                                min: 1000,
+                                            },
+                                            inputLabel: {
+                                                shrink: true,
+                                            },
+                                        }}
+                                        value={
+                                            this.state.native.loopProtectionInterval ?? DEFAULT_LOOP_PROTECTION_INTERVAL
+                                        }
+                                        onChange={e => {
+                                            const native: SceneConfig = JSON.parse(JSON.stringify(this.state.native));
+                                            native.loopProtectionInterval =
+                                                parseInt(e.target.value, 10) || DEFAULT_LOOP_PROTECTION_INTERVAL;
+                                            this.setStateWithParent({ native });
+                                        }}
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    ) : null}
                     {!this.state.native.virtualGroup ? this.renderOnTrueFalse('onTrue') : null}
                     {!this.state.native.virtualGroup && this.state.native.onFalse.enabled
                         ? this.renderOnTrueFalse('onFalse')

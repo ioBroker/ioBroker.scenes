@@ -5,6 +5,12 @@ export type SceneTrigger = {
         value?: null | string | number | boolean;
         id?: string;
         condition?: '==' | '!=' | '<' | '<=' | '>' | '>=' | 'update';
+        /**
+         * Activate the scene only if the value of the trigger state was really changed.
+         * Every write with the same value is ignored then. Default: true.
+         * Has no effect for the "update" condition.
+         */
+        onlyOnChange?: boolean;
     };
     astro?: string | null;
 };
@@ -42,6 +48,12 @@ export type SceneConfig = {
     members: SceneMember[];
     virtualGroup?: boolean;
     aggregation?: 'uncertain' | 'any' | 'avg' | 'min' | 'max' | 'sum';
+    /** Disable the scene automatically if it was activated too often in a short time (loop detection). Default: true */
+    loopProtection?: boolean;
+    /** How many activations are allowed within `loopProtectionInterval`. Default: 10 */
+    loopProtectionCount?: number;
+    /** Length of the time window for the loop protection in ms. Default: 10000 */
+    loopProtectionInterval?: number;
 };
 
 export type SceneCommon = ioBroker.StateCommon & { engine: string; enabled: boolean };
