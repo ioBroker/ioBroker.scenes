@@ -156,7 +156,7 @@ sendTo(
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 5.1.0 (2026-09-03)
 * (@GermanBluefox) Added the option "Only on change" for the triggers, so a state that is written again with the same value does not activate the scene anymore. It is enabled by default and can be switched off for every trigger
 * (@GermanBluefox) The trigger value is now selected from a list if the trigger state is boolean or has "common.states"
 * (@GermanBluefox) Added the loop protection: if a scene is activated too often in a short time, it will be disabled automatically
@@ -176,9 +176,6 @@ sendTo(
 
 ### 4.0.3 (2025-07-20)
 * (agross) Canceled the cron tasks on the instance stop
-
-### 4.0.2 (2025-06-16)
-* (bluefox) Small improvements for layout
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

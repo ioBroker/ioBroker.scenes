@@ -1,7 +1,7 @@
 {
     "name": "iobroker-devices-component-scenes",
     "private": true,
-    "version": "5.0.2",
+    "version": "5.1.0",
     "scripts": {
         "start": "vite",
         "build": "vite build"

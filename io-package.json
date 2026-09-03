@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "5.0.2",
+    "version": "5.1.0",
     "news": {
+      "5.1.0": {
+        "en": "Added the option \"Only on change\" for the triggers, so a state that is written again with the same value does not activate the scene anymore. It is enabled by default and can be switched off for every trigger\nThe trigger value is now selected from a list if the trigger state is boolean or has \"common.states\"\nAdded the loop protection: if a scene is activated too often in a short time, it will be disabled automatically",
+        "de": "Die Trigger-Option „Nur bei Änderung“ wurde hinzugefügt, sodass ein erneuter Wert die Szene nicht mehr aktiviert. Es ist standardmäßig aktiviert und für jeden Trigger abschaltbar\nDer Triggerwert wird nun aus einer Liste ausgewählt, wenn er boolean ist oder „common.states“ hat\nLoop-Schutz hinzugefügt: Wird eine Szene in kurzer Zeit zu oft aktiviert, wird sie automatisch deaktiviert",
+        "ru": "Добавлена опция «Только при изменении» для триггеров, поэтому состояние, снова записанное с тем же значением, больше не активирует сцену. Он включен по умолчанию и может быть выключен для каждого триггера\nЗначение триггера теперь выбирается из списка, если состояние триггера является логическим или имеет значение «common.states»\nДобавлена защита от зацикливания: если сцена активируется слишком часто за короткое время, она автоматически отключается",
+        "pt": "Foi adicionada a opção “Só na mudança” para os gatilhos, então um estado reescrito com o mesmo valor não ativa mais a cena. É ativado por padrão e pode ser desligado a cada gatilho\nO valor do gatilho agora é selecionado em uma lista se o estado for booleano ou “common.states”\nAdição da proteção de loop: se uma cena for ativada demais em pouco tempo, ela será desativada",
+        "nl": "De optie „Alleen bij verandering” toegevoegd voor de triggers, zodat een toestand die opnieuw wordt geschreven met dezelfde waarde de scène niet meer activeert. Het is standaard ingeschakeld en kan voor elke trigger worden uitgeschakeld\nDe triggerwaarde wordt nu uit een lijst geselecteerd als de triggerstatus booleaans is of „common.states” heeft\nDe lusbeveiliging toegevoegd: als een scène te vaak in korte tijd wordt geactiveerd, wordt deze automatisch uitgeschakeld",
+        "fr": "L'option « Uniquement en cas de changement » a été ajoutée pour les déclencheurs. Ainsi, un état réécrit avec la même valeur n'active plus la scène. Il est activé par défaut et peut être désactivé à chaque fois\nLa valeur du déclencheur est désormais sélectionnée dans une liste si l'état est booléen ou « common.states »\nProtection par boucle ajoutée : si une scène est activée trop souvent en peu de temps, elle sera automatiquement désactivée",
+        "it": "Aggiunta l'opzione «Solo su modifica» per i trigger, quindi uno stato riscritto con lo stesso valore non attiva più la scena. È abilitato di default e può essere spento per ogni trigger\nIl valore del trigger è ora selezionato da un elenco se è booleano o ha «common.states»\nAggiunta la protezione loop: se una scena si attiva troppo spesso in poco tempo, si disattiva",
+        "es": "Se ha añadido la opción «Solo al cambiar» para los activadores, de modo que un estado que se vuelva a escribir con el mismo valor ya no active la escena. Está activado por defecto y se puede desactivar en cada activación\nEl valor de activación se selecciona ahora de una lista si el estado de activación es booleano o tiene «common.states»\nSe ha añadido la protección de bucle: si una escena se activa muy a menudo en poco tiempo, se desactivará automáticamente",
+        "pl": "Dodano opcję „Tylko przy zmianie” dla wyzwalaczy, więc stan zapisany ponownie z tą samą wartością nie aktywuje już sceny. Jest domyślnie włączony i można go wyłączyć dla każdego wyzwalacza\nWartość wyzwalania jest teraz wybierana z listy, jeśli stan wyzwalania jest logiczny lub ma „common.states”\nDodano ochronę pętli: jeśli scena jest aktywowana zbyt często w krótkim czasie, zostanie automatycznie wyłączona",
+        "uk": "Додана опція «Тільки при зміні» для тригерів, тому стан, який записується знову з тим же значенням, більше не активує сцену. Він увімкнений за замовчуванням і може бути вимкнений для кожного тригера\nЗначення тригера тепер вибирається зі списку, якщо стан тригера є булевим або має «common.states»\nДодано захист циклу: якщо сцена активується занадто часто за короткий час, вона буде вимкнена автоматично",
+        "zh-cn": "为触发器添加了 “仅在更改时” 选项，因此使用相同值再次写入的状态不会再激活场景。它默认处于启用状态，每次触发时都可以将其关闭\n如果触发器状态为布尔值或具有 “common.states”，则现在可以从列表中选择触发器值\n添加了循环保护：如果场景在短时间内激活过于频繁，它将自动禁用"
+      },
       "5.0.2": {
         "en": "Adapter requires js-controller >= 6.0.11 now.\nCorrected the virtual group aggregation for the \"any\" mode\nAdded \"sum\" as virtual group function",
         "de": "Adapter benötigt js-Controller >= 6.0.11 jetzt.\nKorrigiert die virtuelle Gruppenaggregation für den Modus \"any\"\nAdded \"sum\" als virtuelle Gruppenfunktion",
@@ -80,19 +93,6 @@
         "pl": "Adapter został przeniesiony do TypeScript\nSkorygowany błąd przy pomocy okna dialogowego Wybierz ID",
         "uk": "Адаптер був мігрований до TypeScript\nВиправлена помилка з діалогове вікно ідентифікатора Виберіть",
         "zh-cn": "适配器已迁移到类型脚本\n选择 ID 对话框纠正错误"
-      },
-      "3.2.3": {
-        "en": "Packages updated",
-        "de": "Pakete aktualisiert",
-        "ru": "Обновленные пакеты",
-        "pt": "Pacotes atualizados",
-        "nl": "Pakketten bijgewerkt",
-        "fr": "Mise à jour des paquets",
-        "it": "Pacchetti aggiornati",
-        "es": "Paquetes actualizados",
-        "pl": "Aktualizacja pakietów",
-        "uk": "Пакети оновлені",
-        "zh-cn": "更新软件包"
       }
     },
     "titleLang": {
