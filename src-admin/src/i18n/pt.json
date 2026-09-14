@@ -145,7 +145,7 @@
     "from scene start": "desde o início da cena",
     "from start of scene": "desde o início da cena",
     "loop_protection_tooltip": "Se a cena for ativada com mais frequência do que o permitido dentro da janela de tempo, ela será desativada automaticamente. Isso protege contra loops, quando uma cena altera um estado que aciona a cena novamente.",
-    "ms": "em",
+    "ms": "EM",
     "on update": "na atualização",
     "only_on_change_tooltip": "Ativar a cena apenas se o valor do estado tiver realmente mudado. Se desativado, cada escrita do estado (mesmo com o mesmo valor) ativa a cena. Ajuda contra loops.",
     "state(s)": "estado(s)",
