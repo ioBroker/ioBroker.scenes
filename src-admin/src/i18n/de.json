@@ -145,7 +145,7 @@
     "from scene start": "vom Szenenstart",
     "from start of scene": "vom Beginn der Szene",
     "loop_protection_tooltip": "Wird die Szene innerhalb des Zeitfensters öfter als erlaubt aktiviert, wird sie automatisch deaktiviert. Das schützt vor Schleifen, wenn eine Szene einen Datenpunkt ändert, der die Szene erneut auslöst.",
-    "ms": "ms",
+    "ms": "MS",
     "on update": "beim Aktualisieren",
     "only_on_change_tooltip": "Die Szene nur auslösen, wenn sich der Wert des Datenpunktes wirklich geändert hat. Ist die Option deaktiviert, löst jedes Schreiben des Datenpunktes (auch mit demselben Wert) die Szene aus. Hilft gegen Schleifen.",
     "state(s)": "Zustände",
@@ -161,6 +161,6 @@
     "tooltip_ts": "Zeitstempel",
     "tooltip_user": "Benutzer",
     "tooltip_value": "Wert",
-    "uncertain": "unbekannt",
+    "uncertain": "unbestimmt",
     "virtual_group_tooltip": "Virtuelle Gruppen sind die Sammlung von Zuständen und können beliebige Werte haben: Zahlen, Zeichenfolgen usw. Z.B. Sie können eine virtuelle Gruppe erstellen, um alle Fensterläden im Wohnzimmer zu steuern. Wenn Sie 40% in die virtuelle Gruppe schreiben, werden alle Fensterläden auf 40% gesetzt."
 }
