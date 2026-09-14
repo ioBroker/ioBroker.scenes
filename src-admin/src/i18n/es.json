@@ -145,7 +145,7 @@
     "from scene start": "desde el inicio de la escena",
     "from start of scene": "desde el inicio de la escena",
     "loop_protection_tooltip": "Si la escena se activa con más frecuencia de la permitida dentro de la ventana de tiempo, se desactivará automáticamente. Esto protege contra bucles, cuando una escena cambia un estado que vuelve a activar la escena.",
-    "ms": "ms",
+    "ms": "EM",
     "on update": "en actualización",
     "only_on_change_tooltip": "Activar la escena solo si el valor del estado realmente cambió. Si se desactiva, cada escritura del estado (incluso con el mismo valor) activa la escena. Ayuda contra los bucles.",
     "state(s)": "estado(s)",
