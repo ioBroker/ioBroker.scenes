@@ -161,6 +161,6 @@
     "tooltip_ts": "Zeitstempel",
     "tooltip_user": "Benutzer",
     "tooltip_value": "Wert",
-    "uncertain": "unbestimmt",
+    "uncertain": "unbekannt",
     "virtual_group_tooltip": "Virtuelle Gruppen sind die Sammlung von Zuständen und können beliebige Werte haben: Zahlen, Zeichenfolgen usw. Z.B. Sie können eine virtuelle Gruppe erstellen, um alle Fensterläden im Wohnzimmer zu steuern. Wenn Sie 40% in die virtuelle Gruppe schreiben, werden alle Fensterläden auf 40% gesetzt."
 }
