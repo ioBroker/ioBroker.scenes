@@ -145,7 +145,7 @@
     "from scene start": "vom Szenenstart",
     "from start of scene": "vom Beginn der Szene",
     "loop_protection_tooltip": "Wird die Szene innerhalb des Zeitfensters öfter als erlaubt aktiviert, wird sie automatisch deaktiviert. Das schützt vor Schleifen, wenn eine Szene einen Datenpunkt ändert, der die Szene erneut auslöst.",
-    "ms": "MS",
+    "ms": "ms",
     "on update": "beim Aktualisieren",
     "only_on_change_tooltip": "Die Szene nur auslösen, wenn sich der Wert des Datenpunktes wirklich geändert hat. Ist die Option deaktiviert, löst jedes Schreiben des Datenpunktes (auch mit demselben Wert) die Szene aus. Hilft gegen Schleifen.",
     "state(s)": "Zustände",
