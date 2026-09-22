@@ -12,7 +12,7 @@
         "@emotion/styled": "^11.14.1",
         "@iobroker/gui-components": "^10.3.0",
         "@iobroker/dm-utils": "^3.2.0",
-        "@iobroker/dm-widgets": "^2.0.0",
+        "@iobroker/dm-widgets": "^2.0.1",
         "@iobroker/json-config": "^9.1.2",
         "@module-federation/runtime": "^2.9.0",
         "@module-federation/vite": "^1.21.6",
