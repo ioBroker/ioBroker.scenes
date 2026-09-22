@@ -15,7 +15,7 @@
         "@iobroker/dm-widgets": "^2.0.0",
         "@iobroker/json-config": "^9.1.2",
         "@module-federation/runtime": "^2.9.0",
-        "@module-federation/vite": "^1.21.2",
+        "@module-federation/vite": "^1.21.6",
         "@mui/icons-material": "^9.4.0",
         "@mui/material": "^9.4.0",
         "@originjs/vite-plugin-federation": "^1.4.1",
