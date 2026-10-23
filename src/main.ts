@@ -48,6 +48,28 @@ function normalizeBoolean(value: ioBroker.StateValue | undefined): ioBroker.Stat
 }
 
 /**
+ * Check if the enum member matches the filter of the enum settings.
+ * The filter is a case-insensitive regular expression, that is checked against the ID and all names of the object.
+ *
+ * @param id ID of the enum member
+ * @param obj object of the enum member
+ * @param filter regular expression
+ */
+function matchesEnumFilter(id: string, obj: ioBroker.Object | null | undefined, filter: RegExp): boolean {
+    if (filter.test(id)) {
+        return true;
+    }
+    const name = obj?.common?.name;
+    if (!name) {
+        return false;
+    }
+    if (typeof name === 'object') {
+        return Object.values(name).some(text => typeof text === 'string' && filter.test(text));
+    }
+    return filter.test(name);
+}
+
+/**
  * How many activations of one scene are allowed within DEFAULT_LOOP_PROTECTION_INTERVAL by default.
  * A real loop produces thousands of activations per second, so the limit is high enough,
  * that a user, who moves a slider of a number scene, does not disable his scene by accident.
@@ -332,7 +354,7 @@ export class ScenesAdapter extends Adapter {
                     this.log.debug(`ID ${member.id}=${state ? state.val : state}`);
                 } else if (member.enums) {
                     // enum => get all states and their values
-                    const ids = this.getAllEnumIds(member.enums);
+                    const ids = await this.filterEnumIds(this.getAllEnumIds(member.enums), member.enums, sceneID);
                     const values: (number | boolean | string | null)[] = [];
                     // copy all settings from the first member
                     for (let i = 0; i < ids.length; i++) {
@@ -1118,6 +1140,35 @@ export class ScenesAdapter extends Adapter {
         return usedIds;
     }
 
+    /**
+     * Remove all IDs, whose ID and names do not match the filter of the enum settings
+     *
+     * @param ids IDs of the enum members
+     * @param enumsSettings settings of the enum member with optional filter
+     * @param sceneId ID of the scene, used for the log output
+     */
+    async filterEnumIds(ids: string[], enumsSettings: SceneEnumsValue, sceneId: string): Promise<string[]> {
+        if (!enumsSettings.filter) {
+            return ids;
+        }
+        let filter: RegExp;
+        try {
+            filter = new RegExp(enumsSettings.filter, 'i');
+        } catch (e) {
+            this.log.warn(`Invalid filter "${enumsSettings.filter}" in "${sceneId}" is ignored: ${e}`);
+            return ids;
+        }
+
+        const result: string[] = [];
+        for (const id of ids) {
+            const obj = await this.getForeignObjectAsync(id);
+            if (matchesEnumFilter(id, obj, filter)) {
+                result.push(id);
+            }
+        }
+        return result;
+    }
+
     getAllEnumIds(enumsSettings: SceneEnumsValue): string[] {
         const ids: string[] = [];
 
@@ -1285,7 +1336,7 @@ export class ScenesAdapter extends Adapter {
         this.scenes[sceneId].native.members.splice(index, 1);
 
         // collect all IDs in this enum
-        const ids = this.getAllEnumIds(enumsSettings);
+        const ids = await this.filterEnumIds(this.getAllEnumIds(enumsSettings), enumsSettings, sceneId);
 
         // copy all settings from the first member
         for (let i = 0; i < ids.length; i++) {

@@ -129,6 +129,8 @@
     "Trigger for TRUE": "Disparador para VERDADERO",
     "Value": "Valor",
     "Value type": "Tipo de valor",
+    "Name filter (RegEx)": "Filtro de nombre (RegEx)",
+    "Invalid regular expression": "Expresión regular no válida",
     "Virtual group": "Grupo virtual",
     "Write to virtual group": "Escribir al grupo virtual",
     "Write with ack=true": "Escribir con ack=true",

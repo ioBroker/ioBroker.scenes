@@ -22,6 +22,8 @@ interface SceneEnumsValue {
     exclude: string[];
     type: 'boolean' | 'number' | 'string';
     delay: number | null | string;
+    /** Regular expression (case-insensitive) for the name or ID of the enum members. Only matching members are used */
+    filter?: string;
 }
 
 export type SceneMember = {

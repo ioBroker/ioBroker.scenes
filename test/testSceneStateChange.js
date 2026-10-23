@@ -292,3 +292,61 @@ describe('Stop a running scene (issue #42)', function () {
         ]);
     });
 });
+
+describe('Filter enum members by name (issue #457)', function () {
+    const sceneId = 'scene.0.kitchen_left';
+    const objects = {};
+    for (const side of ['left', 'right']) {
+        for (let i = 1; i <= 2; i++) {
+            const id = `matter.0.bulb_${side}_${i}`;
+            objects[id] = { _id: id, type: 'state', common: { name: { en: `CL ${side} 0${i}`, de: `DL ${side} 0${i}` } } };
+        }
+    }
+    let adapter;
+
+    function createScene(filter) {
+        adapter = createAdapter();
+        adapter.log = { debug() {}, info() {}, warn() {}, error() {} };
+        adapter.getObjectViewAsync = async () => ({
+            rows: [{ id: 'enum.rooms.kitchen', value: { common: { members: Object.keys(objects) } } }],
+        });
+        adapter.getForeignObjectAsync = async id => objects[id] || null;
+        adapter.scenes[sceneId] = {
+            native: {
+                members: [
+                    {
+                        setIfTrue: true,
+                        enums: { rooms: ['enum.rooms.kitchen'], funcs: [], others: [], exclude: [], type: 'boolean', filter },
+                    },
+                ],
+            },
+        };
+    }
+
+    async function getMemberIds(filter) {
+        createScene(filter);
+        await adapter.enum2scenes(sceneId, 0);
+        return adapter.scenes[sceneId].native.members.map(member => member.id);
+    }
+
+    it('uses all members without filter', async function () {
+        assert.deepEqual(await getMemberIds(undefined), Object.keys(objects));
+        assert.deepEqual(await getMemberIds(''), Object.keys(objects));
+    });
+
+    it('filters by name case-insensitive', async function () {
+        assert.deepEqual(await getMemberIds('cl LEFT'), ['matter.0.bulb_left_1', 'matter.0.bulb_left_2']);
+    });
+
+    it('filters by name in any language and by regular expression', async function () {
+        assert.deepEqual(await getMemberIds('^DL right 0[2-9]$'), ['matter.0.bulb_right_2']);
+    });
+
+    it('filters by ID', async function () {
+        assert.deepEqual(await getMemberIds('_1$'), ['matter.0.bulb_left_1', 'matter.0.bulb_right_1']);
+    });
+
+    it('ignores an invalid filter', async function () {
+        assert.deepEqual(await getMemberIds('left('), Object.keys(objects));
+    });
+});

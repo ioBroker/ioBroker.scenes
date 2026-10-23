@@ -129,6 +129,8 @@
     "Trigger for TRUE": "触发TRUE",
     "Value": "价值",
     "Value type": "值类型",
+    "Name filter (RegEx)": "名称过滤器 (RegEx)",
+    "Invalid regular expression": "无效的正则表达式",
     "Virtual group": "虚拟小组",
     "Write to virtual group": "写入虚拟组",
     "Write with ack=true": "用 ack=true 写入",

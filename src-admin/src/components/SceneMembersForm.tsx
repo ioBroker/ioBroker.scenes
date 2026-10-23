@@ -344,7 +344,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
     private engineId: string;
 
     private readonly cacheEnumsState: (
-        { realIds: string[]; type: 'boolean' | 'number' | 'string'; ids: string } | true
+        { realIds: string[]; type: 'boolean' | 'number' | 'string'; ids: string; filter: string } | true
     )[];
 
     private readonly delButtonRef: React.RefObject<any>;
@@ -1209,6 +1209,9 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
         if (enumsSettings?.exclude?.length) {
             title += ` - ${enumsSettings.exclude.length} ${I18n.t('state(s)')}`;
         }
+        if (enumsSettings?.filter) {
+            title += ` /${enumsSettings.filter}/`;
+        }
 
         if (this.cacheEnumsState[index]) {
             if (this.cacheEnumsState[index] === true) {
@@ -1236,17 +1239,19 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
         if (
             !this.cacheEnumsState[index] ||
             (this.cacheEnumsState[index] as { type: ioBroker.CommonType; ids: string }).ids !== JSON.stringify(ids) ||
-            (this.cacheEnumsState[index] as { type: ioBroker.CommonType; ids: string }).type !== enumsSettings?.type
+            (this.cacheEnumsState[index] as { type: ioBroker.CommonType; ids: string }).type !== enumsSettings?.type ||
+            (this.cacheEnumsState[index] as { filter: string }).filter !== (enumsSettings?.filter || '')
         ) {
             if (this.cacheEnumsState[index] === true) {
                 return null;
             }
             this.cacheEnumsState[index] = true;
             setTimeout(async () => {
+                const filter = EnumsSelector.getFilter(enumsSettings?.filter);
                 for (let i = 0; i < ids.length; i++) {
                     const obj: ioBroker.StateObject | null | undefined = (await this.props.socket.getObject(ids[i])) as
                         ioBroker.StateObject | null | undefined;
-                    if (!obj) {
+                    if (!obj || !EnumsSelector.matchesFilter(ids[i], obj, filter)) {
                         continue;
                     }
                     if (obj.type !== 'state') {
@@ -1295,6 +1300,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                     ids: JSON.stringify(ids),
                     realIds,
                     type: enumsSettings?.type || 'boolean',
+                    filter: enumsSettings?.filter || '',
                 };
                 this.forceUpdate();
             }, 200);

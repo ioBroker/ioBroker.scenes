@@ -20,6 +20,7 @@ import {
     ListSubheader,
     MenuItem,
     Select,
+    TextField,
     Tooltip,
 } from '@mui/material';
 
@@ -289,6 +290,38 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
         this.setState({ ids, icons, objects });
     }
 
+    /**
+     * Create the regular expression from the filter of the enum settings.
+     *
+     * @param filter case-insensitive regular expression for the name or ID of the enum members
+     * @returns null if no filter is set, false if the filter is invalid
+     */
+    static getFilter(filter: string | undefined): RegExp | null | false {
+        if (!filter) {
+            return null;
+        }
+        try {
+            return new RegExp(filter, 'i');
+        } catch {
+            return false;
+        }
+    }
+
+    /** Check if the enum member matches the filter. It must be the same logic as in the backend */
+    static matchesFilter(id: string, obj: ioBroker.Object | null | undefined, filter: RegExp | null | false): boolean {
+        if (!filter || filter.test(id)) {
+            return true;
+        }
+        const name = obj?.common?.name;
+        if (!name) {
+            return false;
+        }
+        if (typeof name === 'object') {
+            return Object.values(name).some(text => typeof text === 'string' && filter.test(text));
+        }
+        return filter.test(name);
+    }
+
     static getName(name: ioBroker.StringOrTranslated, lang: ioBroker.Languages): string {
         return name && typeof name === 'object' ? name[lang] || name.en || '' : name || '';
     }
@@ -407,6 +440,13 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
         );
     }
 
+    renderDevices(): React.JSX.Element[] {
+        const filter = EnumsSelector.getFilter(this.state.value.filter);
+        return this.state.ids
+            .filter(id => EnumsSelector.matchesFilter(id, this.state.objects[id], filter))
+            .map(id => this.renderDevice(id));
+    }
+
     render(): React.JSX.Element {
         return (
             <Dialog
@@ -437,6 +477,23 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                             <MenuItem value="string">{I18n.t('String')}</MenuItem>
                         </Select>
                     </FormControl>
+                    <TextField
+                        variant="standard"
+                        style={{ width: 250 }}
+                        label={I18n.t('Name filter (RegEx)')}
+                        value={this.state.value.filter || ''}
+                        error={EnumsSelector.getFilter(this.state.value.filter) === false}
+                        helperText={
+                            EnumsSelector.getFilter(this.state.value.filter) === false
+                                ? I18n.t('Invalid regular expression')
+                                : undefined
+                        }
+                        onChange={e => {
+                            const value: SceneEnumsValue = JSON.parse(JSON.stringify(this.state.value));
+                            value.filter = e.target.value;
+                            this.setState({ value });
+                        }}
+                    />
                 </DialogTitle>
                 <DialogContent>
                     <div>
@@ -650,7 +707,7 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                             marginTop: 8,
                         }}
                     >
-                        {this.state.ids.map(id => this.renderDevice(id))}
+                        {this.renderDevices()}
                     </div>
                 </DialogContent>
                 <DialogActions>

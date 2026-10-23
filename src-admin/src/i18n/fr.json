@@ -129,6 +129,8 @@
     "Trigger for TRUE": "Déclencheur pour VRAI",
     "Value": "Valeur",
     "Value type": "Type de valeur",
+    "Name filter (RegEx)": "Filtre de nom (RegEx)",
+    "Invalid regular expression": "Expression régulière invalide",
     "Virtual group": "Groupe virtuel",
     "Write to virtual group": "Écrire au groupe virtuel",
     "Write with ack=true": "Écrivez avec ack=true",

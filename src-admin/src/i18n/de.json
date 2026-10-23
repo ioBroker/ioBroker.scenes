@@ -129,6 +129,8 @@
     "Trigger for TRUE": "Auslöser für TRUE",
     "Value": "Wert",
     "Value type": "Werttyp",
+    "Name filter (RegEx)": "Namensfilter (RegEx)",
+    "Invalid regular expression": "Ungültiger regulärer Ausdruck",
     "Virtual group": "Virtuelle Gruppe",
     "Write to virtual group": "In virtuelle Gruppe schreiben",
     "Write with ack=true": "Mit ack=true schreiben ",

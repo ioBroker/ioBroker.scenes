@@ -129,6 +129,8 @@
     "Trigger for TRUE": "Тригер для TRUE",
     "Value": "Значення",
     "Value type": "Тип значення",
+    "Name filter (RegEx)": "Фільтр за назвою (RegEx)",
+    "Invalid regular expression": "Неправильний регулярний вираз",
     "Virtual group": "Віртуальна група",
     "Write to virtual group": "Напишіть у віртуальну групу",
     "Write with ack=true": "Напишіть з ack=true",

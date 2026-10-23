@@ -129,6 +129,8 @@
     "Trigger for TRUE": "Wyzwalacz dla PRAWDA",
     "Value": "Wartość",
     "Value type": "Typ wartości",
+    "Name filter (RegEx)": "Filtr nazwy (RegEx)",
+    "Invalid regular expression": "Nieprawidłowe wyrażenie regularne",
     "Virtual group": "Grupa wirtualna",
     "Write to virtual group": "Napisz do wirtualnej grupy",
     "Write with ack=true": "Napisz z potwierdzeniem=true",
