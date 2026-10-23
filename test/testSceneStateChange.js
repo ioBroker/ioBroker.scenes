@@ -142,3 +142,55 @@ describe('Scene status with nested scenes (issue #475)', function () {
         assert.deepEqual(written, [{ id: sceneId, val: 'uncertain', ack: true }]);
     });
 });
+
+describe('Scene status if members match TRUE and FALSE (issue #267)', function () {
+    const sceneId = 'scene.0.printer';
+    const memberId = 'sonoff.0.POWER1';
+    let adapter;
+    let written;
+
+    function createScene(currentValue) {
+        adapter = createAdapter();
+        adapter.scenes[sceneId] = {
+            native: {
+                virtualGroup: false,
+                onFalse: { enabled: true },
+                // switch the printer off by TRUE, do not change it by FALSE
+                members: [{ id: memberId, setIfTrue: false, setIfFalse: null }],
+            },
+        };
+        adapter.sceneValue[sceneId] = { val: currentValue, ack: true };
+        written = [];
+        adapter.setForeignStateAsync = async (id, val, ack) => written.push({ id, val, ack });
+    }
+
+    async function checkScene(actual) {
+        adapter.checkScene(sceneId, memberId, { val: actual, ack: true });
+        // checkScene evaluates the members after 200 ms
+        await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    it('keeps false, if the member matches TRUE and FALSE', async function () {
+        createScene(false);
+        await checkScene(false);
+        assert.deepEqual(written, []);
+    });
+
+    it('keeps true, if the member matches TRUE and FALSE', async function () {
+        createScene(true);
+        await checkScene(false);
+        assert.deepEqual(written, []);
+    });
+
+    it('reports false, if the member matches only FALSE', async function () {
+        createScene(true);
+        await checkScene(true);
+        assert.deepEqual(written, [{ id: sceneId, val: false, ack: true }]);
+    });
+
+    it('reports true, if the scene value is unknown and the member matches TRUE', async function () {
+        createScene(null);
+        await checkScene(false);
+        assert.deepEqual(written, [{ id: sceneId, val: true, ack: true }]);
+    });
+});

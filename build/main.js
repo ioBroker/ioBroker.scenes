@@ -527,6 +527,11 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                 }
                 else {
                     if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
+                        // The members can match TRUE and FALSE at the same time, e.g., if some states are not changed by FALSE.
+                        // In this case keep the current value of the scene and do not jump to TRUE
+                        if (activeTrue && activeFalse && this.sceneValue[_sceneId].val === false) {
+                            activeTrue = false;
+                        }
                         if (activeTrue) {
                             if (this.sceneValue[_sceneId].val !== true || !this.sceneValue[_sceneId].ack) {
                                 this.sceneValue[_sceneId].val = true;
