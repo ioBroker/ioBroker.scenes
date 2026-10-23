@@ -12,7 +12,7 @@
     "sc_PIN code": "PIN code",
     "sc_Confirmation text": "Confirmation text",
     "sc_PIN": "PIN",
-    "sc_Are you sure": "Are you sure you want to activate this scene?",
+    "sc_Are you sure": "Вы уверены, что хотите активировать эту сцену?",
     "sc_Wrong PIN": "Wrong PIN",
     "sc_Cancel": "Cancel"
 }
