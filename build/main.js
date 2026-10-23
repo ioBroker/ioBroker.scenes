@@ -121,7 +121,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                         this.activateScene(id, state.val);
                     }
                     else {
-                        let val = state.val;
+                        let val = typeof state.val === 'string' ? state.val.toLowerCase() : state.val;
                         if (val === 'true') {
                             val = true;
                         }

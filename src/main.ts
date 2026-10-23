@@ -93,7 +93,7 @@ export class ScenesAdapter extends Adapter {
                     if (this.scenes[id].native.virtualGroup) {
                         this.activateScene(id, state.val as boolean);
                     } else {
-                        let val = state.val;
+                        let val = typeof state.val === 'string' ? state.val.toLowerCase() : state.val;
                         if (val === 'true') {
                             val = true;
                         }
