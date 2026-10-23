@@ -30,6 +30,24 @@ const NAMES: Record<string, { boolean?: string; number?: string; string?: string
 type SceneMemberEx = SceneMember & { actual?: ioBroker.StateValue };
 
 /**
+ * Convert the strings "true" and "false" (in any case) into booleans.
+ * Scene states are of type "mixed", so a member, that controls another scene, can have "TRUE" or "FALSE" as desired value,
+ * but the scene state itself is acknowledged with a boolean.
+ */
+function normalizeBoolean(value: ioBroker.StateValue | undefined): ioBroker.StateValue | undefined {
+    if (typeof value === 'string') {
+        const lower = value.trim().toLowerCase();
+        if (lower === 'true') {
+            return true;
+        }
+        if (lower === 'false') {
+            return false;
+        }
+    }
+    return value;
+}
+
+/**
  * How many activations of one scene are allowed within DEFAULT_LOOP_PROTECTION_INTERVAL by default.
  * A real loop produces thousands of activations per second, so the limit is high enough,
  * that a user, who moves a slider of a number scene, does not disable his scene by accident.
@@ -459,7 +477,7 @@ export class ScenesAdapter extends Adapter {
                                     activeTrue = false;
                                 }
                             } else {
-                                if (setIfTrue != member.actual) {
+                                if (normalizeBoolean(setIfTrue) != normalizeBoolean(member.actual)) {
                                     activeTrue = false;
                                 }
                             }
@@ -475,7 +493,7 @@ export class ScenesAdapter extends Adapter {
                                 ) {
                                     activeFalse = false;
                                 }
-                            } else if (setIfFalse != member.actual) {
+                            } else if (normalizeBoolean(setIfFalse) != normalizeBoolean(member.actual)) {
                                 activeFalse = false;
                             }
                         }

@@ -17,6 +17,8 @@ function createAdapter() {
             exports: adapterModule.exports,
             __filename: filename,
             __dirname: path.dirname(filename),
+            setTimeout,
+            clearTimeout,
             require: id =>
                 id === '@iobroker/adapter-core'
                     ? {
@@ -87,4 +89,56 @@ describe('Scene state commands (issue #475)', function () {
             assert.deepEqual(activations, [{ id: sceneId, value: input }]);
         });
     }
+});
+
+describe('Scene status with nested scenes (issue #475)', function () {
+    const sceneId = 'scene.0.all';
+    const childId = 'scene.0.sockets';
+    let adapter;
+    let written;
+
+    function createScene(setIfTrue, setIfFalse) {
+        adapter = createAdapter();
+        adapter.scenes[sceneId] = {
+            native: {
+                virtualGroup: false,
+                onFalse: { enabled: true },
+                members: [{ id: childId, setIfTrue, setIfFalse }],
+            },
+        };
+        adapter.sceneValue[sceneId] = { val: null, ack: false };
+        written = [];
+        adapter.setForeignStateAsync = async (id, val, ack) => written.push({ id, val, ack });
+    }
+
+    async function checkScene(actual) {
+        adapter.checkScene(sceneId, childId, { val: actual, ack: true });
+        // checkScene evaluates the members after 200 ms
+        await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    for (const [setIfTrue, setIfFalse] of [
+        [true, false],
+        ['TRUE', 'FALSE'],
+        ['true', 'false'],
+        ['True', 'False'],
+    ]) {
+        it(`reports false when the nested scene is false (${JSON.stringify(setIfFalse)})`, async function () {
+            createScene(setIfTrue, setIfFalse);
+            await checkScene(false);
+            assert.deepEqual(written, [{ id: sceneId, val: false, ack: true }]);
+        });
+
+        it(`reports true when the nested scene is true (${JSON.stringify(setIfTrue)})`, async function () {
+            createScene(setIfTrue, setIfFalse);
+            await checkScene(true);
+            assert.deepEqual(written, [{ id: sceneId, val: true, ack: true }]);
+        });
+    }
+
+    it('reports uncertain when the nested scene is uncertain', async function () {
+        createScene('TRUE', 'FALSE');
+        await checkScene('uncertain');
+        assert.deepEqual(written, [{ id: sceneId, val: 'uncertain', ack: true }]);
+    });
 });

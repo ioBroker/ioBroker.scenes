@@ -57,6 +57,17 @@ const TRUE_DARK_COLOR = '#528952';
 const FALSE_DARK_COLOR = '#774747';
 const UNCERTAIN_COLOR = '#bfb7be';
 
+/**
+ * Scene states are of type "mixed" (because of the value "uncertain"), but a normal scene is controlled only with true/false.
+ * So show for them the TRUE/FALSE selector and store booleans. Virtual groups accept any value and keep their type.
+ */
+function getMemberType(obj: ioBroker.Object): ioBroker.CommonType | undefined {
+    if (obj.type === 'state' && /^scene\.\d+\./.test(obj._id) && !obj.native?.virtualGroup) {
+        return 'boolean';
+    }
+    return (obj as ioBroker.StateObject).common?.type;
+}
+
 const styles: Record<string, any> = {
     memberTrueFalse: {
         borderRadius: 10,
@@ -491,7 +502,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                         ? ((await this.props.socket.getObject(member.id)) as ioBroker.StateObject | null | undefined)
                         : null;
                     if (obj?.common?.type) {
-                        objectTypes[obj._id] = obj.common.type;
+                        objectTypes[obj._id] = getMemberType(obj)!;
                         objectNames[obj._id] = Utils.getObjectNameFromObj(
                             obj,
                             null,
@@ -573,7 +584,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                         }
 
                         if (obj?.common?.type) {
-                            objectTypes[id] = obj.common.type;
+                            objectTypes[id] = getMemberType(obj)!;
 
                             if (objectTypes[id] === 'boolean') {
                                 template.setIfTrue = true;
@@ -917,9 +928,10 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                         <Select
                             variant="standard"
                             value={
-                                setValue === true || setValue === 'true'
+                                setValue === true || (typeof setValue === 'string' && setValue.toLowerCase() === 'true')
                                     ? 'true'
-                                    : setValue === false || setValue === 'false'
+                                    : setValue === false ||
+                                        (typeof setValue === 'string' && setValue.toLowerCase() === 'false')
                                       ? 'false'
                                       : 'null'
                             }
