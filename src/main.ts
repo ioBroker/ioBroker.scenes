@@ -67,7 +67,7 @@ export class ScenesAdapter extends Adapter {
     private subscription: string[] | null = null;
     private ids: Record<string, string[]> = {};
     private triggers: Record<string, string[]> = {};
-    private timers: Record<string, { timer: NodeJS.Timeout; tIndex: number }[]> = {};
+    private timers: Record<string, { timer: NodeJS.Timeout; tIndex: number; sceneId: string }[]> = {};
     private checkTimers: Record<string, NodeJS.Timeout | null> = {};
     private cronTasks: Record<string, Job | null> = {};
     private tIndex = 1; // never ending counter
@@ -102,6 +102,21 @@ export class ScenesAdapter extends Adapter {
     }
 
     onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+        if (
+            state &&
+            !state.ack &&
+            this.scenes[id] &&
+            !this.scenes[id].native.virtualGroup &&
+            typeof state.val === 'string' &&
+            state.val.trim().toLowerCase() === 'stop'
+        ) {
+            // virtual groups get "stop" as normal value, e.g., for media players
+            this.stopScene(id);
+            // restore the value of the scene
+            void this.setForeignStateAsync(id, this.sceneValue[id]?.val ?? null, true);
+            return;
+        }
+
         if (state) {
             if (this.scenes[id]) {
                 this.sceneValue[id] = { val: state.val as boolean, ack: state.ack };
@@ -245,8 +260,52 @@ export class ScenesAdapter extends Adapter {
             } else {
                 this.sendTo(obj.from, obj.command, { error: 'Scene not found' }, obj.callback);
             }
+        } else if (obj.command === 'stop') {
+            if (this.scenes[sceneId]) {
+                const count = this.stopScene(sceneId);
+                this.sendTo(obj.from, obj.command, { result: `${count} pending commands stopped` }, obj.callback);
+            } else {
+                this.sendTo(obj.from, obj.command, { error: 'Scene not found' }, obj.callback);
+            }
         }
     }
+
+    /**
+     * Stop all delayed commands of a scene and the commands, that wait for the burst interval.
+     * The values, that were already written, are not changed.
+     *
+     * @param sceneId ID of the scene
+     * @returns number of stopped commands
+     */
+    stopScene(sceneId: string): number {
+        let count = 0;
+
+        for (const id of Object.keys(this.timers)) {
+            this.timers[id] = this.timers[id].filter(item => {
+                if (item.sceneId !== sceneId) {
+                    return true;
+                }
+                clearTimeout(item.timer);
+                count++;
+                return false;
+            });
+        }
+
+        // the keys of the burst timers are "<sceneId>_<member index>"
+        const prefix = `${sceneId}_`;
+        for (const key of Object.keys(this.scenesTimeout)) {
+            if (key.startsWith(prefix) && /^\d+$/.test(key.substring(prefix.length)) && this.scenesTimeout[key]) {
+                clearTimeout(this.scenesTimeout[key]);
+                this.scenesTimeout[key] = null;
+                count++;
+            }
+        }
+
+        this.log.debug(`Scene "${sceneId}" stopped: ${count} pending commands cancelled`);
+
+        return count;
+    }
+
     // expects like: scene.0.blabla
     async saveScene(sceneID: string, isForTrue: boolean): Promise<boolean> {
         if (isForTrue === undefined) {
@@ -796,7 +855,7 @@ export class ScenesAdapter extends Adapter {
                         this.tIndex,
                     );
 
-                    this.timers[stateObj.id].push({ timer, tIndex: this.tIndex });
+                    this.timers[stateObj.id].push({ timer, tIndex: this.tIndex, sceneId });
                 } else {
                     if (stateObj.stopAllDelays && this.timers[stateObj.id] && this.timers[stateObj.id].length) {
                         this.log.debug(

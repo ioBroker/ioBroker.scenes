@@ -146,6 +146,23 @@ sendTo(
 );
 ```
 
+## Stop a running scene
+If a scene has members with a delay or a burst interval, it runs for some time. To stop it, write `stop` into the scene state (e.g., from vis or a script):
+```js
+setState('scene.0.SCENE_ID', 'stop');
+```
+or send a message to the adapter:
+```js
+sendTo(
+    'scenes.0', 
+    'stop', 
+    'scene.0.SCENE_ID', 
+    result => result.error ? console.error(result.error) : console.log(result.result) // optional
+);
+```
+All delayed commands of this scene, which are not yet executed, will be cancelled. The values, that were already written, stay unchanged and the scene keeps its value.
+Virtual groups are not stopped by writing `stop`, they forward this value to their members as usual.
+
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
@@ -163,6 +180,7 @@ sendTo(
 * (@GermanBluefox) A scene, whose members match TRUE and FALSE at the same time, does not jump from FALSE to TRUE anymore (#267)
 * (@GermanBluefox) The search in the scene list is now case-insensitive (#364)
 * (@GermanBluefox) Updated "@iobroker/testing" to 6.3.1 and removed the direct "mocha" dependency
+* (@GermanBluefox) A running scene can be stopped by writing "stop" into the scene state or with the message "stop". All delayed commands of the scene are cancelled (#42)
 
 ### 5.1.0 (2026-09-03)
 * (@GermanBluefox) Added the option "Only on change" for the triggers, so a state that is written again with the same value does not activate the scene anymore. It is enabled by default and can be switched off for every trigger
