@@ -129,6 +129,8 @@
     "Trigger for TRUE": "Trigger voor TRUE",
     "Value": "Waarde",
     "Value type": "Waarde type",
+    "Name filter (RegEx)": "Naamfilter (RegEx)",
+    "Invalid regular expression": "Ongeldige reguliere expressie",
     "Virtual group": "Virtuele groep",
     "Write to virtual group": "Schrijf naar virtuele groep",
     "Write with ack=true": "Schrijf met ack=true",

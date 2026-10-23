@@ -194,3 +194,159 @@ describe('Scene status if members match TRUE and FALSE (issue #267)', function (
         assert.deepEqual(written, [{ id: sceneId, val: true, ack: true }]);
     });
 });
+
+describe('Stop a running scene (issue #42)', function () {
+    const sceneId = 'scene.0.lawn';
+    const otherSceneId = 'scene.0.lawn_2';
+    let adapter;
+    let written;
+
+    function createScene(id, native) {
+        adapter.scenes[id] = {
+            native: { virtualGroup: false, onFalse: { enabled: false }, burstInterval: 0, ...native },
+        };
+        adapter.sceneValue[id] = { val: false, ack: true };
+    }
+
+    function wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    beforeEach(function () {
+        adapter = createAdapter();
+        adapter.log = { debug() {}, info() {}, warn() {}, error() {} };
+        written = [];
+        adapter.setForeignState = (id, val, ack) => written.push({ id, val, ack: !!ack });
+        adapter.setForeignStateAsync = async (id, val, ack) => written.push({ id, val, ack: !!ack });
+        createScene(sceneId, {
+            members: [
+                { id: 'valve.1', setIfTrue: true, delay: 0 },
+                { id: 'valve.1', setIfTrue: false, delay: 200 },
+                { id: 'valve.2', setIfTrue: true, delay: 200 },
+            ],
+        });
+        // the ID starts with the ID of the first scene, but must not be stopped
+        createScene(otherSceneId, { members: [{ id: 'valve.3', setIfTrue: true, delay: 200 }] });
+    });
+
+    it('cancels the delayed commands of the scene only', async function () {
+        adapter.activateScene(sceneId, true);
+        adapter.activateScene(otherSceneId, true);
+        await wait(50);
+        assert.equal(adapter.stopScene(sceneId), 2);
+        await wait(300);
+        assert.deepEqual(
+            written.filter(item => !item.id.startsWith('scene.')),
+            [
+                { id: 'valve.1', val: true, ack: false },
+                { id: 'valve.3', val: true, ack: false },
+            ],
+        );
+    });
+
+    it('cancels the commands waiting for the burst interval', async function () {
+        createScene(sceneId, {
+            burstInterval: 100,
+            members: [
+                { id: 'valve.1', setIfTrue: true },
+                { id: 'valve.2', setIfTrue: true },
+                { id: 'valve.3', setIfTrue: true },
+            ],
+        });
+        adapter.activateScene(sceneId, true);
+        await wait(50);
+        assert.equal(adapter.stopScene(sceneId), 1);
+        await wait(300);
+        assert.deepEqual(written, [{ id: 'valve.1', val: true, ack: false }]);
+    });
+
+    it('stops the scene if "stop" is written to the scene state', async function () {
+        adapter.activateScene(sceneId, true);
+        await wait(50);
+        written = [];
+        adapter.handlers.stateChange(sceneId, { val: 'STOP', ack: false });
+        await wait(300);
+        // the scene value is restored and the delayed commands are not executed
+        assert.deepEqual(written, [{ id: sceneId, val: true, ack: true }]);
+    });
+
+    it('does not stop a virtual group, but forwards "stop" to its members', function () {
+        adapter.scenes[sceneId].native.virtualGroup = true;
+        const activations = [];
+        adapter.activateScene = (id, value) => activations.push({ id, value });
+        adapter.handlers.stateChange(sceneId, { val: 'stop', ack: false });
+        assert.deepEqual(activations, [{ id: sceneId, value: 'stop' }]);
+    });
+
+    it('stops the scene via message', async function () {
+        const answers = [];
+        adapter.sendTo = (from, command, result) => answers.push(result);
+        adapter.activateScene(sceneId, true);
+        await wait(50);
+        await adapter.handlers.message({ command: 'stop', message: sceneId, from: 'test' });
+        await adapter.handlers.message({ command: 'stop', message: 'scene.0.unknown', from: 'test' });
+        // the answers are created in the context of the adapter, so compare them as JSON
+        assert.deepEqual(JSON.parse(JSON.stringify(answers)), [
+            { result: '2 pending commands stopped' },
+            { error: 'Scene not found' },
+        ]);
+    });
+});
+
+describe('Filter enum members by name (issue #457)', function () {
+    const sceneId = 'scene.0.kitchen_left';
+    const objects = {};
+    for (const side of ['left', 'right']) {
+        for (let i = 1; i <= 2; i++) {
+            const id = `matter.0.bulb_${side}_${i}`;
+            objects[id] = { _id: id, type: 'state', common: { name: { en: `CL ${side} 0${i}`, de: `DL ${side} 0${i}` } } };
+        }
+    }
+    let adapter;
+
+    function createScene(filter) {
+        adapter = createAdapter();
+        adapter.log = { debug() {}, info() {}, warn() {}, error() {} };
+        adapter.getObjectViewAsync = async () => ({
+            rows: [{ id: 'enum.rooms.kitchen', value: { common: { members: Object.keys(objects) } } }],
+        });
+        adapter.getForeignObjectAsync = async id => objects[id] || null;
+        adapter.scenes[sceneId] = {
+            native: {
+                members: [
+                    {
+                        setIfTrue: true,
+                        enums: { rooms: ['enum.rooms.kitchen'], funcs: [], others: [], exclude: [], type: 'boolean', filter },
+                    },
+                ],
+            },
+        };
+    }
+
+    async function getMemberIds(filter) {
+        createScene(filter);
+        await adapter.enum2scenes(sceneId, 0);
+        return adapter.scenes[sceneId].native.members.map(member => member.id);
+    }
+
+    it('uses all members without filter', async function () {
+        assert.deepEqual(await getMemberIds(undefined), Object.keys(objects));
+        assert.deepEqual(await getMemberIds(''), Object.keys(objects));
+    });
+
+    it('filters by name case-insensitive', async function () {
+        assert.deepEqual(await getMemberIds('cl LEFT'), ['matter.0.bulb_left_1', 'matter.0.bulb_left_2']);
+    });
+
+    it('filters by name in any language and by regular expression', async function () {
+        assert.deepEqual(await getMemberIds('^DL right 0[2-9]$'), ['matter.0.bulb_right_2']);
+    });
+
+    it('filters by ID', async function () {
+        assert.deepEqual(await getMemberIds('_1$'), ['matter.0.bulb_left_1', 'matter.0.bulb_right_1']);
+    });
+
+    it('ignores an invalid filter', async function () {
+        assert.deepEqual(await getMemberIds('left('), Object.keys(objects));
+    });
+});
