@@ -493,6 +493,23 @@ class EnumsSelector extends React.Component<EnumsSelectorProps, EnumsSelectorSta
                             value.filter = e.target.value;
                             this.setState({ value });
                         }}
+                        slotProps={{
+                            input: {
+                                endAdornment: this.state.value.filter ? (
+                                    <IconButton
+                                        size="small"
+                                        style={{ width: 32, height: 32 }}
+                                        onClick={() => {
+                                            const value: SceneEnumsValue = JSON.parse(JSON.stringify(this.state.value));
+                                            delete value.filter;
+                                            this.setState({ value });
+                                        }}
+                                    >
+                                        <IconCancel />
+                                    </IconButton>
+                                ) : undefined,
+                            },
+                        }}
                     />
                 </DialogTitle>
                 <DialogContent>
