@@ -181,7 +181,7 @@ Virtual groups are not stopped by writing `stop`, they forward this value to the
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 5.2.0 (2026-10-24)
 * (reloxx13) Recognize uppercase and mixed-case boolean scene commands, so nested scenes receive FALSE correctly (#475)
 * (@GermanBluefox) The state of a scene, that controls other scenes with "TRUE"/"FALSE", is now detected correctly and is not "uncertain" anymore (#475)
 * (@GermanBluefox) Scenes as members of another scene now get the TRUE/FALSE selector, so the desired values are stored as booleans (#475)
@@ -208,9 +208,6 @@ Virtual groups are not stopped by writing `stop`, they forward this value to the
 
 ### 4.0.4 (2025-10-20)
 * (@GermanBluefox) Corrected the selection of multiple IDs in the scene editor
-
-### 4.0.3 (2025-07-20)
-* (agross) Canceled the cron tasks on the instance stop
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
