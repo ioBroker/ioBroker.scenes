@@ -1,0 +1,21 @@
+{
+    "name": "iobroker-web-components-scenes",
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "check-ts": "tsc --noEmit",
+        "lint": "eslint -c eslint.config.mjs src"
+    },
+    "devDependencies": {
+        "@iobroker/types": "^7.2.5",
+        "@iobroker/web-components": "^0.6.0",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "@vitejs/plugin-react": "^6.1.2",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+        "vite": "^8.3.5"
+    }
+}

@@ -6,3 +6,5 @@ admin/i18n/*/flat.txt
 
 #ignore .commitinfo created by ioBroker release script
 .commitinfo
+# web components: the sources are built with vite and the result in admin/webcomponents/ is committed
+/src-webcomponents/build/

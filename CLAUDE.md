@@ -35,6 +35,11 @@ The `tasks.js` script orchestrates the admin UI build using `@iobroker/build-too
 - `npm run 1-npm` - Install src-admin dependencies
 - `npm run 3-build` - Build React app with Vite
 - `npm run 4-copy` - Copy build output to admin/
+- `npm run build:wc` - Build the web component `<iob-scenes-scene>` (`src-webcomponents/`) into `admin/webcomponents/` (also part of the full build); `npm run lint:wc` and `npm run check:wc` lint and type-check it
+
+### Web component (`src-webcomponents/`)
+
+The devices widget "Scene Button" as an ioBroker web component (`@iobroker/web-components`), listed in `common.webComponents`: plain React + CSS in a shadow root, React taken from the host (`lib/esm/react-19.js`), no MUI. The build writes and checks the manifest `admin/webcomponents/scenes-scene.json`; its name and description are the `label` and `description` of the devices widget in `io-package.json` - change them there, in all 11 languages. The build output in `admin/webcomponents/` is committed.
 
 ## Architecture
 

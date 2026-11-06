@@ -1,0 +1,303 @@
+{
+    "$schema": "https://raw.githubusercontent.com/ioBroker/web-components/main/schemas/manifest.json",
+    "manifestVersion": 1,
+    "tag": "iob-scenes-scene",
+    "name": {
+        "en": "Scene Button",
+        "de": "Szenen-Button",
+        "ru": "Кнопка сцены",
+        "pt": "Botão de cena",
+        "nl": "Scèneknop",
+        "fr": "Bouton de scène",
+        "it": "Pulsante scena",
+        "es": "Botón de escena",
+        "pl": "Przycisk sceny",
+        "uk": "Кнопка сцени",
+        "zh-cn": "场景按钮"
+    },
+    "description": {
+        "en": "Activate a scene with one click",
+        "de": "Szene per Klick aktivieren",
+        "ru": "Активировать сцену одним нажатием",
+        "pt": "Ativar uma cena com um clique",
+        "nl": "Een scène met één klik activeren",
+        "fr": "Activer une scène en un clic",
+        "it": "Attivare una scena con un clic",
+        "es": "Activar una escena con un clic",
+        "pl": "Aktywuj scenę jednym kliknięciem",
+        "uk": "Активувати сцену одним натисканням",
+        "zh-cn": "一键激活场景"
+    },
+    "icon": "../scenes.png",
+    "module": "scenes-scene.js",
+    "size": {
+        "width": 160,
+        "height": 160
+    },
+    "settings": {
+        "type": "panel",
+        "items": {
+            "scene": {
+                "type": "objectId",
+                "types": "state",
+                "root": "scene",
+                "label": {
+                    "en": "Scene",
+                    "de": "Szene",
+                    "ru": "Сцена",
+                    "pt": "Cena",
+                    "nl": "Scène",
+                    "fr": "Scène",
+                    "it": "Scena",
+                    "es": "Escena",
+                    "pl": "Scena",
+                    "uk": "Сцена",
+                    "zh-cn": "场景"
+                },
+                "help": {
+                    "en": "The state of the scene: scene.0.<name>",
+                    "de": "Der Datenpunkt der Szene: scene.0.<Name>",
+                    "ru": "Состояние сцены: scene.0.<имя>",
+                    "pt": "O estado da cena: scene.0.<nome>",
+                    "nl": "De status van de scène: scene.0.<naam>",
+                    "fr": "L'état de la scène : scene.0.<nom>",
+                    "it": "Lo stato della scena: scene.0.<nome>",
+                    "es": "El estado de la escena: scene.0.<nombre>",
+                    "pl": "Stan sceny: scene.0.<nazwa>",
+                    "uk": "Стан сцени: scene.0.<назва>",
+                    "zh-cn": "场景的状态：scene.0.<名称>"
+                }
+            },
+            "name": {
+                "type": "text",
+                "label": {
+                    "en": "Name",
+                    "de": "Name",
+                    "ru": "Название",
+                    "pt": "Nome",
+                    "nl": "Naam",
+                    "fr": "Nom",
+                    "it": "Nome",
+                    "es": "Nombre",
+                    "pl": "Nazwa",
+                    "uk": "Назва",
+                    "zh-cn": "名称"
+                },
+                "help": {
+                    "en": "Instead of the name of the scene",
+                    "de": "Statt des Namens der Szene",
+                    "ru": "Вместо названия сцены",
+                    "pt": "Em vez do nome da cena",
+                    "nl": "In plaats van de naam van de scène",
+                    "fr": "À la place du nom de la scène",
+                    "it": "Al posto del nome della scena",
+                    "es": "En lugar del nombre de la escena",
+                    "pl": "Zamiast nazwy sceny",
+                    "uk": "Замість назви сцени",
+                    "zh-cn": "代替场景的名称"
+                }
+            },
+            "icon": {
+                "type": "text",
+                "label": {
+                    "en": "Icon",
+                    "de": "Icon",
+                    "ru": "Значок",
+                    "pt": "Ícone",
+                    "nl": "Pictogram",
+                    "fr": "Icône",
+                    "it": "Icona",
+                    "es": "Icono",
+                    "pl": "Ikona",
+                    "uk": "Значок",
+                    "zh-cn": "图标"
+                },
+                "help": {
+                    "en": "URL of an image, e.g. /vis.0/main/img/scene.png; empty: the built-in symbol",
+                    "de": "URL eines Bildes, z. B. /vis.0/main/img/scene.png; leer: das eingebaute Symbol",
+                    "ru": "URL изображения, например /vis.0/main/img/scene.png; пусто: встроенный символ",
+                    "pt": "URL de uma imagem, p. ex. /vis.0/main/img/scene.png; vazio: o símbolo integrado",
+                    "nl": "URL van een afbeelding, bijv. /vis.0/main/img/scene.png; leeg: het ingebouwde symbool",
+                    "fr": "URL d'une image, p. ex. /vis.0/main/img/scene.png ; vide : le symbole intégré",
+                    "it": "URL di un'immagine, ad es. /vis.0/main/img/scene.png; vuoto: il simbolo integrato",
+                    "es": "URL de una imagen, p. ej. /vis.0/main/img/scene.png; vacío: el símbolo integrado",
+                    "pl": "URL obrazu, np. /vis.0/main/img/scene.png; puste: wbudowany symbol",
+                    "uk": "URL зображення, наприклад /vis.0/main/img/scene.png; порожньо: вбудований символ",
+                    "zh-cn": "图片的 URL，例如 /vis.0/main/img/scene.png；为空时使用内置符号"
+                }
+            },
+            "iconActive": {
+                "type": "text",
+                "label": {
+                    "en": "Active icon",
+                    "de": "Aktives Icon",
+                    "ru": "Значок активной сцены",
+                    "pt": "Ícone ativo",
+                    "nl": "Actief pictogram",
+                    "fr": "Icône active",
+                    "it": "Icona attiva",
+                    "es": "Icono activo",
+                    "pl": "Ikona aktywna",
+                    "uk": "Значок активної сцени",
+                    "zh-cn": "激活时的图标"
+                },
+                "help": {
+                    "en": "While the scene is active; empty: the icon",
+                    "de": "Solange die Szene aktiv ist; leer: das Icon",
+                    "ru": "Пока сцена активна; пусто: обычный значок",
+                    "pt": "Enquanto a cena está ativa; vazio: o ícone",
+                    "nl": "Zolang de scène actief is; leeg: het pictogram",
+                    "fr": "Tant que la scène est active ; vide : l'icône",
+                    "it": "Finché la scena è attiva; vuoto: l'icona",
+                    "es": "Mientras la escena está activa; vacío: el icono",
+                    "pl": "Gdy scena jest aktywna; puste: ikona",
+                    "uk": "Поки сцена активна; порожньо: звичайний значок",
+                    "zh-cn": "场景激活时使用；为空时使用图标"
+                }
+            },
+            "color": {
+                "type": "color",
+                "label": {
+                    "en": "Color of the active scene",
+                    "de": "Farbe der aktiven Szene",
+                    "ru": "Цвет активной сцены",
+                    "pt": "Cor da cena ativa",
+                    "nl": "Kleur van de actieve scène",
+                    "fr": "Couleur de la scène active",
+                    "it": "Colore della scena attiva",
+                    "es": "Color de la escena activa",
+                    "pl": "Kolor aktywnej sceny",
+                    "uk": "Колір активної сцени",
+                    "zh-cn": "激活场景的颜色"
+                },
+                "help": {
+                    "en": "Empty: the success color of the theme",
+                    "de": "Leer: die Erfolgsfarbe des Themes",
+                    "ru": "Пусто: цвет успеха из темы",
+                    "pt": "Vazio: a cor de sucesso do tema",
+                    "nl": "Leeg: de succeskleur van het thema",
+                    "fr": "Vide : la couleur de succès du thème",
+                    "it": "Vuoto: il colore di successo del tema",
+                    "es": "Vacío: el color de éxito del tema",
+                    "pl": "Puste: kolor sukcesu motywu",
+                    "uk": "Порожньо: колір успіху з теми",
+                    "zh-cn": "为空时使用主题的成功色"
+                }
+            },
+            "confirm": {
+                "type": "select",
+                "label": {
+                    "en": "Confirmation",
+                    "de": "Bestätigung",
+                    "ru": "Подтверждение",
+                    "pt": "Confirmação",
+                    "nl": "Bevestiging",
+                    "fr": "Confirmation",
+                    "it": "Conferma",
+                    "es": "Confirmación",
+                    "pl": "Potwierdzenie",
+                    "uk": "Підтвердження",
+                    "zh-cn": "确认"
+                },
+                "default": "none",
+                "options": [
+                    {
+                        "value": "none",
+                        "label": {
+                            "en": "None",
+                            "de": "Keine",
+                            "ru": "Нет",
+                            "pt": "Nenhuma",
+                            "nl": "Geen",
+                            "fr": "Aucune",
+                            "it": "Nessuna",
+                            "es": "Ninguna",
+                            "pl": "Brak",
+                            "uk": "Немає",
+                            "zh-cn": "无"
+                        }
+                    },
+                    {
+                        "value": "dialog",
+                        "label": {
+                            "en": "Confirm dialog",
+                            "de": "Bestätigungsdialog",
+                            "ru": "Диалог подтверждения",
+                            "pt": "Diálogo de confirmação",
+                            "nl": "Bevestigingsdialoog",
+                            "fr": "Boîte de confirmation",
+                            "it": "Finestra di conferma",
+                            "es": "Diálogo de confirmación",
+                            "pl": "Okno potwierdzenia",
+                            "uk": "Діалог підтвердження",
+                            "zh-cn": "确认对话框"
+                        }
+                    },
+                    {
+                        "value": "pin",
+                        "label": {
+                            "en": "PIN code",
+                            "de": "PIN-Code",
+                            "ru": "PIN-код",
+                            "pt": "Código PIN",
+                            "nl": "Pincode",
+                            "fr": "Code PIN",
+                            "it": "Codice PIN",
+                            "es": "Código PIN",
+                            "pl": "Kod PIN",
+                            "uk": "PIN-код",
+                            "zh-cn": "PIN 码"
+                        }
+                    }
+                ]
+            },
+            "confirmText": {
+                "type": "text",
+                "label": {
+                    "en": "Confirmation text",
+                    "de": "Bestätigungstext",
+                    "ru": "Текст подтверждения",
+                    "pt": "Texto de confirmação",
+                    "nl": "Bevestigingstekst",
+                    "fr": "Texte de confirmation",
+                    "it": "Testo di conferma",
+                    "es": "Texto de confirmación",
+                    "pl": "Tekst potwierdzenia",
+                    "uk": "Текст підтвердження",
+                    "zh-cn": "确认文本"
+                },
+                "help": {
+                    "en": "Empty: the standard question",
+                    "de": "Leer: die Standardfrage",
+                    "ru": "Пусто: стандартный вопрос",
+                    "pt": "Vazio: a pergunta padrão",
+                    "nl": "Leeg: de standaardvraag",
+                    "fr": "Vide : la question standard",
+                    "it": "Vuoto: la domanda standard",
+                    "es": "Vacío: la pregunta estándar",
+                    "pl": "Puste: standardowe pytanie",
+                    "uk": "Порожньо: стандартне питання",
+                    "zh-cn": "为空时使用默认问题"
+                },
+                "hidden": "!data.confirm || data.confirm === 'none'"
+            },
+            "pin": {
+                "type": "password",
+                "label": {
+                    "en": "PIN",
+                    "de": "PIN",
+                    "ru": "PIN-код",
+                    "pt": "PIN",
+                    "nl": "Pincode",
+                    "fr": "Code PIN",
+                    "it": "PIN",
+                    "es": "PIN",
+                    "pl": "PIN",
+                    "uk": "PIN-код",
+                    "zh-cn": "PIN 码"
+                },
+                "hidden": "data.confirm !== 'pin'"
+            }
+        }
+    }
+}
