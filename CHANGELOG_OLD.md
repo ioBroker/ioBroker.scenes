@@ -1,4 +1,7 @@
 # Older changes
+## 4.0.4 (2025-10-20)
+* (@GermanBluefox) Corrected the selection of multiple IDs in the scene editor
+
 ## 4.0.3 (2025-07-20)
 * (agross) Canceled the cron tasks on the instance stop
 

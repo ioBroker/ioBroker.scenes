@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "5.2.0",
+    "version": "5.3.0",
     "news": {
+      "5.3.0": {
+        "en": "Added the web component `iob-scenes-scene` - the devices widget \"Scene Button\" for Aura and other hosts (`common.webComponents`); the name and the description of the devices widget are translated into all languages now\nAdapter requires node.js >= 22.19.0 now",
+        "de": "Web-Komponente `iob-scenes-scene` hinzugefügt — das Geräte-Widget „Scene Button“ für Aura und andere Hosts (`common.webComponents`); Name und Beschreibung des Geräte-Widgets sind jetzt in alle Sprachen übersetzt\nAdapter benötigt jetzt node.js >= 22.19.0",
+        "ru": "Добавлен веб-компонент `iob-scenes-scene` — виджет устройств «Scene Button» для Aura и других хостов (`Common.webcomponents`); название и описание виджета устройств теперь переведены на все языки\nТеперь для адаптера требуется файл node.js >= 22.19.0",
+        "pt": "Adicionado o componente web `iob-scenes-scene` - o widget “Scene Button” para Aura e outros hosts (`common.webComponents`); o nome e a descrição do widget estão traduzidos para todos os idiomas\nO adaptador exige node.js >= 22.19.0",
+        "nl": "De webcomponent `iob-scenes-scene` toegevoegd, de apparaatwidget „Scene Button” voor Aura en andere hosts (`Common.WebComponents`); de naam en de beschrijving van de apparaatwidget zijn nu in alle talen vertaald\nVoor de adapter is nu node.js >= 22.19.0 nodig",
+        "fr": "Ajout du composant Web « iob-scenes-scene », le widget « Scene Button » pour Aura et d'autres hôtes (« common.WebComponents ») ; le nom et la description du widget appareils sont désormais traduits dans toutes les langues\nAdapter nécessite node.js >= 22.19.0",
+        "it": "Aggiunto il componente web `iob-scenes-scene`: il widget «Scene Button» per Aura e altri host (`Common.WebComponents`); il nome e la descrizione del widget sono ora tradotti in tutte le lingue\nAdapter richiede node.js >= 22.19.0 ora",
+        "es": "Se ha añadido el componente web `iob-scenes-scene`, el widget de dispositivos «Scene Button» para Aura y otros hosts (`Common.WebComponents`); el nombre y la descripción del widget del dispositivo están traducidos a todos los idiomas\nEl adaptador ahora necesita node.js >= 22.19.0",
+        "pl": "Dodano komponent internetowy `iob-scenes-scene` - widżet urządzeń „Przycisk sceny” dla Aura i innych hostów (`common.webcomponents`); nazwa i opis widżetu urządzeń są teraz przetłumaczone na wszystkie języki\nAdapter wymaga teraz node.js >= 22.19.0",
+        "uk": "Додано веб-компонент `iob-scenes-scene` - віджет пристроїв «Кнопка сцени» для Aura та інших хостів (`Common.WebComponents`); назва та опис віджета пристроїв тепер перекладено на всі мови\nАдаптер вимагає node.js >= 22.19.0 зараз",
+        "zh-cn": "添加了 Web 组件 `iob-scenes-scene`-适用于 Aura 和其他主机的设备小部件 “场景按钮”（`common.webComponents`）；设备小部件的名称和描述现在已翻译成所有语言\n适配器现在需要 node.js >= 22.19.0"
+      },
       "5.2.0": {
         "en": "Recognize uppercase and mixed-case boolean scene commands, so nested scenes receive FALSE correctly (#475)\nThe state of a scene, that controls other scenes with \"TRUE\"/\"FALSE\", is now detected correctly and is not \"uncertain\" anymore (#475)\nScenes as members of another scene now get the TRUE/FALSE selector, so the desired values are stored as booleans (#475)\nA scene, whose members match TRUE and FALSE at the same time, does not jump from FALSE to TRUE anymore (#267)\nThe search in the scene list is now case-insensitive (#364)\nUpdated \"@iobroker/testing\" to 6.3.1 and removed the direct \"mocha\" dependency\nA running scene can be stopped by writing \"stop\" into the scene state or with the message \"stop\". All delayed commands of the scene are cancelled (#42)\nAdded the name filter (regular expression) for members from categories, e.g., to take only some lamps of a room (#457)",
         "de": "Erkennt boolesche Szenenbefehle in Groß- und Kleinschreibung, sodass verschachtelte Szenen FALSCH erhalten (#475)\nDer Status einer Szene, die andere Szenen mit „TRUE“ /\"FALSE“ steuert, wird nun korrekt erkannt und ist nicht mehr „unsicher“ (#475)\nSzenen aus einer anderen Szene haben jetzt den TRUE/FALSE-Selektor, also boolesche Werte (#475)\nEine Szene, deren Mitglieder WAHR und FALSCH sind, springt nicht mehr von FALSCH zu WAHR (#267)\nSuche in der Szenenliste nun ohne Groß- und Kleinschreibung (#364)\n\"@iobroker /testing\" auf 6.3.1 aktualisiert und „Mokka“ entfernt\nEine laufende Szene kann mit „stop“ oder mit der Meldung „stop“ gestoppt werden. Alle Spätbefehle der Szene sind gelöscht (#42)\nNamensfilter hinzugefügt (regulärer Ausdruck) für Mitglieder aus Kategorien, z. B. nur Lampen im Raum (#457)",
@@ -80,19 +93,6 @@
         "pl": "Anulował zadania cron na instance stop",
         "uk": "Скасовано завдання синхрону на зупинці екземпляра",
         "zh-cn": "取消实例停止的 cron 任务"
-      },
-      "4.0.2": {
-        "en": "Small improvements for layout",
-        "de": "Kleine Verbesserungen im Layout",
-        "ru": "Небольшие улучшения для макета",
-        "pt": "Pequenas melhorias para a disposição",
-        "nl": "Kleine verbeteringen voor lay-out",
-        "fr": "Petites améliorations pour la mise en page",
-        "it": "Piccoli miglioramenti per il layout",
-        "es": "Pequeñas mejoras para el diseño",
-        "pl": "Niewielka poprawa układu",
-        "uk": "Невеликі поліпшення для планування",
-        "zh-cn": "对布局的小改进"
       }
     },
     "titleLang": {
