@@ -176,19 +176,38 @@
         {
           "name": "ScenesWidget",
           "label": {
-            "de": "Szenen-Button",
             "en": "Scene Button",
-            "ru": "Кнопка сцены"
+            "de": "Szenen-Button",
+            "ru": "Кнопка сцены",
+            "pt": "Botão de cena",
+            "nl": "Scèneknop",
+            "fr": "Bouton de scène",
+            "it": "Pulsante scena",
+            "es": "Botón de escena",
+            "pl": "Przycisk sceny",
+            "uk": "Кнопка сцени",
+            "zh-cn": "场景按钮"
           },
           "description": {
-            "de": "Szene per Klick aktivieren",
             "en": "Activate a scene with one click",
-            "ru": "Активировать сцену одним нажатием"
+            "de": "Szene per Klick aktivieren",
+            "ru": "Активировать сцену одним нажатием",
+            "pt": "Ativar uma cena com um clique",
+            "nl": "Een scène met één klik activeren",
+            "fr": "Activer une scène en un clic",
+            "it": "Attivare una scena con un clic",
+            "es": "Activar una escena con un clic",
+            "pl": "Aktywuj scenę jednym kliknięciem",
+            "uk": "Активувати сцену одним натисканням",
+            "zh-cn": "一键激活场景"
           },
           "icon": "scenes.png"
         }
       ]
     },
+    "webComponents": [
+      "webcomponents/scenes-scene.json"
+    ],
     "connectionType": "local",
     "dataSource": "push",
     "dependencies": [

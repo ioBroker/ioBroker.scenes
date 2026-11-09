@@ -11,6 +11,9 @@ const { deleteFoldersRecursive, npmInstall, buildReact, copyFiles, patchHtmlFile
 
 const SRC_DEVICES = 'src-devices/';
 const srcDevices = `${__dirname}/${SRC_DEVICES}`;
+// the web component <iob-scenes-scene> (`common.webComponents`), see src-webcomponents/vite.config.ts
+const SRC_WC = 'src-webcomponents/';
+const srcWc = `${__dirname}/${SRC_WC}`;
 
 function cleanDevices() {
     deleteFoldersRecursive(`${srcDevices}build`);
@@ -22,6 +25,21 @@ function copyAllFilesDevices() {
     copyFiles([`${SRC_DEVICES}build/assets/*.*`], `admin/dm-widgets/assets`);
     copyFiles([`${SRC_DEVICES}build/img/*`], `admin/dm-widgets/img`);
     copyFiles([`${SRC_DEVICES}img/scenes.png`], `admin/dm-widgets`);
+}
+
+/**
+ * Builds the web components: one ES module and its manifest each (`scenes-scene.js`, `scenes-scene.json`), written
+ * and checked by the build. The destination is emptied first, so no module of an earlier build is published.
+ * Runs after `copyAllFiles()`, which empties `admin/`.
+ */
+async function buildWebComponents() {
+    deleteFoldersRecursive(`${__dirname}/admin/webcomponents`);
+    deleteFoldersRecursive(`${srcWc}build`);
+    if (!existsSync(`${srcWc}node_modules`)) {
+        await npmInstall(srcWc);
+    }
+    await buildReact(srcWc, { rootDir: srcWc, vite: true });
+    copyFiles([`${SRC_WC}build/*.js`, `${SRC_WC}build/*.json`], 'admin/webcomponents');
 }
 
 async function copyAllFiles() {
@@ -52,6 +70,11 @@ if (process.argv.includes('--0-clean')) {
         console.log(`Error: ${e.toString()}`);
         process.exit(2);
     });
+} else if (process.argv.includes('--wc')) {
+    buildWebComponents().catch(e => {
+        console.log(`Error: ${e.toString()}`);
+        process.exit(2);
+    });
 } else {
     deleteFoldersRecursive(`${__dirname}/admin`);
     deleteFoldersRecursive(`${__dirname}/src-admin/build`);
@@ -70,6 +93,7 @@ if (process.argv.includes('--0-clean')) {
         .then(() => npmInstall(srcDevices))
         .then(() => buildReact(srcDevices, { rootDir: __dirname, vite: true }))
         .then(() => copyAllFilesDevices())
+        .then(() => buildWebComponents())
         .catch(e => {
             console.log(`Error: ${e.toString()}`);
             process.exit(2);
