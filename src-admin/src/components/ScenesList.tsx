@@ -505,7 +505,7 @@ class ScenesList extends React.Component<ScenesListProps, ScenesListState> {
         const scene = this.props.scenes[item._id];
         const name = Utils.getObjectNameFromObj(item, null, { language: I18n.getLanguage() });
 
-        if (!scene || (this.state.search && !name.includes(this.state.search))) {
+        if (!scene || (this.state.search && !name.toLowerCase().includes(this.state.search.toLowerCase()))) {
             return null;
         }
 

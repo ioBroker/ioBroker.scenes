@@ -57,6 +57,17 @@ const TRUE_DARK_COLOR = '#528952';
 const FALSE_DARK_COLOR = '#774747';
 const UNCERTAIN_COLOR = '#bfb7be';
 
+/**
+ * Scene states are of type "mixed" (because of the value "uncertain"), but a normal scene is controlled only with true/false.
+ * So show for them the TRUE/FALSE selector and store booleans. Virtual groups accept any value and keep their type.
+ */
+function getMemberType(obj: ioBroker.Object): ioBroker.CommonType | undefined {
+    if (obj.type === 'state' && /^scene\.\d+\./.test(obj._id) && !obj.native?.virtualGroup) {
+        return 'boolean';
+    }
+    return (obj as ioBroker.StateObject).common?.type;
+}
+
 const styles: Record<string, any> = {
     memberTrueFalse: {
         borderRadius: 10,
@@ -333,7 +344,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
     private engineId: string;
 
     private readonly cacheEnumsState: (
-        { realIds: string[]; type: 'boolean' | 'number' | 'string'; ids: string } | true
+        { realIds: string[]; type: 'boolean' | 'number' | 'string'; ids: string; filter: string } | true
     )[];
 
     private readonly delButtonRef: React.RefObject<any>;
@@ -491,7 +502,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                         ? ((await this.props.socket.getObject(member.id)) as ioBroker.StateObject | null | undefined)
                         : null;
                     if (obj?.common?.type) {
-                        objectTypes[obj._id] = obj.common.type;
+                        objectTypes[obj._id] = getMemberType(obj)!;
                         objectNames[obj._id] = Utils.getObjectNameFromObj(
                             obj,
                             null,
@@ -573,7 +584,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                         }
 
                         if (obj?.common?.type) {
-                            objectTypes[id] = obj.common.type;
+                            objectTypes[id] = getMemberType(obj)!;
 
                             if (objectTypes[id] === 'boolean') {
                                 template.setIfTrue = true;
@@ -917,9 +928,10 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                         <Select
                             variant="standard"
                             value={
-                                setValue === true || setValue === 'true'
+                                setValue === true || (typeof setValue === 'string' && setValue.toLowerCase() === 'true')
                                     ? 'true'
-                                    : setValue === false || setValue === 'false'
+                                    : setValue === false ||
+                                        (typeof setValue === 'string' && setValue.toLowerCase() === 'false')
                                       ? 'false'
                                       : 'null'
                             }
@@ -1197,6 +1209,9 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
         if (enumsSettings?.exclude?.length) {
             title += ` - ${enumsSettings.exclude.length} ${I18n.t('state(s)')}`;
         }
+        if (enumsSettings?.filter) {
+            title += ` /${enumsSettings.filter}/`;
+        }
 
         if (this.cacheEnumsState[index]) {
             if (this.cacheEnumsState[index] === true) {
@@ -1224,17 +1239,19 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
         if (
             !this.cacheEnumsState[index] ||
             (this.cacheEnumsState[index] as { type: ioBroker.CommonType; ids: string }).ids !== JSON.stringify(ids) ||
-            (this.cacheEnumsState[index] as { type: ioBroker.CommonType; ids: string }).type !== enumsSettings?.type
+            (this.cacheEnumsState[index] as { type: ioBroker.CommonType; ids: string }).type !== enumsSettings?.type ||
+            (this.cacheEnumsState[index] as { filter: string }).filter !== (enumsSettings?.filter || '')
         ) {
             if (this.cacheEnumsState[index] === true) {
                 return null;
             }
             this.cacheEnumsState[index] = true;
             setTimeout(async () => {
+                const filter = EnumsSelector.getFilter(enumsSettings?.filter);
                 for (let i = 0; i < ids.length; i++) {
                     const obj: ioBroker.StateObject | null | undefined = (await this.props.socket.getObject(ids[i])) as
                         ioBroker.StateObject | null | undefined;
-                    if (!obj) {
+                    if (!obj || !EnumsSelector.matchesFilter(ids[i], obj, filter)) {
                         continue;
                     }
                     if (obj.type !== 'state') {
@@ -1283,6 +1300,7 @@ class SceneMembersForm extends React.Component<SceneMembersFormProps, SceneMembe
                     ids: JSON.stringify(ids),
                     realIds,
                     type: enumsSettings?.type || 'boolean',
+                    filter: enumsSettings?.filter || '',
                 };
                 this.forceUpdate();
             }, 200);

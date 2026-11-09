@@ -63,6 +63,44 @@ const NAMES = {
     [type_detector_1.Types.volumeGroup]: { boolean: 'SET' },
 };
 /**
+ * Convert the strings "true" and "false" (in any case) into booleans.
+ * Scene states are of type "mixed", so a member, that controls another scene, can have "TRUE" or "FALSE" as desired value,
+ * but the scene state itself is acknowledged with a boolean.
+ */
+function normalizeBoolean(value) {
+    if (typeof value === 'string') {
+        const lower = value.trim().toLowerCase();
+        if (lower === 'true') {
+            return true;
+        }
+        if (lower === 'false') {
+            return false;
+        }
+    }
+    return value;
+}
+/**
+ * Check if the enum member matches the filter of the enum settings.
+ * The filter is a case-insensitive regular expression, that is checked against the ID and all names of the object.
+ *
+ * @param id ID of the enum member
+ * @param obj object of the enum member
+ * @param filter regular expression
+ */
+function matchesEnumFilter(id, obj, filter) {
+    if (filter.test(id)) {
+        return true;
+    }
+    const name = obj?.common?.name;
+    if (!name) {
+        return false;
+    }
+    if (typeof name === 'object') {
+        return Object.values(name).some(text => typeof text === 'string' && filter.test(text));
+    }
+    return filter.test(name);
+}
+/**
  * How many activations of one scene are allowed within DEFAULT_LOOP_PROTECTION_INTERVAL by default.
  * A real loop produces thousands of activations per second, so the limit is high enough,
  * that a user, who moves a slider of a number scene, does not disable his scene by accident.
@@ -111,6 +149,18 @@ class ScenesAdapter extends adapter_core_1.Adapter {
         });
     }
     onStateChange(id, state) {
+        if (state &&
+            !state.ack &&
+            this.scenes[id] &&
+            !this.scenes[id].native.virtualGroup &&
+            typeof state.val === 'string' &&
+            state.val.trim().toLowerCase() === 'stop') {
+            // virtual groups get "stop" as normal value, e.g., for media players
+            this.stopScene(id);
+            // restore the value of the scene
+            void this.setForeignStateAsync(id, this.sceneValue[id]?.val ?? null, true);
+            return;
+        }
         if (state) {
             if (this.scenes[id]) {
                 this.sceneValue[id] = { val: state.val, ack: state.ack };
@@ -121,7 +171,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                         this.activateScene(id, state.val);
                     }
                     else {
-                        let val = state.val;
+                        let val = typeof state.val === 'string' ? state.val.toLowerCase() : state.val;
                         if (val === 'true') {
                             val = true;
                         }
@@ -261,6 +311,46 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                 this.sendTo(obj.from, obj.command, { error: 'Scene not found' }, obj.callback);
             }
         }
+        else if (obj.command === 'stop') {
+            if (this.scenes[sceneId]) {
+                const count = this.stopScene(sceneId);
+                this.sendTo(obj.from, obj.command, { result: `${count} pending commands stopped` }, obj.callback);
+            }
+            else {
+                this.sendTo(obj.from, obj.command, { error: 'Scene not found' }, obj.callback);
+            }
+        }
+    }
+    /**
+     * Stop all delayed commands of a scene and the commands, that wait for the burst interval.
+     * The values, that were already written, are not changed.
+     *
+     * @param sceneId ID of the scene
+     * @returns number of stopped commands
+     */
+    stopScene(sceneId) {
+        let count = 0;
+        for (const id of Object.keys(this.timers)) {
+            this.timers[id] = this.timers[id].filter(item => {
+                if (item.sceneId !== sceneId) {
+                    return true;
+                }
+                clearTimeout(item.timer);
+                count++;
+                return false;
+            });
+        }
+        // the keys of the burst timers are "<sceneId>_<member index>"
+        const prefix = `${sceneId}_`;
+        for (const key of Object.keys(this.scenesTimeout)) {
+            if (key.startsWith(prefix) && /^\d+$/.test(key.substring(prefix.length)) && this.scenesTimeout[key]) {
+                clearTimeout(this.scenesTimeout[key]);
+                this.scenesTimeout[key] = null;
+                count++;
+            }
+        }
+        this.log.debug(`Scene "${sceneId}" stopped: ${count} pending commands cancelled`);
+        return count;
     }
     // expects like: scene.0.blabla
     async saveScene(sceneID, isForTrue) {
@@ -288,7 +378,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                 }
                 else if (member.enums) {
                     // enum => get all states and their values
-                    const ids = this.getAllEnumIds(member.enums);
+                    const ids = await this.filterEnumIds(this.getAllEnumIds(member.enums), member.enums, sceneID);
                     const values = [];
                     // copy all settings from the first member
                     for (let i = 0; i < ids.length; i++) {
@@ -477,7 +567,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                             }
                         }
                         else {
-                            if (setIfTrue != member.actual) {
+                            if (normalizeBoolean(setIfTrue) != normalizeBoolean(member.actual)) {
                                 activeTrue = false;
                             }
                         }
@@ -489,7 +579,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                                 activeFalse = false;
                             }
                         }
-                        else if (setIfFalse != member.actual) {
+                        else if (normalizeBoolean(setIfFalse) != normalizeBoolean(member.actual)) {
                             activeFalse = false;
                         }
                     }
@@ -510,6 +600,11 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                 }
                 else {
                     if (sceneObjNative.onFalse && sceneObjNative.onFalse.enabled) {
+                        // The members can match TRUE and FALSE at the same time, e.g., if some states are not changed by FALSE.
+                        // In this case keep the current value of the scene and do not jump to TRUE
+                        if (activeTrue && activeFalse && this.sceneValue[_sceneId].val === false) {
+                            activeTrue = false;
+                        }
                         if (activeTrue) {
                             if (this.sceneValue[_sceneId].val !== true || !this.sceneValue[_sceneId].ack) {
                                 this.sceneValue[_sceneId].val = true;
@@ -744,7 +839,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
                         }
                     }
                 }, delay, stateObj.id, desiredValue, this.tIndex);
-                this.timers[stateObj.id].push({ timer, tIndex: this.tIndex });
+                this.timers[stateObj.id].push({ timer, tIndex: this.tIndex, sceneId });
             }
             else {
                 if (stateObj.stopAllDelays && this.timers[stateObj.id] && this.timers[stateObj.id].length) {
@@ -982,6 +1077,34 @@ class ScenesAdapter extends adapter_core_1.Adapter {
         }
         return usedIds;
     }
+    /**
+     * Remove all IDs, whose ID and names do not match the filter of the enum settings
+     *
+     * @param ids IDs of the enum members
+     * @param enumsSettings settings of the enum member with optional filter
+     * @param sceneId ID of the scene, used for the log output
+     */
+    async filterEnumIds(ids, enumsSettings, sceneId) {
+        if (!enumsSettings.filter) {
+            return ids;
+        }
+        let filter;
+        try {
+            filter = new RegExp(enumsSettings.filter, 'i');
+        }
+        catch (e) {
+            this.log.warn(`Invalid filter "${enumsSettings.filter}" in "${sceneId}" is ignored: ${e}`);
+            return ids;
+        }
+        const result = [];
+        for (const id of ids) {
+            const obj = await this.getForeignObjectAsync(id);
+            if (matchesEnumFilter(id, obj, filter)) {
+                result.push(id);
+            }
+        }
+        return result;
+    }
     getAllEnumIds(enumsSettings) {
         const ids = [];
         enumsSettings.rooms.forEach(roomId => {
@@ -1129,7 +1252,7 @@ class ScenesAdapter extends adapter_core_1.Adapter {
         // remove this member from a list
         this.scenes[sceneId].native.members.splice(index, 1);
         // collect all IDs in this enum
-        const ids = this.getAllEnumIds(enumsSettings);
+        const ids = await this.filterEnumIds(this.getAllEnumIds(enumsSettings), enumsSettings, sceneId);
         // copy all settings from the first member
         for (let i = 0; i < ids.length; i++) {
             const controlId = await this.getControlState(ids[i], enumsSettings.type, sceneId);
