@@ -178,14 +178,13 @@ Virtual groups are not stopped by writing `stop`, they forward this value to the
 
 ## Changelog
 
-### **WORK IN PROGRESS**
-- (copilot) Adapter requires node.js >= 22.19.0 now
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
 * (@GermanBluefox) Added the web component `iob-scenes-scene` - the devices widget "Scene Button" for Aura and other hosts (`common.webComponents`); the name and the description of the devices widget are translated into all languages now
+* (copilot) Adapter requires node.js >= 22.19.0 now
 
 ### 5.2.0 (2026-10-24)
 * (reloxx13) Recognize uppercase and mixed-case boolean scene commands, so nested scenes receive FALSE correctly (#475)
