@@ -32,6 +32,7 @@
     "@iobroker/legacy-testing": "^4.0.1",
     "@iobroker/testing": "^6.3.1",
     "@iobroker/types": "^7.2.5",
+    "@iobroker/web-components": "^0.8.0",
     "@types/node-schedule": "^2.1.8",
     "typescript": "~6.0.3"
   },
@@ -57,7 +58,7 @@
     "build:wc": "node tasks --wc",
     "lint:wc": "cd src-webcomponents && npm run lint",
     "check:wc": "cd src-webcomponents && npm run check-ts",
-    "build": "npm run build:backend && npm run build:gui",
+    "build": "npm run build:backend && npm run build:gui && iob-web-components sync-io-package",
     "beforePush": "node tasks",
     "release": "release-script",
     "release-patch": "release-script patch --yes",

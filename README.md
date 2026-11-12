@@ -182,6 +182,10 @@ Virtual groups are not stopped by writing `stop`, they forward this value to the
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+* (@GermanBluefox) Added the short form of the web component manifests (tag, name, icon, size) to `common.webComponents`, so that hosts like Aura can list the components before the adapter is installed; the build writes it with `iob-web-components sync-io-package`
+
 ### 5.3.0 (2026-11-09)
 * (@GermanBluefox) Added the web component `iob-scenes-scene` - the devices widget "Scene Button" for Aura and other hosts (`common.webComponents`); the name and the description of the devices widget are translated into all languages now
 * (copilot) Adapter requires node.js >= 22.19.0 now

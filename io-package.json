@@ -206,7 +206,28 @@
       ]
     },
     "webComponents": [
-      "webcomponents/scenes-scene.json"
+      {
+        "manifest": "webcomponents/scenes-scene.json",
+        "tag": "iob-scenes-scene",
+        "name": {
+          "en": "Scene Button",
+          "de": "Szenen-Button",
+          "ru": "Кнопка сцены",
+          "pt": "Botão de cena",
+          "nl": "Scèneknop",
+          "fr": "Bouton de scène",
+          "it": "Pulsante scena",
+          "es": "Botón de escena",
+          "pl": "Przycisk sceny",
+          "uk": "Кнопка сцени",
+          "zh-cn": "场景按钮"
+        },
+        "icon": "../scenes.png",
+        "size": {
+          "width": 160,
+          "height": 160
+        }
+      }
     ],
     "connectionType": "local",
     "dataSource": "push",
