@@ -42,6 +42,7 @@ exports.ScenesAdapter = void 0;
 const adapter_core_1 = require("@iobroker/adapter-core");
 const node_schedule_1 = __importDefault(require("node-schedule"));
 const type_detector_1 = __importStar(require("@iobroker/type-detector"));
+const help_1 = require("./lib/help");
 const NAMES = {
     [type_detector_1.Types.airCondition]: { boolean: 'POWER', number: 'SET' },
     [type_detector_1.Types.blind]: { number: 'SET' },
@@ -223,6 +224,12 @@ class ScenesAdapter extends adapter_core_1.Adapter {
         }
     }
     async onMessage(obj) {
+        if (obj?.command === 'help') {
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, { help: help_1.HELP, commands: help_1.COMMANDS }, obj.callback);
+            }
+            return;
+        }
         if (!obj || !obj.message) {
             return;
         }

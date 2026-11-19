@@ -171,6 +171,13 @@ sendTo(
 All delayed commands of this scene, which are not yet executed, will be cancelled. The values, that were already written, stay unchanged and the scene keeps its value.
 Virtual groups are not stopped by writing `stop`, they forward this value to their members as usual.
 
+## Messages for scripts and AI agents
+The message `help` returns a description of the adapter, its messages and how to activate scenes, written for AI agents (e.g., pi-agent) and script authors.
+The answer `{help, commands}` also lists all commands, each with `write: true` if it changes something:
+```js
+sendTo('scenes.0', 'help', {}, result => console.log(result.help));
+```
+
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
@@ -184,6 +191,7 @@ Virtual groups are not stopped by writing `stop`, they forward this value to the
 -->
 
 ### **WORK IN PROGRESS**
+* (@GermanBluefox) Added the message "help": a description of all messages and of the scene states for AI agents (e.g. pi-agent), and `common.supportedMessages.help`
 * (@GermanBluefox) Added the short form of the web component manifests (tag, name, icon, size) to `common.webComponents`, so that hosts like Aura can list the components before the adapter is installed; the build writes it with `iob-web-components sync-io-package`
 
 ### 5.3.0 (2026-11-09)

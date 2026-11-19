@@ -5,6 +5,7 @@ import schedule, { type Job } from 'node-schedule';
 import ChannelDetector, { type DetectOptions, Types } from '@iobroker/type-detector';
 
 import type { SceneEnumsValue, SceneMember, SceneObject, SceneTrigger } from './types';
+import { COMMANDS, HELP } from './lib/help';
 
 const NAMES: Record<string, { boolean?: string; number?: string; string?: string }> = {
     [Types.airCondition]: { boolean: 'POWER', number: 'SET' },
@@ -203,6 +204,12 @@ export class ScenesAdapter extends Adapter {
     }
 
     async onMessage(obj: ioBroker.Message): Promise<void> {
+        if (obj?.command === 'help') {
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, { help: HELP, commands: COMMANDS }, obj.callback);
+            }
+            return;
+        }
         if (!obj || !obj.message) {
             return;
         }

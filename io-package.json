@@ -135,6 +135,10 @@
     "icon": "scenes.png",
     "enabled": true,
     "messagebox": true,
+    "supportedMessages": {
+      "custom": true,
+      "help": true
+    },
     "adminUI": {
       "config": "none"
     },
