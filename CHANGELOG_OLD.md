@@ -1,4 +1,9 @@
 # Older changes
+## 5.0.1 (2026-08-06)
+* (@GermanBluefox) Updated packages
+* (@GermanBluefox) Added widget for "devices" adapter
+* (@GermanBluefox) GUI migrated to React 19 + MUI 9
+
 ## 4.0.4 (2025-10-20)
 * (@GermanBluefox) Corrected the selection of multiple IDs in the scene editor
 

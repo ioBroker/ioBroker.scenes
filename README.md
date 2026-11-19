@@ -189,8 +189,7 @@ sendTo('scenes.0', 'help', {}, result => console.log(result.help));
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 5.4.0 (2026-11-19)
 * (@GermanBluefox) Added the message "help": a description of all messages and of the scene states for AI agents (e.g. pi-agent), and `common.supportedMessages.help`
 * (@GermanBluefox) Added the short form of the web component manifests (tag, name, icon, size) to `common.webComponents`, so that hosts like Aura can list the components before the adapter is installed; the build writes it with `iob-web-components sync-io-package`
 
@@ -217,11 +216,6 @@ sendTo('scenes.0', 'help', {}, result => console.log(result.help));
 * (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
 * (@SimonFischer04) Corrected the virtual group aggregation for the "any" mode
 * (@SimonFischer04) Added "sum" as a virtual group function
-
-### 5.0.1 (2026-08-06)
-* (@GermanBluefox) Updated packages
-* (@GermanBluefox) Added widget for "devices" adapter
-* (@GermanBluefox) GUI migrated to React 19 + MUI 9
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

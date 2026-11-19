@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "scenes",
-    "version": "5.3.0",
+    "version": "5.4.0",
     "news": {
+      "5.4.0": {
+        "en": "Added the message \"help\": a description of all messages and of the scene states for AI agents (e.g. pi-agent), and `common.supportedMessages.help`\nAdded the short form of the web component manifests (tag, name, icon, size) to `common.webComponents`, so that hosts like Aura can list the components before the adapter is installed; the build writes it with `iob-web-components sync-io-package`",
+        "de": "Nachricht „Hilfe“ hinzugefügt: Beschreibung aller Nachrichten und Szenenstatus für KI-Agenten (z. B. pi-agent) und `common.supportedMessages.Help`\nDie Kurzform der Webkomponenten-Manifeste (Tag, Name, Symbol, Größe) wurde zu `common.WebComponents` hinzugefügt, sodass Hosts wie Aura die Komponenten vor der Adapterinstallation auflisten können; der Build schreibt es mit `iob-web-components sync-io-package`",
+        "ru": "Добавлено сообщение «help»: описание всех сообщений и состояний сцены для агентов искусственного интеллекта (например, pi-agent) и `Common.supportedMessages.help`\nДобавлена краткая форма манифестов веб-компонентов (тег, имя, значок, размер) в `Common.webcomponents`, чтобы такие хосты, как Aura, могли перечислять компоненты до установки адаптера; сборка записывает его с помощью `iob-web-components sync-io-package`",
+        "pt": "Adicionada a mensagem “help”: uma descrição de todas as mensagens e dos estados de cena dos agentes de IA (p. ex. pi-agent) e `common.supportedMessages.help`\nA forma abreviada dos manifestos de componentes web (tag, nome, ícone, tamanho) foi adicionada a `common.webComponents` para que hosts como o Aura possam listar os componentes antes da instalação do adaptador; a compilação grava com `iob-web-components sync-io-package`",
+        "nl": "De boodschap „help” toegevoegd: een beschrijving van alle berichten en van de scenestatus voor AI-agenten (bijv. pi-agent), en `Common.SupportedMessages.help`\nDe korte vorm van de manifesten van de webcomponenten (tag, naam, pictogram, grootte) toegevoegd aan `Common.WebComponents`, zodat hosts zoals Aura de componenten kunnen opsommen voordat de adapter wordt geïnstalleerd; de build schrijft het met `iob-web-components sync-io-package`",
+        "fr": "Ajout du message « help » : description de tous les messages et de l'état de la scène pour les agents IA (p.ex. pi-agent), et « common.supportedMessages.help »\nAjout de la forme abrégée des manifestes des composants Web (tag, nom, icône, taille) à « common.WebComponents », afin que des hôtes comme Aura puissent lister les composants avant d'installer l'adaptateur ; la version l'écrit avec « iob-web-components sync-io-package »",
+        "it": "Aggiunto «help»: descrizione di tutti i messaggi e degli stati della scena per gli agenti AI (es. pi-agent) e `common.supportedMessages.help`\nAggiunto l'abbreviazione dei manifest dei componenti web (tag, nome, icona, dimensione) a Common.WebComponents, in modo che host come Aura possano elencare i componenti prima di installare l'adattatore",
+        "es": "Añadió el mensaje «help»: una descripción de todos los mensajes y estados de escena de los agentes de IA (p. ej. pi-agent) y `Common.SupportedMessages.Help`\nHa añadido la forma abreviada de los manifiestos de componentes web (etiqueta, nombre, icono, tamaño) a `Common.WebComponents` para que hosts como Aura puedan enumerar los componentes antes de instalar el adaptador; la versión lo escribe con `iob-web-components sync-io-package`",
+        "pl": "Dodano komunikat „help”: opis wszystkich wiadomości i stanów sceny dla agentów AI (np. pi-agent) oraz `common.supportedMessages.Help`\nDodano krótką formę manifestów komponentów internetowych (tag, nazwa, ikona, rozmiar) do `common.webcomponents`, aby hosty takie jak Aura mogli wymienić komponenty przed zainstalowaniem adaptera; kompilacja zapisuje go za pomocą `iob-web-components sync-io-package`",
+        "uk": "Додано повідомлення «help»: опис усіх повідомлень та стану сцени для агентів AI (наприклад, pi-agent) та `common.supportedMessages.help`\nДодано коротку форму маніфестів веб-компонента (тег, ім'я, піктограма, розмір) до `Common.WebComponents`, щоб такі хости, як Aura, могли перелічити компоненти до встановлення адаптера; збірка записує його за допомогою `iob-web-components sync-io-package`",
+        "zh-cn": "添加了 “帮助” 消息：对 AI 代理（例如 pi-agent）的所有消息和场景状态的描述，以及 “common.supportedMessages.Help”\n将 Web 组件清单（标签、名称、图标、大小）的简写形式添加到 `common.webComponents` 中，这样像 Aura 这样的主机就可以在安装适配器之前列出组件；该版本使用 `iob-web-components sync-io-package` 写入组件"
+      },
       "5.3.0": {
         "en": "Added the web component `iob-scenes-scene` - the devices widget \"Scene Button\" for Aura and other hosts (`common.webComponents`); the name and the description of the devices widget are translated into all languages now\nAdapter requires node.js >= 22.19.0 now",
         "de": "Web-Komponente `iob-scenes-scene` hinzugefügt — das Geräte-Widget „Scene Button“ für Aura und andere Hosts (`common.webComponents`); Name und Beschreibung des Geräte-Widgets sind jetzt in alle Sprachen übersetzt\nAdapter benötigt jetzt node.js >= 22.19.0",
@@ -80,19 +93,6 @@
         "pl": "Poprawił wybór wielu identyfikatorów w edytorze sceny",
         "uk": "Виправлено вибір декількох ідентифікаторів у редакторі сцени",
         "zh-cn": "更正了场景编辑器中选择的多个ID"
-      },
-      "4.0.3": {
-        "en": "Canceled the cron tasks on the instance stop",
-        "de": "Die Cron-Aufgaben auf der Instanz stoppen",
-        "ru": "Отменены задачи cron на остановке экземпляра",
-        "pt": "Cancelou as tarefas do cron na parada da instância",
-        "nl": "Annuleerde de cron taken op de instantie stop",
-        "fr": "Annulé les tâches de cron sur l'arrêt de l'instance",
-        "it": "Annullato i compiti del cron sull'arresto dell'istanza",
-        "es": "Cancelado las tareas del cron en la parada de instancia",
-        "pl": "Anulował zadania cron na instance stop",
-        "uk": "Скасовано завдання синхрону на зупинці екземпляра",
-        "zh-cn": "取消实例停止的 cron 任务"
       }
     },
     "titleLang": {
