@@ -7,7 +7,7 @@
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@hello-pangea/dnd": "^18.0.1",
-        "@iobroker/gui-components": "^10.3.13",
+        "@iobroker/gui-components": "^10.4.7",
         "@iobroker/type-detector": "^6.1.0",
         "@mui/icons-material": "^9.5.0",
         "@mui/material": "^9.5.0",
